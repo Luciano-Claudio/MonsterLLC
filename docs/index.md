@@ -14,6 +14,10 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 - **[Game Design Document (GDD)](gdd/)** — fonte de verdade de todas as regras, sistemas e decisões de design.
 
+## Guias
+
+- **[Project Setup Guide](guides/project-setup.md)** — do clone ao primeiro build local: Unity, Git LFS, abertura do projeto, `_TestScene`.
+
 ## Produção
 
 - **[Plano de Produção (v6)](Projeto_Torre_Plano_Producao_v6.md)** — análise de produção, ordem macro de sistemas e as 14 deadlines/56 sprints planejadas.
