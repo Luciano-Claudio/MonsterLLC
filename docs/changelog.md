@@ -2,6 +2,12 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 05 — Floor System Skeleton
+
+- Ground + Floor 1 + Floor 2 como regiões físicas da mesma `_TestScene` (sem Scene por andar).
+- `FloorDefinition`/`FloorManager`/`FloorTrigger`, detectando o Floor atual do jogador via trigger 2D.
+- Inicia a Deadline 2 (Floor + Combat Testbed).
+
 ## Sprint 04 — Localization + Save/RunState + Large Number + Docs Pipeline Maduro
 
 - Localization configurado (`en`, `pt-BR`), String Table Collection `UI Text`, troca de locale em runtime.
