@@ -2,6 +2,13 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 06 — Stair Routing + Active Floor Position
+
+- `StairRouting` + `FloorRegistry`, roteamento por Active Floor Position (não índice fixo) — validado inclusive sob reordenação de Floors.
+- Escadas reescritas como interação real (tecla E + ícone de prompt), via novo padrão genérico `Interactable`/`InteractionManager` — reutilizável para baús no futuro.
+- Indicador de Floor atual na tela (primeira UI do projeto, TextMeshPro).
+- **Mudança de design registrada no GDD:** escadas agora exigem interação por E (Seção 26/46 atualizadas) — antes eram passivas.
+
 ## Sprint 05 — Floor System Skeleton
 
 - Ground + Floor 1 + Floor 2 como regiões físicas da mesma `_TestScene` (sem Scene por andar).
