@@ -18,6 +18,7 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 - **[Project Setup Guide](guides/project-setup.md)** — do clone ao primeiro build local: Unity, Git LFS, abertura do projeto, `_TestScene`.
 - **[Git Workflow Guide](guides/git-workflow.md)** — estratégia de branch, convenção de commits e processo de fechamento de sprint.
+- **[Editando arquivos da Unity fora do Editor](guides/unity-file-editing.md)** — quando é seguro escrever/editar arquivos serializados da Unity direto em texto vs. quando fazer pela UI do Editor.
 
 ## Produção
 
