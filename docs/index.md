@@ -6,7 +6,7 @@
 
 Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 andares fixos, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
 
-**Estado atual:** Em desenvolvimento — Sprint 4 (Deadline 1 encerrada)
+**Estado atual:** Em desenvolvimento — Sprint 5 (Deadline 2 em andamento)
 
 ---
 
@@ -28,6 +28,7 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 <!-- Adicionar aqui o link de cada nova Sprint conforme for detalhada, mantendo a mais recente no topo. -->
 
+- [Sprint 05 — Floor System Skeleton](sprint-05.md)
 - [Sprint 04 — Localization + Save/RunState + Large Number + Docs Pipeline Maduro](sprint-04.md)
 - [Sprint 03 — GameEvents + Time/Pause + Game State + Progress Tracker Skeleton + Testes](sprint-03.md)
 - [Sprint 02 — Input System + Organização de Projeto](sprint-02.md)
