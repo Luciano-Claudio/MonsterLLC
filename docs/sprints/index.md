@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 06 — Stair Routing + Active Floor Position](sprint-06.md)
 - [Sprint 05 — Floor System Skeleton](sprint-05.md)
 - [Sprint 04 — Localization + Save/RunState + Large Number + Docs Pipeline Maduro](sprint-04.md)
 - [Sprint 03 — GameEvents + Time/Pause + Game State + Progress Tracker Skeleton + Testes](sprint-03.md)
