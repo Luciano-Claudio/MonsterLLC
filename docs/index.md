@@ -27,6 +27,8 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 <!-- Adicionar aqui o link de cada nova Sprint conforme for detalhada, mantendo a mais recente no topo. -->
 
+- [Sprint 03 — GameEvents + Time/Pause + Game State + Progress Tracker Skeleton + Testes](sprint-03.md)
+- [Sprint 02 — Input System + Organização de Projeto](sprint-02.md)
 - [Sprint 01 — Task Breakdown](Sprint_01_Task_Breakdown.md)
 
 ## Acompanhamento
