@@ -689,6 +689,9 @@ Diferente de uma versão anterior deste documento, a travessia **não é automá
 Player se aproxima da escada → ícone de interação aparece → pressiona E → teleporta para o Active Floor de destino (Seção 26, regra de destino abaixo)
 ```
 
+### Prioridade entre interações simultâneas — pendência aberta 🟡
+Com escadas agora usando E (acima), existe um caso ainda não decidido: **o que acontece se mais de um interagível estiver no alcance ao mesmo tempo** (ex.: escada perto de um baú, ou escada perto de onde o Magnet seria largado — Seção 29 já define que "interações prioritárias próximas, ex.: baú, têm prioridade sobre largar o Magnet", mas não menciona escada). A implementação atual (Sprint 6) não tem nenhuma regra de prioridade — ela reage ao último interagível cujo trigger disparou, sem ordem definida. **Precisa ser decidido antes da Sprint 35** (Deadline 9 — primeira sprint em que baús passam a existir de verdade no jogo, Seção 30); até lá, escadas continuam sendo o único interagível ativo no jogo, então o caso não ocorre na prática.
+
 ### Exemplo normal de conexão ✅
 ```text
 Térreo

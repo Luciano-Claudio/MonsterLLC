@@ -28,6 +28,7 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 <!-- Adicionar aqui o link de cada nova Sprint conforme for detalhada, mantendo a mais recente no topo. -->
 
+- [Sprint 07 — Hero Framework + Barbarian](sprint-07.md)
 - [Sprint 06 — Stair Routing + Active Floor Position](sprint-06.md)
 - [Sprint 05 — Floor System Skeleton](sprint-05.md)
 - [Sprint 04 — Localization + Save/RunState + Large Number + Docs Pipeline Maduro](sprint-04.md)
