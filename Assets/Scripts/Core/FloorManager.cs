@@ -12,5 +12,6 @@ public class FloorManager : MonoBehaviour
         if (CurrentFloor == floor) return;
         CurrentFloor = floor;
         Debug.Log($"[FloorManager] Current Floor = {floor.floorName} (Original {floor.originalFloorIdentity}, Active Position {floor.activeFloorPosition})");
+        GameEvents.FloorChanged(floor);
     }
 }

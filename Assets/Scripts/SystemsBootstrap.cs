@@ -11,7 +11,8 @@ public class SystemsBootstrap : MonoBehaviour
 
         controls.Gameplay.Inventory.performed += ctx => TimeManager.Instance.TogglePause();
         controls.Gameplay.RemoteControl.performed += ctx => TimeManager.Instance.TogglePause();
-        controls.Gameplay.Interact.performed += ctx => GameEvents.EnemyKilled(); // placeholder até existir inimigo real
+        // Interact (E) deixou de ser placeholder de EnemyKilled na Sprint 6 —
+        // agora aciona interações reais via InteractionManager (escadas, baús no futuro).
     }
 
     private void OnEnable() => controls.Enable();

@@ -683,6 +683,12 @@ O escopo final continua sendo 5 variantes por Floor (50 no total); a arquitetura
 ### Escadas e buracos — regra estrutural final ✅
 Escadas e buracos de descida são **parte física fixa do layout de cada Floor Variant** (Seção 25), definidos no level design. Funcionam como **teleportadores entre Active Floor Positions adjacentes**, dentro da mesma Scene única (Seção 24) — nunca carregam outra Scene, nunca são itens, nunca são comprados, nunca são criados/destruídos/movidos/reposicionados pelo jogador.
 
+### Interação — travessia com E, não automática ✅
+Diferente de uma versão anterior deste documento, a travessia **não é automática ao encostar** na escada/buraco: o jogador se aproxima, um ícone de interação aparece sobre o objeto (Seção 47 — feedback de "interação disponível"), e pressionar **E** (Seção 46) efetiva a troca de Floor. Mesmo padrão de interação contextual usado por baús (Seção 30) — escadas e baús compartilham o mesmo sistema de interação, cada um com sua própria ação ao ser ativado.
+```text
+Player se aproxima da escada → ícone de interação aparece → pressiona E → teleporta para o Active Floor de destino (Seção 26, regra de destino abaixo)
+```
+
 ### Exemplo normal de conexão ✅
 ```text
 Térreo
@@ -1184,7 +1190,7 @@ Tela de Resultados (Seção 40), tela de Loja, tela de Vitória (Dia 15), tela d
 | Mouse | Mira / direção |
 | LMB | Ataque primário |
 | RMB | Ultimate |
-| E | Interação contextual (ex.: abrir baús — Seção 30) |
+| E | Interação contextual (ex.: abrir baús — Seção 30; subir/descer escadas — Seção 26) |
 | TAB | Inventário (pausa) |
 | Q | Controle Remoto (pausa) |
 | Enter | Pula animação da tela de resultados |
