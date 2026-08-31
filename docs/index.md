@@ -6,7 +6,7 @@
 
 Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 andares fixos, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
 
-**Estado atual:** Em desenvolvimento — Sprint 1
+**Estado atual:** Em desenvolvimento — Sprint 3
 
 ---
 
