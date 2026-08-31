@@ -383,8 +383,11 @@ GameObject:
   - component: {fileID: 985211977}
   - component: {fileID: 985211981}
   - component: {fileID: 985211980}
-  - component: {fileID: 985211979}
   - component: {fileID: 985211982}
+  - component: {fileID: 985211979}
+  - component: {fileID: 985211985}
+  - component: {fileID: 985211984}
+  - component: {fileID: 985211983}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -414,7 +417,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 985211976}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f63d6a1e1a64bb5b8cdd7604569b73b, type: 3}
   m_Name: 
@@ -456,6 +459,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c80dee9924f94acba8b6474368334228, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SystemsBootstrap
+--- !u!114 &985211983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985211976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21e03d8f12a94dc59f5adecffe9c8235, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LargeNumberTest
+--- !u!114 &985211984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985211976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99c3d31e01164786afb2047bfb9f9a63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveTest
+--- !u!114 &985211985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985211976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df9a7980327d4efd84563fb2c7ecce93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizationTest
+  testString:
+    m_TableReference:
+      m_TableCollectionName: GUID:c57e068027eace74688c68195fcd21bb
+    m_TableEntryReference:
+      m_KeyId: 143766884352
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &1079011994
 GameObject:
   m_ObjectHideFlags: 0
