@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 04 — Localization + Save/RunState + Large Number + Docs Pipeline Maduro
+
+- Localization configurado (`en`, `pt-BR`), String Table Collection `UI Text`, troca de locale em runtime.
+- `RunState` + `SaveManager`, save/load de um `RunState` via JSON em `Application.persistentDataPath`.
+- `LargeNumberFormatter`, notação k/m/b/t sobre `double`, coberto por 3 testes automatizados.
+- Pipeline de docs via DocFX avaliado e **descartado** — quebrava a publicação inteira em CI sem Unity instalada; mantido o GitHub Pages atual (já publica automaticamente desde a Sprint 1).
+- Encerra a Deadline 1 (Fundação Técnica Completa).
+
 ## Sprint 03 — GameEvents + Time/Pause + Game State + Progress Tracker Skeleton + Testes
 
 - Adicionado `GameEvents`, catálogo central de eventos do jogo.
