@@ -53,7 +53,7 @@ Mensagem no imperativo, curta, descrevendo o *porquê*/*o quê* — não uma lis
 
 ## Proteção de `main`
 
-`main` tem uma regra de proteção configurada em **GitHub → Settings → Branches** (S1-T07), restringindo push direto não revisado — o merge só acontece pelo fluxo acima (local, com `--no-ff`) ou por Pull Request, nunca por push solto de uma branch não relacionada. Isso é a rede de segurança contra o erro de, sem querer, commitar direto em `main` fora da regra central acima.
+`main` tem um **Ruleset** configurado em **GitHub → Settings → Rules → Rulesets** (S1-T07, resolvido em 2026-09-02 — não em **Settings → Branches**, o "Branch protection rules" clássico, que é um sistema separado), bloqueando `deletion` e `non_fast_forward` (force-push). Não exige Pull Request — o merge continua sendo local (`--no-ff`) + push, como descrito acima; a regra só é rede de segurança contra force-push ou deleção acidental de `main`, não contra push direto em si.
 
 ## Fechamento de sprint
 
