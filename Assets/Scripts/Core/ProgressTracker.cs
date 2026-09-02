@@ -10,7 +10,7 @@ public static class ProgressTracker
     {
         if (initialized) return;
         initialized = true;
-        GameEvents.OnEnemyKilled += () => Increment("EnemyKilled");
+        GameEvents.OnEnemyKilled += (energy) => Increment("EnemyKilled");
     }
 
     public static void Increment(string key)

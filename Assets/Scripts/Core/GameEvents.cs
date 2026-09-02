@@ -3,8 +3,13 @@ using UnityEngine;
 
 public static class GameEvents
 {
-    public static event Action OnEnemyKilled;
-    public static void EnemyKilled() => OnEnemyKilled?.Invoke();
+    // Sprint 7: passou a carregar o valor de energia do kill (GDD Seção 11 —
+    // monstros mais fortes concedem mais Energia por kill). Quebra de assinatura proposital.
+    public static event Action<int> OnEnemyKilled;
+    public static void EnemyKilled(int energyValue) => OnEnemyKilled?.Invoke(energyValue);
+
+    public static event Action<float, float> OnEnergyChanged;
+    public static void EnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
 
     public static event Action<FloorDefinition> OnFloorChanged;
     public static void FloorChanged(FloorDefinition floor) => OnFloorChanged?.Invoke(floor);
