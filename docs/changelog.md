@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 07 — Hero Framework + Barbarian
+
+- `EnergySystem` (lógica pura, testada) + `HeroController`/`HeroStats` (framework reutilizável de herói) + `Barbarian` (primeiro herói jogável: movimento, ataque direcional, ultimate em rajada).
+- Mira do mouse resolvida em 8 direções (GDD Seção 11), adicionada durante a sprint para o ataque do Barbarian ficar à frente do personagem, não centrado nele.
+- `GameEvents.OnEnemyKilled` ganhou payload de energia (quebra de assinatura proposital) — `EnergyIndicatorUI` e `EnemyKillSimulator` validam o fluxo sem depender de inimigo real ainda.
+- **Pendência registrada no GDD:** prioridade entre interagíveis simultâneos (escada vs. baú vs. Magnet) segue em aberto, prazo antes da Sprint 35.
+- `Assets/Scripts/` reorganizado inteiro em pastas por categoria (`Core/Floor`, `Core/Save`, `Core/GameState`, `Interaction/`, `World/`, `Player/Heroes/`, `Tests/`).
+
 ## Sprint 06 — Stair Routing + Active Floor Position
 
 - `StairRouting` + `FloorRegistry`, roteamento por Active Floor Position (não índice fixo) — validado inclusive sob reordenação de Floors.
