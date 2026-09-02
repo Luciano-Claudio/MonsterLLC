@@ -2,6 +2,13 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 08 — MeleeEnemyPrototype + Death Flow (fase 1)
+
+- `HealthSystem` (lógica pura, testada) + `MeleeEnemyPrototype` (primeiro inimigo real: persegue, ataca, recebe dano, morre).
+- Barbarian passa a causar dano real; `HeroController` ganha Death Flow fase 1 completo (GDD Seção 11) — morre, zera Energia, respawna no térreo com HP cheio.
+- Integrado o asset **Easy Transitions** — respawn agora usa fade de tela (`Fade.asset`, definido como estilo padrão no GDD Seção 47), teleporte escondido durante a transição.
+- **Encerra a Deadline 2 (Floor + Combat Testbed).**
+
 ## Sprint 07 — Hero Framework + Barbarian
 
 - `EnergySystem` (lógica pura, testada) + `HeroController`/`HeroStats` (framework reutilizável de herói) + `Barbarian` (primeiro herói jogável: movimento, ataque direcional, ultimate em rajada).
