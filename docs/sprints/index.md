@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 08 — MeleeEnemyPrototype + Death Flow (fase 1)](sprint-08.md) — **fecha a Deadline 2**
 - [Sprint 07 — Hero Framework + Barbarian](sprint-07.md)
 - [Sprint 06 — Stair Routing + Active Floor Position](sprint-06.md)
 - [Sprint 05 — Floor System Skeleton](sprint-05.md)
