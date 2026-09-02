@@ -2,6 +2,13 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 09 — Main Menu + Run Creation Flow + Loot Básico
+
+- `GameStateManager` ganha o enum completo de estados (Menu/Select/Gameplay/Results/Shop/GameOver) de uma vez.
+- `MainMenuUI` (`New Game`/`Continue Game`) cria um `RunState` real via `RunCreation`, ou carrega um save existente.
+- Primeiro loot do jogo: Monster Essence dropa do inimigo e é coletada automaticamente via Pickup Radius (`LootDrop`).
+- **Inicia a Deadline 3 (Primeiro Vertical Slice).**
+
 ## Sprint 08 — MeleeEnemyPrototype + Death Flow (fase 1)
 
 - `HealthSystem` (lógica pura, testada) + `MeleeEnemyPrototype` (primeiro inimigo real: persegue, ataca, recebe dano, morre).
