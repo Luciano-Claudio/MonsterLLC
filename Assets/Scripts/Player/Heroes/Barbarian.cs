@@ -6,16 +6,24 @@ public class Barbarian : HeroController
     public int ultimateBurstCount = 8;
     public float ultimateBurstRadius = 3f;
 
+    private Vector2 AttackCenter => (Vector2)transform.position + AimDirection * attackRadius;
+
     protected override void PrimaryAttack()
     {
         Debug.Log("[Barbarian] Golpe frontal em área.");
-        Vector2 attackCenter = (Vector2)transform.position + AimDirection * attackRadius;
-        Collider2D[] hits = Physics2D.OverlapCircleAll(attackCenter, attackRadius);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(AttackCenter, attackRadius);
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Enemy"))
-                Debug.Log($"[Barbarian] Atingiu {hit.name} (dano placeholder: {stats.damage})");
+            if (!hit.CompareTag("Enemy")) continue;
+            var enemy = hit.GetComponent<MeleeEnemyPrototype>();
+            if (enemy != null) enemy.TakeDamage(stats.damage);
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(AttackCenter, attackRadius);
     }
 
     protected override void UseUltimate()

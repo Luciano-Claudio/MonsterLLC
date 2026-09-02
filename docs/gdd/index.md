@@ -1208,6 +1208,8 @@ A escolha entre as 3 opções de recompensa de baú/pergaminho (Seção 30–31)
 
 Dano causado, crítico, Ultimate pronta, Ultimate sem energia suficiente, dano recebido, morte, coleta, venda, **demanda cumprida (Modo Padrão apenas — Seção 42)**, aparição de boss, Mimic revelado, baú abrindo, upgrade de arma comprado, promoção de employee, inventário cheio, item descartado, dinheiro aumentando, grandes quantidades, Controle em cooldown, interação disponível, telegraph de trap, Floor atual (troca de Global Light — Seção 24), Continue Game indisponível quando não há save (Seção 52), mapa selecionado na criação da run. 🟡 Estética exata não definida — só a necessidade funcional.
 
+**Transições de tela (decisão técnica, Sprint 8):** implementadas via o asset Easy Transitions (`Assets/EasyTransitions/`). O estilo padrão adotado é **Fade** (`Assets/EasyTransitions/Transitions/Fade/Fade.asset`) — usar Fade por padrão em qualquer transição nova, salvo decisão explícita em contrário. Primeiro uso: respawn do herói após a morte (teleporte ocorre escondido, no `onTransitionCutPointReached`, nunca visível ao jogador).
+
 ---
 
 ## 48. Números Grandes
