@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 32544150}
   - component: {fileID: 32544149}
   - component: {fileID: 32544148}
+  - component: {fileID: 32544153}
   m_Layer: 0
   m_Name: Tests
   m_TagString: Untagged
@@ -232,6 +233,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Core::TestTimer
   timeRemaining: 100
+--- !u!114 &32544153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 32544146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dee05b546e934dd78980a53e3b06f106, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyKillSimulator
+  energyPerKill: 20
 --- !u!1 &40895279
 GameObject:
   m_ObjectHideFlags: 0
@@ -1847,10 +1861,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 985211976}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dee05b546e934dd78980a53e3b06f106, type: 3}
+  m_Script: {fileID: 11500000, guid: 76aca4ea212b47cea46f8da350880f14, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyKillSimulator
-  energyPerKill: 20
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuUI
 --- !u!1 &1079011994
 GameObject:
   m_ObjectHideFlags: 0
