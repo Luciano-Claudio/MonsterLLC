@@ -55,6 +55,12 @@ public class MeleeEnemyPrototype : MonoBehaviour
     {
         Debug.Log("[MeleeEnemyPrototype] Morreu.");
         GameEvents.EnemyKilled(energyReward);
+
+        var lootObj = new GameObject("Loot_MonsterEssence");
+        lootObj.transform.position = transform.position;
+        var drop = lootObj.AddComponent<LootDrop>();
+        drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = 1 };
+
         Destroy(gameObject);
     }
 }

@@ -17,6 +17,9 @@ public static class GameEvents
     public static event Action<FloorDefinition> OnFloorChanged;
     public static void FloorChanged(FloorDefinition floor) => OnFloorChanged?.Invoke(floor);
 
+    public static event Action<LootDefinition> OnLootCollected;
+    public static void LootCollected(LootDefinition loot) => OnLootCollected?.Invoke(loot);
+
     // anchor == null significa "esconder o prompt".
     public static event Action<Transform> OnInteractPromptChanged;
     public static void InteractPromptChanged(Transform anchor) => OnInteractPromptChanged?.Invoke(anchor);
