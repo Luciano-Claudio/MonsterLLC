@@ -11,6 +11,9 @@ public static class GameEvents
     public static event Action<float, float> OnEnergyChanged;
     public static void EnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
 
+    public static event Action<float, float> OnHealthChanged;
+    public static void HealthChanged(float current, float max) => OnHealthChanged?.Invoke(current, max);
+
     public static event Action<FloorDefinition> OnFloorChanged;
     public static void FloorChanged(FloorDefinition floor) => OnFloorChanged?.Invoke(floor);
 
