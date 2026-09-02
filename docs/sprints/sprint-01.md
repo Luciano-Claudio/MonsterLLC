@@ -38,8 +38,9 @@ Nenhum em aberto no código — o bug do GitHub Pages (`dir_chdir0`) foi contorn
 ## Dívida técnica
 
 - **S1-T05** (`.gitignore` "definitivo" como task formal) nunca rodou como branch/commit dedicado — o `.gitignore` do bootstrap inicial já cobria o essencial e foi considerado suficiente na prática.
-- **S1-T07** (proteção de branch `main` no GitHub) confirmado via API: **`protected: false`, ainda não configurado.** Vira o primeiro item real da Sprint 4.
 - A infraestrutura de Sprint Reports (`docs/sprints/`, este arquivo) só foi criada retroativamente, depois da Sprint 3 já estar pronta — não durante a própria Sprint 1 como o plano original previa (S1-T08/S1-T14).
+
+**Resolvido nesta atualização (2026-09-02, entre as Sprints 8 e 9):** **S1-T07** (proteção de branch `main`) ficou pendente por 4 sprints além do prazo que a Sprint 1 original tinha marcado ("primeiro item real da Sprint 4") — nenhuma sprint entre a 4 e a 8 tocou o assunto. Cobrado explicitamente antes da Sprint 9 e resolvido via **Ruleset** do GitHub (não o "Branch protection rules" clássico), com as regras `deletion` e `non_fast_forward` bloqueadas — sem exigir Pull Request, preservando o fluxo real de merge local (`git merge --no-ff` + push) documentado no Git Workflow Guide. Na primeira tentativa, o ruleset foi criado sem nenhum branch de destino (`Target branches` vazio), o que o deixava sem efeito algum apesar de aparecer como "active" — corrigido apontando o target para `~DEFAULT_BRANCH`, confirmado via `GET /repos/.../rules/branches/main` mostrando as duas regras realmente aplicadas.
 
 ## Próximos passos
 
