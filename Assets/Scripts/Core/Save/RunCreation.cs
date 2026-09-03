@@ -8,7 +8,8 @@ public static class RunCreation
             hero = hero,
             map = map,
             day = 1,
-            gold = 0
+            gold = 0,
+            weaponTier = "Basic"
         };
     }
 }
