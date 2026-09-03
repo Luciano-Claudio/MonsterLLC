@@ -2,6 +2,15 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 11 — Demanda + Results + Shop Skeleton + Game Over Funcional
+
+- `DemandCalculator`/`DemandTracker` — demanda diária real (`40 × 2^(Dia-1)`, GDD Seção 39), rastreando vendas de Monster Essence.
+- `DayTimer` (100s, penalidade real de -30s na morte) + `DayResolver` (fim de dia: destrói loot da Bag, valida demanda, decide Results ou Game Over).
+- `GameOverHandler`/`ResultsHandler`/`ShopHandler`, reagindo ao novo `GameEvents.OnGameStateChanged`; `ShopHandler.StartNextDay()` avança o dia.
+- Death Flow (Sprint 8) ganha as duas peças que faltavam: Bag destruída e -30s reais. Bug de reentrância corrigido em `HeroController.OnDeath()` (guarda `isDead`).
+- HUD ganha `TimeIndicatorUI`/`DemandIndicatorUI`.
+- `GameEvents.OnLootCollected` (morto desde a Sprint 10) removido.
+
 ## Sprint 10 — Inventory + Vendor + Gold
 
 - `Bag`/`InventorySlot` (lógica pura, testada) — 5 slots, stack 16, pickup parcial (GDD Seção 37).
