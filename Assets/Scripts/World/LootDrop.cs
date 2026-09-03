@@ -18,8 +18,18 @@ public class LootDrop : MonoBehaviour
 
     private void Collect()
     {
-        Debug.Log($"[LootDrop] Coletado: {loot.quantity}x {loot.itemName}");
-        GameEvents.LootCollected(loot);
+        int added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
+
+        if (added > 0)
+            Debug.Log($"[LootDrop] Coletado: {added}x {loot.itemName}");
+
+        if (added < loot.quantity)
+        {
+            loot.quantity -= added;
+            Debug.Log($"[LootDrop] Bag cheia — {loot.quantity}x {loot.itemName} continuam no chão.");
+            return; // não destrói — a pilha remanescente continua existindo, com a quantidade reduzida
+        }
+
         Destroy(gameObject);
     }
 }
