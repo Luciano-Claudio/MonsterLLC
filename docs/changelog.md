@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 13 — Enemy Framework Genérico
+
+- `EnemyController` (base abstrata) + `MeleeEnemyController`/`RangedEnemyController` — timing de ataque real (Telegraph → Hitbox Ativa → Recovery, GDD Seção 22), substituindo o `MeleeEnemyPrototype` hard-coded desde a Sprint 8.
+- `EnemyProjectile` — primeiro projétil de inimigo do projeto.
+- `GameplayGate` — gating combinado de pausa + `GameState`, fecha a dívida das Sprints 11/12 ("nada parava fora de `Gameplay`").
+- Corrigidos dois bugs reais encontrados em revisão: `EnemyController.Die()` não soltava loot, e `Barbarian.PrimaryAttack()` ainda referenciava `MeleeEnemyPrototype` diretamente.
+- **Inicia a Deadline 4 (Enemy Framework + Floor Sleep v1).**
+
 ## Sprint 12 — Save Real + Continue Game + Ciclo de Dia Completo
 
 - `SaveManager.Save()` passa a ser chamado de verdade, no `ResultsHandler` (transição Results→Shop, fim de dia bem sucedido — GDD Seção 43).
