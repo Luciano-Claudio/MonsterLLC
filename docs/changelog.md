@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 10 — Inventory + Vendor + Gold
+
+- `Bag`/`InventorySlot` (lógica pura, testada) — 5 slots, stack 16, pickup parcial (GDD Seção 37).
+- `BagController` liga a Bag ao TAB (abre/fecha + pausa/resume); `LootDrop.Collect()` guarda de verdade em vez de logar.
+- `Vendor`, primeiro NPC vendedor do jogo — troca Monster Essence por Gold via `Interactable` (Sprint 6).
+- HUD ganha `GoldIndicatorUI`/`BagIndicatorUI`.
+- `GameEvents` ganha `OnBagChanged`/`BagChanged` e `OnGoldChanged`/`GoldChanged` (em `long`, para casar com `RunState.gold`).
+
 ## Sprint 09 — Main Menu + Run Creation Flow + Loot Básico
 
 - `GameStateManager` ganha o enum completo de estados (Menu/Select/Gameplay/Results/Shop/GameOver) de uma vez.
