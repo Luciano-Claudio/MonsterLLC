@@ -7,6 +7,7 @@ public abstract class HeroController : MonoBehaviour
     public TransitionSettings respawnTransition;
     protected PlayerControls controls;
     private Vector2 moveInput;
+    private bool isDead;
 
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
@@ -77,28 +78,39 @@ public abstract class HeroController : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        // Guarda contra reentrância: sem isso, dois hits antes do respawn terminar
+        // disparam OnDeath() duas vezes (penalidade de -30s duplicada, PlayTransition
+        // duplicado — o EasyTransition não suporta duas transições concorrentes).
+        if (isDead) return;
+
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
 
         if (HealthSystem.IsDead(stats.health)) OnDeath();
     }
 
-    // GDD Seção 11 — "Morte: ordem de eventos". Fase 1 (Sprint 8): loot e Day Timer
-    // ainda não existem no projeto, ficam como placeholder até as Deadlines que os criam.
+    // GDD Seção 11 — "Morte: ordem de eventos".
     private void OnDeath()
     {
+        isDead = true;
         Debug.Log("[HeroController] Morreu.");
 
         // 1. Cancela estados temporários — nenhum existe ainda (hook pra ultimates com duração/transformações)
-        // 2. Destrói loot carregado — sem inventário ainda (hook pra Deadline 3)
+
+        // 2. Destrói loot carregado
+        BagController.Instance.Bag.Clear();
+        GameEvents.BagChanged(BagController.Instance.Bag);
+
         // 3. Zera Energia da Ultimate
         stats.energy = 0f;
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
 
-        // 4. Penalidade de -30s no timer do dia — sem Day Timer ainda, só o log por enquanto
-        Debug.Log("[HeroController] Penalidade de -30s no timer do dia (placeholder — Day Timer ainda não existe).");
+        // 4. Penalidade de -30s no timer do dia
+        DayTimer.Instance.ApplyPenalty(30f);
 
-        // 5. Respawn no térreo com HP cheio
+        // 5. Respawn no térreo com HP cheio — sempre, mesmo se a penalidade acima
+        // tiver zerado o dia (DayResolver já resolveu Results/Game Over em paralelo;
+        // o herói precisa terminar com HP/posição sãos para o próximo dia de qualquer forma).
         Respawn();
     }
 
@@ -117,6 +129,7 @@ public abstract class HeroController : MonoBehaviour
 
             stats.health = stats.maxHealth;
             GameEvents.HealthChanged(stats.health, stats.maxHealth);
+            isDead = false;
             Debug.Log("[HeroController] Respawn no térreo com HP cheio.");
         });
     }

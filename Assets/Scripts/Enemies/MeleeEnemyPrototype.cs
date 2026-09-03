@@ -4,6 +4,7 @@ public class MeleeEnemyPrototype : MonoBehaviour
 {
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20; // quanto de Energia concede ao matar (GDD Seção 11, 🔢 valor real pendente)
+    public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
 
     private Transform player;
     private float lastAttackTime = -999f;
@@ -59,7 +60,7 @@ public class MeleeEnemyPrototype : MonoBehaviour
         var lootObj = new GameObject("Loot_MonsterEssence");
         lootObj.transform.position = transform.position;
         var drop = lootObj.AddComponent<LootDrop>();
-        drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = 1 };
+        drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = monsterEssenceDropAmount };
 
         Destroy(gameObject);
     }

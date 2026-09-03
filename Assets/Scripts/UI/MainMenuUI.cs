@@ -23,6 +23,9 @@ public class MainMenuUI : MonoBehaviour
         GameEvents.GoldChanged(CurrentRun.gold);
         GameEvents.BagChanged(BagController.Instance.Bag);
 
+        DayTimer.Instance.ResetForNewDay(100f);
+        DemandTracker.Instance.StartDay(CurrentRun.day);
+
         GameStateManager.Instance.SetState(GameState.Gameplay);
     }
 

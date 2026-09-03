@@ -24,6 +24,7 @@ public class Vendor : Interactable
 
         int goldEarned = totalSold * pricePerEssence;
         MainMenuUI.CurrentRun.gold += goldEarned;
+        DemandTracker.Instance.RegisterSale("Monster Essence", totalSold);
 
         Debug.Log($"[Vendor] Vendeu {totalSold}x Monster Essence por {goldEarned} gold. Total: {MainMenuUI.CurrentRun.gold}");
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
