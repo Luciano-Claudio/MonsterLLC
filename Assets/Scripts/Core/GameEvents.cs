@@ -17,9 +17,6 @@ public static class GameEvents
     public static event Action<FloorDefinition> OnFloorChanged;
     public static void FloorChanged(FloorDefinition floor) => OnFloorChanged?.Invoke(floor);
 
-    public static event Action<LootDefinition> OnLootCollected;
-    public static void LootCollected(LootDefinition loot) => OnLootCollected?.Invoke(loot);
-
     public static event Action<Bag> OnBagChanged;
     public static void BagChanged(Bag bag) => OnBagChanged?.Invoke(bag);
 
@@ -30,6 +27,15 @@ public static class GameEvents
     // anchor == null significa "esconder o prompt".
     public static event Action<Transform> OnInteractPromptChanged;
     public static void InteractPromptChanged(Transform anchor) => OnInteractPromptChanged?.Invoke(anchor);
+
+    public static event Action<float> OnTimeChanged;
+    public static void TimeChanged(float time) => OnTimeChanged?.Invoke(time);
+
+    public static event Action<int, int> OnDemandChanged;
+    public static void DemandChanged(int sold, int target) => OnDemandChanged?.Invoke(sold, target);
+
+    public static event Action<GameState> OnGameStateChanged;
+    public static void GameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
 
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.
