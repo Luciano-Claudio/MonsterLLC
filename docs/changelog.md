@@ -2,6 +2,13 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 12 — Save Real + Continue Game + Ciclo de Dia Completo
+
+- `SaveManager.Save()` passa a ser chamado de verdade, no `ResultsHandler` (transição Results→Shop, fim de dia bem sucedido — GDD Seção 43).
+- `MainMenuUI.ContinueGame()` corrigido: abre a Loja do checkpoint (`GameState.Shop`), não o Gameplay direto.
+- `RunState.weaponTier` (stub) + `ShopHandler.BuyNextTier()` — primeira compra real que sobrevive ao Save/Load.
+- **Fecha a Deadline 3 (Primeiro Vertical Slice).**
+
 ## Sprint 11 — Demanda + Results + Shop Skeleton + Game Over Funcional
 
 - `DemandCalculator`/`DemandTracker` — demanda diária real (`40 × 2^(Dia-1)`, GDD Seção 39), rastreando vendas de Monster Essence.

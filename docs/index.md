@@ -6,7 +6,7 @@
 
 Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 andares fixos, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
 
-**Estado atual:** Em desenvolvimento — Sprint 11 concluída (Deadline 3 em andamento)
+**Estado atual:** Em desenvolvimento — Sprint 12 concluída (Deadline 3 encerrada)
 
 ---
 
@@ -28,6 +28,7 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 <!-- Adicionar aqui o link de cada nova Sprint conforme for detalhada, mantendo a mais recente no topo. -->
 
+- [Sprint 12 — Save Real + Continue Game + Ciclo de Dia Completo](sprint-12.md)
 - [Sprint 11 — Demanda + Results + Shop Skeleton + Game Over Funcional](sprint-11.md)
 - [Sprint 10 — Inventory + Vendor + Gold](sprint-10.md)
 - [Sprint 09 — Main Menu + Run Creation Flow + Loot Básico](sprint-09.md)
