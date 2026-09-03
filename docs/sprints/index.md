@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 15 — Floor Sleep/Activation v1](sprint-15.md)
 - [Sprint 14 — Attack Budget + Population Skeleton](sprint-14.md)
 - [Sprint 13 — Enemy Framework Genérico](sprint-13.md) — **inicia a Deadline 4**
 - [Sprint 12 — Save Real + Continue Game + Ciclo de Dia Completo](sprint-12.md) — **fecha a Deadline 3**

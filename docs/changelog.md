@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 15 — Floor Sleep/Activation v1
+
+- `FloorActivationCheck` — Floor existir ≠ Floor simular (GDD Seção 24): `EnemyController`/`FloorPopulationManager` param de processar `Update()` fora do Floor atual, estado congela sem reset.
+- `PopulationManager_Floor2` — segunda população independente, validando o gating com múltiplos Floors simultâneos.
+- Corrigido bug real: `AttackBudgetManager` era um pool global único desde a Sprint 14 — GDD Seção 24 exige budget por Floor. Reescrito pra manter um tracker por Floor.
+- Corrigido bug real: `EnemyProjectile` não respeitava Floor Sleep (projétil em voo continuava se movendo fora do Floor congelado).
+- Peça de maior risco técnico do projeto, validada em v1 com 3 Floors — escala real é a Sprint 32 (Deadline 8).
+
 ## Sprint 14 — Attack Budget + Population Skeleton
 
 - `AttackBudgetTracker`/`AttackBudgetManager` — budgets Melee/Ranged separados e independentes (GDD Seção 14), reservados/liberados a cada ciclo de ataque do `EnemyController`.
