@@ -18,8 +18,8 @@ public abstract class HeroController : MonoBehaviour
         controls.Gameplay.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Gameplay.Move.canceled += ctx => moveInput = Vector2.zero;
         controls.Gameplay.Look.performed += ctx => UpdateAimDirection(ctx.ReadValue<Vector2>());
-        controls.Gameplay.Attack.performed += ctx => { if (!IsPaused()) PrimaryAttack(); };
-        controls.Gameplay.Ultimate.performed += ctx => { if (!IsPaused()) TryUseUltimate(); };
+        controls.Gameplay.Attack.performed += ctx => { if (GameplayGate.IsActive) PrimaryAttack(); };
+        controls.Gameplay.Ultimate.performed += ctx => { if (GameplayGate.IsActive) TryUseUltimate(); };
     }
 
     protected virtual void Start()
@@ -42,11 +42,9 @@ public abstract class HeroController : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (IsPaused()) return;
+        if (!GameplayGate.IsActive) return;
         transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
     }
-
-    protected bool IsPaused() => TimeManager.Instance != null && TimeManager.Instance.IsPaused;
 
     private void UpdateAimDirection(Vector2 screenPosition)
     {
