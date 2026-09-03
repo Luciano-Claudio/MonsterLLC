@@ -19,6 +19,10 @@ public class MainMenuUI : MonoBehaviour
         CurrentRun = RunCreation.CreateNewRun("Standard", "Barbarian", "Tower");
         Debug.Log($"[MainMenu] RunState criado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}");
 
+        BagController.Instance.Bag.Clear();
+        GameEvents.GoldChanged(CurrentRun.gold);
+        GameEvents.BagChanged(BagController.Instance.Bag);
+
         GameStateManager.Instance.SetState(GameState.Gameplay);
     }
 
@@ -33,6 +37,11 @@ public class MainMenuUI : MonoBehaviour
 
         CurrentRun = SaveManager.Load();
         Debug.Log($"[MainMenu] Save carregado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}, Hero {CurrentRun.hero}");
+
+        BagController.Instance.Bag.Clear();
+        GameEvents.GoldChanged(CurrentRun.gold);
+        GameEvents.BagChanged(BagController.Instance.Bag);
+
         GameStateManager.Instance.SetState(GameState.Gameplay);
     }
 }
