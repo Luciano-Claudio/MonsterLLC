@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class MeleeEnemyController : EnemyController
 {
+    protected override AttackType AttackType => AttackType.Melee;
+
     protected override void Move()
     {
         Vector2 direction = (player.position - transform.position).normalized;

@@ -5,6 +5,8 @@ public class RangedEnemyController : EnemyController
     public float projectileSpeed = 6f;
     public GameObject projectilePrefab;
 
+    protected override AttackType AttackType => AttackType.Ranged;
+
     protected override void Move()
     {
         Vector2 toPlayer = player.position - transform.position;

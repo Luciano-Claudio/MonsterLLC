@@ -40,10 +40,12 @@ public abstract class EnemyController : MonoBehaviour
 
     protected abstract void Move();
     protected abstract void ExecuteHit(); // dano de verdade acontece aqui — no instante certo do timing, não no início do ataque
+    protected abstract AttackType AttackType { get; }
 
     private void TryStartAttack()
     {
         if (Time.time - lastAttackTime < stats.attackCooldown) return;
+        if (!AttackBudgetManager.Instance.TryReserveSlot(AttackType)) return; // sem slot — fica esperando, tenta de novo no próximo frame
         lastAttackTime = Time.time;
         attackState = AttackState.Telegraph;
         attackStateTimer = 0f;
@@ -75,7 +77,10 @@ public abstract class EnemyController : MonoBehaviour
 
             case AttackState.Recovery:
                 if (attackStateTimer >= attackTiming.recoveryDuration)
+                {
                     attackState = AttackState.Idle;
+                    AttackBudgetManager.Instance.ReleaseSlot(AttackType);
+                }
                 break;
         }
     }
@@ -92,6 +97,11 @@ public abstract class EnemyController : MonoBehaviour
     {
         isDead = true;
         Debug.Log($"[{GetType().Name}] Morreu.");
+
+        // Morreu no meio do próprio ataque (Telegraph/Active/Recovery) — sem isso o
+        // slot do AttackBudgetManager nunca seria liberado (vazamento permanente).
+        if (attackState != AttackState.Idle) AttackBudgetManager.Instance.ReleaseSlot(AttackType);
+
         GameEvents.EnemyKilled(energyReward);
 
         var lootObj = new GameObject("Loot_MonsterEssence");
