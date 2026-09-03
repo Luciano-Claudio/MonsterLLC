@@ -9,7 +9,8 @@ public class SystemsBootstrap : MonoBehaviour
         ProgressTracker.Init();
         controls = new PlayerControls();
 
-        controls.Gameplay.Inventory.performed += ctx => TimeManager.Instance.TogglePause();
+        // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
+        // agora tem dono de verdade (BagController), que já pausa/despausa sozinho.
         controls.Gameplay.RemoteControl.performed += ctx => TimeManager.Instance.TogglePause();
         // Interact (E) deixou de ser placeholder de EnemyKilled na Sprint 6 —
         // agora aciona interações reais via InteractionManager (escadas, baús no futuro).

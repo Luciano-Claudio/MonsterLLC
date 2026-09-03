@@ -20,6 +20,13 @@ public static class GameEvents
     public static event Action<LootDefinition> OnLootCollected;
     public static void LootCollected(LootDefinition loot) => OnLootCollected?.Invoke(loot);
 
+    public static event Action<Bag> OnBagChanged;
+    public static void BagChanged(Bag bag) => OnBagChanged?.Invoke(bag);
+
+    // long, não int — Gold usa o mesmo tipo de RunState.gold (Sprint 4), sem teto de ~2,1bi.
+    public static event Action<long> OnGoldChanged;
+    public static void GoldChanged(long gold) => OnGoldChanged?.Invoke(gold);
+
     // anchor == null significa "esconder o prompt".
     public static event Action<Transform> OnInteractPromptChanged;
     public static void InteractPromptChanged(Transform anchor) => OnInteractPromptChanged?.Invoke(anchor);
