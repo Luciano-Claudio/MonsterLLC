@@ -8,6 +8,7 @@ public class FloorPopulationManager : MonoBehaviour
     public GameObject rangedPrefab;
     public Transform[] spawnPoints;
     public float respawnInterval = 3f; // 🔢 GDD — frequência de reposição, placeholder
+    public FloorDefinition ownerFloor;
 
     private List<GameObject> aliveEnemies = new();
     private float respawnTimer;
@@ -15,6 +16,7 @@ public class FloorPopulationManager : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
+        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
 
         aliveEnemies.RemoveAll(e => e == null); // remove os que já morreram
 
@@ -36,6 +38,14 @@ public class FloorPopulationManager : MonoBehaviour
         var prefab = Random.value < 0.5f ? meleePrefab : rangedPrefab;
         if (prefab == null) return;
 
-        aliveEnemies.Add(Instantiate(prefab, point.position, Quaternion.identity));
+        // Desvio aleatório em torno do spawnPoint — sem isso, inimigos parados (fora do
+        // observationRadius, nunca se movendo) ficam empilhados exatamente no mesmo ponto,
+        // já que o Rigidbody2D só separa corpos que estão de fato se movendo.
+        Vector3 offset = new Vector3(Random.Range(0f, 2f), Random.Range(0f, 2f), 0f);
+        var enemyObj = Instantiate(prefab, point.position + offset, Quaternion.identity);
+        var enemyController = enemyObj.GetComponent<EnemyController>();
+        if (enemyController != null) enemyController.ownerFloor = ownerFloor;
+
+        aliveEnemies.Add(enemyObj);
     }
 }

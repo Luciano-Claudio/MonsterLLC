@@ -30,5 +30,6 @@ public class RangedEnemyController : EnemyController
         proj.direction = (player.position - transform.position).normalized;
         proj.speed = projectileSpeed;
         proj.damage = stats.damage;
+        proj.ownerFloor = ownerFloor;
     }
 }

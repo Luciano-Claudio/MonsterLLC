@@ -6,12 +6,14 @@ public class EnemyProjectile : MonoBehaviour
     public float speed = 6f;
     public float damage = 5f;
     public float lifetime = 3f;
+    public FloorDefinition ownerFloor;
 
     private float timer;
 
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
+        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
 
         transform.Translate(direction * speed * Time.deltaTime);
         timer += Time.deltaTime;
