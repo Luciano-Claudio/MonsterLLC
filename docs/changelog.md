@@ -2,6 +2,13 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 14 — Attack Budget + Population Skeleton
+
+- `AttackBudgetTracker`/`AttackBudgetManager` — budgets Melee/Ranged separados e independentes (GDD Seção 14), reservados/liberados a cada ciclo de ataque do `EnemyController`.
+- `FloorPopulationManager`/`PopulationConfig` — inimigos nascem sozinhos e gradualmente, respeitando `minimum`/`target`/`maximum`.
+- Primeiros prefabs de inimigo do projeto (`Enemy_Test`/`Enemy_Test_Ranged`), com `Rigidbody2D` — resolve inimigos empilhando uns sobre os outros.
+- Corrigido bug real: `Die()` não liberava o slot do budget se o inimigo morresse em pleno ataque (vazamento permanente).
+
 ## Sprint 13 — Enemy Framework Genérico
 
 - `EnemyController` (base abstrata) + `MeleeEnemyController`/`RangedEnemyController` — timing de ataque real (Telegraph → Hitbox Ativa → Recovery, GDD Seção 22), substituindo o `MeleeEnemyPrototype` hard-coded desde a Sprint 8.
