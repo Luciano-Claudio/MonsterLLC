@@ -39,12 +39,14 @@ public class MainMenuUI : MonoBehaviour
         }
 
         CurrentRun = SaveManager.Load();
-        Debug.Log($"[MainMenu] Save carregado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}, Hero {CurrentRun.hero}");
+        Debug.Log($"[MainMenu] Save carregado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}, Hero {CurrentRun.hero}, Weapon {CurrentRun.weaponTier}");
 
-        BagController.Instance.Bag.Clear();
+        BagController.Instance.Bag.Clear(); // Bag é Daily — nunca persiste no save, nem no Continue
         GameEvents.GoldChanged(CurrentRun.gold);
         GameEvents.BagChanged(BagController.Instance.Bag);
 
-        GameStateManager.Instance.SetState(GameState.Gameplay);
+        // GDD Seção 8/43: o checkpoint é a Loja que precede o próximo dia — Continue Game
+        // abre essa Loja, não o Gameplay direto. Não chama SaveManager.Save() — só carrega.
+        GameStateManager.Instance.SetState(GameState.Shop);
     }
 }
