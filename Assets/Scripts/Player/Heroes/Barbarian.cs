@@ -15,7 +15,7 @@ public class Barbarian : HeroController
         foreach (var hit in hits)
         {
             if (!hit.CompareTag("Enemy")) continue;
-            var enemy = hit.GetComponent<MeleeEnemyPrototype>();
+            var enemy = hit.GetComponent<EnemyController>();
             if (enemy != null) enemy.TakeDamage(stats.damage);
         }
     }
