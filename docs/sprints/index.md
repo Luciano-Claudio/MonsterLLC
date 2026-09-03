@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 12 — Save Real + Continue Game + Ciclo de Dia Completo](sprint-12.md) — **fecha a Deadline 3**
 - [Sprint 11 — Demanda + Results + Shop Skeleton + Game Over Funcional](sprint-11.md)
 - [Sprint 10 — Inventory + Vendor + Gold](sprint-10.md)
 - [Sprint 09 — Main Menu + Run Creation Flow + Loot Básico](sprint-09.md) — **inicia a Deadline 3**
