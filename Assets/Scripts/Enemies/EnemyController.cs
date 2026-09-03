@@ -6,6 +6,7 @@ public abstract class EnemyController : MonoBehaviour
     public AttackTiming attackTiming = new AttackTiming();
     public int energyReward = 20;
     public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
+    public FloorDefinition ownerFloor;
 
     protected Transform player;
     private float lastAttackTime = -999f;
@@ -24,6 +25,7 @@ public abstract class EnemyController : MonoBehaviour
     protected virtual void Update()
     {
         if (!GameplayGate.IsActive) return;
+        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
         if (isDead || player == null) return;
 
         if (attackState != AttackState.Idle)
@@ -45,7 +47,7 @@ public abstract class EnemyController : MonoBehaviour
     private void TryStartAttack()
     {
         if (Time.time - lastAttackTime < stats.attackCooldown) return;
-        if (!AttackBudgetManager.Instance.TryReserveSlot(AttackType)) return; // sem slot — fica esperando, tenta de novo no próximo frame
+        if (!AttackBudgetManager.Instance.TryReserveSlot(ownerFloor, AttackType)) return; // sem slot — fica esperando, tenta de novo no próximo frame
         lastAttackTime = Time.time;
         attackState = AttackState.Telegraph;
         attackStateTimer = 0f;
@@ -79,7 +81,7 @@ public abstract class EnemyController : MonoBehaviour
                 if (attackStateTimer >= attackTiming.recoveryDuration)
                 {
                     attackState = AttackState.Idle;
-                    AttackBudgetManager.Instance.ReleaseSlot(AttackType);
+                    AttackBudgetManager.Instance.ReleaseSlot(ownerFloor, AttackType);
                 }
                 break;
         }
@@ -100,7 +102,7 @@ public abstract class EnemyController : MonoBehaviour
 
         // Morreu no meio do próprio ataque (Telegraph/Active/Recovery) — sem isso o
         // slot do AttackBudgetManager nunca seria liberado (vazamento permanente).
-        if (attackState != AttackState.Idle) AttackBudgetManager.Instance.ReleaseSlot(AttackType);
+        if (attackState != AttackState.Idle) AttackBudgetManager.Instance.ReleaseSlot(ownerFloor, AttackType);
 
         GameEvents.EnemyKilled(energyReward);
 

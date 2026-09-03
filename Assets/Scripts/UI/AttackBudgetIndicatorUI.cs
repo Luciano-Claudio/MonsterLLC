@@ -7,8 +7,10 @@ public class AttackBudgetIndicatorUI : MonoBehaviour
 
     private void Update()
     {
-        if (AttackBudgetManager.Instance == null) return;
-        label.text = $"Melee: {AttackBudgetManager.Instance.MeleeInUse}/{AttackBudgetManager.Instance.meleeBudget} | " +
-                      $"Ranged: {AttackBudgetManager.Instance.RangedInUse}/{AttackBudgetManager.Instance.rangedBudget}";
+        if (AttackBudgetManager.Instance == null || FloorManager.Instance == null) return;
+
+        var floor = FloorManager.Instance.CurrentFloor;
+        label.text = $"Melee: {AttackBudgetManager.Instance.MeleeInUse(floor)}/{AttackBudgetManager.Instance.meleeBudget} | " +
+                      $"Ranged: {AttackBudgetManager.Instance.RangedInUse(floor)}/{AttackBudgetManager.Instance.rangedBudget}";
     }
 }
