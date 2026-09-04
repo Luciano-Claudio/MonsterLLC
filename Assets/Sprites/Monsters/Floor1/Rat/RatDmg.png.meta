@@ -1,0 +1,613 @@
+fileFormatVersion: 2
+guid: 96f8d78982a858b46972139a4b594c87
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4227181996801525734
+    second: RatDmg_0
+  - first:
+      213: -3557866104213643875
+    second: RatDmg_1
+  - first:
+      213: 9014580181522209990
+    second: RatDmg_2
+  - first:
+      213: -6725690813718183980
+    second: RatDmg_3
+  - first:
+      213: 3530845160901145365
+    second: RatDmg_4
+  - first:
+      213: 5550547218224014845
+    second: RatDmg_5
+  - first:
+      213: 772319884871112853
+    second: RatDmg_6
+  - first:
+      213: 1647300793786180214
+    second: RatDmg_7
+  - first:
+      213: -1506835285387640293
+    second: RatDmg_8
+  - first:
+      213: -594139140599412417
+    second: RatDmg_9
+  - first:
+      213: 6039797903882132939
+    second: RatDmg_10
+  - first:
+      213: -6409049428701124373
+    second: RatDmg_11
+  - first:
+      213: 428867602004049125
+    second: RatDmg_12
+  - first:
+      213: 1640545595991010435
+    second: RatDmg_13
+  - first:
+      213: 3692776088463759145
+    second: RatDmg_14
+  - first:
+      213: 3431717071955587863
+    second: RatDmg_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 8
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 16384
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RatDmg_4
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5137b6477f4100130800000000000000
+      internalID: 3530845160901145365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_6
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59896b6e7d4d7ba00800000000000000
+      internalID: 772319884871112853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_8
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b12027f9a45a61be0800000000000000
+      internalID: -1506835285387640293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_9
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f398a69799131c7f0800000000000000
+      internalID: -594139140599412417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_25
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4123dbce3a42a804eaaa692f1bac3270
+      internalID: -18032032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_27
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae76228fa29240142be8d542344ea692
+      internalID: -1033601391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_29
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2841b5a8a2f0d88448f570e8ef28c12c
+      internalID: 547153434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_30
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 639650f677e4c0b4883a1372bc8d36d4
+      internalID: -160254894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_44
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e8b3604e36f8728459fcc7c8c36a7aee
+      internalID: 330233672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_46
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a7354cdde331d9a46ae1b5a04b68caf8
+      internalID: 822023750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_48
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a49f23966e8013408a530e370fb2f69
+      internalID: 225122693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_49
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfa893514e19c9e449608c6debf5d112
+      internalID: -1898517166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_59
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec196b6e0f4938f46a85b0a0642bf6eb
+      internalID: -1858079218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_61
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00f83ccd28003b34089557b3c67c0674
+      internalID: -448447938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_63
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08f96a1a04c153c46a712e4ea519c9d7
+      internalID: -839276940
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatDmg_64
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 204d4689ac7434a4ba1082ffa97c2426
+      internalID: -818280987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: c8d78d4bf5fbcd74bb3953674895919d
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":8.0},"gridSpriteOffset":{"x":8.0,"y":3.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      RatDmg_0: -4227181996801525734
+      RatDmg_1: -3557866104213643875
+      RatDmg_10: 6039797903882132939
+      RatDmg_11: -6409049428701124373
+      RatDmg_12: 428867602004049125
+      RatDmg_13: 1640545595991010435
+      RatDmg_14: 3692776088463759145
+      RatDmg_15: 3431717071955587863
+      RatDmg_16: -506711705
+      RatDmg_17: -1310629405
+      RatDmg_18: 945708966
+      RatDmg_19: -1413579813
+      RatDmg_2: 9014580181522209990
+      RatDmg_20: 1067507602
+      RatDmg_21: -1643204763
+      RatDmg_22: -401581863
+      RatDmg_23: 57511566
+      RatDmg_24: -1469142044
+      RatDmg_25: -18032032
+      RatDmg_26: -1818459139
+      RatDmg_27: -1033601391
+      RatDmg_28: -973328048
+      RatDmg_29: 547153434
+      RatDmg_3: -6725690813718183980
+      RatDmg_30: -160254894
+      RatDmg_31: 454854637
+      RatDmg_32: -43841162
+      RatDmg_33: 567624154
+      RatDmg_34: 1263876765
+      RatDmg_35: 604857189
+      RatDmg_36: -793143742
+      RatDmg_37: -523571661
+      RatDmg_38: 108015226
+      RatDmg_39: -887994863
+      RatDmg_4: 3530845160901145365
+      RatDmg_40: -2127669551
+      RatDmg_41: -1300248194
+      RatDmg_42: -1700553797
+      RatDmg_43: -1952516900
+      RatDmg_44: 330233672
+      RatDmg_45: -1984770659
+      RatDmg_46: 822023750
+      RatDmg_47: -1518842857
+      RatDmg_48: 225122693
+      RatDmg_49: -1898517166
+      RatDmg_5: 5550547218224014845
+      RatDmg_50: 1938378069
+      RatDmg_51: 1736973305
+      RatDmg_52: 276831848
+      RatDmg_53: -1925912838
+      RatDmg_54: 1190981624
+      RatDmg_55: -187691454
+      RatDmg_56: 1491049481
+      RatDmg_57: -381052428
+      RatDmg_58: -1029263309
+      RatDmg_59: -1858079218
+      RatDmg_6: 772319884871112853
+      RatDmg_60: 673804037
+      RatDmg_61: -448447938
+      RatDmg_62: -1446539832
+      RatDmg_63: -839276940
+      RatDmg_64: -818280987
+      RatDmg_65: -1233604708
+      RatDmg_66: -658113046
+      RatDmg_67: 1772954729
+      RatDmg_7: 1647300793786180214
+      RatDmg_8: -1506835285387640293
+      RatDmg_9: -594139140599412417
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

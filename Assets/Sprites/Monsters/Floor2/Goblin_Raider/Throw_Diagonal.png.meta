@@ -1,0 +1,678 @@
+fileFormatVersion: 2
+guid: 07effeb81eaa2074cb6cdbb8cef70811
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7539594357539125803
+    second: Throw_Diagonal_0
+  - first:
+      213: 2369937958717919474
+    second: Throw_Diagonal_1
+  - first:
+      213: 4941363814178194122
+    second: Throw_Diagonal_2
+  - first:
+      213: -7041824810217774556
+    second: Throw_Diagonal_3
+  - first:
+      213: -8452876298951704633
+    second: Throw_Diagonal_4
+  - first:
+      213: 907733611406447700
+    second: Throw_Diagonal_5
+  - first:
+      213: 8880362699243712829
+    second: Throw_Diagonal_6
+  - first:
+      213: -1008964285967241000
+    second: Throw_Diagonal_7
+  - first:
+      213: 1885053660781261591
+    second: Throw_Diagonal_8
+  - first:
+      213: 3044985117056606673
+    second: Throw_Diagonal_9
+  - first:
+      213: -5933934673704490248
+    second: Throw_Diagonal_10
+  - first:
+      213: -4729183643011572915
+    second: Throw_Diagonal_11
+  - first:
+      213: -1410713729446356493
+    second: Throw_Diagonal_12
+  - first:
+      213: 8564163051215434493
+    second: Throw_Diagonal_13
+  - first:
+      213: -834292352219005653
+    second: Throw_Diagonal_14
+  - first:
+      213: 1818654758353511083
+    second: Throw_Diagonal_15
+  - first:
+      213: -5058008497868476725
+    second: Throw_Diagonal_16
+  - first:
+      213: -3597245492976812977
+    second: Throw_Diagonal_17
+  - first:
+      213: -5240686771332418813
+    second: Throw_Diagonal_18
+  - first:
+      213: -452012022126331672
+    second: Throw_Diagonal_19
+  - first:
+      213: -3263148378395429043
+    second: Throw_Diagonal_20
+  - first:
+      213: -6829985581049727571
+    second: Throw_Diagonal_21
+  - first:
+      213: -8734759848503966324
+    second: Throw_Diagonal_22
+  - first:
+      213: 4516860824222310468
+    second: Throw_Diagonal_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 8
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 16384
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Throw_Diagonal_0
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 109
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d54758d0eafd5790800000000000000
+      internalID: -7539594357539125803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_1
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 109
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f098195406b3e020800000000000000
+      internalID: 2369937958717919474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_2
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 109
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac28f026530439440800000000000000
+      internalID: 4941363814178194122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_3
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 106
+        width: 14
+        height: 18
+      alignment: 9
+      pivot: {x: 0.42857143, y: 0.16666667}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 422ef60f4a9664e90800000000000000
+      internalID: -7041824810217774556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_4
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 109
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cf3aa69ac951ba80800000000000000
+      internalID: -8452876298951704633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_5
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 77
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 454509209eae89c00800000000000000
+      internalID: 907733611406447700
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_6
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 77
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d31fc0523d26d3b70800000000000000
+      internalID: 8880362699243712829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_7
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 77
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d0fddfd3507ff1f0800000000000000
+      internalID: -1008964285967241000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_8
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 74
+        width: 14
+        height: 18
+      alignment: 9
+      pivot: {x: 0.64285713, y: 0.16666667}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 713ba69215e092a10800000000000000
+      internalID: 1885053660781261591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_9
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 77
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d1a288b4d5f14a20800000000000000
+      internalID: 3044985117056606673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_10
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 45
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fa68758add66ada0800000000000000
+      internalID: -5933934673704490248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_11
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 45
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4b15b078809e5eb0800000000000000
+      internalID: -4729183643011572915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_12
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 45
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f9559c56532c6ce0800000000000000
+      internalID: -1410713729446356493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_13
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 45
+        width: 14
+        height: 18
+      alignment: 9
+      pivot: {x: 0.35714287, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df2b8329be40ad670800000000000000
+      internalID: 8564163051215434493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_14
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 45
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2d3923a68ffb64f0800000000000000
+      internalID: -834292352219005653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_15
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 13
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba22cb8fdd82d3910800000000000000
+      internalID: 1818654758353511083
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_16
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 13
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bce64a5d1185ec9b0800000000000000
+      internalID: -5058008497868476725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_17
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 13
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4cfd3d7844041ec0800000000000000
+      internalID: -3597245492976812977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_18
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 13
+        width: 14
+        height: 18
+      alignment: 9
+      pivot: {x: 0.64285713, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30374a7d5275547b0800000000000000
+      internalID: -5240686771332418813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throw_Diagonal_19
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 13
+        width: 14
+        height: 18
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e834f2f5712ab9f0800000000000000
+      internalID: -452012022126331672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 569aaea5820d81746999bd36e1c50332
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":5.0,"y":4.0},"gridSpriteSize":{"x":14.0,"y":18.0},"gridSpriteOffset":{"x":7.0,"y":4.0},"gridSpritePadding":{"x":20.0,"y":17.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Throw_Diagonal_0: -7539594357539125803
+      Throw_Diagonal_1: 2369937958717919474
+      Throw_Diagonal_10: -5933934673704490248
+      Throw_Diagonal_11: -4729183643011572915
+      Throw_Diagonal_12: -1410713729446356493
+      Throw_Diagonal_13: 8564163051215434493
+      Throw_Diagonal_14: -834292352219005653
+      Throw_Diagonal_15: 1818654758353511083
+      Throw_Diagonal_16: -5058008497868476725
+      Throw_Diagonal_17: -3597245492976812977
+      Throw_Diagonal_18: -5240686771332418813
+      Throw_Diagonal_19: -452012022126331672
+      Throw_Diagonal_2: 4941363814178194122
+      Throw_Diagonal_20: -2131246686
+      Throw_Diagonal_3: -7041824810217774556
+      Throw_Diagonal_4: -8452876298951704633
+      Throw_Diagonal_5: 907733611406447700
+      Throw_Diagonal_6: 8880362699243712829
+      Throw_Diagonal_7: -1008964285967241000
+      Throw_Diagonal_8: 1885053660781261591
+      Throw_Diagonal_9: 3044985117056606673
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

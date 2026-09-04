@@ -1,0 +1,728 @@
+fileFormatVersion: 2
+guid: 55a1c39811c1e53488ad9ffaeb4f14b0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3663247731049776624
+    second: RatAttack_0
+  - first:
+      213: -7158095825046003007
+    second: RatAttack_1
+  - first:
+      213: 7246890267312059699
+    second: RatAttack_2
+  - first:
+      213: -4900300466456578329
+    second: RatAttack_3
+  - first:
+      213: -5784919979427378154
+    second: RatAttack_4
+  - first:
+      213: -6974179869719926732
+    second: RatAttack_5
+  - first:
+      213: -5193116363901603864
+    second: RatAttack_6
+  - first:
+      213: -6974384601469474667
+    second: RatAttack_7
+  - first:
+      213: -6012417489641490383
+    second: RatAttack_8
+  - first:
+      213: -5708311806110165832
+    second: RatAttack_9
+  - first:
+      213: 6448301164182440508
+    second: RatAttack_10
+  - first:
+      213: -2779761620604904624
+    second: RatAttack_11
+  - first:
+      213: -1825017375279967253
+    second: RatAttack_12
+  - first:
+      213: 8989755603710987744
+    second: RatAttack_13
+  - first:
+      213: -2100450876027149403
+    second: RatAttack_14
+  - first:
+      213: 8562246907806852369
+    second: RatAttack_15
+  - first:
+      213: -1654342573302046854
+    second: RatAttack_16
+  - first:
+      213: 5055829655272980193
+    second: RatAttack_17
+  - first:
+      213: -7084705683455014707
+    second: RatAttack_18
+  - first:
+      213: 1074103232646049659
+    second: RatAttack_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 8
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 16384
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RatAttack_1
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c22de7b5c559ac90800000000000000
+      internalID: -7158095825046003007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_2
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 109
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 335fe5d6d40229460800000000000000
+      internalID: 7246890267312059699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_3
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 106
+        width: 18
+        height: 11
+      alignment: 9
+      pivot: {x: 0.44444445, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e6bc2c40b2aefbb0800000000000000
+      internalID: -4900300466456578329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_5
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 106
+        width: 20
+        height: 11
+      alignment: 9
+      pivot: {x: 0.4, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 438e9a9fb5cb63f90800000000000000
+      internalID: -6974179869719926732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_7
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 108
+        width: 19
+        height: 9
+      alignment: 9
+      pivot: {x: 0.42105263, y: 0.11111111}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59825762822063f90800000000000000
+      internalID: -6974384601469474667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_25
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 057f704059adb2b4998fa02acbcd9088
+      internalID: 361307460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_27
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 77
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e73a462c2c73dd74d9766c59ec032af2
+      internalID: -494872709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_29
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 74
+        width: 18
+        height: 11
+      alignment: 9
+      pivot: {x: 0.5555556, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e58256c61b30a7e4ab9dd5d474fc40be
+      internalID: -1188115014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_31
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 74
+        width: 20
+        height: 11
+      alignment: 9
+      pivot: {x: 0.55, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d442c6023dd374448ff7b138698966e
+      internalID: 123417811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_33
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 76
+        width: 19
+        height: 9
+      alignment: 9
+      pivot: {x: 0.57894737, y: 0.11111111}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7885765e8b4c3954697a4c8dbd21d142
+      internalID: -97999866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_50
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0129f3b0b2195440b775007731209f1
+      internalID: 2127008710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_51
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 45
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4836d4e2ad9307144a35380cec1a38ec
+      internalID: -1207631548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_52
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 45
+        width: 18
+        height: 9
+      alignment: 9
+      pivot: {x: 0.44444445, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db94c536ff2fb0f45947c9670fc6f3be
+      internalID: -883851377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_54
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 45
+        width: 19
+        height: 9
+      alignment: 9
+      pivot: {x: 0.42105263, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ea2b706f2d113c49b62515ea898ff17
+      internalID: 522753271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_56
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 45
+        width: 19
+        height: 8
+      alignment: 9
+      pivot: {x: 0.42105263, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 03299ec208f721f40933eaf7453482bc
+      internalID: -1259476108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_70
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2d52f51dfb7bb234e93ad942a5a62ab7
+      internalID: -1773455591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_72
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 13
+        width: 16
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c7e4ff1b99f114e48bfd8cb70cf765de
+      internalID: -1591109995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_74
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 13
+        width: 18
+        height: 9
+      alignment: 9
+      pivot: {x: 0.5555556, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2ca1033379ba89b40bd2e4bbaac80dce
+      internalID: 1836711215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_76
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 13
+        width: 20
+        height: 9
+      alignment: 9
+      pivot: {x: 0.6, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cbab1b725b80a5439de8b1d5c4f4681
+      internalID: -2027875771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RatAttack_78
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 13
+        width: 19
+        height: 8
+      alignment: 9
+      pivot: {x: 0.57894737, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: adfa3acfb22b384419886c41a03aa220
+      internalID: -1967990162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: d34e4abbfe7befa4e9e2d40413ad9905
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":8.0},"gridSpriteOffset":{"x":7.0,"y":3.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      RatAttack_0: 3663247731049776624
+      RatAttack_1: -7158095825046003007
+      RatAttack_10: 6448301164182440508
+      RatAttack_11: -2779761620604904624
+      RatAttack_12: -1825017375279967253
+      RatAttack_13: 8989755603710987744
+      RatAttack_14: -2100450876027149403
+      RatAttack_15: 8562246907806852369
+      RatAttack_16: -1654342573302046854
+      RatAttack_17: 5055829655272980193
+      RatAttack_18: -7084705683455014707
+      RatAttack_19: 1074103232646049659
+      RatAttack_2: 7246890267312059699
+      RatAttack_20: 843795226
+      RatAttack_21: 377838816
+      RatAttack_22: 2016912331
+      RatAttack_23: 1364005774
+      RatAttack_24: 2054465199
+      RatAttack_25: 361307460
+      RatAttack_26: -1148981272
+      RatAttack_27: -494872709
+      RatAttack_28: 804960304
+      RatAttack_29: -1188115014
+      RatAttack_3: -4900300466456578329
+      RatAttack_30: -714525734
+      RatAttack_31: 123417811
+      RatAttack_32: 571559229
+      RatAttack_33: -97999866
+      RatAttack_34: -1670633764
+      RatAttack_35: -2037550433
+      RatAttack_36: 298668022
+      RatAttack_37: 1654807563
+      RatAttack_38: -605075796
+      RatAttack_39: 417626072
+      RatAttack_4: -5784919979427378154
+      RatAttack_40: -682506203
+      RatAttack_41: -1139974094
+      RatAttack_42: -781240596
+      RatAttack_43: 1320127277
+      RatAttack_44: 806359127
+      RatAttack_45: 1329259616
+      RatAttack_46: 1166384929
+      RatAttack_47: 430602592
+      RatAttack_48: 997451785
+      RatAttack_49: 436806213
+      RatAttack_5: -6974179869719926732
+      RatAttack_50: 2127008710
+      RatAttack_51: -1207631548
+      RatAttack_52: -883851377
+      RatAttack_53: 1974592946
+      RatAttack_54: 522753271
+      RatAttack_55: 1092746063
+      RatAttack_56: -1259476108
+      RatAttack_57: -137762222
+      RatAttack_58: 1944099388
+      RatAttack_59: 1584929327
+      RatAttack_6: -5193116363901603864
+      RatAttack_60: -1417516977
+      RatAttack_61: 787180494
+      RatAttack_62: 1596245753
+      RatAttack_63: 274277370
+      RatAttack_64: -1591097202
+      RatAttack_65: -1572498276
+      RatAttack_66: -115405721
+      RatAttack_67: -187499403
+      RatAttack_68: 632615902
+      RatAttack_69: -1394728005
+      RatAttack_7: -6974384601469474667
+      RatAttack_70: -1773455591
+      RatAttack_71: -1024217209
+      RatAttack_72: -1591109995
+      RatAttack_73: 237331231
+      RatAttack_74: 1836711215
+      RatAttack_75: 451246823
+      RatAttack_76: -2027875771
+      RatAttack_77: 1130212191
+      RatAttack_78: -1967990162
+      RatAttack_79: 1372952507
+      RatAttack_8: -6012417489641490383
+      RatAttack_80: -1954102129
+      RatAttack_81: -697893809
+      RatAttack_82: 978487077
+      RatAttack_9: -5708311806110165832
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

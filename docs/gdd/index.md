@@ -1,5 +1,5 @@
 # Game Design Document — Projeto Torre (nome provisório)
-### Versão 1.01235 — Auditoria Final de Consistência e Freeze
+### Versão 1.01236 — Bestiário e Economia Migrados; Prioridade de Interação Resolvida
 
 > **Legenda de status**
 > - ✅ **Decisão confirmada**
@@ -7,7 +7,7 @@
 > - 🔢 **Pendência de balanceamento**
 > - 🔭 **Visão Expandida**
 
-> **Nota de versão:** esta é a última revisão editorial do GDD Mestre antes do início da implementação. Ela corrigiu os últimos vazamentos de regras do Modo Padrão para o Modo Free em todo o documento (Core Loop, morte ao zerar o timer, Ciclo de Dia, Vitória/Pós-Game, HUD, Feedback, Magnet, Demanda Diária, Ciclo Emocional — cada um agora deixa explícito o que é exclusivo do Padrão e o que é compartilhado); restaurou a definição funcional completa do **Controle Remoto** (Seção 26), que havia se perdido em revisões anteriores apesar de outras seções ainda referenciá-lo; alinhou o Chest System e a ficha do Mimic ao fluxo real de baú (E abre, UI de 3 opções, sem exigir um pergaminho físico coletável); e separou **Account Progression** de **Lifetime Statistics** dentro de Permanent Account State, deixando explícito que o Free pode registrar estatísticas informativas sem nunca acionar avaliação de progressão/unlock. Duas pendências deixaram de existir por serem simples decisões de UI (Continue sem save desabilitado; New Game sem exigência de confirmação). Nenhum sistema fora desse escopo foi redesenhado — combate, economia, Employees, Inventory, Pickup Radius, Magnet, Floor System, Save, Floor Variants, Remove Tower Layer, Stair Routing, Boss Timer, Druid, Ultimate, Drops, Cards, Quests e heróis permanecem exatamente como já estavam. **A partir desta versão, o GDD Mestre está estruturalmente congelado** (ver Seção 53).
+> **Nota de versão:** o GDD Mestre continua estruturalmente congelado (Seção 53) — esta revisão não reabre nenhuma regra de gameplay, só corrige uma lacuna de migração: o documento de visão original do jogo continha conteúdo real (não placeholder) que nunca chegou a este GDD. Três correções: **(1)** o Bestiário completo (99 criaturas — 70 monstros comuns + 2 especiais + 27 bosses, todos os 10 Andares) e a tabela completa de Weapon Tiers/valores de materiais foram migrados para dois Documentos Especializados novos, **Bestiary** e **Economy & Balance** (Seção 51, que antes só listava os nomes sem conteúdo); **(2)** a pendência de prioridade entre interagíveis (Seção 26) está **resolvida**: todo interagível (baú, escada, vendedor, NPC) sempre tem prioridade sobre largar o Magnet — confirmado pelo designer, deixa de ser pendência; **(3)** registrada formalmente uma nova pendência de design: a viabilidade do sistema de combate completo (timing/telegraph configurável + animação real por criatura) contra uma simplificação estilo Vampire Survivors (perseguição + dano por contato, com variantes ranged/explosivas simples) depende de um momento de teste dedicado ainda não realizado — a contingência já existia na Seção 22, mas agora está formalmente vinculada ao Bestiário e precisa de um teste real antes de produzir conteúdo em escala. O valor "6 melees simultâneos" mencionado no documento de origem para o Attack Budget (Seção 14) permanece **não confirmado** — nenhuma mudança na Seção 14. Nenhuma outra regra estrutural foi alterada.
 
 ---
 
@@ -563,6 +563,8 @@ Alguns monstros, ao morrer, geram outras unidades (ex.: gera 1 esqueleto + 1 mon
 ### Contingência — simplificação de monstros comuns 🟡
 Se playtests mostrarem que hordas grandes com animação individual completa ficam ilegíveis, custosas de implementar em escopo solo, ou menos divertidas, os monstros **comuns** (nunca os heróis) podem ser simplificados para 3 comportamentos: Melee por contato, Ranged simples, Explosivo/contato especial. Contingência documentada, não decisão tomada.
 
+**Vínculo com o Bestiário:** as 99 fichas de criatura do documento especializado `Bestiary` (Seção 51) assumem, por padrão, o sistema completo (timing/telegraph + animação real). Essa é justamente a decisão que esta contingência cobre — **precisa de um momento de teste dedicado, com animação real (não placeholder), antes de produzir o Bestiário em escala** além do que já estiver em produção. Ver nota de encerramento do próprio Bestiary.
+
 ### Bosses ✅
 - Possuem mais de um ataque, com cooldowns próprios por ataque (diferente de monstro comum, que tem só 1).
 - **Não participam do Attack Budget comum** (Seção 14).
@@ -689,8 +691,8 @@ Diferente de uma versão anterior deste documento, a travessia **não é automá
 Player se aproxima da escada → ícone de interação aparece → pressiona E → teleporta para o Active Floor de destino (Seção 26, regra de destino abaixo)
 ```
 
-### Prioridade entre interações simultâneas — pendência aberta 🟡
-Com escadas agora usando E (acima), existe um caso ainda não decidido: **o que acontece se mais de um interagível estiver no alcance ao mesmo tempo** (ex.: escada perto de um baú, ou escada perto de onde o Magnet seria largado — Seção 29 já define que "interações prioritárias próximas, ex.: baú, têm prioridade sobre largar o Magnet", mas não menciona escada). A implementação atual (Sprint 6) não tem nenhuma regra de prioridade — ela reage ao último interagível cujo trigger disparou, sem ordem definida. **Precisa ser decidido antes da Sprint 35** (Deadline 9 — primeira sprint em que baús passam a existir de verdade no jogo, Seção 30); até lá, escadas continuam sendo o único interagível ativo no jogo, então o caso não ocorre na prática.
+### Prioridade entre interações simultâneas ✅
+**Todo interagível (baú, escada, vendedor, NPC, e qualquer outro que venha a existir) sempre tem prioridade sobre largar o Magnet.** Se mais de um interagível "de verdade" estiver no alcance ao mesmo tempo entre si (ex.: escada perto de um baú), a prioridade entre eles continua não definida — mas isso não é o caso comum: a regra que precisava ser fechada era especificamente **Magnet vs. qualquer outro interagível**, e essa está resolvida: o Magnet nunca "rouba" o E de uma interação real. Implementação: `InteractionManager` deve tratar qualquer `Interactable` "de verdade" (baú, escada, vendedor, NPC) como prioritário sobre a ação de largar o Magnet — o Magnet só é largado se nenhum outro interagível estiver no alcance no momento do E.
 
 ### Exemplo normal de conexão ✅
 ```text
@@ -806,7 +808,7 @@ Todas Run-Persistent — recompensas se perdem ao iniciar nova run. ✅
 | 3 | 40 Soul Fragment | Magnet Tier 3 — limite aumenta novamente |
 
 - Começa **todo dia** no térreo.
-- **E** pega/larga o Magnet. **Interações prioritárias próximas (ex.: baú) têm prioridade sobre largar o Magnet** — só larga com E se não houver interação prioritária no momento.
+- **E** pega/larga o Magnet. **Qualquer outro interagível no alcance (baú, escada, vendedor, NPC) sempre tem prioridade sobre largar o Magnet** (regra completa e resolvida na Seção 26) — só larga com E se não houver nenhum outro interagível no alcance no momento.
 - Alcance é baseado na **Active Floor Position** (Seção 24), não na identidade original — Remove Tower Layer (Seção 27) pode beneficiar indiretamente seu alcance efetivo.
 - **Dentro da área/limite permitido pelo tier atual, o Magnet coleta e vende loot automaticamente** — esta é uma regra estrutural central da recompensa, não implícita.
 - **Dois conceitos distintos, não confundir:**
@@ -1289,8 +1291,8 @@ Responsabilidades conceituais (nomes ilustrativos):
 | **Combat System Document** | Timing de ataque, projéteis, Attack Budget |
 | **Tower/Floor Document** | As 50 Floor Variants, posições de spawn, população por andar |
 | **Employee System Document** | IA detalhada, virtualização técnica |
-| **Bestiary** | Fichas completas de monstros e bosses, drop rates exatos |
-| **Economy & Balance Document** | Tabela dos 15 tiers, preços, drop rates, curva de demanda, multiplicador de vida da forma de urso |
+| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares, migrado nesta revisão |
+| **Economy & Balance Document** ✅ *(parcial — `docs/gdd/economy-balance.md`)* | Tabela dos 15 tiers e valores dos 15 materiais migrados nesta revisão; curva de demanda, multiplicador de vida da forma de urso e demais valores 🔢 continuam pendentes |
 | **Chest & Card Document** | Pools de carta, curva de bônus, chance de Mimic |
 | **Quest Document** | Progresso das 3 linhas |
 | **UI/UX Document** | Layout final de HUD, loja, telas, Settings |
