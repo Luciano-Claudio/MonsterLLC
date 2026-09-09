@@ -1,5 +1,5 @@
 # Game Design Document — Projeto Torre (nome provisório)
-### Versão 1.01236 — Bestiário e Economia Migrados; Prioridade de Interação Resolvida
+### Versão 1.01237 — Combate Comum Simplificado (Vampire Survivors-like); Attack Budget Removido
 
 > **Legenda de status**
 > - ✅ **Decisão confirmada**
@@ -7,7 +7,7 @@
 > - 🔢 **Pendência de balanceamento**
 > - 🔭 **Visão Expandida**
 
-> **Nota de versão:** o GDD Mestre continua estruturalmente congelado (Seção 53) — esta revisão não reabre nenhuma regra de gameplay, só corrige uma lacuna de migração: o documento de visão original do jogo continha conteúdo real (não placeholder) que nunca chegou a este GDD. Três correções: **(1)** o Bestiário completo (99 criaturas — 70 monstros comuns + 2 especiais + 27 bosses, todos os 10 Andares) e a tabela completa de Weapon Tiers/valores de materiais foram migrados para dois Documentos Especializados novos, **Bestiary** e **Economy & Balance** (Seção 51, que antes só listava os nomes sem conteúdo); **(2)** a pendência de prioridade entre interagíveis (Seção 26) está **resolvida**: todo interagível (baú, escada, vendedor, NPC) sempre tem prioridade sobre largar o Magnet — confirmado pelo designer, deixa de ser pendência; **(3)** registrada formalmente uma nova pendência de design: a viabilidade do sistema de combate completo (timing/telegraph configurável + animação real por criatura) contra uma simplificação estilo Vampire Survivors (perseguição + dano por contato, com variantes ranged/explosivas simples) depende de um momento de teste dedicado ainda não realizado — a contingência já existia na Seção 22, mas agora está formalmente vinculada ao Bestiário e precisa de um teste real antes de produzir conteúdo em escala. O valor "6 melees simultâneos" mencionado no documento de origem para o Attack Budget (Seção 14) permanece **não confirmado** — nenhuma mudança na Seção 14. Nenhuma outra regra estrutural foi alterada.
+> **Nota de versão:** diferente da revisão anterior, esta **reabre e resolve** uma regra estrutural de gameplay — a Seção 53 registrava isso desde a Sprint 13 como pendência formal ("viabilidade do sistema de combate completo"), não como regra congelada. Contexto: a Sprint 16 testou o sistema de combate completo (Telegraph/Hitbox/Recovery + Animator real) em 3 monstros reais e o designer decidiu, com base no resultado, acionar a contingência já registrada na Seção 22 ("simplificação de monstros comuns"). Mudanças: **(1)** monstros comuns (Melee/Ranged) passam a usar dano por contato / auto-disparo em alcance, cada um com cooldown próprio, sem Telegraph/Hitbox/Recovery nem animação de ataque dedicada (Seção 22); **(2)** o **Attack Budget é removido** (Seção 14) — sem "estado de ataque" discreto, não há mais o que limitar entre monstros simultâneos; população (Seção 23) continua sendo o único controle de quantidade; **(3)** a taxonomia de projéteis (Seção 13) ganha os desfechos pós-voo de projétil de inimigo (gruda, explode, deixa condição no chão, vira o próprio monstro, teleguiado como modificador combinável); **(4)** o Bestiário (`docs/gdd/bestiary.md`) foi atualizado ficha a ficha: ~90 monstros comuns simplificados pra `idle/walk/damage/die`, e um pequeno grupo de exceções documentado com arquitetura própria orientada por Animation Event (Goblin Sapper, Orc Shaman, Burning Skull, Serpent, o projétil do Bicephalous) — o Skeleton Rider deixou de ser exceção (perdeu a mecânica de gerar 2 monstros ao morrer). **Bosses ficam de fora desta revisão** — continuam com múltiplos ataques e arquitetura orientada por Animation Event, não pelo modelo padrão simplificado. Nenhuma outra regra estrutural foi alterada.
 
 ---
 
@@ -325,20 +325,22 @@ Regras gerais ✅: direção fixada no instante do disparo, não controlável de
 
 Ataques em área centrados no próprio herói (Barbarian, Plague Doctor) e a ultimate global do Cleric (Seção 17.6) não usam projétil — são hitbox de área ou efeito de campo, não uma entidade que viaja.
 
+### Modificadores de pós-vida do projétil — o que acontece ao fim da trajetória (Sprint 16) ✅
+Além da categoria de comportamento em voo (tabela acima), todo projétil — de herói ou de monstro comum — pode ter um destes desfechos ao colidir ou alcançar sua distância máxima. Não são categorias novas, são **modificadores combináveis** com qualquer categoria da tabela:
+
+- **Gruda (Sticky):** fica preso no alvo (ex.: flechas grudam no Player) ou no chão onde caiu, com tempo de vida próprio até desaparecer. Vários projéteis grudados ao mesmo tempo é intencional — reforça visualmente "quanto dano venho tomando".
+- **Explode (Impact Area):** ao colidir ou alcançar o alcance máximo, dispara uma nova animação de explosão (sem precisar de Animation Event — a colisão em si já inicia essa animação nova no Animator) e causa dano em área no ponto do impacto. Já coberto pela categoria Ground Target/Impact Area da tabela.
+- **Deixa condição no chão:** ao colidir ou alcançar o alcance máximo, cria um trigger persistente no chão (fogo, espinhos, etc.) que causa dano a quem passar por cima, durando um tempo antes de desaparecer. Comportamento de área independente do projétil que o criou — mesma família da Persistent Area.
+- **O projétil é o próprio monstro:** ao colidir ou alcançar o alcance máximo, uma unidade real nasce ali (ex.: Bicephalous — o "slug" lançado vira um Slug de verdade). O projétil não é só efeito visual, é a fonte de uma nova entidade viva.
+- **Teleguiado (Homing):** persegue o alvo até acertar — já existe como categoria própria na tabela (Homing), mas também pode se combinar com qualquer um dos desfechos acima (ex.: um projétil teleguiado que também gruda, ou que também explode).
+
 ---
 
-## 14. Attack Budget
+## 14. Attack Budget — **Removido (Sprint 16)** ✅
 
-**Objetivo:** evitar que muitos monstros ataquem o jogador simultaneamente. ✅
+Este sistema existia pra evitar que muitos monstros entrassem em "estado de ataque" ao mesmo tempo — fazia sentido no modelo de combate com Telegraph/Hitbox/Recovery (Seção 22, versão anterior). Esse modelo foi testado na prática na Sprint 16 e substituído, por padrão, por dano de contato (Melee) e auto-disparo em alcance (Ranged), cada um limitado só pelo próprio cooldown do monstro — não existe mais um "estado de ataque" discreto pra limitar entre vários monstros ao mesmo tempo.
 
-- Melee e Ranged têm budgets separados.
-- Monstros fora do budget continuam existindo e agindo (perseguindo, cercando, esperando slot).
-- **Bosses não participam de nenhum Attack Budget comum.**
-- **Employees não participam.**
-- **Traps não participam** — ameaça ambiental independente, podem causar dano mesmo com budgets cheios.
-- **Não limita a população total do andar** (Seção 23) — só quantos estão efetivamente atacando.
-
-🔢 Valores máximos dos budgets Melee e Ranged pendentes de playtest/balanceamento.
+**O que substitui isso:** nada precisa substituir — múltiplos monstros comuns podem causar dano por contato/disparo simultaneamente sem limite artificial, igual ao gênero de referência (Vampire Survivors). O único controle de "quantos monstros existem" continua sendo o Population System (Seção 23). Bosses e as exceções documentadas no Bestiário (Seção 51) que ainda usam telegraph real (Goblin Sapper, Orc Shaman, Serpent) não precisam de budget — cada um só tem sua própria instância de ação especial (bomba, totem, exposição) rodando por vez.
 
 ---
 
@@ -521,53 +523,42 @@ Dois jogadores com exatamente os mesmos upgrades podem terminar um dia com resul
 ### Categorias ✅
 Melee, Ranged, Boss. Variações Suporte/híbrido (ex.: Orc Shaman com totens) tratadas como variação dentro de Ranged/Support, sem virar categoria própria no MVP.
 
-### IA comum (Melee/Ranged) ✅
+### IA comum (Melee/Ranged) — regra padrão desde a Sprint 16 ✅
 - Movimentação aleatória por padrão, evitando obstáculos.
 - Ao entrar no raio de observação, o jogador é detectado e o monstro passa a perseguir diretamente.
-- **Melee:** aproxima-se e tenta permanecer em alcance de contato; ao atingir o raio de ataque, executa seu único ataque; entra em cooldown pós-ataque.
-- **Ranged:** mantém distância e dispara seu único ataque ao alcançar o raio de ataque; mesma lógica de cooldown.
-- Cada monstro comum tem apenas **1 tipo de ataque** — diversidade vem da variedade de monstros, não de múltiplos ataques por indivíduo (exclusivo de Bosses).
+- **Melee:** aproxima-se até o alcance de contato; encostar no jogador causa dano, respeitando um **cooldown próprio daquele monstro** (nunca dano infinito por frame). Sem telegraph, sem animação de ataque dedicada — o dano acontece no instante do contato físico.
+- **Ranged:** mantém distância dentro do alcance e **auto-dispara** um projétil ao ficar em alcance, respeitando cooldown próprio. Sem animação de disparo dedicada — o projétil só nasce quando o cooldown libera.
+- Cada monstro comum tem apenas **1 tipo de ataque** — diversidade vem da variedade de monstros, não de múltiplos ataques por indivíduo (exclusivo de Bosses e das exceções documentadas no Bestiário).
+- **Animações padrão de todo monstro comum:** `idle`, `walk`, `idle_combat`, `damage`, `die` (blend trees direcionais onde fizer sentido). Sem `attack` dedicado.
+
+### Idle de patrulha vs. `idle_combat` — duas animações "paradas" distintas ✅
+Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunca uma só, porque servem a dois momentos diferentes:
+- **`idle`** — só toca **antes de detectar o jogador**, durante a movimentação aleatória de patrulha: o monstro alterna entre `walk` (andando aleatoriamente) e `idle` (parado num ponto). Alguns monstros (ex.: Gargoyle) ficam parados o tempo todo nessa fase, nunca andando. **Regra rígida, sem exceção: uma vez que `idle` começou, ela tem que tocar até o fim antes de qualquer transição — em hipótese nenhuma o monstro anda "durante" o clipe de `idle`.** Isso vale mesmo que o jogador seja detectado no meio do clipe: a detecção **não** interrompe o `idle` — o monstro só reage (troca pra `walk`/`idle_combat` de combate) depois que a animação de patrulha termina por completo, criando um pequeno atraso de reação intencional. Na prática, toda transição que sai de `Idle` no Animator usa Exit Time (perto de 1.0), nunca sai no meio do clipe, inclusive a transição pra combate.
+- **`idle_combat`** — toca **depois que o jogador foi detectado**, sempre que o monstro está parado em combate: colado no jogador (Melee, entre um contato e outro do cooldown), segurando distância em alcance (Ranged, entre um disparo e outro), ou esperando o cooldown liberar o próximo ataque real (exceções/Bosses com animação `attack` de verdade). Sem essa animação, o monstro pareceria "andar parado no lugar" enquanto solta magia, flecha, ou fica grudado no jogador — o que nunca deve acontecer. É uma animação simples, sem Animation Event, sem duração fixa pra tocar até o fim (fica em loop enquanto o monstro estiver parado em combate) — geralmente um blend tree de só 4 direções (não precisa da mesma fidelidade direcional do `walk`).
+- As duas coexistem com `walk`: fora de combate, o monstro está em `walk` ou `idle`; em combate, está em `walk` (perseguindo/reposicionando) ou `idle_combat` (parado). Nunca usa `idle` de patrulha depois de detectar o jogador, e nunca usa `idle_combat` antes de detectar.
 
 ### Atributos de monstro comum ✅
-Vida, Vida Máxima, velocidade de ataque, velocidade de movimento, raio de observação, raio de ataque. **Sem Armadura** (Seção 11).
+Vida, Vida Máxima, velocidade de ataque (= cooldown de contato/disparo), velocidade de movimento, raio de observação, raio de ataque. **Sem Armadura** (Seção 11).
 
-### Timing de ataque de monstros — regra completa restaurada ✅
-Cada ataque de monstro precisa suportar uma linha do tempo própria, seguindo a mesma filosofia estrutural das habilidades de herói (Seção 12) — **o dano não é simplesmente aplicado ao final da animação**:
+### Reação a dano — regra restaurada (Sprint 16) ✅
+Três coisas independentes, nunca uma só: **receber dano ≠ reagir visualmente ≠ interromper uma ação.** Um monstro comum recebe dano, aplica a redução de HP, e toca a animação `damage` — sem que isso precise cancelar nada, porque não existe mais nenhuma ação de ataque com duração pra cancelar. Isso passa a importar de verdade nas **exceções com ação especial de verdade** (ver abaixo): um monstro comprometido com uma bomba ou uma exposição não tem essa ação cancelada por dano normal — só recebe um feedback leve (flash), sem trocar de animação; a ação continua até o fim. *(O Orc Shaman não entra nesse caso: ele mesmo usa as animações padrão — quem tem arquitetura própria por Animation Event é o totem, um prefab separado.)*
 
-```text
-Attack Animation Start
-   ↓
-Telegraph (indicação visual do ataque chegando)
-   ↓
-Hitbox Activation Moment (instante em que o dano passa a poder ocorrer)
-   ↓
-Hitbox Active Duration (janela em que a hitbox está de fato ativa)
-   ↓
-Attack End (fim da animação)
-   ↓
-Cooldown (até o próximo ataque)
-```
+### Morte — destruição só ao fim da animação ✅
+`die` é a única animação que todo monstro do jogo mantém, comum ou boss/exceção. A morte segue o mesmo princípio das outras ações reais: **a animação é a fonte de verdade do timing, não um timer independente.** Ao morrer, o monstro dispara `DieTrigger` e só isso — ele continua existindo em cena, tocando o clipe `die` do início ao fim. A destruição de verdade do GameObject, junto com o drop de loot, só acontece por um **Animation Event no último frame do clipe** (mesmo padrão de `AnimationHitEvent`/`AnimationAttackEndEvent`), garantindo que a animação de morte sempre seja vista por completo antes do monstro sumir e o loot aparecer no lugar dele.
 
-Nem todo ataque precisa de um telegraph longo, mas o sistema **precisa suportar** essa linha do tempo configurável para qualquer monstro, do mesmo jeito que suporta para os heróis.
-
-### Leitura de ataque — filosofia de telegraph ✅
-- O desafio emerge da combinação simultânea de ameaças, não do ataque isolado.
-- Ataques direcionados ao jogador **travam o alvo** (`TargetPosition`) no início da animação, não continuam atualizando até o impacto — preserva a sensação legítima de "eu desviei".
-- Cada tipo de ataque tem uma "linguagem" própria de ameaça: espada/mordida pune ficar perto; lança pune manter distância média frontal; projétil obriga movimento lateral; explosão obriga sair de área; ataque no chão pune ficar parado; dash corta rota; stun torna outros monstros mais perigosos; summon aumenta pressão com o tempo; cura faz certas unidades virarem prioridade de alvo.
-- Em andares mais altos, alguns inimigos podem usar previsão leve de movimento (`Target = PlayerPosition + PlayerVelocity × PredictionTime`) — ferramenta disponível, não obrigatória em todo monstro.
-- Velocidade de movimento do jogador não deve crescer a ponto de tornar todo ataque inimigo irrelevante.
+### Exceções — monstros com arquitetura própria, orientada por Animation Event ✅
+Alguns monstros quebram a regra padrão acima porque têm uma mecânica genuinamente distinta (um objeto próprio no mundo, uma janela de vulnerabilidade, etc.). Para esses, o momento exato em que algo acontece (dano, cura, stun, explosão) é decidido por um **Animation Event dentro do próprio clipe** — a animação é a fonte de verdade do timing, não um timer independente. Documentados individualmente no Bestiário (Seção 51): Goblin Sapper (bomba), Orc Shaman (o totem que ele planta — prefab separado, o Shaman em si usa animações padrão), Burning Skull (explosão suicida), Serpent (janela de exposição), e o projétil do Bicephalous (vira o próprio monstro). Bosses (abaixo) também usam esse modelo, por terem mais de um ataque.
 
 ### Riders / geração de unidades ao morrer ✅
-Alguns monstros, ao morrer, geram outras unidades (ex.: gera 1 esqueleto + 1 montaria esquelética). Unidades geradas podem dropar loot próprio.
+Alguns monstros, ao morrer, geram outras unidades (ex.: Orc Rider gera 1 Warg + 1 Orc Blade). Unidades geradas podem dropar loot próprio. **Nem todo monstro com nome "Rider" usa isso** — o Skeleton Rider deixou de ter essa mecânica (Sprint 16) e hoje é um Melee comum.
 
-### Contingência — simplificação de monstros comuns 🟡
-Se playtests mostrarem que hordas grandes com animação individual completa ficam ilegíveis, custosas de implementar em escopo solo, ou menos divertidas, os monstros **comuns** (nunca os heróis) podem ser simplificados para 3 comportamentos: Melee por contato, Ranged simples, Explosivo/contato especial. Contingência documentada, não decisão tomada.
-
-**Vínculo com o Bestiário:** as 99 fichas de criatura do documento especializado `Bestiary` (Seção 51) assumem, por padrão, o sistema completo (timing/telegraph + animação real). Essa é justamente a decisão que esta contingência cobre — **precisa de um momento de teste dedicado, com animação real (não placeholder), antes de produzir o Bestiário em escala** além do que já estiver em produção. Ver nota de encerramento do próprio Bestiary.
+### Decisão de arquitetura — resolvida na Sprint 16 ✅
+Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns") cobrindo a possibilidade de o Bestiário completo (timing/telegraph + animação real por criatura) se provar inviável em escopo solo. **Isso foi testado na prática** (3 monstros reais — Rat, Goblin, Rat People — com Animator de verdade, Sprint 16) e a contingência **foi acionada**: o Bestiário segue, por padrão, o modelo de contato/auto-disparo descrito acima. O Attack Budget (Seção 14) foi removido como consequência direta — não existe mais um "estado de ataque" discreto pra limitar entre vários monstros ao mesmo tempo.
 
 ### Bosses ✅
-- Possuem mais de um ataque, com cooldowns próprios por ataque (diferente de monstro comum, que tem só 1).
-- **Não participam do Attack Budget comum** (Seção 14).
+- A maioria dos 30 bosses (definida ficha a ficha no Bestiário) segue a mesma simplificação dos monstros comuns: perde a animação `attack` dedicada e passa a causar dano por contato normal, com cooldown próprio — sem telegraph, sem Animation Event de ataque.
+- Um grupo pequeno e nomeado mantém arquitetura própria por Animation Event porque a mecânica não existe sem ela (ver Bestiário): Mother Slime Green/Blue (spawn de filhotes em posição fixa), Rat People Royalty, Spider Queen (só a teia, sem animação), Dark Channeler, Lich, Dragon, Undead Dragon e Divine God — este último somando a arquitetura completa a uma camada extra de dano por contato (híbrido Melee/Ranged).
+- Bosses com mais de um ataque real (os da lista acima) usam cooldowns próprios por ataque — diferente de monstro comum, que tem só 1 tipo de ataque.
 - Matar um boss de topo (ex.: Divine God) **não encerra a run** — é conquista, não condição de vitória.
 
 ### Boss Timer — regra final ✅
@@ -590,8 +581,8 @@ Se playtests mostrarem que hordas grandes com animação individual completa fic
 
 Regra principal: **um andar nunca deve parecer vazio.** ✅
 
-### Distinção formal — Population ≠ Attack Budget ✅
-Population System determina **quantos monstros existem**; Attack Budget (Seção 14) determina **quantos estão atacando simultaneamente**. Podem existir 100 monstros vivos, mas só X melees e Y rangeds atacando naquele instante. Bosses, Employees e Traps ficam fora do Attack Budget.
+### Population System — o único controle de quantidade ✅
+Population System determina **quantos monstros existem** no Floor. Desde a remoção do Attack Budget (Seção 14, Sprint 16), não existe mais um segundo sistema limitando quantos causam dano simultaneamente — todo monstro comum ativo pode causar dano por contato/disparo, respeitando só o próprio cooldown individual.
 
 ### Três valores por andar 🟡
 Minimum Population, Target Population, Maximum Population. Reposição gradual abaixo do Target.
@@ -640,7 +631,6 @@ A existência física de monstros de outros Floors dentro da mesma Scene **não 
 - Vale igualmente para qualquer projétil, área, hitbox orbital, homing, summoned target hit, dash damage, rotating line, beam, pet ou summon do kit do herói (Seção 13, Seção 33) — nenhum desses sistemas deve atingir acidentalmente uma entidade de outro Floor só porque tudo existe na mesma Scene.
 - **Pets e summons do kit do herói** (Phoenix, Blood Elemental, summons do Necromancer, e equivalentes futuros) combatem somente no Floor atual do jogador, salvo exceção futura explicitamente documentada.
 - **Ajudantes de combate (Employees)** também operam apenas no Floor atual do jogador (Seção 34) — um Ajudante nunca escolhe como alvo um monstro de outro Floor.
-- **Attack Budget** (Seção 14) considera apenas as ameaças do Floor atual — os budgets Melee/Ranged não se tornam um pool global somando monstros de todos os Floors da Scene.
 - A implementação técnica (layers, FloorId, registries, filtros, ou outra estratégia) não é definida aqui — o GDD define apenas o comportamento esperado.
 
 **Exceção documentada — Collectors:** a única exceção cross-Floor confirmada continua sendo o Coletor Employee (Seção 34/36), que pode buscar loot em outros Floors ativos por regra logística própria. Isso não transforma ataques, pets, ultimates, homing ou Ajudantes em sistemas cross-Floor — logística de loot (cross-Floor) e escopo de combate (Floor atual) permanecem conceitos separados.
@@ -788,7 +778,7 @@ Como todos os Floors estão na mesma Scene (Seção 24), o Floor removido simple
 - Adicionam risco ao deslocamento, sem virar puzzle. ✅
 - Precisam de telegraph antes do dano.
 - **Não são monstros:** não dropam loot, não contam como kill, não carregam Ultimate, não contam para demanda.
-- **Não participam do Attack Budget** (Seção 14) — ameaça ambiental independente.
+- Ameaça ambiental independente — não são afetadas por cooldown de monstro nem por nada do combate comum.
 - Fazem parte do layout de cada Floor Variant (Seção 25), assim como baús e escadas.
 
 ### MVP ✅
@@ -834,10 +824,12 @@ Entregar 1 Chaos Crystal → **Royal Contract** (+100% valor de venda pelo resto
 ### Spawn ✅
 Gerados aleatoriamente dentro das posições válidas de cada **Floor Variant** (Seção 25). Quantidade por andar, distância mínima entre baús e eventual aumento de frequência por andar não estão definidos — configuráveis por playtest/balanceamento.
 
-### Chest Mimic — regra completa restaurada ✅
+### Chest Mimic — ciclo de disfarce (Sprint 16) ✅
 - Uma pequena % (🔢 configurável) de baús em qualquer andar pode ser um **Mimic**.
-- **Ao tentar abrir o baú, o Mimic se revela** e passa a atacar o jogador como um monstro comum de combate.
-- Fica **mais forte em Floors superiores**, escalando junto com a dificuldade do andar.
+- **Desativado:** enquanto disfarçado, é um baú comum igual a qualquer outro — interagível com E, sem perseguir nem atacar.
+- **Ativação:** ao pressionar E pra abrir, toca a animação `activation` (em vez de liberar a recompensa direto). Só depois que ela termina por completo é que o Mimic se revela e passa a se comportar como um Melee comum — persegue o jogador e causa dano por contato normal, com cooldown próprio (GDD Seção 22, mesma regra de qualquer Melee comum).
+- **Desativação:** se o jogador escapar do raio de observação dele, o Mimic toca `desactivation` e volta ao estado de baú disfarçado, interagível com E de novo — o ciclo pode se repetir várias vezes até o jogador efetivamente derrotá-lo.
+- **Único monstro do jogo com Dano/Vida por porcentagem em vez de tabela fixa por andar:** em vez de valores travados ficha a ficha (como todo o resto do Bestiário), o Chest Mimic calcula Dano/Vida como uma fórmula percentual sobre uma base, crescendo conforme o andar em que nasceu. 🔢 fórmula exata (base e % por andar) pendente de balanceamento — ver Bestiário (Seção 51) pra ficha completa.
 - **Ao morrer, o Mimic libera a mesma recompensa que o baú normal teria fornecido e abre a mesma UI de 3 opções** (Seção 30) — o jogador **não perde a recompensa** apenas por ter encontrado um Mimic; ele só precisa vencer o combate primeiro para recebê-la.
 
 ### Interação — abertura com E, escolha com mouse ✅
@@ -846,7 +838,7 @@ O jogador se aproxima do baú e pressiona **E** para abri-lo. Isso vale tanto pa
 Player se aproxima do baú → pressiona E → baú é aberto
 ```
 - **Baú normal:** ao abrir com E, a recompensa é liberada e a UI de 3 pergaminhos/cartas aparece diretamente — **não existe uma segunda interação de "pegar o pergaminho do chão"**; o pergaminho não é um objeto separado que exige outra tecla ou é coletado pelo Pickup Radius (Seção 37).
-- **Mimic:** ao pressionar E, o Mimic se revela e passa a atacar o jogador; ao morrer, libera a mesma recompensa que o baú normal teria dado, abrindo a mesma UI de 3 opções.
+- **Mimic:** ao pressionar E, toca `activation` e, ao final dela, se revela e passa a perseguir/causar dano por contato (pode voltar a se disfarçar com `desactivation` se o jogador fugir — Seção 30); ao morrer, libera a mesma recompensa que o baú normal teria dado, abrindo a mesma UI de 3 opções.
 - **Escolha da recompensa:** a UI de 3 pergaminhos/cartas **pausa o jogo** (Seção 9) e o jogador escolhe **1 das 3 opções clicando com o mouse** — não com E, Enter, ou qualquer tecla do teclado. Após a escolha, o buff é aplicado, a UI fecha, e o gameplay continua.
 
 ```text
@@ -1266,7 +1258,6 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Save Manager** — mantém um único slot de save de run; realiza autosave ao entrar na Loja após o encerramento normal de um dia; cada novo save sobrescreve o anterior, independentemente do modo; Continue carrega o último RunState salvo, que já contém o Mode (Seção 43).
 - **Pause Manager** — sistema central de pausa (Seção 9).
 - **Population Manager** — Minimum/Target/Maximum por Floor (Seção 23).
-- **Attack Budget Manager** — slots de ataque, Melee/Ranged separados (Seção 14).
 - **Loot Aggregation** — agregação visual, rolagens independentes (Seção 38).
 - **Employee Virtualization** — contagem lógica vs. simulada (Seção 35).
 - **Floor Sleep/Activation Manager** — suspensão/virtualização de Floors fora da região ativa (Seção 24).
@@ -1278,7 +1269,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Chest System** — spawn em posições válidas da Floor Variant ativa, chance de Mimic, interação com E e abertura da UI de seleção de 3 cartas/recompensas; o Mimic adia essa UI até ser derrotado. Não exige um objeto de pergaminho físico coletável como requisito técnico (Seção 30).
 - **Remote Controller System** — abertura por Q, pausa (Seção 9), lista de Floors válidos por Active Floor Position, teleporte, cooldown, toggle de alcance A/B (Seção 26).
 - **Pickup System** — detecta loot válido (materiais econômicos coletáveis/vendáveis — Seção 37) dentro do Pickup Radius do jogador. Na coleta normal, respeita o Bag Filter, a capacidade da Bag e as regras de coleta parcial. Quando o Magnet está ativo, encaminha o loot para o fluxo de venda automática do Magnet, cuja regra de filtro ainda permanece pendente (Seção 29/53). Nome técnico não obrigatório.
-- **Combat Scope Resolver** — restringe a seleção de alvos de habilidades, pets, summons, Ajudantes e Attack Budget ao Floor atual do jogador (Seção 24), sem afetar a lógica Cross-Floor do Coletor (Seção 36).
+- **Combat Scope Resolver** — restringe a seleção de alvos de habilidades, pets, summons e Ajudantes ao Floor atual do jogador (Seção 24), sem afetar a lógica Cross-Floor do Coletor (Seção 36).
 
 ---
 
@@ -1288,10 +1279,10 @@ Responsabilidades conceituais (nomes ilustrativos):
 |---|---|
 | **GDD Mestre** (este documento) | Fonte de verdade estrutural |
 | **Hero Design Document** | Kits completos, frames de animação, coeficientes finais |
-| **Combat System Document** | Timing de ataque, projéteis, Attack Budget |
+| **Combat System Document** | Timing de ataque (Bosses/exceções), projéteis |
 | **Tower/Floor Document** | As 50 Floor Variants, posições de spawn, população por andar |
 | **Employee System Document** | IA detalhada, virtualização técnica |
-| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares, migrado nesta revisão |
+| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares. Atualizado na Sprint 16 pro modelo de combate simplificado (Seção 22), com exceções documentadas por ficha |
 | **Economy & Balance Document** ✅ *(parcial — `docs/gdd/economy-balance.md`)* | Tabela dos 15 tiers e valores dos 15 materiais migrados nesta revisão; curva de demanda, multiplicador de vida da forma de urso e demais valores 🔢 continuam pendentes |
 | **Chest & Card Document** | Pools de carta, curva de bônus, chance de Mimic |
 | **Quest Document** | Progresso das 3 linhas |
@@ -1382,7 +1373,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Combat / Floor Transition (Seção 24):** definir o comportamento de Persistent Areas, projéteis, summons e outros efeitos temporários deixados no Floor anterior ao trocar de Floor. Independentemente da solução futura, eles não podem continuar causando dano enquanto aquele Floor não for o Current Combat Floor — pendência localizada do Combat System, não crítica da máquina de estados.
 
 🔢 **Balanceamento:**
-Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Attack Budgets (Melee/Ranged), Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por andar, desbloqueio numérico do Mage e do Blood Mage, threshold do Boss Timer (~50s referência), curvas de Attack Speed por família de fonte, quantidade/distância de baús por Floor Variant, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37).
+Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por andar, desbloqueio numérico do Mage e do Blood Mage, threshold do Boss Timer (~50s referência), curvas de Attack Speed por família de fonte, quantidade/distância de baús por Floor Variant, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37).
 
 ---
 

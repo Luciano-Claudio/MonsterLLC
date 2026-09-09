@@ -55,9 +55,7 @@ public abstract class HeroController : MonoBehaviour
         Vector2 toMouse = (Vector2)worldPoint - (Vector2)transform.position;
         if (toMouse.sqrMagnitude < 0.0001f) return;
 
-        float angle = Mathf.Atan2(toMouse.y, toMouse.x) * Mathf.Rad2Deg;
-        float snappedAngle = Mathf.Round(angle / 45f) * 45f;
-        AimDirection = new Vector2(Mathf.Cos(snappedAngle * Mathf.Deg2Rad), Mathf.Sin(snappedAngle * Mathf.Deg2Rad));
+        AimDirection = DirectionUtility.SnapTo8Directions(toMouse);
     }
 
     private void HandleEnemyKilled(int energyValue)
