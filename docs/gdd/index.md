@@ -340,7 +340,7 @@ Além da categoria de comportamento em voo (tabela acima), todo projétil — de
 
 Este sistema existia pra evitar que muitos monstros entrassem em "estado de ataque" ao mesmo tempo — fazia sentido no modelo de combate com Telegraph/Hitbox/Recovery (Seção 22, versão anterior). Esse modelo foi testado na prática na Sprint 16 e substituído, por padrão, por dano de contato (Melee) e auto-disparo em alcance (Ranged), cada um limitado só pelo próprio cooldown do monstro — não existe mais um "estado de ataque" discreto pra limitar entre vários monstros ao mesmo tempo.
 
-**O que substitui isso:** nada precisa substituir — múltiplos monstros comuns podem causar dano por contato/disparo simultaneamente sem limite artificial, igual ao gênero de referência (Vampire Survivors). O único controle de "quantos monstros existem" continua sendo o Population System (Seção 23). Bosses e as exceções documentadas no Bestiário (Seção 51) que ainda usam telegraph real (Goblin Sapper, Orc Shaman, Serpent) não precisam de budget — cada um só tem sua própria instância de ação especial (bomba, totem, exposição) rodando por vez.
+**O que substitui isso:** nada substitui o Attack Budget em si — não existe mais um "estado de ataque" discreto pra limitar. O Population System (Seção 23) continua sendo o único controle de **quantos monstros existem** no Floor. Mas surgiu, separadamente, um limitador de um eixo diferente — **quantos Melee ficam em contato simultâneo com o jogador** (não é sobre atacar, é sobre lotação física perto dele): o `MeleeAttackSlotManager` (Seção 22, "Lotação perto do jogador — flanco"), teto configurável por Floor (padrão 12), quem não cabe fica flanqueando num anel em vez de amontoar. Não é o Attack Budget ressuscitado — não limita ataques nem existe por AttackType, só por Melee, e resolve um problema de legibilidade visual de horda, não de timing de combate. Bosses e as exceções documentadas no Bestiário (Seção 51) que ainda usam Animation Event real (Goblin Sapper, Orc Shaman, Serpent) não participam do flanco nem precisam de budget — cada um só tem sua própria instância de ação especial (bomba, totem, exposição) rodando por vez.
 
 ---
 
@@ -587,8 +587,8 @@ Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns")
 
 Regra principal: **um andar nunca deve parecer vazio.** ✅
 
-### Population System — o único controle de quantidade ✅
-Population System determina **quantos monstros existem** no Floor. Desde a remoção do Attack Budget (Seção 14, Sprint 16), não existe mais um segundo sistema limitando quantos causam dano simultaneamente — todo monstro comum ativo pode causar dano por contato/disparo, respeitando só o próprio cooldown individual.
+### Population System — o único controle de quantos monstros existem ✅
+Population System determina **quantos monstros existem** no Floor. Desde a remoção do Attack Budget (Seção 14, Sprint 16), não existe mais um sistema limitando quantos monstros comuns podem *atacar* simultaneamente — cada um respeita só o próprio cooldown individual. Existe, separadamente, um limitador de um eixo diferente: quantos **Melee** podem ficar em **contato simultâneo** com o jogador (Seção 22, "Lotação perto do jogador — flanco", `MeleeAttackSlotManager`) — não é sobre atacar, é sobre lotação visual de horda; quem não cabe flanqueia em vez de amontoar. Ranged não é afetado por isso.
 
 ### Três valores por andar 🟡
 Minimum Population, Target Population, Maximum Population. Reposição gradual abaixo do Target.
