@@ -55,7 +55,7 @@ public class MeleeEnemyController : EnemyController
         }
 
         // chegou no anel de flanco sem vaga garantida — tenta pegar uma agora
-        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot())
+        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot(ownerFloor))
         {
             hasAttackSlot = true;
             SetMoving(true);
@@ -83,7 +83,7 @@ public class MeleeEnemyController : EnemyController
 
         // tenta de novo a cada frame enquanto flanqueia — barato (comparação de int) e
         // garante que a vaga seja ocupada assim que alguém morrer/liberar, sem atraso.
-        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot())
+        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot(ownerFloor))
             hasAttackSlot = true;
     }
 
@@ -129,7 +129,7 @@ public class MeleeEnemyController : EnemyController
     protected override void Die()
     {
         if (hasAttackSlot && MeleeAttackSlotManager.Instance != null)
-            MeleeAttackSlotManager.Instance.ReleaseSlot();
+            MeleeAttackSlotManager.Instance.ReleaseSlot(ownerFloor);
 
         base.Die();
     }
