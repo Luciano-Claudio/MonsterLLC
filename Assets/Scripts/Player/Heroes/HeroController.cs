@@ -43,6 +43,11 @@ public abstract class HeroController : MonoBehaviour
     protected virtual void Update()
     {
         if (!GameplayGate.IsActive) return;
+        // Quando a animação do Herói for wireada (Animator com IsMoving/Walk), o Translate
+        // abaixo precisa ser gateado por AnimatorStateCheck.IsInState(animator, "Walk"),
+        // igual já é feito no EnemyController — nunca mover o transform antes do Animator
+        // realmente entrar no estado Walk (evita deslizar durante uma transição com Exit
+        // Time, ex.: saindo de um Idle que ainda não terminou de tocar).
         transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
     }
 

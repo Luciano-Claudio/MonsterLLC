@@ -7,20 +7,36 @@ public abstract class EnemyController : MonoBehaviour
     public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
     public FloorDefinition ownerFloor;
 
+    [Header("Patrulha (GDD Seção 22 — idle/walk aleatório antes de detectar o jogador)")]
+    [SerializeField] private float minIdleDuration = 1.5f;
+    [SerializeField] private float maxIdleDuration = 3.5f;
+    [SerializeField] private float minWalkDuration = 2f;
+    [SerializeField] private float maxWalkDuration = 4f;
+    [SerializeField] private float patrolRadius = 3f;
+
+    // Falso pra monstros que nunca têm animação de attack real (ex.: Slimes — só contato,
+    // pra sempre). Verdadeiro é o padrão pra todo o resto do Melee/Ranged comum.
+    [Header("Animação de ataque (arte real + Animation Event)")]
+    [SerializeField] protected bool hasAttackAnimation = true;
+
     // Rede de segurança — se o Animation Event de fim de ataque nunca disparar (clipe
     // sem o evento configurado, erro de setup), o ataque força o próprio fim depois
     // desse tempo em vez de travar o inimigo pra sempre em "Attacking".
-    public float maxAttackDuration = 5f;
+    public float maxAttackAnimationDuration = 5f;
 
-    // Mesma rede de segurança, pro clipe de die — se o Animation Event de fim nunca
-    // disparar, força a destruição depois desse tempo em vez de deixar o cadáver
-    // parado em cena pra sempre.
+    // Mesma rede de segurança, pro clipe de die.
     public float maxDieDuration = 3f;
 
     protected Transform player;
-    protected Vector2 lockedTargetPosition; // travada no início do ataque (GDD Seção 22) — não atualiza até o hit
-    private float lastAttackTime = -999f;
-    private float attackElapsed;
+    protected PatrolAI patrolAI;
+    protected AttackCooldown attackAnimationCooldown;
+    protected bool isInCombat;
+
+    private enum AttackAnimState { Idle, Attacking }
+    private AttackAnimState attackAnimState = AttackAnimState.Idle;
+    private float attackAnimElapsed;
+
+    private Vector2 spawnOrigin;
     private float dieElapsed;
     private bool isDead;
     private bool dieHandled; // evita destruir/dropar loot duas vezes (evento + timeout de segurança)
@@ -31,15 +47,15 @@ public abstract class EnemyController : MonoBehaviour
 
     private const float DamageFlashDuration = 0.08f;
 
-    private enum AttackState { Idle, Attacking }
-    private AttackState attackState = AttackState.Idle;
-
     protected virtual void Awake()
     {
-        animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving)
+        animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving/SetInCombat/SetMoveDirection)
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
-        SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move()/ataque, deixando o Blend Tree de Idle indefinido por alguns frames
+        spawnOrigin = transform.position;
+        patrolAI = new PatrolAI(minIdleDuration, maxIdleDuration, minWalkDuration, maxWalkDuration);
+        attackAnimationCooldown = new AttackCooldown(stats.attackAnimationCooldown);
+        SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move(), deixando o Blend Tree de Idle indefinido por alguns frames
     }
 
     // Unity sobrecarrega "==" / "!=" pra detectar objetos destruídos/inexistentes, mas o
@@ -68,6 +84,8 @@ public abstract class EnemyController : MonoBehaviour
         {
             // O objeto continua existindo (de propósito) enquanto o clipe "die" toca —
             // a destruição real só acontece via AnimationDieEndEvent (Animation Event).
+            // Timer manual, não Coroutine: Coroutine não respeita o GameplayGate (decisão
+            // da Sprint 13) — continuaria contando durante a pausa.
             dieElapsed += Time.deltaTime;
             if (dieElapsed >= maxDieDuration)
             {
@@ -79,48 +97,140 @@ public abstract class EnemyController : MonoBehaviour
 
         if (player == null) return;
 
-        if (attackState != AttackState.Idle)
+        if (hasAttackAnimation) attackAnimationCooldown.Tick(Time.deltaTime);
+
+        if (attackAnimState == AttackAnimState.Attacking)
         {
-            attackElapsed += Time.deltaTime;
-            if (attackElapsed >= maxAttackDuration)
+            // Comprometido com a animação de ataque de verdade — não persegue, não
+            // reinicia outro ataque no meio dela.
+            attackAnimElapsed += Time.deltaTime;
+            if (attackAnimElapsed >= maxAttackAnimationDuration)
             {
                 Debug.LogWarning($"[{GetType().Name}] AnimationAttackEndEvent nunca chegou — forçando fim do ataque (verifique o Animator Controller).");
-                EndAttack();
+                EndAttackAnimation();
             }
-            return; // travado durante o próprio ataque — não persegue nem re-ataca no meio da animação
+            return;
         }
 
-        float distance = Vector2.Distance(transform.position, player.position);
+        if (!isInCombat) UpdatePatrol();
+        else UpdateCombat();
+    }
 
-        if (distance <= stats.attackRadius)
+    // GDD Seção 22: antes de detectar o jogador, alterna idle/walk aleatoriamente. A
+    // detecção troca pra combate imediatamente — quem garante que o "idle" de patrulha
+    // não corta visualmente no meio é só o Exit Time da transição no Animator
+    // (Idle -> Walk / Idle -> IdleCombat), não um atraso aqui no código. Um atraso
+    // code-side chegou a existir aqui, mas usava o timer da fase de patrulha inteira
+    // (até maxWalkDuration, vários segundos) em vez do tamanho real do clipe — o monstro
+    // ficava "ignorando" o jogador por tempo demais. Removido.
+    private void UpdatePatrol()
+    {
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        if (distanceToPlayer <= stats.observationRadius)
         {
-            SetMoving(false);
-            TryStartAttack();
+            isInCombat = true;
+            return;
         }
-        else if (distance <= stats.observationRadius)
+
+        patrolAI.Tick(Time.deltaTime, () => spawnOrigin + Random.insideUnitCircle * patrolRadius);
+
+        // A fase "Walking" do PatrolAI dura um tempo aleatório fixo, sem saber a
+        // distância real até o alvo — se o monstro chega no alvo antes desse tempo
+        // acabar, IsMoving precisa cair pra false na hora. Sem isso, o Walk continua
+        // tocando parado até o timer da fase estourar, mesmo o monstro já tendo parado.
+        Vector2 toTarget = patrolAI.WalkTarget - (Vector2)transform.position;
+        bool moving = patrolAI.CurrentPhase == PatrolPhase.Walking && toTarget.sqrMagnitude >= 0.0001f;
+
+        SetMoving(moving);
+        SetInCombat(false);
+        if (moving)
         {
-            SetMoving(true);
-            Move();
-        }
-        else
-        {
-            SetMoving(false);
+            toTarget.Normalize();
+            MoveInDirection(toTarget);
         }
     }
 
-    protected abstract void Move();
-    protected abstract void ExecuteHit(); // dano de verdade acontece aqui — chamado pelo AnimationHitEvent, no frame exato em que a animação conecta
-    protected abstract AttackType AttackType { get; }
-    protected virtual void OnAttackStarted() { } // hook pra setup extra no início do ataque (ex.: direção do Rat People)
+    // Move o transform de verdade só quando o Animator já entrou no estado "Walk" — nunca
+    // no frame em que só a intenção (IsMoving) foi marcada. Sem isso, a entidade desliza
+    // pela tela ainda com a pose de Idle enquanto a transição (que tem Exit Time) espera
+    // o clipe de patrulha terminar.
+    protected void MoveInDirection(Vector2 direction)
+    {
+        SetMoveDirection(direction);
+        if (AnimatorStateCheck.IsInState(animator, "Walk"))
+            transform.Translate(direction * stats.moveSpeed * Time.deltaTime);
+    }
+
+    private void UpdateCombat()
+    {
+        SetInCombat(true);
+        // Direção de movimento != direção de mira: o Ranged foge do player (MoveX/MoveY
+        // aponta pra longe dele), mas continua precisando "olhar" pro player enquanto
+        // ataca/segura posição — daí o par separado (AimX/AimY), sempre recalculado em
+        // direção à posição real do player, independente de Move() estar fugindo,
+        // aproximando ou parado.
+        Vector2 toPlayer = player.position - transform.position;
+        SetAimDirection(toPlayer.normalized);
+        Move();
+        if (hasAttackAnimation) TryStartAttackAnimation();
+    }
+
+    protected abstract void Move(); // implementado por Melee (gruda no contato) e Ranged (mantém alcance, foge se o player chegar perto demais)
+    protected abstract void ExecuteAttackHit(); // golpe/disparo real — chamado pelo AnimationHitEvent, no frame exato em que a animação conecta
+    protected abstract bool InAttackRange(); // define o alcance que autoriza iniciar a animação de ataque (mesmo raio usado pelo contato/disparo)
+
+    private void TryStartAttackAnimation()
+    {
+        if (!InAttackRange()) return;
+        if (!attackAnimationCooldown.TryConsume()) return;
+
+        attackAnimState = AttackAnimState.Attacking;
+        attackAnimElapsed = 0f;
+        AnimatorTrigger("AttackTrigger");
+    }
+
+    // Chamado por um Animation Event no frame exato do clipe de ataque em que o golpe
+    // conecta (ou o projétil nasce) de verdade — a animação é a fonte de verdade do
+    // timing, não um timer.
+    public void AnimationHitEvent()
+    {
+        if (attackAnimState != AttackAnimState.Attacking) return; // proteção — evento chamado fora de hora não faz nada
+        ExecuteAttackHit();
+    }
+
+    // Chamado por um Animation Event no último frame do clipe de ataque.
+    public void AnimationAttackEndEvent()
+    {
+        if (attackAnimState != AttackAnimState.Attacking) return;
+        EndAttackAnimation();
+    }
+
+    private void EndAttackAnimation()
+    {
+        attackAnimState = AttackAnimState.Idle;
+    }
 
     protected void SetMoving(bool isMoving)
     {
         if (animator != null) animator.SetBool("IsMoving", isMoving);
     }
 
-    // Alimenta um Blend Tree 2D (Freeform Directional) de walk/attack/damage — direção
-    // crua, sem arredondar pra 8 direções, pra deixar a interpolação do Blend Tree suave.
-    // Funciona igual com monstros de 4 direções (só diagonais) ou 8.
+    // GDD Seção 22: true sempre que o monstro está em combate (perseguindo OU parado
+    // esperando o cooldown) — junto com IsMoving, decide se o Animator mostra Walk ou
+    // IdleCombat em vez do Idle de patrulha.
+    protected void SetInCombat(bool inCombat)
+    {
+        if (animator != null) animator.SetBool("InCombat", inCombat);
+    }
+
+    // Última direção de mira não-nula (rumo ao player) — o GameObject nunca vira, só a
+    // sprite muda conforme o Blend Tree, então isso é o único jeito de saber "pra que
+    // lado o monstro está olhando" num dado instante (ex.: pra escolher qual dos 4
+    // triggers de ataque diagonal checar no golpe real — ver MeleeEnemyController).
+    protected Vector2 AimDirection { get; private set; } = Vector2.down;
+
+    // Alimenta MoveX/MoveY — Blend Tree 2D (Freeform Directional) do Walk, direção de
+    // movimento crua (pode ser fuga, aproximação, o que for).
     protected void SetMoveDirection(Vector2 direction)
     {
         if (animator == null) return;
@@ -128,41 +238,15 @@ public abstract class EnemyController : MonoBehaviour
         animator.SetFloat("MoveY", direction.y);
     }
 
-    private void TryStartAttack()
+    // Alimenta AimX/AimY — Blend Tree 2D (Freeform Directional) do Attack e do
+    // IdleCombat, sempre em direção ao player de verdade, independente de pra onde o
+    // monstro está se movendo.
+    protected void SetAimDirection(Vector2 direction)
     {
-        if (Time.time - lastAttackTime < stats.attackCooldown) return;
-        if (!AttackBudgetManager.Instance.TryReserveSlot(ownerFloor, AttackType)) return; // sem slot — fica esperando, tenta de novo no próximo frame
-        lastAttackTime = Time.time;
-        lockedTargetPosition = player.position; // GDD Seção 22: alvo trava no início da animação, não continua atualizando até o impacto
-        attackState = AttackState.Attacking;
-        attackElapsed = 0f;
-
-        SetMoveDirection((lockedTargetPosition - (Vector2)transform.position).normalized);
-
-        AnimatorTrigger("AttackTrigger");
-        OnAttackStarted();
-        Debug.Log($"[{GetType().Name}] Ataque iniciado — aguardando Animation Event...");
-    }
-
-    // Chamado por um Animation Event no frame exato do clipe de ataque em que o golpe
-    // conecta de verdade — a animação é a fonte de verdade do timing, não um timer.
-    public void AnimationHitEvent()
-    {
-        if (attackState != AttackState.Attacking) return; // proteção — evento chamado fora de hora não faz nada
-        ExecuteHit();
-    }
-
-    // Chamado por um Animation Event no último frame do clipe de ataque.
-    public void AnimationAttackEndEvent()
-    {
-        if (attackState != AttackState.Attacking) return;
-        EndAttack();
-    }
-
-    private void EndAttack()
-    {
-        attackState = AttackState.Idle;
-        AttackBudgetManager.Instance.ReleaseSlot(ownerFloor, AttackType);
+        if (direction.sqrMagnitude > 0.0001f) AimDirection = direction;
+        if (animator == null) return;
+        animator.SetFloat("AimX", direction.x);
+        animator.SetFloat("AimY", direction.y);
     }
 
     public void TakeDamage(float amount)
@@ -177,10 +261,11 @@ public abstract class EnemyController : MonoBehaviour
             return;
         }
 
-        // Receber dano != reagir visualmente != interromper uma ação. Comprometido com
-        // um ataque, o dano nunca cancela a animação — só um flash leve, sem trocar de
-        // estado no Animator. Fora de ataque, toca a reação normal (estado Damage).
-        if (attackState == AttackState.Attacking) TriggerDamageFlash();
+        // Receber dano != reagir visualmente != interromper uma ação. Comprometido com a
+        // animação de ataque de verdade, o dano nunca cancela ela — só um flash leve, sem
+        // trocar de estado no Animator (não existe transição Attack -> Damage). Fora do
+        // ataque, toca a reação normal (DamageTrigger).
+        if (attackAnimState == AttackAnimState.Attacking) TriggerDamageFlash();
         else AnimatorTrigger("DamageTrigger");
     }
 
@@ -193,7 +278,7 @@ public abstract class EnemyController : MonoBehaviour
 
     // Timer manual em vez de Coroutine com WaitForSeconds — Coroutine não respeita
     // GameplayGate (decisão da Sprint 13): o flash continuaria contando e revertendo
-    // a cor durante a pausa, já que o projeto pausa por flag manual, não Time.timeScale.
+    // a cor durante a pausa.
     private void UpdateDamageFlash()
     {
         if (damageFlashTimer <= 0f) return;
@@ -205,18 +290,17 @@ public abstract class EnemyController : MonoBehaviour
     {
         isDead = true;
         Debug.Log($"[{GetType().Name}] Morreu — aguardando Animation Event de fim do die...");
+
+        var collider = GetComponent<Collider2D>();
+        if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca
+
         AnimatorTrigger("DieTrigger");
-
-        // Morreu no meio do próprio ataque — sem isso o slot do AttackBudgetManager
-        // nunca seria liberado (vazamento permanente).
-        if (attackState != AttackState.Idle) AttackBudgetManager.Instance.ReleaseSlot(ownerFloor, AttackType);
-
         GameEvents.EnemyKilled(energyReward);
     }
 
     // Chamado por um Animation Event no último frame do clipe "die" — a animação é a
-    // fonte de verdade do timing, igual ataque: o GameObject só é destruído e o loot só
-    // aparece depois que a morte terminou de tocar por completo (GDD Seção 22).
+    // fonte de verdade do timing: o GameObject só é destruído e o loot só aparece
+    // depois que a morte terminou de tocar por completo (GDD Seção 22).
     public void AnimationDieEndEvent()
     {
         if (dieHandled) return; // proteção — evento + timeout de segurança não destroem/dropam duas vezes

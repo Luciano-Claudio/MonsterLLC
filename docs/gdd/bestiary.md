@@ -2,21 +2,23 @@
 
 > **Documento Especializado**, referenciado pelo GDD Mestre (Seção 22 — arquitetura de comportamento — e Seção 51 — lista de documentos especializados). Fonte: documento de visão original do jogo, migrado para cá para deixar de depender de um PDF solto. O GDD Mestre Seção 22 continua sendo a fonte de verdade da **arquitetura** de combate (categorias, comportamento padrão, exceções) que toda criatura listada aqui precisa seguir quando implementada.
 
-## Regra padrão de combate (Sprint 16 — decisão tomada, ver GDD Seção 22) ✅
+## Regra padrão de combate (Sprint 16, correção — decisão final, ver GDD Seção 22) ✅
 
-A pendência de viabilidade (timing/telegraph completo vs. simplificação estilo Vampire Survivors) foi testada na prática na Sprint 16 e **resolvida**: o Bestiário segue o modelo simplificado por padrão, com exceções pontuais documentadas ficha a ficha.
+A pendência de viabilidade (timing/telegraph completo vs. simplificação estilo Vampire Survivors) passou por duas rodadas de teste na Sprint 16: primeiro o modelo completo (Telegraph/Hitbox/Recovery), depois o modelo simplificado puro (contato/auto-disparo, sem `attack` nenhum). Nenhum dos dois ficou bom — o primeiro é caro demais pra produzir sozinho, o segundo perdeu a identidade visual do ataque. A decisão final é um meio-termo, descrito abaixo.
 
-- **Melee comum:** dano por **contato** — encostar no jogador causa dano, respeitando um cooldown próprio daquele monstro (não é dano infinito por frame). Sem telegraph, sem animação de ataque dedicada.
-- **Ranged comum:** **auto-dispara** um projétil ao entrar no alcance do jogador, respeitando cooldown próprio. Sem animação de disparo dedicada — o projétil só existe quando o cooldown libera.
-- **Animações padrão de todo monstro comum (Melee ou Ranged):** `idle` (patrulha, antes de detectar o jogador — toca até o fim, nunca é interrompida no meio para andar), `walk` (blend tree 2D direcional — NE/NW/SE/SW, ou as 8 direções quando o asset tiver), `idle_combat` (parado depois de detectar o jogador — colado nele, segurando alcance, ou esperando o cooldown liberar; blend tree simples de 4 direções), `damage`, `die`. **Sem `attack` dedicado.** Ver GDD Seção 22 ("Idle de patrulha vs. `idle_combat`") pra regra completa — vale pra todo mundo, inclusive exceções e Bosses com `attack` de verdade (que também usam `idle_combat` nos intervalos de cooldown entre um ataque real e outro).
-- **Attack Budget (GDD Seção 14) foi removido** — não existe mais limite de quantos monstros causam dano por contato/disparo ao mesmo tempo; população (GDD Seção 23) continua sendo o único controle de quantos monstros existem.
-- **Exceções documentadas, cada uma na própria ficha:** Goblin Sapper (Andar 1), Orc Shaman (Andar 3), Skeleton Rider (Andar 5, deixou de ser exceção — virou Melee comum), Burning Skull (Andar 6), Serpent (Andar 9), Bicephalous (Andar 9, só o projétil é especial). Todo o resto do Bestiário segue a regra padrão acima.
-- **Regra de reação a dano (GDD Seção 22): receber dano ≠ reagir visualmente ≠ interromper uma ação.** Um monstro comprometido com alguma ação especial (bomba do Sapper, totem do Shaman, exposição do Serpent) não tem essa ação cancelada por tomar dano normal — só recebe um feedback leve (flash), sem trocar de animação. Fora dessas ações especiais, dano toca a animação `damage` normalmente.
+- **Melee comum:** ataca com uma animação `attack` real (a arte que já existe), no seu próprio cooldown. Um **Animation Event** no frame do golpe ativa um **trigger direcional** fixo na frente do monstro (4 triggers, um por diagonal — o GameObject nunca vira, só a animação muda) — só causa dano se o jogador estiver dentro dele naquele instante exato; fora disso, o golpe erra. **Sem dano de contato passivo.**
+- **Ranged comum:** ataca com uma animação de conjuração real, no seu próprio cooldown — o projétil só nasce quando o **Animation Event** da animação dispara, mirando a posição real do jogador naquele instante (sem telegraph). Também sem dano de contato. Se o jogador chegar perto demais, o monstro se afasta pra manter distância.
+- **Animações padrão de todo monstro comum (Melee ou Ranged):** `idle` (patrulha, antes de detectar o jogador — toca até o fim, nunca é interrompida no meio para andar), `walk` (blend tree 2D direcional — NE/NW/SE/SW, ou as 8 direções quando o asset tiver), `idle_combat` (parado depois de detectar o jogador, entre um golpe/disparo e outro; blend tree simples de 4 direções), `attack` (com Animation Event), `damage`, `die`. Ver GDD Seção 22 ("Idle de patrulha vs. `idle_combat`") pra regra completa do `idle`/`idle_combat`.
+- **Direção de movimento ≠ direção de mira:** `MoveX`/`MoveY` alimentam o `walk` (podem apontar pra longe do jogador, ex.: Ranged fugindo); `AimX`/`AimY` alimentam `attack`/`idle_combat` e sempre apontam pro jogador de verdade, recalculados a cada frame de combate.
+- **Única exceção permanente: Slimes** (Slime Green/Blue comuns e Mother Slime Green/Blue) — ficam só no dano de contato, sem `attack`, pra sempre. Nenhum outro monstro comum ou boss simplificado tem esse tratamento.
+- **Attack Budget (GDD Seção 14) foi removido** — não existe mais limite de quantos monstros atacam ao mesmo tempo; população (GDD Seção 23) continua sendo o único controle de quantos monstros existem.
+- **Exceções com arquitetura própria além do padrão acima, cada uma na própria ficha:** Goblin Sapper (Andar 1), Orc Shaman (Andar 3, só o totem — o Shaman em si já segue o padrão), Skeleton Rider (Andar 5, deixou de ser exceção — virou Melee comum), Burning Skull (Andar 6), Serpent (Andar 9), Bicephalous (Andar 9, só o projétil é especial). Todo o resto do Bestiário segue a regra padrão acima.
+- **Regra de reação a dano (GDD Seção 22): receber dano ≠ reagir visualmente ≠ interromper uma ação.** Comprometido com a animação `attack`, o dano nunca cancela ela — só um flash leve, sem trocar de animação (não existe transição `Attack → Damage`). Fora do ataque, dano toca a animação `damage` normalmente.
 - Os valores de drop são valores-base por abate, antes de bônus de run, employees ou multiplicadores futuros.
 - Itens liberados em andares inferiores continuam disponíveis nos andares superiores.
 - Cada item de drop faz sua própria rolagem de chance, independente dos outros — um único monstro pode dropar vários tipos de item ao mesmo tempo (GDD Seção 38).
 - 🔢 Todos os valores de Dano/Vida estimados são referência do documento original — sujeitos a ajuste em playtest, não são valores finais travados.
-- O campo "Ataque" de cada ficha comum descreve o mecanismo real (contato normal ou projétil auto-disparado), não mais uma ação com nome próprio ("morde", "arranha", "espadada") — esse tipo de flavor agora vive só no nome do monstro e na sua "Função no combate".
+- O campo "Ataque" de cada ficha comum descreve o mecanismo real (golpe/disparo real via Animation Event, ou contato normal só pros Slimes), não mais uma ação com nome próprio ("morde", "arranha", "espadada") — esse tipo de flavor agora vive só no nome do monstro e na sua "Função no combate".
 
 ---
 
@@ -28,7 +30,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5-20 | Chance: 100%
@@ -36,7 +38,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Spirit Dust: 1-3 | Chance: 50%
   - Arcane Shard: 1 | Chance: 2%
   - Dark Crystal: 1 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 2 | **🔢 Vida estimada:** 5
 
@@ -44,7 +46,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 8-30 | Chance: 100%
@@ -52,7 +54,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Spirit Dust: 2-4 | Chance: 50%
   - Arcane Shard: 2 | Chance: 2%
   - Dark Crystal: 2 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 3 | **🔢 Vida estimada:** 10
 
@@ -60,7 +62,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5-20 | Chance: 100%
@@ -68,7 +70,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Spirit Dust: 1-3 | Chance: 50%
   - Arcane Shard: 1 | Chance: 2%
   - Dark Crystal: 1 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 2 | **🔢 Vida estimada:** 5
 
@@ -76,7 +78,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador pulando
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em corpo a corpo. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Pula e ao contato causa dano no jogador. Após o dano acontecer, possui um pequeno intervalo até que possa dar dano novamente
+- **Ataque:** Dano por contato normal (cooldown próprio) — pula e causa dano ao encostar, **sem animação de ataque dedicada, único caso do jogo além das exceções nomeadas.** Fica assim pra sempre, mesmo com o resto do Melee tendo voltado a ter `attack` real.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5-20 | Chance: 100%
@@ -92,7 +94,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador pulando
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em corpo a corpo. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Pula e ao contato causa dano no jogador. Após o dano acontecer, possui um pequeno intervalo até que possa dar dano novamente
+- **Ataque:** Dano por contato normal (cooldown próprio) — pula e causa dano ao encostar, **sem animação de ataque dedicada, único caso do jogo além das exceções nomeadas.** Fica assim pra sempre, mesmo com o resto do Melee tendo voltado a ter `attack` real.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5-20 | Chance: 100%
@@ -108,7 +110,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 8-30 | Chance: 100%
@@ -116,7 +118,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Spirit Dust: 2-4 | Chance: 50%
   - Arcane Shard: 2 | Chance: 2%
   - Dark Crystal: 2 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 3 | **🔢 Vida estimada:** 10
 
@@ -132,7 +134,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Spirit Dust: 2-5 | Chance: 50%
   - Arcane Shard: 2 | Chance: 2%
   - Dark Crystal: 2 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 4 | **🔢 Vida estimada:** 8
 
@@ -176,7 +178,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 6 | **🔢 Vida estimada:** 30
 
@@ -184,7 +186,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 38-150 | Chance: 100%
@@ -193,7 +195,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 7 | **🔢 Vida estimada:** 35
 
@@ -201,7 +203,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 45-180 | Chance: 100%
@@ -210,7 +212,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 10 | **🔢 Vida estimada:** 40
 
@@ -218,7 +220,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 38-150 | Chance: 100%
@@ -227,7 +229,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 7 | **🔢 Vida estimada:** 35
 
@@ -235,7 +237,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 30-120 | Chance: 100%
@@ -244,7 +246,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 6 | **🔢 Vida estimada:** 30
 
@@ -252,7 +254,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 50-200 | Chance: 100%
@@ -261,7 +263,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Arcane Shard: 1-2 | Chance: 6%
   - Dark Crystal: 1 | Chance: 2%
   - Soul Fragment: 1 | Chance: 0,8%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 12 | **🔢 Vida estimada:** 50
 
@@ -273,7 +275,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 150-700 | Chance: 100%
@@ -283,7 +285,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 15 | **🔢 Vida estimada:** 100
 
@@ -291,7 +293,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 170-760 | Chance: 100%
@@ -301,7 +303,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 18 | **🔢 Vida estimada:** 110
 
@@ -309,7 +311,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar. Após morrer, aparecerá um warg e um orc blade.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 220-980 | Chance: 100%
@@ -319,14 +321,14 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 25 | **🔢 Vida estimada:** 130
 
-#### Orc Shaman — **Exceção à regra padrão** 🟡 *(o Shaman em si usa as animações padrão — a exceção está inteira no totem, prefab separado com sua própria arquitetura por Animation Event)*
+#### Orc Shaman — **Exceção à regra padrão** 🟡 *(o Shaman em si usa a animação de conjuração padrão de qualquer Ranged — a exceção está no que o Animation Event produz: um totem, não um projétil)*
 - **Tipo:** Suporte/Ranged especial (não lança projétil — planta totens no chão)
 - **Movimentação:** Persegue o jogador (ou reposiciona em relação a um aliado ferido) tentando ficar num raio onde consiga plantar um totem no alvo certo. Enquanto não tiver alvo válido, anda aleatoriamente.
-- **Comportamento:** Igual a um Ranged comum na parte de posicionamento (mantém distância, entra no cooldown de "ataque" ao ficar em alcance) — a diferença é o que o cooldown produz: em vez de instanciar um projétil, instancia um **totem** (prefab separado, com seu próprio `Animator`) na posição do alvo escolhido. O Orc Shaman não toca nenhuma animação de conjuração ao fazer isso — o totem simplesmente aparece, exatamente como um projétil de Ranged nasce ao liberar o cooldown, sem telegraph visual no próprio Shaman.
+- **Comportamento:** Igual a um Ranged comum — mantém distância, toca a animação `attack`/conjuração real no seu próprio cooldown. A diferença é o que o **Animation Event** dessa animação produz: em vez de instanciar um projétil, instancia um **totem** (prefab separado, com seu próprio `Animator`) na posição do alvo escolhido.
 - **Escolha de alvo/totem, nesta ordem de prioridade a cada disparo do cooldown:**
   1. **Totem de Heal** — se existir alguma unidade inimiga (incluindo ele mesmo) com vida < 100% e o Heal não estiver no próprio cooldown dele, planta o totem nos pés dela.
   2. **Totem de Fire** — senão, se o Fire não estiver em cooldown, planta nos pés do jogador (dano).
@@ -342,7 +344,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias (Orc Shaman):** `idle`, `walk`, `idle_combat`, `damage`, `die` — igual ao padrão de qualquer monstro comum, sem nenhuma animação de conjuração.
+- **Animações necessárias (Orc Shaman):** `idle`, `walk`, `idle_combat`, `attack`/`cast` (com Animation Event — spawna o totem, não um projétil), `damage`, `die` — igual ao padrão de qualquer Ranged comum.
 - **Animações necessárias (cada Totem — Heal/Fire/Ice, prefab próprio):** `totem_appear`, `totem_disappear` (com o Animation Event do efeito — ver acima).
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado (Fire):** 15 | **🔢 Cura estimada (Heal):** 🔢 pendente | **🔢 Duração do stun (Ice):** 🔢 pendente | **🔢 Vida estimada:** 100
@@ -351,7 +353,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 190-850 | Chance: 100%
@@ -361,7 +363,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 20 | **🔢 Vida estimada:** 120
 
@@ -369,7 +371,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 240-1.120 | Chance: 100%
@@ -379,7 +381,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 30 | **🔢 Vida estimada:** 150
 
@@ -387,7 +389,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque (que é mais alto um pouco pq ele possui uma lança). Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 220-1.000 | Chance: 100%
@@ -397,7 +399,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 25 | **🔢 Vida estimada:** 160
 
@@ -415,7 +417,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 18 | **🔢 Vida estimada:** 100
 
@@ -433,7 +435,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Dark Crystal: 1-3 | Chance: 7%
   - Soul Fragment: 1-2 | Chance: 3%
   - Corrupted Core: 1 | Chance: 0,7%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 20 | **🔢 Vida estimada:** 110
 
@@ -445,7 +447,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance corpo a corpo. Enquanto não detectar o jogador, fica andando aleatoriamente pelo andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo melee básico do andar, criado para pressionar o jogador e ocupar espaço durante os combates.
 - **Drops:**
   - Monster Essence: 800-4.000 | Chance: 100%
@@ -464,7 +466,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica andando aleatoriamente pelo andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada). Perdeu o salto com dano em área ao aterrissar — simplificado por completo.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. Perdeu o salto com dano em área ao aterrissar — simplificado por completo.
 - **Função no combate:** Inimigo de pressão e controle de área, criado para obrigar o jogador a abandonar posições e continuar se movimentando.
 - **Drops:**
   - Monster Essence: 1.120-5.600 | Chance: 100%
@@ -483,7 +485,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica andando aleatoriamente pelo andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo rápido de pressão, criado para reduzir o espaço de reação do jogador e dificultar reposicionamentos.
 - **Drops:**
   - Monster Essence: 880-4.400 | Chance: 100%
@@ -502,7 +504,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente pelo andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo melee de pressão com área frontal maior, criado para punir jogadores que permanecem próximos por muito tempo.
 - **Drops:**
   - Monster Essence: 1.040-5.200 | Chance: 100%
@@ -513,7 +515,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Soul Fragment: 3-13 | Chance: 10%
   - Corrupted Core: 1-6 | Chance: 3%
   - Elemental Shard: 1 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Brotherhood_v1.0
 - **🔢 Dano estimado:** 95 | **🔢 Vida estimada:** 620
 
@@ -521,7 +523,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se e tenta permanecer no alcance de sua lança, que é levemente maior que o alcance melee convencional. Enquanto não detectar o jogador, fica andando aleatoriamente pelo andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de controle de espaço, criado para ameaçar o jogador antes que ele consiga entrar confortavelmente em alcance corpo a corpo.
 - **Drops:**
   - Monster Essence: 1.120-5.600 | Chance: 100%
@@ -532,7 +534,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Soul Fragment: 3-14 | Chance: 10%
   - Corrupted Core: 1-7 | Chance: 3%
   - Elemental Shard: 1 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Brotherhood_v1.0
 - **🔢 Dano estimado:** 90 | **🔢 Vida estimada:** 700
 
@@ -551,7 +553,7 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
   - Soul Fragment: 2-12 | Chance: 10%
   - Corrupted Core: 1-6 | Chance: 3%
   - Elemental Shard: 1 | Chance: 0,5%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Brotherhood_v1.0
 - **🔢 Dano estimado:** 85 | **🔢 Vida estimada:** 520
 
@@ -565,7 +567,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Forma possuída de um Acolyte — mesmo GameObject, sprites e stats trocados no fim da animação `possession` (ver Acolyte, Andar 4 comum, e Dark Channeler, Andar 4 Bosses). Após a troca, persegue agressivamente o jogador e tenta permanecer em alcance de ataque.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Unidade fortalecida criada pelo Dark Channeler para aumentar rapidamente a pressão da luta.
 - **Drops:**
   - *Nenhum. É o mesmo Acolyte possuído — se ainda não morreu como Acolyte antes de ser transformado, dropa como Acolyte ao morrer nesta forma; a transformação em si não gera loot adicional.*
@@ -578,7 +580,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Forma possuída de um Hound — mesmo GameObject, sprites e stats trocados no fim da animação `possession` (ver Hound, Andar 4 comum, e Dark Channeler, Andar 4 Bosses). Após a troca, persegue agressivamente o jogador e tenta permanecer em alcance de mordida.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Unidade rápida fortalecida, criada para perseguir o jogador durante a luta contra o Dark Channeler.
 - **Drops:**
   - *Nenhum. É o mesmo Hound possuído — se ainda não morreu como Hound antes de ser transformado, dropa como Hound ao morrer nesta forma; a transformação em si não gera loot adicional.*
@@ -591,7 +593,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Forma possuída de um Zealot — mesmo GameObject, sprites e stats trocados no fim da animação `possession` (ver Zealot, Andar 4 comum, e Dark Channeler, Andar 4 Bosses). Após a troca, aproxima-se agressivamente e tenta permanecer em alcance de ataque.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Transformação pesada do Dark Channeler, criada para ocupar espaço e aumentar a ameaça melee durante a luta.
 - **Drops:**
   - *Nenhum. É o mesmo Zealot possuído — se ainda não morreu como Zealot antes de ser transformado, dropa como Zealot ao morrer nesta forma; a transformação em si não gera loot adicional.*
@@ -608,7 +610,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5.000-30.000 | Chance: 100%
@@ -620,7 +622,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 5-30 | Chance: 8%
   - Elemental Shard: 1-5 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 800 | **🔢 Vida estimada:** 2.200
 
@@ -628,7 +630,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5.500-33.000 | Chance: 100%
@@ -640,7 +642,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-33 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 2.200
 
@@ -648,7 +650,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador pulando
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em corpo a corpo. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5.000-30.000 | Chance: 100%
@@ -660,7 +662,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 5-30 | Chance: 8%
   - Elemental Shard: 1-5 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 1.760
 
@@ -668,7 +670,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 6.250-37.500 | Chance: 100%
@@ -680,7 +682,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-38 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 960 | **🔢 Vida estimada:** 2.860
 
@@ -700,7 +702,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-39 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.040 | **🔢 Vida estimada:** 3.080
 
@@ -708,7 +710,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 7.500-45.000 | Chance: 100%
@@ -720,7 +722,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 8-45 | Chance: 8%
   - Elemental Shard: 2-8 | Chance: 2%
   - Ancient Fragment: 2 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.120 | **🔢 Vida estimada:** 3.960
 
@@ -728,7 +730,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque (que é mais alto um pouco pq ele possui uma lança). Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 6.000-36.000 | Chance: 100%
@@ -740,7 +742,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-36 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 960 | **🔢 Vida estimada:** 2.860
 
@@ -748,7 +750,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 7.500-45.000 | Chance: 100%
@@ -760,7 +762,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 8-45 | Chance: 8%
   - Elemental Shard: 2-8 | Chance: 2%
   - Ancient Fragment: 2 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.040 | **🔢 Vida estimada:** 3.960
 
@@ -768,7 +770,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 8.000-48.000 | Chance: 100%
@@ -780,7 +782,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 8-48 | Chance: 8%
   - Elemental Shard: 2-8 | Chance: 2%
   - Ancient Fragment: 2 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.200 | **🔢 Vida estimada:** 4.400
 
@@ -788,7 +790,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5.000-30.000 | Chance: 100%
@@ -800,7 +802,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 5-30 | Chance: 8%
   - Elemental Shard: 1-5 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 1.760
 
@@ -820,7 +822,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 5-30 | Chance: 8%
   - Elemental Shard: 1-5 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 1.650
 
@@ -840,7 +842,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-36 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.080 | **🔢 Vida estimada:** 1.540
 
@@ -860,7 +862,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-33 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 920 | **🔢 Vida estimada:** 1.760
 
@@ -880,7 +882,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-38 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.120 | **🔢 Vida estimada:** 1.650
 
@@ -888,7 +890,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 6.000-36.000 | Chance: 100%
@@ -900,7 +902,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-36 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Enchanted_Companions_v1.0
 - **🔢 Dano estimado:** 1.000 | **🔢 Vida estimada:** 1.760
 
@@ -908,7 +910,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica parado, como se fosse parte do cenário da sala.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 7.000-42.000 | Chance: 100%
@@ -928,7 +930,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada). Perdeu o duplo-hit de ida e volta da espadada — simplificado por completo.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. Perdeu o duplo-hit de ida e volta da espadada — simplificado por completo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 7.500-45.000 | Chance: 100%
@@ -940,7 +942,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 8-45 | Chance: 8%
   - Elemental Shard: 2-8 | Chance: 2%
   - Ancient Fragment: 2 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 1.440 | **🔢 Vida estimada:** 2.420
 
@@ -948,7 +950,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 5.500-33.000 | Chance: 100%
@@ -960,7 +962,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-33 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 800 | **🔢 Vida estimada:** 2.640
 
@@ -988,7 +990,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 6.500-39.000 | Chance: 100%
@@ -1000,7 +1002,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-39 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.040 | **🔢 Vida estimada:** 3.080
 
@@ -1012,7 +1014,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 70.000-420.000 | Chance: 100%
@@ -1025,7 +1027,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 14-84 | Chance: 8%
   - Ancient Fragment: 4-28 | Chance: 3%
   - Infernal Ash: 1-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 26.000 | **🔢 Vida estimada:** 96.000
 
@@ -1033,7 +1035,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 75.000-450.000 | Chance: 100%
@@ -1046,7 +1048,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 15-90 | Chance: 8%
   - Ancient Fragment: 4-30 | Chance: 3%
   - Infernal Ash: 2-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 20.000 | **🔢 Vida estimada:** 108.000
 
@@ -1054,7 +1056,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 85.000-510.000 | Chance: 100%
@@ -1067,7 +1069,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 17-102 | Chance: 8%
   - Ancient Fragment: 5-34 | Chance: 3%
   - Infernal Ash: 2-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 30.000 | **🔢 Vida estimada:** 132.000
 
@@ -1088,7 +1090,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 12-72 | Chance: 8%
   - Ancient Fragment: 4-24 | Chance: 3%
   - Infernal Ash: 1-2 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 26.000 | **🔢 Vida estimada:** 48.000
 
@@ -1109,7 +1111,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 11-66 | Chance: 8%
   - Ancient Fragment: 3-22 | Chance: 3%
   - Infernal Ash: 1-2 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 24.000 | **🔢 Vida estimada:** 45.000
 
@@ -1117,7 +1119,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada). *("Explosão" vira só o visual do dano de contato — repete com cooldown normal, não é suicídio como o Burning Skull.)*
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. *(A "explosão" é a própria animação `attack` — dispara no cooldown normal, repetível, não causa dano nele mesmo, e não é suicídio como o Burning Skull.)*
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 65.000-390.000 | Chance: 100%
@@ -1130,7 +1132,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 13-78 | Chance: 8%
   - Ancient Fragment: 4-26 | Chance: 3%
   - Infernal Ash: 1-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 32.000 | **🔢 Vida estimada:** 60.000
 
@@ -1138,7 +1140,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 75.000-450.000 | Chance: 100%
@@ -1151,7 +1153,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 15-90 | Chance: 8%
   - Ancient Fragment: 4-30 | Chance: 3%
   - Infernal Ash: 2-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 24.000 | **🔢 Vida estimada:** 108.000
 
@@ -1159,7 +1161,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 75.000-450.000 | Chance: 100%
@@ -1172,7 +1174,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 15-90 | Chance: 8%
   - Ancient Fragment: 4-30 | Chance: 3%
   - Infernal Ash: 2-3 | Chance: 0,25%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 28.000 | **🔢 Vida estimada:** 90.000
 
@@ -1198,7 +1200,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Ancient Fragment: 24-240 | Chance: 8%
   - Infernal Ash: 2-12 | Chance: 2%
   - Chaos Crystal: 1 | Chance: 0,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Enchanted_Companions_v1.0
 - **🔢 Dano estimado:** 1.650.000 | **🔢 Vida estimada:** 4.000.000
 
@@ -1206,7 +1208,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 500.000-5.000.000 | Chance: 100%
@@ -1220,7 +1222,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Ancient Fragment: 20-200 | Chance: 8%
   - Infernal Ash: 2-10 | Chance: 2%
   - Chaos Crystal: 1 | Chance: 0,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 1.500.000 | **🔢 Vida estimada:** 4.000.000
 
@@ -1228,7 +1230,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 650.000-6.500.000 | Chance: 100%
@@ -1242,7 +1244,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Ancient Fragment: 26-260 | Chance: 8%
   - Infernal Ash: 3-13 | Chance: 2%
   - Chaos Crystal: 1 | Chance: 0,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 1.800.000 | **🔢 Vida estimada:** 6.000.000
 
@@ -1250,7 +1252,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 850.000-8.500.000 | Chance: 100%
@@ -1264,7 +1266,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Ancient Fragment: 34-340 | Chance: 8%
   - Infernal Ash: 3-17 | Chance: 2%
   - Chaos Crystal: 2 | Chance: 0,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 2.250.000 | **🔢 Vida estimada:** 10.000.000
 
@@ -1272,7 +1274,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 750.000-7.500.000 | Chance: 100%
@@ -1286,7 +1288,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Ancient Fragment: 30-300 | Chance: 8%
   - Infernal Ash: 3-15 | Chance: 2%
   - Chaos Crystal: 2 | Chance: 0,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 2.100.000 | **🔢 Vida estimada:** 7.000.000
 
@@ -1313,7 +1315,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Infernal Ash: 14-140 | Chance: 8%
   - Chaos Crystal: 3-28 | Chance: 2%
   - Nightmare Residue: 1 | Chance: 0,15%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 420.000.000 | **🔢 Vida estimada:** 1.000.000.000
 
@@ -1336,7 +1338,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Infernal Ash: 10-100 | Chance: 8%
   - Chaos Crystal: 2-20 | Chance: 2%
   - Nightmare Residue: 1 | Chance: 0,15%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 300.000.000 | **🔢 Vida estimada:** 600.000.000
 
@@ -1344,7 +1346,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 17.000.000-170.000.000 | Chance: 100%
@@ -1359,7 +1361,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Infernal Ash: 17-170 | Chance: 8%
   - Chaos Crystal: 3-34 | Chance: 2%
   - Nightmare Residue: 2 | Chance: 0,15%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 390.000.000 | **🔢 Vida estimada:** 2.000.000.000
 
@@ -1371,7 +1373,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 500.000.000-5.000.000.000 | Chance: 100%
@@ -1387,7 +1389,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 100-1.000 | Chance: 8%
   - Nightmare Residue: 5-50 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 200.000.000.000 | **🔢 Vida estimada:** 700.000.000.000
 
@@ -1419,7 +1421,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 700.000.000-7.000.000.000 | Chance: 100%
@@ -1435,7 +1437,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 140-1.400 | Chance: 8%
   - Nightmare Residue: 7-70 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 260.000.000.000 | **🔢 Vida estimada:** 980.000.000.000
 
@@ -1443,7 +1445,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 550.000.000-5.500.000.000 | Chance: 100%
@@ -1459,7 +1461,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 110-1.100 | Chance: 8%
   - Nightmare Residue: 6-55 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 230.000.000.000 | **🔢 Vida estimada:** 630.000.000.000
 
@@ -1483,7 +1485,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 120-1.200 | Chance: 8%
   - Nightmare Residue: 6-60 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 240.000.000.000 | **🔢 Vida estimada:** 560.000.000.000
 
@@ -1491,7 +1493,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada). Perdeu o dash com dano na trajetória — simplificado por completo.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. Perdeu o dash com dano na trajetória — simplificado por completo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 650.000.000-6.500.000.000 | Chance: 100%
@@ -1507,7 +1509,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 130-1.300 | Chance: 8%
   - Nightmare Residue: 6-65 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 300.000.000.000 | **🔢 Vida estimada:** 700.000.000.000
 
@@ -1531,7 +1533,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 140-1.400 | Chance: 8%
   - Nightmare Residue: 7-70 | Chance: 1,5%
   - Void Shard: 1 | Chance: 0,08%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **🔢 Dano estimado:** 240.000.000.000 | **🔢 Vida estimada:** 770.000.000.000
 
@@ -1543,7 +1545,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 50.000.000.000-500.000.000.000 | Chance: 100%
@@ -1561,7 +1563,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Void Shard: 5-25 | Chance: 3%
   - Celestial Fragment: 1 | Chance: 0,1%
   - Divine Core: 1 | Chance: 0,001%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 15.000.000.000.000 | **🔢 Vida estimada:** 40.000.000.000.000
 
@@ -1587,7 +1589,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Void Shard: 6-31 | Chance: 3%
   - Celestial Fragment: 1 | Chance: 0,2%
   - Divine Core: 1 | Chance: 0,0025%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 20.000.000.000.000 | **🔢 Vida estimada:** 45.000.000.000.000
 
@@ -1595,7 +1597,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 75.000.000.000-750.000.000.000 | Chance: 100%
@@ -1613,7 +1615,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Void Shard: 8-38 | Chance: 3%
   - Celestial Fragment: 2 | Chance: 0,35%
   - Divine Core: 2 | Chance: 0,005%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 18.000.000.000.000 | **🔢 Vida estimada:** 75.000.000.000.000
 
@@ -1621,7 +1623,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 87.500.000.000-875.000.000.000 | Chance: 100%
@@ -1639,7 +1641,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Void Shard: 9-44 | Chance: 3%
   - Celestial Fragment: 2 | Chance: 0,5%
   - Divine Core: 2 | Chance: 0,01%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 22.000.000.000.000 | **🔢 Vida estimada:** 60.000.000.000.000
 
@@ -1653,13 +1655,13 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Comportamento — ciclo de disfarce:**
   1. **Desativado (disfarçado):** aparece como um baú comum, parado, com a interação padrão de baú — tecla **E** some em cima dele para o jogador abrir. Não persegue, não causa dano, não usa `idle`/`walk` de monstro nessa fase.
   2. **Ativação:** ao interagir (E), toca a animação `activation`. Só depois que essa animação termina por completo é que ele "acorda" de verdade.
-  3. **Ativado:** vira um Melee comum — persegue o jogador, gruda nele quando alcança e causa dano por contato normal (cooldown próprio, sem animação de ataque dedicada). Usa `idle`/`walk`/`idle_combat` normalmente nessa fase.
+  3. **Ativado:** vira um Melee comum — persegue o jogador e ataca com uma animação `attack` real, igual a qualquer Melee comum (trigger direcional no golpe, Animation Event, sem dano de contato passivo). Usa `idle`/`walk`/`idle_combat`/`attack` normalmente nessa fase.
   4. **Desativação:** se o jogador se afastar o suficiente (sai do raio de observação dele), toca a animação `desactivation` e ele volta ao passo 1 — disfarçado de baú comum, interagível de novo com E.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada) — só ocorre na fase Ativado.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — mesmo mecanismo de qualquer Melee comum (trigger direcional, sem contato passivo) — só ocorre na fase Ativado.
 - **Função no combate:** Inimigo troll, criado para mostrar ao jogador que nem tudo é seguro na torre.
 - **Drops:**
   - Pergaminho do baú: 1 | Chance: 100%
-- **Animações necessárias:** idle, walk, idle_combat, damage, die, activation, desactivation.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage, die, activation, desactivation.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **Andar estimado:** Todos os andares podem nascer baús, uma porcentagem desses baús podem ser mimics
 - **Escala de stats — único monstro do jogo com essa regra:** ao contrário de todo o resto do Bestiário (que tem Dano/Vida fixos, definidos ficha a ficha por andar), o Chest Mimic calcula Dano e Vida em tempo real como uma **porcentagem** aplicada sobre uma base, crescendo conforme o andar em que ele nasceu (ex.: andar 1 tem a vida-base X, andar 8 tem X vezes Y%, e assim por diante). 🔢 fórmula exata (base X e multiplicador Y% por andar) pendente de balanceamento — a intenção de referência anterior era aproximar 1,3x o dano e 1,8x a vida de um monstro médio do andar, mas isso deixa de ser uma tabela fixa por andar e passa a ser essa fórmula percentual.
@@ -1672,7 +1674,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - *Nenhum. Summons do Bicephalous não geram loot para impedir farm infinito.*
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Nightmare_Creatures_v1.1
 - **Andar estimado:** é summon, não nasce automaticamente
 - **🔢 Dano estimado:** 80.000.000.000 | **🔢 Vida estimada:** 120.000.000.000
@@ -1687,7 +1689,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador pulando
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em corpo a corpo. Ao morrer, nascem 3 Slimes Green normais em **posições fixas** (3 pontos filhos do próprio GameObject do boss, não aleatórios).
-- **Ataque:** Pula e ao contato causa dano no jogador. Após o dano acontecer, possui um pequeno intervalo até que possa dar dano novamente
+- **Ataque:** Dano por contato normal (cooldown próprio) — pula e causa dano ao encostar, **sem animação de ataque dedicada, único caso do jogo além das exceções nomeadas.** Fica assim pra sempre, mesmo com o resto do Melee tendo voltado a ter `attack` real.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 50-200 | Chance: 100%
@@ -1703,7 +1705,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador pulando
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em corpo a corpo. Ao morrer, nascem 3 Slimes Blue normais em **posições fixas** (3 pontos filhos do próprio GameObject do boss, não aleatórios).
-- **Ataque:** Pula e ao contato causa dano no jogador. Após o dano acontecer, possui um pequeno intervalo até que possa dar dano novamente
+- **Ataque:** Dano por contato normal (cooldown próprio) — pula e causa dano ao encostar, **sem animação de ataque dedicada, único caso do jogo além das exceções nomeadas.** Fica assim pra sempre, mesmo com o resto do Melee tendo voltado a ter `attack` real.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 50-200 | Chance: 100%
@@ -1719,7 +1721,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada — igual a qualquer Melee comum).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo — igual a qualquer Melee comum.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 60-240 | Chance: 100%
@@ -1727,7 +1729,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Spirit Dust: 12-36 | Chance: 75%
   - Arcane Shard: 12 | Chance: 8%
   - Dark Crystal: 12 | Chance: 4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 10 | **🔢 Vida estimada:** 160
 
@@ -1757,7 +1759,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 450-1.800 | Chance: 100%
@@ -1766,7 +1768,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Arcane Shard: 15-30 | Chance: 12%
   - Dark Crystal: 15 | Chance: 8%
   - Soul Fragment: 15 | Chance: 6,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 35 | **🔢 Vida estimada:** 300
 
@@ -1774,7 +1776,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 540-2.160 | Chance: 100%
@@ -1783,7 +1785,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Arcane Shard: 18-36 | Chance: 12%
   - Dark Crystal: 18 | Chance: 8%
   - Soul Fragment: 18 | Chance: 6,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 40 | **🔢 Vida estimada:** 350
 
@@ -1791,7 +1793,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 720-2.880 | Chance: 100%
@@ -1800,7 +1802,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Arcane Shard: 24-48 | Chance: 12%
   - Dark Crystal: 24 | Chance: 8%
   - Soul Fragment: 24 | Chance: 6,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 50 | **🔢 Vida estimada:** 450
 
@@ -1828,7 +1830,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 3.000-14.000 | Chance: 100%
@@ -1838,7 +1840,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Dark Crystal: 20-60 | Chance: 14%
   - Soul Fragment: 20-40 | Chance: 12%
   - Corrupted Core: 20 | Chance: 5,6%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 130 | **🔢 Vida estimada:** 1440
 
@@ -1846,7 +1848,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 2.700-12.600 | Chance: 100%
@@ -1856,7 +1858,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Dark Crystal: 18-54 | Chance: 14%
   - Soul Fragment: 18-36 | Chance: 12%
   - Corrupted Core: 18 | Chance: 5,6%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
 - **🔢 Dano estimado:** 110 | **🔢 Vida estimada:** 1200
 
@@ -1864,7 +1866,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 2.250-10.500 | Chance: 100%
@@ -1874,7 +1876,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Dark Crystal: 15-45 | Chance: 14%
   - Soul Fragment: 15-30 | Chance: 12%
   - Corrupted Core: 15 | Chance: 5,6%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 90 | **🔢 Vida estimada:** 1000
 
@@ -1886,7 +1888,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Boss melee de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 14.400-72.000 | Chance: 100%
@@ -1897,7 +1899,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Soul Fragment: 36-180 | Chance: 20%
   - Corrupted Core: 18-90 | Chance: 12%
   - Elemental Shard: 18 | Chance: 4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Brotherhood_v1.0
 - **🔢 Dano estimado:** 400 | **🔢 Vida estimada:** 6.500
 
@@ -1905,7 +1907,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Boss melee resistente, criado para pressionar o jogador através de contato direto e alta durabilidade.
 - **Drops:**
   - Monster Essence: 16.000-80.000 | Chance: 100%
@@ -1916,7 +1918,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Soul Fragment: 40-200 | Chance: 20%
   - Corrupted Core: 20-100 | Chance: 12%
   - Elemental Shard: 20 | Chance: 4%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Dark_Brotherhood_v1.0
 - **🔢 Dano estimado:** 480 | **🔢 Vida estimada:** 8.000
 
@@ -1947,7 +1949,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 125.000-750.000 | Chance: 100%
@@ -1959,7 +1961,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 125-750 | Chance: 16%
   - Elemental Shard: 25-125 | Chance: 8%
   - Ancient Fragment: 25 | Chance: 3,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 7.000 | **🔢 Vida estimada:** 100.000
 
@@ -1988,7 +1990,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 110.000-660.000 | Chance: 100%
@@ -2000,7 +2002,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 110-660 | Chance: 16%
   - Elemental Shard: 22-110 | Chance: 8%
   - Ancient Fragment: 22 | Chance: 3,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 6.500 | **🔢 Vida estimada:** 75.000
 
@@ -2008,7 +2010,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** 🟡 Dano por contato normal (cooldown próprio, sem animação de ataque dedicada) — *(pendente: conflita com a regra híbrida atual, que dá `attack` real pra 100% do Melee. Mantido só no contato porque a ficha original já era um caso minimalista, "3 animações no total, idle dobra como movimento" — dar um `attack` de volta exigiria uma 4ª animação e quebraria essa economia deliberada. Precisa de uma decisão explícita: vira igual a todo mundo, ou continua como exceção pontual?)*
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 125.000-750.000 | Chance: 100%
@@ -2028,7 +2030,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 110.000-660.000 | Chance: 100%
@@ -2040,7 +2042,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 110-660 | Chance: 16%
   - Elemental Shard: 22-110 | Chance: 8%
   - Ancient Fragment: 22 | Chance: 3,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 6.500 | **🔢 Vida estimada:** 70.000
 
@@ -2048,7 +2050,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 110.000-660.000 | Chance: 100%
@@ -2060,7 +2062,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 110-660 | Chance: 16%
   - Elemental Shard: 22-110 | Chance: 8%
   - Ancient Fragment: 22 | Chance: 3,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 5.000 | **🔢 Vida estimada:** 80.000
 
@@ -2072,7 +2074,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada). Perdeu tanto a pisada em área quanto a sequência de 8 explosões — simplificado por completo.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. Perdeu tanto a pisada em área quanto a sequência de 8 explosões — usa um `attack` padrão como qualquer outro Melee, sem mecânica extra.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 1.500.000-9.000.000 | Chance: 100%
@@ -2085,7 +2087,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 300-1.800 | Chance: 16%
   - Ancient Fragment: 90-600 | Chance: 12%
   - Infernal Ash: 30-60 | Chance: 2%
-- **Animações necessárias:** idle, walk, idle_combat, damage, die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage, die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 225.000 | **🔢 Vida estimada:** 4.000.000
 
@@ -2093,7 +2095,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 1.250.000-7.500.000 | Chance: 100%
@@ -2106,7 +2108,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 250-1.500 | Chance: 16%
   - Ancient Fragment: 75-500 | Chance: 12%
   - Infernal Ash: 25-50 | Chance: 2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 180.000 | **🔢 Vida estimada:** 2.800.000
 
@@ -2114,7 +2116,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 1.500.000-9.000.000 | Chance: 100%
@@ -2127,7 +2129,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Elemental Shard: 300-1.800 | Chance: 16%
   - Ancient Fragment: 90-600 | Chance: 12%
   - Infernal Ash: 30-60 | Chance: 2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 210.000 | **🔢 Vida estimada:** 3.600.000
 
@@ -2187,7 +2189,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 400.000.000-4.000.000.000 | Chance: 100%
@@ -2202,7 +2204,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Infernal Ash: 400-4.000 | Chance: 16%
   - Chaos Crystal: 80-800 | Chance: 8%
   - Nightmare Residue: 40 | Chance: 1,2%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 4.200.000.000 | **🔢 Vida estimada:** 54.000.000.000
 
@@ -2214,7 +2216,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 22.500.000.000-225.000.000.000 | Chance: 100%
@@ -2230,7 +2232,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 4.500-45.000 | Chance: 16%
   - Nightmare Residue: 225-2.250 | Chance: 6%
   - Void Shard: 45 | Chance: 0,64%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 2.000.000.000.000 | **🔢 Vida estimada:** 28.000.000.000.000
 
@@ -2238,7 +2240,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 25.000.000.000-250.000.000.000 | Chance: 100%
@@ -2254,7 +2256,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 5.000-50.000 | Chance: 16%
   - Nightmare Residue: 250-2.500 | Chance: 6%
   - Void Shard: 50 | Chance: 0,64%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 2.800.000.000.000 | **🔢 Vida estimada:** 32.000.000.000.000
 
@@ -2262,7 +2264,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio, sem animação de ataque dedicada).
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 27.500.000.000-275.000.000.000 | Chance: 100%
@@ -2278,7 +2280,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Chaos Crystal: 5.500-55.000 | Chance: 16%
   - Nightmare Residue: 275-2.750 | Chance: 6%
   - Void Shard: 55 | Chance: 0,64%
-- **Animações necessárias:** idle, walk, idle_combat, damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 4.000.000.000.000 | **🔢 Vida estimada:** 36.000.000.000.000
 
@@ -2312,14 +2314,16 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 80.000.000.000.000 | **🔢 Vida estimada:** 2.000.000.000.000.000
 
-## Nota de encerramento — decisão de viabilidade de combate (resolvida na Sprint 16)
+## Nota de encerramento — decisão de viabilidade de combate (resolvida na Sprint 16, correção)
 
 O Bestiário assumia, por padrão, o sistema de combate completo desenhado nas Sprints 13-15 (Enemy Framework): timing de ataque configurável (Telegraph → Hitbox Ativa → Recovery), Attack Budget por categoria, e animações reais de `idle/walk/attack/damage/die` (com variantes direcionais `attack_orthogonal`/`attack_diagonal` nalguns rangeds). Isso foi testado na prática, com Animator real (não placeholder), em 3 monstros representativos (Rat, Goblin, Rat People) na Sprint 16.
 
-**Resultado do teste — contingência acionada.** A contingência já registrada no GDD Seção 22 ("Contingência — simplificação de monstros comuns") foi confirmada como a direção certa pro escopo solo: o Bestiário passa a seguir, por padrão, o modelo simplificado — Melee por contato, Ranged por auto-disparo em alcance, ambos com cooldown próprio, sem timing de Telegraph/Hitbox/Recovery nem Attack Budget. Ver a regra padrão completa no topo deste documento.
+**Primeira rodada — contingência acionada.** A contingência já registrada no GDD Seção 22 ("Contingência — simplificação de monstros comuns") foi acionada: o Bestiário passou a seguir, por padrão, o modelo totalmente simplificado — Melee por contato, Ranged por auto-disparo em alcance, ambos com cooldown próprio, sem timing de Telegraph/Hitbox/Recovery, sem `attack` nenhum e sem Attack Budget.
 
-**Isso não significa "sem exceção nenhuma".** Monstros com uma mecânica genuinamente distinta do padrão continuam documentados individualmente com sua própria arquitetura, orientada por Animation Events reais (não timer): Goblin Sapper, Orc Shaman, Burning Skull, Serpent e o projétil do Bicephalous. Skeleton Rider deixou de ser exceção (perdeu a mecânica de gerar 2 monstros ao morrer) e hoje segue o padrão comum.
+**Segunda rodada — meio-termo final.** Depois de testar esse modelo puro na prática (Sprint 16, correção), a simplificação total não ficou boa — faltava a identidade visual do ataque, e a arte já estava pronta pra usar. A decisão final, e a que vale hoje em todo este documento: **todo monstro comum e a maioria dos bosses voltam a ter uma animação `attack`/conjuração real, com Animation Event decidindo o instante do golpe/disparo**, mas sem o custo do telegraph completo — pro Melee, um trigger direcional simples (4 posições) substitui o cálculo de esquiva por reposicionamento; pro Ranged, o projétil nasce direto na posição real do jogador, sem posição travada. **O dano de contato passivo foi removido de vez** (não coexiste mais com o golpe real) — a única exceção permanente são os Slimes (comuns e Mother Slime Green/Blue), que ficam só no contato, sem `attack`, pra sempre. Attack Budget continua removido em definitivo. Ver a regra padrão completa no topo deste documento.
 
-**A mesma simplificação foi aplicada aos 30 bosses do jogo.** A maioria perdeu a animação `attack` dedicada e passou a causar dano por contato normal, igual a um Melee comum (Goblin King, Centaur King, Cave Troll, Giant, Pale Champion, Wise Orc, Flagelant, Ritual Guard, Zombie Giant, Undead Knight, Spectre, Headless Horseman, Mummy King, Ancient Danger Leader, Krampus, Supreme Elemental, Balrog, Lobster, Stickman, Ambuster). Um pequeno grupo manteve arquitetura própria por Animation Event, seja porque a mecânica não faz sentido sem ela ou porque é a própria identidade do boss: Mother Slime Green/Blue (spawn de 3 filhotes em posições fixas, como filhos do próprio boss), Rat People Royalty (`throw_ratpeople`), Spider Queen (mantém a teia, mas sem animação própria — dispara como um Ranged), Dark Channeler (transforma os 3 Acolyte/Hound/Zealot mais próximos), Lich, Dragon, Undead Dragon e Divine God — este último ganhando, além disso, uma camada extra de dano por contato somada à sua arquitetura completa.
+**Isso não significa "sem exceção nenhuma".** Monstros com uma mecânica genuinamente distinta do padrão (além dos Slimes) continuam documentados individualmente com sua própria arquitetura, orientada por Animation Events reais: Goblin Sapper, Orc Shaman (só o totem — o Shaman em si segue o padrão), Burning Skull, Serpent e o projétil do Bicephalous. Skeleton Rider deixou de ser exceção (perdeu a mecânica de gerar 2 monstros ao morrer) e hoje segue o padrão comum.
 
-**Sprint de referência:** Sprint 16 (`docs/sprint-16-task-breakdown.md`) — inclui o teste de esquiva real (`lockedTargetPosition`) que continua valendo pras exceções com telegraph de verdade, mesmo não valendo mais pro Melee/Ranged padrão (que agora reage em tempo real, sem posição travada).
+**A mesma regra híbrida vale pros 30 bosses do jogo.** A maioria mantém `attack` real (Goblin King, Centaur King, Cave Troll, Giant, Pale Champion, Wise Orc, Flagelant, Ritual Guard, Zombie Giant, Undead Knight, Headless Horseman, Mummy King, Ancient Danger Leader, Krampus, Supreme Elemental, Balrog, Lobster, Stickman, Ambuster) — perderam só a complexidade extra que tinham antes (telegraph, área, múltiplos hits), não a animação em si. `Spectre` é um caso pendente 🟡 (ver ficha, Andar 5 — conflita com o design minimalista de 3 animações que ele já tinha). Um pequeno grupo manteve arquitetura própria por Animation Event além do padrão, seja porque a mecânica não faz sentido sem ela ou porque é a própria identidade do boss: Mother Slime Green/Blue (só contato, como os Slimes comuns, mais o spawn de 3 filhotes em posições fixas), Rat People Royalty (`throw_ratpeople`), Spider Queen (mantém a teia, mas sem animação própria — dispara como um Ranged), Dark Channeler (transforma os 3 Acolyte/Hound/Zealot mais próximos), Lich, Dragon, Undead Dragon e Divine God — este último ganhando, além disso, uma camada extra de dano por contato somada à sua arquitetura completa (único boss que ainda tem contato).
+
+**Sprint de referência:** Sprint 16 (`docs/sprint-16-task-breakdown.md`, teste original) e Sprint 16 — Correção (`docs/sprint-16-correcao-task-breakdown.md`, pivô pro modelo de contato puro, já superado por esta revisão).

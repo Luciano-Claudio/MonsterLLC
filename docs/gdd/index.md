@@ -1,5 +1,5 @@
 # Game Design Document — Projeto Torre (nome provisório)
-### Versão 1.01237 — Combate Comum Simplificado (Vampire Survivors-like); Attack Budget Removido
+### Versão 1.01238 — Combate Comum Híbrido (attack real + trigger, sem dano de contato)
 
 > **Legenda de status**
 > - ✅ **Decisão confirmada**
@@ -7,7 +7,7 @@
 > - 🔢 **Pendência de balanceamento**
 > - 🔭 **Visão Expandida**
 
-> **Nota de versão:** diferente da revisão anterior, esta **reabre e resolve** uma regra estrutural de gameplay — a Seção 53 registrava isso desde a Sprint 13 como pendência formal ("viabilidade do sistema de combate completo"), não como regra congelada. Contexto: a Sprint 16 testou o sistema de combate completo (Telegraph/Hitbox/Recovery + Animator real) em 3 monstros reais e o designer decidiu, com base no resultado, acionar a contingência já registrada na Seção 22 ("simplificação de monstros comuns"). Mudanças: **(1)** monstros comuns (Melee/Ranged) passam a usar dano por contato / auto-disparo em alcance, cada um com cooldown próprio, sem Telegraph/Hitbox/Recovery nem animação de ataque dedicada (Seção 22); **(2)** o **Attack Budget é removido** (Seção 14) — sem "estado de ataque" discreto, não há mais o que limitar entre monstros simultâneos; população (Seção 23) continua sendo o único controle de quantidade; **(3)** a taxonomia de projéteis (Seção 13) ganha os desfechos pós-voo de projétil de inimigo (gruda, explode, deixa condição no chão, vira o próprio monstro, teleguiado como modificador combinável); **(4)** o Bestiário (`docs/gdd/bestiary.md`) foi atualizado ficha a ficha: ~90 monstros comuns simplificados pra `idle/walk/damage/die`, e um pequeno grupo de exceções documentado com arquitetura própria orientada por Animation Event (Goblin Sapper, Orc Shaman, Burning Skull, Serpent, o projétil do Bicephalous) — o Skeleton Rider deixou de ser exceção (perdeu a mecânica de gerar 2 monstros ao morrer). **Bosses ficam de fora desta revisão** — continuam com múltiplos ataques e arquitetura orientada por Animation Event, não pelo modelo padrão simplificado. Nenhuma outra regra estrutural foi alterada.
+> **Nota de versão:** esta revisão **reabre de novo** a regra de combate comum fechada na v1.01237, depois de testar o modelo puro de contato/auto-disparo na prática (Sprint 16, correção) e o resultado não ter agradado — faltava a identidade visual do ataque, que o projeto já tinha a arte pronta pra usar. Decisão final (meio-termo entre o modelo completo original e a simplificação total): **(1)** todo monstro comum (Melee/Ranged) volta a ter uma animação `attack`/conjuração real, disparada no seu próprio cooldown, com um **Animation Event** decidindo o instante exato do golpe/disparo — pro Melee, isso é um **trigger direcional** fixo na frente do monstro (4 posições, uma por diagonal), sem posição travada nem cálculo de esquiva por reposicionamento como no modelo pré-Sprint-16; **(2)** o **dano de contato passivo foi removido por completo** — chegou a existir em paralelo ao golpe real (Sprint 16, correção) e ficou confuso testando; agora só existe o dano da animação; **(3)** **Slimes** (comuns e Mother Slime Green/Blue) são a única exceção permanente — ficam só no contato, sem `attack`, pra sempre; **(4)** Ranged ganhou também uma regra de fuga (se o jogador chegar perto demais, ele se afasta) e um segundo par de parâmetros de Animator, `AimX`/`AimY`, pra mirar no jogador de verdade mesmo fugindo (`MoveX`/`MoveY` continuam sendo só a direção de movimento); **(5)** Attack Budget continua removido — não voltou junto com o `attack`. Bosses entram nessa mesma regra híbrida (ficha a ficha no Bestiário), com a lista de exceções nomeadas inalterada. Nenhuma outra regra estrutural foi alterada.
 
 ---
 
@@ -523,13 +523,14 @@ Dois jogadores com exatamente os mesmos upgrades podem terminar um dia com resul
 ### Categorias ✅
 Melee, Ranged, Boss. Variações Suporte/híbrido (ex.: Orc Shaman com totens) tratadas como variação dentro de Ranged/Support, sem virar categoria própria no MVP.
 
-### IA comum (Melee/Ranged) — regra padrão desde a Sprint 16 ✅
+### IA comum (Melee/Ranged) — regra híbrida final (Sprint 16, correção) ✅
 - Movimentação aleatória por padrão, evitando obstáculos.
 - Ao entrar no raio de observação, o jogador é detectado e o monstro passa a perseguir diretamente.
-- **Melee:** aproxima-se até o alcance de contato; encostar no jogador causa dano, respeitando um **cooldown próprio daquele monstro** (nunca dano infinito por frame). Sem telegraph, sem animação de ataque dedicada — o dano acontece no instante do contato físico.
-- **Ranged:** mantém distância dentro do alcance e **auto-dispara** um projétil ao ficar em alcance, respeitando cooldown próprio. Sem animação de disparo dedicada — o projétil só nasce quando o cooldown libera.
+- **Melee:** aproxima-se até o alcance de contato e ataca com uma animação `attack` real (arte própria), no seu próprio cooldown. Um **Animation Event** no frame do golpe ativa um **trigger direcional** fixo na frente do monstro (4 triggers, um por direção diagonal — o GameObject nunca vira, só a animação muda) — só causa dano se o jogador estiver dentro desse trigger naquele instante exato; fora disso, o golpe erra. **Sem dano de contato passivo** — chegamos a testar os dois em paralelo (contato + golpe real) e ficou confuso; removido de vez.
+- **Ranged:** mantém distância dentro do alcance e foge se o jogador chegar perto demais. Ataca com uma animação de conjuração real, no seu próprio cooldown — o projétil só nasce quando o **Animation Event** da animação dispara, mirando a posição real do jogador naquele instante (sem telegraph). Também sem dano de contato passivo.
+- **Direção de movimento ≠ direção de mira:** um Ranged fugindo alimenta `MoveX`/`MoveY` pra longe do jogador, mas `attack`/`idle_combat` precisam continuar "olhando" pro jogador — por isso existe um segundo par de parâmetros no Animator, `AimX`/`AimY`, recalculado a cada frame de combate em direção real ao jogador, independente de `Move()` estar fugindo, aproximando ou parado. `Walk` usa `MoveX`/`MoveY`; `Attack` e `IdleCombat` usam `AimX`/`AimY`.
 - Cada monstro comum tem apenas **1 tipo de ataque** — diversidade vem da variedade de monstros, não de múltiplos ataques por indivíduo (exclusivo de Bosses e das exceções documentadas no Bestiário).
-- **Animações padrão de todo monstro comum:** `idle`, `walk`, `idle_combat`, `damage`, `die` (blend trees direcionais onde fizer sentido). Sem `attack` dedicado.
+- **Animações padrão de todo monstro comum:** `idle`, `walk`, `idle_combat`, `attack` (com Animation Event), `damage`, `die`. **Única exceção permanente: Slimes** (comuns e Mother Slime Green/Blue) — ficam só no dano de contato, sem `attack`, para sempre.
 
 ### Idle de patrulha vs. `idle_combat` — duas animações "paradas" distintas ✅
 Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunca uma só, porque servem a dois momentos diferentes:
@@ -541,7 +542,7 @@ Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunc
 Vida, Vida Máxima, velocidade de ataque (= cooldown de contato/disparo), velocidade de movimento, raio de observação, raio de ataque. **Sem Armadura** (Seção 11).
 
 ### Reação a dano — regra restaurada (Sprint 16) ✅
-Três coisas independentes, nunca uma só: **receber dano ≠ reagir visualmente ≠ interromper uma ação.** Um monstro comum recebe dano, aplica a redução de HP, e toca a animação `damage` — sem que isso precise cancelar nada, porque não existe mais nenhuma ação de ataque com duração pra cancelar. Isso passa a importar de verdade nas **exceções com ação especial de verdade** (ver abaixo): um monstro comprometido com uma bomba ou uma exposição não tem essa ação cancelada por dano normal — só recebe um feedback leve (flash), sem trocar de animação; a ação continua até o fim. *(O Orc Shaman não entra nesse caso: ele mesmo usa as animações padrão — quem tem arquitetura própria por Animation Event é o totem, um prefab separado.)*
+Três coisas independentes, nunca uma só: **receber dano ≠ reagir visualmente ≠ interromper uma ação.** Comprometido com a animação `attack` de verdade — o padrão agora, não só as exceções — o dano nunca cancela ela: só um flash leve, sem trocar de estado no Animator (não existe transição `Attack -> Damage`); a animação de ataque sempre termina de tocar por completo. Fora do ataque (patrulha, perseguindo, ou parado em `idle_combat` entre um golpe/disparo e outro), dano toca a animação `damage` normalmente. *(O Orc Shaman continua sendo um caso à parte: quem tem arquitetura própria por Animation Event é o totem, um prefab separado — o Shaman em si segue essa mesma regra padrão.)*
 
 ### Morte — destruição só ao fim da animação ✅
 `die` é a única animação que todo monstro do jogo mantém, comum ou boss/exceção. A morte segue o mesmo princípio das outras ações reais: **a animação é a fonte de verdade do timing, não um timer independente.** Ao morrer, o monstro dispara `DieTrigger` e só isso — ele continua existindo em cena, tocando o clipe `die` do início ao fim. A destruição de verdade do GameObject, junto com o drop de loot, só acontece por um **Animation Event no último frame do clipe** (mesmo padrão de `AnimationHitEvent`/`AnimationAttackEndEvent`), garantindo que a animação de morte sempre seja vista por completo antes do monstro sumir e o loot aparecer no lugar dele.
@@ -552,12 +553,14 @@ Alguns monstros quebram a regra padrão acima porque têm uma mecânica genuinam
 ### Riders / geração de unidades ao morrer ✅
 Alguns monstros, ao morrer, geram outras unidades (ex.: Orc Rider gera 1 Warg + 1 Orc Blade). Unidades geradas podem dropar loot próprio. **Nem todo monstro com nome "Rider" usa isso** — o Skeleton Rider deixou de ter essa mecânica (Sprint 16) e hoje é um Melee comum.
 
-### Decisão de arquitetura — resolvida na Sprint 16 ✅
-Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns") cobrindo a possibilidade de o Bestiário completo (timing/telegraph + animação real por criatura) se provar inviável em escopo solo. **Isso foi testado na prática** (3 monstros reais — Rat, Goblin, Rat People — com Animator de verdade, Sprint 16) e a contingência **foi acionada**: o Bestiário segue, por padrão, o modelo de contato/auto-disparo descrito acima. O Attack Budget (Seção 14) foi removido como consequência direta — não existe mais um "estado de ataque" discreto pra limitar entre vários monstros ao mesmo tempo.
+### Decisão de arquitetura — resolvida na Sprint 16, revisada na correção ✅
+Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns") cobrindo a possibilidade de o Bestiário completo (timing/telegraph + animação real por criatura) se provar inviável em escopo solo. **Isso foi testado na prática** (3 monstros reais — Rat, Goblin, Rat People — com Animator de verdade, Sprint 16) e a contingência **foi acionada**: o Bestiário passou, por padrão, a usar dano de contato/auto-disparo sem nenhuma animação de ataque. O Attack Budget (Seção 14) foi removido como consequência direta.
+
+**Essa primeira versão simplificada não durou.** Depois de testar o modelo puro de contato/auto-disparo na prática (Sprint 16, correção), a decisão final foi um meio-termo: cada monstro comum mantém a animação `attack` real — reaproveitando a arte que já existia pronta — mas sem o custo do telegraph completo (posição travada, janela de esquiva por reposicionamento). O golpe conecta ou erra checando um trigger simples no instante do Animation Event, não um cálculo de "o player se afastou o suficiente". O Attack Budget continua removido — não voltou junto com o `attack`.
 
 ### Bosses ✅
-- A maioria dos 30 bosses (definida ficha a ficha no Bestiário) segue a mesma simplificação dos monstros comuns: perde a animação `attack` dedicada e passa a causar dano por contato normal, com cooldown próprio — sem telegraph, sem Animation Event de ataque.
-- Um grupo pequeno e nomeado mantém arquitetura própria por Animation Event porque a mecânica não existe sem ela (ver Bestiário): Mother Slime Green/Blue (spawn de filhotes em posição fixa), Rat People Royalty, Spider Queen (só a teia, sem animação), Dark Channeler, Lich, Dragon, Undead Dragon e Divine God — este último somando a arquitetura completa a uma camada extra de dano por contato (híbrido Melee/Ranged).
+- A maioria dos 30 bosses (definida ficha a ficha no Bestiário) segue a mesma regra híbrida dos monstros comuns: `attack` real com Animation Event (golpe/disparo) e sem dano de contato passivo — perdendo só a complexidade extra que tinham antes (telegraph, dano em área, múltiplos hits), não a animação de ataque em si.
+- Um grupo pequeno e nomeado mantém arquitetura própria por Animation Event além do padrão, porque a mecânica não existe sem ela (ver Bestiário): Mother Slime Green/Blue (só contato, igual aos Slimes comuns, mais o spawn de filhotes em posição fixa), Rat People Royalty, Spider Queen (só a teia, sem animação), Dark Channeler, Lich, Dragon, Undead Dragon e Divine God — este último somando a arquitetura completa a uma camada extra de dano por contato (híbrido Melee/Ranged, única exceção que ainda tem contato).
 - Bosses com mais de um ataque real (os da lista acima) usam cooldowns próprios por ataque — diferente de monstro comum, que tem só 1 tipo de ataque.
 - Matar um boss de topo (ex.: Divine God) **não encerra a run** — é conquista, não condição de vitória.
 
@@ -1279,10 +1282,10 @@ Responsabilidades conceituais (nomes ilustrativos):
 |---|---|
 | **GDD Mestre** (este documento) | Fonte de verdade estrutural |
 | **Hero Design Document** | Kits completos, frames de animação, coeficientes finais |
-| **Combat System Document** | Timing de ataque (Bosses/exceções), projéteis |
+| **Combat System Document** | Timing de ataque (todo Melee/Ranged, Bosses e exceções), projéteis |
 | **Tower/Floor Document** | As 50 Floor Variants, posições de spawn, população por andar |
 | **Employee System Document** | IA detalhada, virtualização técnica |
-| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares. Atualizado na Sprint 16 pro modelo de combate simplificado (Seção 22), com exceções documentadas por ficha |
+| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares. Atualizado na Sprint 16 (correção) pro modelo híbrido de combate (Seção 22 — `attack` real com Animation Event, sem contato passivo), com exceções documentadas por ficha |
 | **Economy & Balance Document** ✅ *(parcial — `docs/gdd/economy-balance.md`)* | Tabela dos 15 tiers e valores dos 15 materiais migrados nesta revisão; curva de demanda, multiplicador de vida da forma de urso e demais valores 🔢 continuam pendentes |
 | **Chest & Card Document** | Pools de carta, curva de bônus, chance de Mimic |
 | **Quest Document** | Progresso das 3 linhas |

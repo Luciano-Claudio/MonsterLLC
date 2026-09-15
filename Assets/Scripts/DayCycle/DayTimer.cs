@@ -12,7 +12,10 @@ public class DayTimer : MonoBehaviour
     private void Update()
     {
         if (dayEnded) return;
-        if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) return;
+        // GameplayGate já cobre pausa (TimeManager) e o estado do jogo (GameStateManager)
+        // — sem isso, o timer contava desde o load da Scene, mesmo parado no MainMenu,
+        // porque só checava pausa e nunca o GameState.
+        if (!GameplayGate.IsActive) return;
 
         timeRemaining -= Time.deltaTime;
         GameEvents.TimeChanged(Mathf.Max(timeRemaining, 0f));

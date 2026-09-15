@@ -5,34 +5,52 @@ public class RangedEnemyController : EnemyController
     public float projectileSpeed = 6f;
     public GameObject projectilePrefab;
 
-    protected override AttackType AttackType => AttackType.Ranged;
+    // Mesma fração já usada antes do pivô — mantém a mesma "zona de conforto" de kiting
+    // sem precisar de mais um campo em EnemyStats.
+    private const float MinRangeFraction = 0.8f;
 
     protected override void Move()
     {
         Vector2 toPlayer = player.position - transform.position;
+        float distance = toPlayer.magnitude;
 
-        // Mantém distância: se está muito perto, afasta; senão, se aproxima até o raio de ataque.
-        Vector2 dir = toPlayer.magnitude < stats.attackRadius * 0.8f ? -toPlayer.normalized : toPlayer.normalized;
-        transform.Translate(dir * stats.moveSpeed * Time.deltaTime);
-        SetMoveDirection(dir);
+        if (distance > stats.attackRadius)
+        {
+            SetMoving(true);
+            MoveInDirection(toPlayer.normalized);
+        }
+        else if (distance < stats.attackRadius * MinRangeFraction)
+        {
+            // Foge se o player chegar perto demais.
+            SetMoving(true);
+            MoveInDirection(-toPlayer.normalized);
+        }
+        else
+        {
+            SetMoving(false); // dentro do alcance ideal -> idle_combat, enquanto o cooldown não libera
+        }
     }
 
-    protected override void ExecuteHit()
+    protected override bool InAttackRange() =>
+        Vector2.Distance(transform.position, player.position) <= stats.attackRadius;
+
+    protected override void ExecuteAttackHit()
     {
         if (projectilePrefab == null)
         {
             Debug.LogWarning("[RangedEnemyController] Sem projectilePrefab — dano aplicado direto como fallback.");
-            player.GetComponent<HeroController>()?.TakeDamage(stats.damage);
+            var heroFallback = player.GetComponent<HeroController>();
+            if (heroFallback != null) heroFallback.TakeDamage(stats.attackDamage);
             return;
         }
 
         var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
         var proj = projObj.GetComponent<EnemyProjectile>() ?? projObj.AddComponent<EnemyProjectile>();
-        // GDD Seção 22: mira a posição travada no início do Telegraph, não a posição
-        // atual do player no instante do disparo — senão a esquiva vira impossível.
-        proj.direction = (lockedTargetPosition - (Vector2)transform.position).normalized;
+        // Sem telegraph — mira a posição atual do player no instante exato em que a
+        // animação de conjuração manda o Animation Event, não uma posição travada.
+        proj.direction = (player.position - transform.position).normalized;
         proj.speed = projectileSpeed;
-        proj.damage = stats.damage;
+        proj.damage = stats.attackDamage;
         proj.ownerFloor = ownerFloor;
     }
 }
