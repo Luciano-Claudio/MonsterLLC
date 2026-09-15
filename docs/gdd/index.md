@@ -334,6 +334,8 @@ Além da categoria de comportamento em voo (tabela acima), todo projétil — de
 - **O projétil é o próprio monstro:** ao colidir ou alcançar o alcance máximo, uma unidade real nasce ali (ex.: Bicephalous — o "slug" lançado vira um Slug de verdade). O projétil não é só efeito visual, é a fonte de uma nova entidade viva.
 - **Teleguiado (Homing):** persegue o alvo até acertar — já existe como categoria própria na tabela (Homing), mas também pode se combinar com qualquer um dos desfechos acima (ex.: um projétil teleguiado que também gruda, ou que também explode).
 
+**Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Andar 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. Relacionado: monstros/heróis vão precisar de efeitos visuais de status (congelado, em chamas, curando) renderizados **na frente** do sprite base — provavelmente um GameObject filho dedicado por entidade só pra essa camada de efeito, ainda não desenhado.
+
 ---
 
 ## 14. Attack Budget — **Removido (Sprint 16)** ✅
