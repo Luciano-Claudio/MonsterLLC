@@ -46,6 +46,16 @@ public class MeleeEnemyController : EnemyController
             return;
         }
 
+        // O player pode se afastar depois do monstro já ter conseguido vaga — sem isso,
+        // quem pegou vaga primeiro ficaria com ela pra sempre, perseguindo o player pelo
+        // Floor inteiro, enquanto outros monstros de verdade perto agora não conseguem
+        // nenhuma. Libera assim que cair fora do próprio flankRadius.
+        if (hasAttackSlot && distance > stats.flankRadius)
+        {
+            if (MeleeAttackSlotManager.Instance != null) MeleeAttackSlotManager.Instance.ReleaseSlot(ownerFloor);
+            hasAttackSlot = false;
+        }
+
         if (hasAttackSlot || distance > stats.flankRadius)
         {
             // já garantiu vaga, ou ainda está longe demais até pra flanquear -> aproxima normalmente
