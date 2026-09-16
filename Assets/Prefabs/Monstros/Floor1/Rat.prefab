@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 958482955780822081}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8, y: 0.8, z: 0}
+  m_LocalPosition: {x: -0.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -177,7 +177,7 @@ Animator:
   m_GameObject: {fileID: 3803111323614218692}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: d73d70f681dc3204f906670609306c0b, type: 2}
+  m_Controller: {fileID: 22100000, guid: 95b1b24b9bb1ab8499ae555109928fd1, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -267,11 +267,10 @@ MonoBehaviour:
   stats:
     health: 30
     maxHealth: 30
-    damage: 5
     moveSpeed: 2
     observationRadius: 6
-    attackRadius: 1.5
-    attackCooldown: 1
+    attackRadius: 1
+    flankRadius: 3
     attackDamage: 10
     attackAnimationCooldown: 2.5
   energyReward: 20
@@ -289,6 +288,11 @@ MonoBehaviour:
   attackHitboxNW: {fileID: 2411170178247101939}
   attackHitboxSE: {fileID: 7100359997142546434}
   attackHitboxSW: {fileID: 6433550145996862346}
+  minFlankIdleDuration: 1
+  maxFlankIdleDuration: 2.5
+  minFlankWalkDuration: 1
+  maxFlankWalkDuration: 2
+  flankArcDegrees: 60
 --- !u!1 &4660843584238629015
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,7 +319,7 @@ Transform:
   m_GameObject: {fileID: 4660843584238629015}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.8, y: -0.01, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,7 +387,7 @@ Transform:
   m_GameObject: {fileID: 7262106819288670326}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8, y: -0.01, z: 0}
+  m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -451,7 +455,7 @@ Transform:
   m_GameObject: {fileID: 8789600181631198766}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.8, y: 0.8, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

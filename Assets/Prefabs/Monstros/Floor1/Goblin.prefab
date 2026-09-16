@@ -381,7 +381,7 @@ Animator:
   m_GameObject: {fileID: 8514974410491700178}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7483a351d16af5648b943916d676d2a4, type: 2}
+  m_Controller: {fileID: 22100000, guid: eae0257b4d856f047a1bcb354b66baf3, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -471,11 +471,10 @@ MonoBehaviour:
   stats:
     health: 30
     maxHealth: 30
-    damage: 5
     moveSpeed: 2
     observationRadius: 6
-    attackRadius: 1.5
-    attackCooldown: 1
+    attackRadius: 1
+    flankRadius: 3
     attackDamage: 10
     attackAnimationCooldown: 2.5
   energyReward: 20
@@ -493,3 +492,8 @@ MonoBehaviour:
   attackHitboxNW: {fileID: 5091150153642581371}
   attackHitboxSE: {fileID: 1073007471407734953}
   attackHitboxSW: {fileID: 7890627277112315139}
+  minFlankIdleDuration: 1
+  maxFlankIdleDuration: 2.5
+  minFlankWalkDuration: 1
+  maxFlankWalkDuration: 2
+  flankArcDegrees: 60

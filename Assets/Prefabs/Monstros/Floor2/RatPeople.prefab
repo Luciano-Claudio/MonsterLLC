@@ -105,7 +105,7 @@ Animator:
   m_GameObject: {fileID: 5063562546389433202}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c2f726cf064d55c40b58d52af67a3132, type: 2}
+  m_Controller: {fileID: 22100000, guid: fe609b855ef0267418182e404ad689b6, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -195,11 +195,12 @@ MonoBehaviour:
   stats:
     health: 30
     maxHealth: 30
-    damage: 5
     moveSpeed: 2
     observationRadius: 6
-    attackRadius: 1.5
-    attackCooldown: 1
+    attackRadius: 5
+    flankRadius: 3
+    attackDamage: 10
+    attackAnimationCooldown: 2.5
   energyReward: 20
   monsterEssenceDropAmount: 1
   ownerFloor: {fileID: 0}
@@ -208,6 +209,8 @@ MonoBehaviour:
   minWalkDuration: 2
   maxWalkDuration: 4
   patrolRadius: 3
+  hasAttackAnimation: 1
+  maxAttackAnimationDuration: 5
   maxDieDuration: 3
   projectileSpeed: 6
   projectilePrefab: {fileID: 999183690986960401, guid: bdd5cebdb4a885641ba3c7202ff94cb6, type: 3}
