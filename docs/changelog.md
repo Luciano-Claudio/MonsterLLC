@@ -2,6 +2,17 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 16 — Teste de Viabilidade de Combate Real + Correção + Pivô Híbrido Final
+
+- Testado na prática o combate 100% orientado por animação (Telegraph/Hitbox/Recovery) em 3 monstros reais (Rat, Goblin, Rat People) — inviável em custo de produção pra escopo solo.
+- Modelo final (GDD v1.01238), depois de duas rodadas de teste: todo Melee/Ranged comum (e a maioria dos bosses) volta a ter uma animação `attack`/conjuração real, com Animation Event decidindo o instante do golpe (trigger direcional pro Melee) ou do disparo (Ranged, sem telegraph) — sem dano de contato passivo, exceto Slimes (exceção permanente).
+- `AttackCooldown`, `PatrolAI`, `AnimatorStateCheck` (classes puras/utilitário) substituindo o `AttackTiming`/estado de ataque antigo; `AttackBudgetManager`/`AttackBudgetTracker`/`AttackType` removidos do projeto em definitivo.
+- `AimX`/`AimY` — segundo par de parâmetros de Animator, sempre mirando o jogador de verdade, separado de `MoveX`/`MoveY` (direção de movimento).
+- Novo limitador de horda: `MeleeAttackSlotManager` (teto de Melee em contato simultâneo com o jogador, escopado por Floor) — quem não cabe flanqueia num anel em vez de amontoar.
+- Ferramenta nova (`MonsterAnimationGeneratorWindow`) gera clipes direcionais + Override Controller por monstro sobre 2 Animators base compartilhados (`Base_Melee`/`Base_Ranged`) — resolve o volume de produção do Bestiary (99 criaturas + 30 bosses).
+- Corrigidos 3 bugs reais de arquitetura: `IsMoving` grudado por até 4s (timer de patrulha em vez de Exit Time do Animator), limite de horda escopado global em vez de por Floor (mesmo bug do Attack Budget original), e `ownerFloor` vazio mascarando monstros que nunca dormiam com o Floor Sleep.
+- **Fecha a Deadline 4 (Combat & Enemy Framework + Floor Sleep v1)** — ver [relatório completo](sprints/sprint-16.md) pra todas as reversões e decisões no meio do caminho.
+
 ## Sprint 15 — Floor Sleep/Activation v1
 
 - `FloorActivationCheck` — Floor existir ≠ Floor simular (GDD Seção 24): `EnemyController`/`FloorPopulationManager` param de processar `Update()` fora do Floor atual, estado congela sem reset.

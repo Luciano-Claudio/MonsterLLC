@@ -6,7 +6,7 @@
 
 Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 andares fixos, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
 
-**Estado atual:** Em desenvolvimento — Sprint 15 concluída (Deadline 4 em andamento)
+**Estado atual:** Em desenvolvimento — Sprint 16 concluída (**Deadline 4 fechada**)
 
 ---
 
@@ -22,12 +22,13 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 
 ## Produção
 
-- **[Plano de Produção (v6)](Projeto_Torre_Plano_Producao_v6.md)** — análise de produção, ordem macro de sistemas e as 14 deadlines/56 sprints planejadas.
+- **[Plano de Produção (v7)](Projeto_Torre_Plano_Producao_v7.md)** — análise de produção, ordem macro de sistemas e as 14 deadlines/56 sprints planejadas.
 
 ### Task Breakdowns por Sprint
 
 <!-- Adicionar aqui o link de cada nova Sprint conforme for detalhada, mantendo a mais recente no topo. -->
 
+- [Sprint 16 (Correção) — Enemy Framework Pivot + Patrol AI](sprint-16-correcao-task-breakdown.md) — task breakdown da correção; **ver o [relatório de fechamento](sprints/sprint-16.md) pro estado final real**, que reabriu e revisou boa parte deste breakdown
 - [Sprint 15 — Floor Sleep/Activation v1](sprint-15.md)
 - [Sprint 14 — Attack Budget + Population Skeleton](sprint-14.md)
 - [Sprint 13 — Enemy Framework Genérico](sprint-13.md)
