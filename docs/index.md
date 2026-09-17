@@ -48,4 +48,5 @@ Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 and
 ## Acompanhamento
 
 - **[Sprint Reports](sprints/)** — relatório de cada sprint concluída (sistemas adicionados, decisões técnicas, dívida técnica, etc.) e o [template reutilizável](sprints/_template.md).
+- **[Adiantamentos](sprints/adiantamentos.md)** — trabalho feito fora do escopo da sprint corrente, adiantado de propósito e documentado em detalhe pra não se perder até a sprint/batch de destino.
 - **[Changelog](changelog.md)** — histórico de mudanças por sprint.

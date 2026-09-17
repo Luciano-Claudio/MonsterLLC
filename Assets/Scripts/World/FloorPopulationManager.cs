@@ -4,8 +4,7 @@ using UnityEngine;
 public class FloorPopulationManager : MonoBehaviour
 {
     public PopulationConfig config = new PopulationConfig();
-    public GameObject meleePrefab;
-    public GameObject rangedPrefab;
+    public GameObject[] monsterPrefabs; // qualquer quantidade/tipo de monstro — sorteia 1 por spawn, igual spawnPoints
     public Transform[] spawnPoints;
     public float respawnInterval = 3f; // 🔢 GDD — frequência de reposição, placeholder
     public FloorDefinition ownerFloor;
@@ -33,9 +32,10 @@ public class FloorPopulationManager : MonoBehaviour
     {
         if (aliveEnemies.Count >= config.maximum) return;
         if (spawnPoints.Length == 0) return;
+        if (monsterPrefabs.Length == 0) return;
 
         var point = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        var prefab = Random.value < 0.5f ? meleePrefab : rangedPrefab;
+        var prefab = monsterPrefabs[Random.Range(0, monsterPrefabs.Length)];
         if (prefab == null) return;
 
         // Desvio aleatório em torno do spawnPoint — sem isso, inimigos parados (fora do

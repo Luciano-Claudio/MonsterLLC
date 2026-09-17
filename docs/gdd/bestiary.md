@@ -9,10 +9,11 @@ A pendência de viabilidade (timing/telegraph completo vs. simplificação estil
 - **Melee comum:** ataca com uma animação `attack` real (a arte que já existe), no seu próprio cooldown. Um **Animation Event** no frame do golpe ativa um **trigger direcional** fixo na frente do monstro (4 triggers, um por diagonal — o GameObject nunca vira, só a animação muda) — só causa dano se o jogador estiver dentro dele naquele instante exato; fora disso, o golpe erra. **Sem dano de contato passivo.**
 - **Ranged comum:** ataca com uma animação de conjuração real, no seu próprio cooldown — o projétil só nasce quando o **Animation Event** da animação dispara, mirando a posição real do jogador naquele instante (sem telegraph). Também sem dano de contato. Se o jogador chegar perto demais, o monstro se afasta pra manter distância.
 - **Animações padrão de todo monstro comum (Melee ou Ranged):** `idle` (patrulha, antes de detectar o jogador — toca até o fim, nunca é interrompida no meio para andar), `walk` (blend tree 2D direcional — NE/NW/SE/SW, ou as 8 direções quando o asset tiver), `idle_combat` (parado depois de detectar o jogador, entre um golpe/disparo e outro; blend tree simples de 4 direções), `attack` (com Animation Event), `damage`, `die`. Ver GDD Seção 22 ("Idle de patrulha vs. `idle_combat`") pra regra completa do `idle`/`idle_combat`.
+- **Variante de idle "emboscada"** (Gargoyle, Skeleton, Headless Skeleton, Skeletal Horse, Skeleton Mage, Skeleton Minotaur, Skeleton Rider e Skeleton Warrior — todos do Andar 5): em vez do `idle` de patrulha (blend tree direcional, vagando pelo andar), fica parado numa única pose estática **não-direcional** até detectar o jogador. Ao detectar, toca `activate` (clipe não-direcional, 1x) antes de entrar em `walk`/`idle_combat` normalmente — usa um Animator base à parte (`Base_Melee_Ambush`/`Base_Ranged_Ambush`), já que o `Idle` deixa de ser Blend Tree. É a **única exceção do jogo em que a detecção pode reverter**: se o jogador sair do raio de observação, volta pra pose parada instantaneamente, **sem** animação de transição (o jogador não estaria nem olhando pra ele nesse instante — só o resto do Bestiário persegue pra sempre depois de detectar). Fora essa diferença de ativação/desativação, ataque, dano e morte seguem 100% o padrão Melee/Ranged comum.
 - **Direção de movimento ≠ direção de mira:** `MoveX`/`MoveY` alimentam o `walk` (podem apontar pra longe do jogador, ex.: Ranged fugindo); `AimX`/`AimY` alimentam `attack`/`idle_combat` e sempre apontam pro jogador de verdade, recalculados a cada frame de combate.
 - **Única exceção permanente: Slimes** (Slime Green/Blue comuns e Mother Slime Green/Blue) — ficam só no dano de contato, sem `attack`, pra sempre. Nenhum outro monstro comum ou boss simplificado tem esse tratamento.
 - **Attack Budget (GDD Seção 14) foi removido** — não existe mais limite de quantos monstros atacam ao mesmo tempo; população (GDD Seção 23) continua sendo o único controle de quantos monstros existem.
-- **Exceções com arquitetura própria além do padrão acima, cada uma na própria ficha:** Goblin Sapper (Andar 1), Orc Shaman (Andar 3, só o totem — o Shaman em si já segue o padrão), Skeleton Rider (Andar 5, deixou de ser exceção — virou Melee comum), Burning Skull (Andar 6), Serpent (Andar 9), Bicephalous (Andar 9, só o projétil é especial). Todo o resto do Bestiário segue a regra padrão acima.
+- **Exceções com arquitetura própria além do padrão acima, cada uma na própria ficha:** Goblin Sapper (Andar 1), Orc Shaman (Andar 3, só o totem — o Shaman em si já segue o padrão), Burning Skull (Andar 6), Serpent (Andar 9), Bicephalous (Andar 9, só o projétil é especial), Skeleton Mage e Zombie Mage (Andar 5, ataque vira uma área de conjuração no chão em vez do projétil vivo padrão do Ranged — ver as próprias fichas). Skeleton Rider não tem mais exceção de morte (deixou de gerar 2 monstros ao morrer), mas ainda entra na variante de idle "emboscada" acima. Todo o resto do Bestiário segue a regra padrão acima.
 - **Regra de reação a dano (GDD Seção 22): receber dano ≠ reagir visualmente ≠ interromper uma ação.** Comprometido com a animação `attack`, o dano nunca cancela ela — só um flash leve, sem trocar de animação (não existe transição `Attack → Damage`). Fora do ataque, dano toca a animação `damage` normalmente.
 - Os valores de drop são valores-base por abate, antes de bônus de run, employees ou multiplicadores futuros.
 - Itens liberados em andares inferiores continuam disponíveis nos andares superiores.
@@ -609,7 +610,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 #### Skeleton
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -622,14 +623,14 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 5-30 | Chance: 8%
   - Elemental Shard: 1-5 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Creatures_v3.3_Commercial_Version
 - **🔢 Dano estimado:** 800 | **🔢 Vida estimada:** 2.200
 
 #### Headless Skeleton
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -642,7 +643,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-33 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 2.200
 
@@ -669,7 +670,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 #### Skeletal Horse
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -682,15 +683,15 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-38 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 960 | **🔢 Vida estimada:** 2.860
 
 #### Skeleton Rider
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador, utilizando velocidade superior à de inimigos básicos.
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica andando aleatoriamente no andar. **Simplificação registrada aqui:** perdeu a mecânica de gerar 1 Skeleton + 1 Skeletal Horse ao morrer — hoje é um Melee comum como qualquer outro, sem efeito especial de morte.
-- **Ataque:** Dano por contato normal (cooldown por unidade, como todo Melee comum).
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição. **Simplificação registrada aqui:** perdeu a mecânica de gerar 1 Skeleton + 1 Skeletal Horse ao morrer — hoje é um Melee comum como qualquer outro, sem efeito especial de morte.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 6.500-39.000 | Chance: 100%
@@ -702,14 +703,14 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-39 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.040 | **🔢 Vida estimada:** 3.080
 
 #### Skeleton Minotaur
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -722,7 +723,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 8-45 | Chance: 8%
   - Elemental Shard: 2-8 | Chance: 2%
   - Ancient Fragment: 2 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.120 | **🔢 Vida estimada:** 3.960
 
@@ -826,12 +827,12 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 880 | **🔢 Vida estimada:** 1.650
 
-#### Skeleton Mage
+#### Skeleton Mage — **Exceção à regra padrão de ataque** 🟡
 - **Tipo:** Ranged
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em um range onde conseguirá atacar o player com sua magia. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dispara uma bola de fogo genérica em direção ao jogador ao entrar em alcance (cooldown próprio, sem animação de conjuração dedicada) — igual a qualquer Ranged comum. Deixou de criar uma superfície de dano no chão sob o jogador; agora causa dano só por contato direto do projétil.
-- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando, principalmente para desviar da magia.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em um range onde conseguirá atacar o player com sua magia. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
+- **Ataque:** **Voltou a ser uma área no chão** (deixou de ser projétil de contato direto). Ao entrar em alcance, toca uma animação de conjuração (`cast`) com um Animation Event que faz nascer um prefab de área embaixo do player, na posição dele naquele instante exato (não é mirado, não persegue depois). Esse prefab tem sua própria animação de aviso, com seu próprio Animation Event: só causa dano se o player ainda estiver dentro do trigger dele naquele frame — dá tempo de fugir do círculo antes do estouro.
+- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando, principalmente para sair da área antes dela estourar.
 - **Drops:**
   - Monster Essence: 6.000-36.000 | Chance: 100%
   - Monster Fragment: 1.200-9.600 | Chance: 100%
@@ -842,7 +843,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-36 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, cast (com Animation Event que instancia o prefab de área), damage e die. *(o prefab de área tem sua própria animação de aviso + Animation Event de dano — não faz parte do conjunto de clipes deste monstro)*
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.080 | **🔢 Vida estimada:** 1.540
 
@@ -866,12 +867,12 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 920 | **🔢 Vida estimada:** 1.760
 
-#### Zombie Mage
+#### Zombie Mage — **Exceção à regra padrão de ataque** 🟡
 - **Tipo:** Ranged
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em um range onde conseguirá atacar o player com sua magia. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
-- **Ataque:** Dispara uma bola de fogo genérica em direção ao jogador ao entrar em alcance (cooldown próprio, sem animação de conjuração dedicada) — igual a qualquer Ranged comum. Deixou de criar uma superfície de dano no chão sob o jogador; agora causa dano só por contato direto do projétil.
-- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando, principalmente para desviar da magia.
+- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em um range onde conseguirá atacar o player com sua magia. Enquanto não detectar o jogador, fica andando aleatoriamente no andar. *(sem a variante de idle "emboscada" — só o Skeleton Mage tem esse comportamento no Andar 5.)*
+- **Ataque:** **Voltou a ser uma área no chão** (deixou de ser projétil de contato direto). Ao entrar em alcance, toca uma animação de conjuração (`cast`) com um Animation Event que faz nascer um prefab de área embaixo do player, na posição dele naquele instante exato (não é mirado, não persegue depois). Esse prefab tem sua própria animação de aviso, com seu próprio Animation Event: só causa dano se o player ainda estiver dentro do trigger dele naquele frame — dá tempo de fugir do círculo antes do estouro.
+- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando, principalmente para sair da área antes dela estourar.
 - **Drops:**
   - Monster Essence: 6.250-37.500 | Chance: 100%
   - Monster Fragment: 1.250-10.000 | Chance: 100%
@@ -882,7 +883,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-38 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle, walk, idle_combat, cast (com Animation Event que instancia o prefab de área), damage e die. *(o prefab de área tem sua própria animação de aviso + Animation Event de dano — não faz parte do conjunto de clipes deste monstro)*
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.120 | **🔢 Vida estimada:** 1.650
 
@@ -909,7 +910,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 #### Gargoyle
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato. Enquanto não detectar o jogador, fica parado, como se fosse parte do cenário da sala.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única, como se fosse parte do cenário da sala, até detectar o jogador. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta a ficar parado instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -922,7 +923,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 7-42 | Chance: 8%
   - Elemental Shard: 1-7 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, activation, desactivation, damage e die. *(`activation`/`desactivation` continuam existindo — não são "attack", são o estado de camuflagem/emboscada; o ataque em si vira contato/cooldown como qualquer Melee comum)*
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 1.120 | **🔢 Vida estimada:** 3.300
 
@@ -989,7 +990,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 #### Skeleton Warrior
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ao detectar o jogador, aproxima-se agressivamente e tenta permanecer em alcance de ataque. Enquanto não detectar o jogador, fica andando aleatoriamente no andar.
+- **Comportamento:** Variante de idle "emboscada" (ver regra padrão acima) — fica parado numa pose única até detectar o jogador, sem vagar pelo andar. Ao detectar, ativa (`activate`, 1x) e aproxima-se agressivamente, tentando permanecer em alcance de ataque. Se o jogador sair do raio de observação, volta pra pose parada instantaneamente, sem animação de transição.
 - **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
@@ -1002,7 +1003,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Corrupted Core: 6-39 | Chance: 8%
   - Elemental Shard: 1-6 | Chance: 2%
   - Ancient Fragment: 1 | Chance: 0,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Animações necessárias:** idle (pose estática, sem direção), activate (ao detectar, 1x), walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** Minifantasy_Undead_Creatures_v1.1
 - **🔢 Dano estimado:** 1.040 | **🔢 Vida estimada:** 3.080
 

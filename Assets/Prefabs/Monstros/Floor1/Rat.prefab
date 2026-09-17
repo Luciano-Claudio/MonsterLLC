@@ -265,25 +265,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 30
-    maxHealth: 30
+    health: 1
+    maxHealth: 1
     moveSpeed: 2
     observationRadius: 6
     attackRadius: 1
     flankRadius: 3
-    attackDamage: 10
+    attackDamage: 2
     attackAnimationCooldown: 2.5
   energyReward: 20
-  monsterEssenceDropAmount: 1
+  monsterEssenceDropAmount: 20
   ownerFloor: {fileID: 0}
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
   minWalkDuration: 2
   maxWalkDuration: 4
   patrolRadius: 3
+  staysDormantUntilDetected: 0
   hasAttackAnimation: 1
   maxAttackAnimationDuration: 5
   maxDieDuration: 3
+  attackSpeedStepPerHit: 0.5
+  maxAttackSpeedMultiplier: 3
   attackHitboxNE: {fileID: 5979887795308949347}
   attackHitboxNW: {fileID: 2411170178247101939}
   attackHitboxSE: {fileID: 7100359997142546434}

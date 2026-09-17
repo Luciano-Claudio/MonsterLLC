@@ -317,13 +317,16 @@ Regras gerais ✅: direção fixada no instante do disparo, não controlável de
 | **Homing** | Segue o alvo mais próximo | Ataque primário do Cleric |
 | **Ground Target / Impact Area** | Viaja até colidir ou alcançar distância máxima, explode em área | Ultimate do Mage, ultimate do Blood Mage, Rat People, Goblin Raider |
 | **Persistent Area** | Fica no lugar, dano contínuo | Facas da ultimate do Ranger, rastro de fogo do Mage |
-| **Orbiting Hitbox** | Gira ao redor do herói | Adagas do Rogue, espadas da ultimate do Paladin, ossos do Necromancer |
-| **Dash Damage** | Deslocamento curto, dano na área de chegada | Ataque primário do Assassin |
+| **Orbiting Hitbox** | Gira ao redor do herói | Espadas da ultimate do Paladin, ossos do Necromancer |
+| **Dash Damage** | Deslocamento curto, dano ao longo de todo o trajeto (não só no ponto de chegada) | Ataque primário do Assassin |
 | **Summoned Target Hit** | Entidade sumonada mirando o alvo mais próximo | Vinhas do Druid, osso-boomerang do Necromancer |
-| **Rotating Line / Sweep** | Linha de mira que gira progressivamente | Ultimate do Gunslinger |
+| **Rotating Line / Sweep** | Linha de mira que gira progressivamente, disparando em cada direção do giro | Ultimate do Gunslinger |
 | **Rectangular Beam** | Retângulo de dano fixo na direção da mira | Ataque primário do Demonologist |
+| **Self Area Pulse** | Trigger de área única no próprio herói, ativado por Animation Event (não é contínuo/orbital) | Ataque primário do Rogue, ataque primário do Mage (8 triggers direcionais, só o da direção da mira ativa), primário do Barbarian |
 
-Ataques em área centrados no próprio herói (Barbarian, Plague Doctor) e a ultimate global do Cleric (Seção 17.6) não usam projétil — são hitbox de área ou efeito de campo, não uma entidade que viaja.
+**Correção de categoria (pós-detalhamento de heróis):** o ataque primário do Rogue **não** é mais um Orbiting Hitbox — vira **Self Area Pulse** (um trigger circular único nos pés dele, ativado 1x por Animation Event, não giro contínuo). O antigo "adagas orbitando" foi descartado.
+
+Ataques em área centrados no próprio herói (Barbarian, Mage, Rogue, Plague Doctor) e a ultimate global do Cleric (Seção 17.6) não usam projétil — são hitbox de área ou efeito de campo, não uma entidade que viaja.
 
 ### Modificadores de pós-vida do projétil — o que acontece ao fim da trajetória (Sprint 16) ✅
 Além da categoria de comportamento em voo (tabela acima), todo projétil — de herói ou de monstro comum — pode ter um destes desfechos ao colidir ou alcançar sua distância máxima. Não são categorias novas, são **modificadores combináveis** com qualquer categoria da tabela:
@@ -333,6 +336,17 @@ Além da categoria de comportamento em voo (tabela acima), todo projétil — de
 - **Deixa condição no chão:** ao colidir ou alcançar o alcance máximo, cria um trigger persistente no chão (fogo, espinhos, etc.) que causa dano a quem passar por cima, durando um tempo antes de desaparecer. Comportamento de área independente do projétil que o criou — mesma família da Persistent Area.
 - **O projétil é o próprio monstro:** ao colidir ou alcançar o alcance máximo, uma unidade real nasce ali (ex.: Bicephalous — o "slug" lançado vira um Slug de verdade). O projétil não é só efeito visual, é a fonte de uma nova entidade viva.
 - **Teleguiado (Homing):** persegue o alvo até acertar — já existe como categoria própria na tabela (Homing), mas também pode se combinar com qualquer um dos desfechos acima (ex.: um projétil teleguiado que também gruda, ou que também explode).
+
+### Perfuração por reserva de dano — exclusivo de projétil de herói (Sprint 17+) ✅
+Diferente do projétil de monstro comum (que aplica seu dano cheio de uma vez e é destruído no primeiro contato — Seção 22), todo projétil físico de herói carrega uma **reserva de dano igual ao dano total do golpe**, não um "hit único":
+- Ao colidir com um monstro, aplica dano até **o menor entre** a reserva restante e a vida atual do monstro.
+- Se sobrar reserva depois de matar aquele monstro, o projétil **continua a mesma trajetória** e pode acertar outro monstro na frente, repetindo a regra até a reserva zerar.
+- Independente de reserva sobrando, todo projétil ainda desaparece ao alcançar sua **distância máxima própria** (Seção 13, regra geral) — reserva não zerada não estende o alcance.
+- Ex.: projétil com 100 de reserva acerta um monstro com 50 de vida (mata, sobra 50 de reserva) e continua até acertar um segundo monstro com 100 de vida (aplica os 50 restantes, esse segundo monstro fica com 50 de vida) — o projétil só some aí (reserva zerada) ou ao bater no limite de distância antes disso.
+- **Variante com sprite ligada à reserva restante (Ranger — Seção 17.2):** quando o projétil é visualmente um "cluster" de N unidades (ex.: N flechas agrupadas), o sprite exibido reflete `ceil(reserva restante / dano de 1 unidade)` — perder reserva suficiente pra "gastar" uma unidade inteira troca a sprite pra representar N-1, continuando a mesma trajetória sem recriar o objeto.
+
+### Movimentação Ortogonal/Diagonal — 8 direções, sprites próprias (Sprint 17+) ✅
+Todo projétil de herói e de monstro tem 8 sprites de trajetória (N/NE/E/SE/S/SW/W/NW) escolhidas no instante do disparo — precisa de um Animator próprio no projétil (blend tree ou 8 estados diretos) pra tocar a sprite certa durante o voo, igual ao herói/monstro que o disparou. Alguns projéteis (tipicamente os que não são flecha/faca — ex.: bola de fogo) também têm uma **animação de impacto/desaparecimento** ao invés de simplesmente sumir quando a reserva de dano zera ou a distância máxima é alcançada.
 
 **Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Andar 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. Relacionado: monstros/heróis vão precisar de efeitos visuais de status (congelado, em chamas, curando) renderizados **na frente** do sprite base — provavelmente um GameObject filho dedicado por entidade só pra essa camada de efeito, ainda não desenhado.
 
@@ -370,45 +384,65 @@ O termo "permanente" isolado é evitado — cada sistema Run-Persistent é descr
 - Desbloqueio é Account Progression (Seção 15).
 - O jogo precisa rastrear tudo que o jogador faz numa run para viabilizar qualquer critério de desbloqueio (Seção 49).
 
+### Direção do herói — sempre a mira, nunca o movimento (Sprint 17+) ✅
+Diferente dos monstros comuns (Seção 22, `MoveX`/`MoveY` separado de `AimX`/`AimY`), o herói **não tem um par de parâmetros de movimento independente da mira**. A direção que o Animator usa pra `walk`/`attack`/`ultimate` é sempre a direção do mouse (já resolvida em 8 direções por `DirectionUtility.SnapTo8Directions`, existente desde a Seção 11) — **mesmo andando pra um lado, o herói olha e ataca pra onde o mouse aponta.** Ex.: jogador segurando movimento pro SW com o mouse mirando NE: o herói anda fisicamente pro SW, mas toca a animação de `walk` do NE e ataca/atira pro NE.
+
+### Animações padrão de todo herói ✅
+`walk`, `idle`, `damage`, `die`, `attack`, `ultimate` — todo herói do MVP tem essas 6 no mínimo (alguns ganham estados extras próprios: pet/summon do Mage e Blood Mage, transformação do Druid e do Assassin, dome do Paladin, etc., cada um na própria ficha). Mesma arquitetura de Animation Event já madura no Bestiário (Seção 22): o instante do dano/efeito real é decidido por um Animation Event dentro do clipe, nunca por um timer solto no código.
+
+### Movimento só é permitido durante o estado `walk` do Animator 🔲 sujeito a validação em playtest
+Regra de partida: o herói só se move enquanto o Animator estiver genuinamente no estado `walk` — qualquer outra animação (`attack`, `ultimate`, `summon`, etc.) bloqueia o movimento até ela terminar. Mesmo mecanismo já usado no Bestiário (`AnimatorStateCheck.IsInState`, Seção 22) pra nunca destravar o `transform.Translate` antes do Animator confirmar a troca de estado. **Ainda não confirmado que esse é o feel certo** — pode se provar frustrante em teste (ex.: travar o Mage inteiro durante a invocação do pet no início do dia) e precisar de exceções por herói.
+
+### Knockback ✅
+Vários ataques de herói (Barbarian primário/ultimate, flechas/facas do Ranger, orbes do Paladin, dash do Assassin, etc. — cada um documentado na própria ficha) empurram o monstro atingido pra trás no instante do Animation Event de dano. 🔢 força/distância do knockback e se ele varia por herói ainda não têm valor definido — placeholder ajustável em teste.
+
+### Prioridade visual entre efeitos simultâneos 🟡
+Uma entidade pode estar sob mais de uma condição/efeito ao mesmo tempo (ex.: Barbarian com a passiva de baixa vida ativa **e** pegando fogo), mas só **uma** animação de efeito pode tocar por cima do sprite base por vez. Precisa existir uma ordem de prioridade entre efeitos (ex.: efeitos de ataque recebido — like estar em chamas — vencem efeitos de passiva/buff próprio, que descrevem o estado do próprio personagem). A hierarquia completa **ainda não foi definida** — cada ficha de herói abaixo já aponta quais efeitos próprios existem; a ordem de prioridade entre todos eles fica pendente até existirem exemplos suficientes pra comparar (mesma observação já registrada na Seção 13 pra "chão com condição negativa").
+
 ---
 
 ## 17. Heróis do MVP (10)
 
 ### 17.1 Barbarian — inicial ✅
 - **Dano Base / Vida Base:** 2,0 / 42.
-- **Ataque primário:** golpe frontal em área circular à frente do personagem — hitbox própria, sem projétil. A área é relativa à direção do personagem no momento do ataque, sem necessidade de alvo travado; o raio da área pode aumentar através de baús/upgrades da loja.
-- **Ultimate:** salto no chão seguido de múltiplos projéteis soltos em área, disparados em todas as direções ao mesmo tempo (categoria Ground Target/Impact Area — Seção 13).
-- **Passiva:** nenhuma.
-- **Targeting:** nenhum — área fixa relativa à direção do personagem.
+- **Ataque primário:** golpe de espada no chão — animação real do próprio Barbarian, sem hitbox contínua. Um **Animation Event** no frame exato em que a espada toca o chão ativa **1 de 4 triggers fixos** (NE/NW/SE/SW, mesmo padrão do golpe direcional do Bestiário — Seção 22, `GetHitboxForFacing`), escolhido pela direção da mira no momento do golpe — o GameObject não vira, só a animação muda. Deixa uma **rachadura no chão** (decal) por um tempo até sumir. Aplica **knockback** (Seção 16) em quem for atingido.
+- **Ultimate:** salto no ar seguido de queda na mesma posição; no frame da queda (Animation Event), libera **8 projéteis retos** nas 8 direções fixas (N/NE/E/SE/S/SW/W/NW — Straight Projectile, Seção 13), cada um com dano igual a **2× o dano atual do Barbarian** (`stats.damage`, já incluindo Tier de Arma — 🔢 multiplicador ajustável em teste). Aplica knockback em quem for atingido.
+- **Passiva — mais dano com vida perdida:** a cada **10% de Vida Máxima perdida**, ganha **+25% de dano**, num total de **até +200% (3× o dano total) ao perder 80% ou mais da Vida Máxima** (ou seja, com 20% de vida ou menos restante). Escala em degraus de 10% (perdeu 10% → +25%; perdeu 20% → +50%; ...; perdeu 80%+ → +200%, teto). Enquanto ativa, o Barbarian ganha um **efeito visual de brilho** contínuo (Seção 16 — prioridade entre efeitos: efeitos de reação a dano recebido, ex. pegando fogo, têm prioridade visual sobre este).
+- **Targeting:** nenhum no primário — a direção do golpe é sempre a mira (Seção 16), não a movimentação.
 - **Cartas específicas:** nenhuma.
 - **Desbloqueio:** disponível desde o início da conta.
 - **Particularidade/filosofia:** é o herói de referência para "posicionamento importa mais que dano puro" (Seção 21) — seu desempenho depende diretamente de o jogador agrupar inimigos antes de atacar, já que tanto o primário quanto a ultimate são ataques em área que recompensam múltiplos alvos agrupados.
 
 ### 17.2 Ranger ✅
 - **Dano Base / Vida Base:** 1,6 / 30.
-- **Ataque primário:** flechas retas na direção da mira (categoria Straight Projectile). Aumentar a quantidade de flechas forma um leque distribuído (2 flechas = 30° entre si, 3 = 15°...), classificado como Multi-Straight (Seção 13), até o **limite de 5 flechas**.
-- **Ultimate:** facas disparadas em todas as direções que, ao pousarem, **permanecem temporariamente no chão** (Persistent Area) causando dano a qualquer monstro que passe por cima delas durante sua duração.
-- **Passiva:** nenhuma.
+- **Ataque primário:** flecha reta em **1 de 8 direções fixas** (N/NE/E/SE/S/SW/W/NW — Straight Projectile, Seção 13), escolhida pela mira no instante do disparo, **não continua seguindo o mouse depois de solta**. Aplica knockback em quem for atingido.
+- **Quantidade de flechas — presa ao Tier de Arma, não a carta:** 1 flecha na Arma Básica; ganha **+1 flecha** em 6 dos 15 tiers (Seção 19) — **Copper → 2, Steel → 3, Sapphire → 4, Amethyst → 5, Ruby → 6, Arcane → 7 (teto)**. Cada quantidade tem sprite própria (7 variações de projétil no total — "representação visual muda por herói" já previsto na Seção 19). Quando há mais de 1 flecha, elas formam um leque simétrico (Multi-Straight, Seção 13): 2 flechas = 30° entre si, 3 = 15°, mesma regra já implementada na Sprint 17.
+- **Dano por flecha:** o dano total do golpe (`stats.damage × 2`, multiplicador 🔢 ajustável em teste) é **dividido igualmente entre as flechas do leque** — cada flecha carrega essa fração como sua própria reserva de perfuração (Seção 13). Ex.: dano base seria 4 com 1 flecha; com 2 flechas, dobra pra 8 e cada flecha sai com reserva de 4.
+- **Perfuração com sprite regressiva:** cada flecha é um cluster visual que perde reserva ao acertar monstros (regra geral da Seção 13) — ao esgotar a reserva equivalente a 1 unidade, a sprite do cluster desce 1 (ex.: leque de 7 unidades vira 6 depois de gastar reserva suficiente), sem recriar o objeto nem interromper a trajetória.
+- **Ultimate:** giro do Ranger lançando **8 facas nas 8 direções fixas**, uma por Animation Event — **8 eventos distintos na mesma animação**, cada um chamando a função que lança a faca daquela direção específica (blend tree próprio, a construir junto do Animator). Cada faca é um projétil com reserva de dano (Seção 13) valendo **2× o dano do Ranger** em voo. **Exceção à regra geral de projétil:** ao invés de simplesmente sumir, uma faca que esgota a reserva **ou** alcança a distância máxima **fica no chão** como Persistent Area, valendo o dano normal do Ranger (1×) a quem passar por cima, por **30s** (🔢 ajustável). Aplica knockback tanto em voo quanto no chão.
+- **Passiva:** a progressão de flechas por Tier de Arma **é** a passiva do Ranger — não é um efeito periódico à parte.
 - **Targeting:** direcional pela mira, sem travamento de alvo.
-- **Cartas específicas:** aumento da quantidade de flechas do ataque primário, até o teto de 5 — ao atingir o limite, essa carta **deixa de aparecer** nos baús para aquele herói pelo resto da run.
+- **Cartas específicas:** nenhuma — **mudança em relação à versão anterior deste documento**, a quantidade de flechas não vem mais de carta de baú, só de Tier de Arma.
 - **Desbloqueio:** vencer 1 partida com o Barbarian.
 
 ### 17.3 Mage ✅
 - **Dano Base / Vida Base:** 2,4 / 24.
-- **Ataque primário:** fogo frontal formando um arco na direção da mira — hitbox de área, sem projétil que viaja; cooldown e dano melhoráveis via baú/loja.
-- **Ultimate:** bola de fogo (Fireball) lançada na direção da mira que **explode** ao colidir com uma entidade ou ao alcançar uma distância curta, causando dano em área no ponto de impacto, e **deixa um rastro de fogo persistente no chão** que continua causando dano contínuo a quem passar por cima (Ground Target/Impact Area + Persistent Area combinadas — Seção 13).
-- **Passiva:** pet **Phoenix**. A Phoenix **não é um alvo válido** para monstros (nunca é atacada). É sumonada automaticamente no **início de cada dia**, com uma animação de aproximadamente 2 segundos durante a qual o Mage fica com o **movimento bloqueado**. Consome uma fatia do orçamento ofensivo do herói (Seção 11), não soma dano extra ao kit ativo.
+- **Ataque primário:** fogo em área na direção da mira (Self Area Pulse, Seção 13) — **8 triggers fixos ao redor do Mage** (um por direção), a animação é um blend tree igual à movimentação e sempre "olha" pra mira; um Animation Event ativa só o trigger da direção atual, causando dano em quem estiver dentro.
+- **Ultimate:** dispara de **1 dos 8 GameObjects filhos** (escolhido pela mira, mesmo princípio dos 8 pontos de lançamento do Barbarian — decide de onde a animação/sprite parte) uma bola de fogo que viaja **no ângulo contínuo e exato do mouse, não travado em 1 dos 8 vetores** — **única exceção do MVP** entre os projéteis retos, que por padrão saem sempre travados numa das 8 direções (Ranger, Barbarian, Paladin, Blood Mage). Continua respeitando a regra geral de "direção fixada no instante do disparo" (Seção 13) — só não passa pelo snap de 8 direções antes de fixar. Explode ao colidir com uma entidade ou ao alcançar uma distância curta (Ground Target/Impact Area), com dano de impacto = **4× o dano do Mage** (🔢 ajustável), e deixa um **rastro de fogo persistente** no chão causando **0,5× o dano do Mage por segundo** (🔢 ajustável) a quem passar por cima, durando **30s** (🔢 ajustável).
+- **Passiva:** pet **Phoenix** — ver "Pets de início de dia (Mage/Blood Mage)" logo abaixo da ficha do Blood Mage (Seção 17.10) para o comportamento completo, compartilhado entre os dois heróis.
 - **Cartas específicas:** dano, velocidade e velocidade de ataque da Phoenix, todas em %.
-- **Desbloqueio:** completar X vendas de Essência em um único dia. 🔢 valor de X pendente de balanceamento.
+- **Desbloqueio:** vender 1.000 Monster Essence em um único dia da run — resolve o 🔢 anterior desta ficha.
 
 ### 17.4 Druid ✅
 - **Dano Base / Vida Base:** 1,8 / 36.
-- **Ataque primário:** vinhas nascem na posição dos monstros mais próximos (categoria Summoned Target Hit — Seção 13). A distribuição entre alvos é inteligente: com múltiplas vinhas disponíveis e vários monstros ao redor, o sistema distribui cobrindo o máximo de monstros diferentes possível; **se houver poucos monstros no alcance, múltiplas vinhas podem se concentrar no mesmo alvo** em vez de ficarem ociosas. Começa com **1 vinha** por ativação, quantidade ampliável via baú/loja.
-- **Ultimate — transformação em urso, regra completa:**
-  1. Ao ativar, o Druid se transforma em urso: **Vida Máxima aumenta temporariamente** (multiplicador 🔢 pendente de balanceamento — o valor ×2 usado nos exemplos é apenas ilustrativo); o **ataque primário muda** para um golpe frontal em arco (mesma família de área do Barbarian) enquanto transformado; **mais dano melee** e **maior velocidade de movimento** na forma de urso.
-  2. **No instante da transformação, o Druid é curado para 100% da Vida Máxima da forma de urso** — funciona como uma cura completa.
-  3. Enquanto transformado, a vida se comporta normalmente (dano recebido reduz a vida atual do urso normalmente).
-  4. **Quando a transformação termina normalmente, ou é cancelada por qualquer motivo que NÃO seja morte, o percentual de vida é convertido proporcionalmente para a forma humana** — nunca um valor absoluto, nunca travado no máximo humano, nunca restaurado automaticamente para 100%:
+- **Ataque primário:** vinha nasce no pé do monstro mais próximo (Summoned Target Hit, Seção 13) — um Animation Event sumona um circle trigger pequeno ali; quando a animação da própria vinha chega no frame de dano (Animation Event dela), causa dano em quem estiver dentro (pode acertar mais de 1 monstro se estiverem muito próximos, mas é incomum). Cada vinha causa o mesmo dano — o dano normal do Druid, sem divisão entre elas (diferente do leque do Ranger).
+- **Quantidade de vinhas — presa ao Tier de Arma:** começa com **1 vinha**; **cada um dos 15 Tiers de Arma (Seção 19) soma +1 vinha**, até o teto de **15 vinhas** no Tier 15 (Divine). O mesmo Animation Event do golpe sumona todas as vinhas ativas de uma vez. **Nunca repete o mesmo alvo** — a vinha sempre mira o monstro vivo mais próximo que ainda não recebeu uma vinha nesta ativação; se todos os mais próximos já tiverem uma, ela vai para o próximo mais próximo sem vinha.
+- **Ultimate — transformação em Alce, regra completa:**
+  1. Ao ativar, o Druid se transforma em um **Alce** (correção de nomenclatura — revisões anteriores deste documento chamavam o animal de "urso"; Alce é o nome definitivo a partir de agora). Substitui **todas** as animações do Druid (`walk`/`idle`/`damage`/`die` próprias do Alce): **Vida Máxima aumenta temporariamente** (multiplicador 🔢 pendente de balanceamento — o valor ×2 usado nos exemplos é apenas ilustrativo); o **ataque primário muda** para uma patada frontal — **4 triggers fixos direcionais (NE/NW/SE/SW)**, mesmo padrão do golpe do Barbarian/Bestiário, no lugar das vinhas; **mais dano melee** e **maior velocidade de movimento** na forma de Alce. Durante a própria animação de transformação (entrando e saindo), o Druid fica **imune a dano**.
+  2. **No instante da transformação, o Druid é curado para 100% da Vida Máxima da forma de Alce** — funciona como uma cura completa.
+  3. Enquanto transformado, a vida se comporta normalmente (dano recebido reduz a vida atual do Alce normalmente).
+  4. **Termina após 30s (🔢 ajustável) ou a qualquer momento que o jogador clicar RMB de novo pra cancelar.** Cancelar manualmente **zera toda a Energia** da Ultimate (precisa "farmar" de novo do zero) — mesmo custo de ter deixado o tempo acabar.
+  5. **Quando a transformação termina normalmente, ou é cancelada por qualquer motivo que NÃO seja morte, o percentual de vida é convertido proporcionalmente para a forma humana** — nunca um valor absoluto, nunca travado no máximo humano, nunca restaurado automaticamente para 100%:
 
      ```text
      HealthRatio = CurrentBearHealth / BearMaxHealth
@@ -416,62 +450,77 @@ O termo "permanente" isolado é evitado — cada sistema Run-Persistent é descr
      HumanCurrentHealth = HumanMaxHealth × HealthRatio
      ```
 
-     Exemplo ilustrativo (valores de HP apenas para explicar a regra, não confirmados como balanceamento): forma humana com 20/100 → ativa a Ultimate → cura para 200/200 (urso) → recebe dano, fica em 180/200 (90%) → Ultimate termina → retorna como 90/100 na forma humana.
+     Exemplo ilustrativo (valores de HP apenas para explicar a regra, não confirmados como balanceamento): forma humana com 20/100 → ativa a Ultimate → cura para 200/200 (Alce) → recebe dano, fica em 180/200 (90%) → Ultimate termina → retorna como 90/100 na forma humana.
 
-  5. **Morte durante a transformação é a única exceção — NÃO exige a conversão proporcional acima.** Se o HP do urso chega a 0, o Druid morre e segue diretamente o fluxo universal de morte (Seção 11): a transformação é cancelada, a Energia zera, o loot é perdido, os 30s de penalidade se aplicam, e ele reaparece no térreo em forma humana **com vida cheia**, igual a qualquer outro herói.
-- **Passiva:** nenhuma.
-- **Cartas específicas:** aumento da quantidade de vinhas sumonadas por ativação do primário.
+  6. **Morte durante a transformação é a única exceção — NÃO exige a conversão proporcional acima.** Se o HP do Alce chega a 0, o Druid morre e segue diretamente o fluxo universal de morte (Seção 11): a transformação é cancelada, a Energia zera, o loot é perdido, os 30s de penalidade se aplicam, e ele reaparece no térreo **em forma humana normal, sem a ultimate ativa, com vida cheia** — igual a qualquer outro herói.
+- **Passiva:** nenhuma — a progressão de vinhas por Tier de Arma é quem faz esse papel, mesma lógica das flechas do Ranger.
+- **Cartas específicas:** nenhuma — mesma mudança do Ranger, a quantidade de vinhas não vem mais de carta de baú.
 - **Desbloqueio:** vencer 1 partida com o Mage.
 - **Particularidade de implementação:** a ultimate substitui temporariamente todo o kit de ataque primário — exige máscara de estado clara ("transformado" vs. "normal"). A conversão proporcional de HP só se aplica a fim natural ou cancelamento sem morte; morte segue a regra padrão, sem exceção adicional.
 
 ### 17.5 Rogue ✅
 - **Dano Base / Vida Base:** 1,5 / 28.
-- **Ataque primário:** facas orbitando o personagem em raio curto (categoria Orbiting Hitbox — Seção 13), causando dano a monstros que colidirem com elas; velocidade de giro e dano melhoráveis via baú/loja.
-- **Ultimate:** bomba lançada na posição do mouse no instante do clique (Ground Target), dano em área ao explodir; possui **cooldown mais baixo** que os demais heróis, permitindo uso mais frequente.
-- **Passiva:** nenhuma; **velocidade de movimento base superior** aos outros heróis é característica intrínseca do kit, não um efeito periódico.
-- **Targeting:** nenhum no primário (orbital ao redor do herói); Ground Target na ultimate.
+- **Ataque primário:** **mudança de categoria** em relação à versão anterior deste documento — deixou de ser adagas orbitando continuamente e virou **Self Area Pulse** (Seção 13): 1 trigger circular grande nos pés do Rogue, ativado **1 vez por Animation Event** a cada uso (não é contínuo/automático, é uma animação de ataque de verdade com cooldown, como qualquer outro herói).
+- **Ultimate:** bomba lançada na posição do mouse no instante do clique (Ground Target, Seção 13) — viaja até colidir com um monstro **ou** alcançar o alcance máximo, o que vier primeiro, então explode: dano em área circular centrada na explosão, valendo **4× o dano do Rogue** (🔢 ajustável). Possui **cooldown mais baixo** que os demais heróis, permitindo uso mais frequente.
+- **Passiva — nova, substitui a antiga:** ganha **4× mais Energia de Ultimate por kill** (ex.: um monstro que dropa 2 de Energia rende 8 pro Rogue). **A antiga passiva ("maior velocidade de movimento base") foi transferida pro Assassin** (Seção 17.9) — os dois heróis não podem reivindicar o mesmo traço de "mais rápido do elenco".
+- **Targeting:** nenhum no primário (área nos próprios pés); Ground Target na ultimate.
 - **Cartas específicas:** nenhuma.
-- **Desbloqueio:** completar 30 dias. 🟡 O escopo exato desse critério — se precisa ocorrer em uma única run ou se pode acumular entre runs — ainda não foi definido pelo designer (ver Seção 53).
+- **Desbloqueio:** sobreviver até o fim do Dia 30 (o "final supremo"), com qualquer herói, **numa única run** — resolve o 🟡 anterior desta ficha (não acumula entre runs).
 
 ### 17.6 Cleric ✅
 - **Dano Base / Vida Base:** 1,7 / 32.
-- **Ataque primário:** projétil que persegue o monstro mais próximo (categoria Homing — Seção 13).
-- **Ultimate:** oração — efeito de área global: **todos os monstros em campo** (não só ao redor do Cleric) ficam paralisados e sofrem dano por segundo durante um tempo curto. Precisa de uma animação de efeito individual sobre a cabeça de cada monstro afetado.
-- **Passiva:** cura periódica ao longo do tempo, com uma **animação/aura própria** sobreposta ao personagem (objeto filho do GameObject principal) — mecanismo estrutural distinto de shield e de lifesteal (Seção 33).
+- **Ataque primário:** projétil que persegue o monstro mais próximo (Homing, Seção 13) — se acertar e ainda sobrar reserva de dano (Seção 13), **para de perseguir** e continua reto na mesma direção que estava até esgotar a reserva ou alcançar a distância máxima. **Só pode ser usado se houver ao menos 1 monstro dentro do raio de ataque do Cleric** — sem monstro no raio, o clique de ataque simplesmente não faz nada (única exceção do MVP a "todo herói sempre pode tentar atacar").
+- **Ultimate:** oração — efeito de área **global**: todos os monstros em campo (não só ao redor do Cleric) ganham um GameObject de efeito próprio sobre a cabeça, que fica paralisado e sofre dano por segundo (via Animation Event do próprio efeito) durante alguns segundos (🔢 ajustável).
+- **Passiva:** a cada **10s (🔢 ajustável)**, ganha um efeito de cura sobre si mesmo, curando uma **% da própria Vida Máxima** (🔢 variável ajustável em teste) — animação/aura própria (objeto filho do GameObject principal), mecanismo estrutural distinto de shield e de lifesteal (Seção 33).
 - **Cartas específicas:** aumento do valor da cura periódica, em %.
 - **Desbloqueio:** vencer 1 partida com o Druid.
 
 ### 17.7 Paladin ✅
 - **Dano Base / Vida Base:** 1,8 / 50 (maior Vida Base do MVP).
-- **Ataque primário:** martelo arremessado, projétil reto na direção da mira (Straight Projectile — Seção 13).
-- **Ultimate:** 2 espadas orbitando o Paladin (Orbiting Hitbox), dano a monstros que colidirem, durante alguns segundos.
-- **Passiva:** de tempos em tempos ganha um **shield** com **vida própria** (objeto filho, arte sobreposta ao herói) que absorve dano no lugar do Paladin; ao ser destruído, entra em **cooldown** até reaparecer.
+- **Ataque primário:** martelo arremessado, projétil reto na direção da mira (Straight Projectile, Seção 13), lançado por Animation Event; tem sua própria animação de impacto ao esgotar a reserva de dano ou alcançar o alcance máximo (regra geral da Seção 13).
+- **Ultimate:** 2 espadas orbitando o Paladin (Orbiting Hitbox, Seção 13) por alguns segundos. Implementação: um **GameObject filho dedicado** (não é o Animator do próprio Paladin) com 3 animações — `BladesStart`, `BladesCycle`, `BladesEnd` — e **2 triggers de dano que giram junto com a arte** (a própria animação precisa mover os triggers, não só o sprite). Quem colidir sofre **2× o dano do Paladin** (🔢 ajustável).
+- **Passiva:** de tempos em tempos (🔢 a cada 30s, ajustável) ganha um **shield** com vida própria que absorve dano no lugar do Paladin. Implementação: **outro GameObject filho dedicado** (separado do da ultimate, pra não colidir com ele), com **2 camadas visuais** — `DomeStart`/`DomeCycle`/`DomeEnd` **na frente** do Paladin e `DomeBaseStart`/`DomeBaseCycle`/`DomeBaseEnd` **atrás** dele (order layer). Sem duração — fica **indefinidamente** até a vida do shield chegar a 0. Absorção: dano recebido é descontado da vida do shield primeiro; se o shield tiver vida suficiente pra cobrir o hit inteiro, o Paladin **não sofre dano nenhum** naquele hit, mesmo que o hit sozinho exceda a vida restante do shield (o shield absorve o hit inteiro que o estoura, e só então quebra e vai pra `DomeEnd`/`DomeBaseEnd`) — só a partir do hit seguinte, sem shield, o Paladin volta a sofrer dano normalmente. Ao quebrar, entra em cooldown até reaparecer.
 - **Cartas específicas:** aumento de quanto o shield pode absorver de dano, em %.
 - **Desbloqueio:** vencer 1 partida com o Cleric.
 
 ### 17.8 Gunslinger ✅
 - **Dano Base / Vida Base:** 1,2 / 28 (menor Dano Base do MVP, compensado por múltiplos tiros).
-- **Ataque primário:** tiros instantâneos — sem projétil físico viajando (categoria Hitscan — Seção 13). **Quanto mais balas** o herói tiver, **mais impreciso** o disparo (forma um cone de dispersão); com 1 tiro só, é uma linha reta curta. A **animação de disparo precisa repetir** a cada bala dentro da mesma rajada, exigindo ajuste de velocidade de animação proporcional à quantidade de balas.
-- **Ultimate:** linha de mira (Rotating Line/Sweep — Seção 13) que gira progressivamente ao longo da animação, do SE de volta ao SE.
-- **Passiva:** nenhuma.
-- **Cartas específicas:** aumento da quantidade de balas disparadas no ataque primário.
+- **Ataque primário:** tiro instantâneo — Hitscan (Seção 13), sem projétil físico. 3 clipes de animação: `Shot_Orthogonal`, `Shot_Diagonal` (dependendo da mira estar numa das 4 direções cardeais ou diagonais — mesma separação orto/diagonal já usada no Bestiário) e `Projectile_Impact` (VFX à parte, instanciado no ponto onde o tiro terminou — no monstro atingido ou no fim da linha — a cada tiro da rajada, não 1 só por rajada inteira). Cada `Shot_*` é 2 frames repetidos por bala da rajada: frame 1 = disparo real (tem o Animation Event que resolve o dano instantâneo numa linha reta a partir do Gunslinger, e instancia o `Projectile_Impact`), frame 2 = recuo da arma antes do próximo par.
+- **Quantidade de tiros por rajada — presa ao Tier de Arma:** 1 tiro na Arma Básica; **Iron → 2, Silver → 3, Emerald → 4, Gold → 5, Diamond → 6 (teto)** — os outros 5 tiers usados pelo Ranger pra flechas (Seção 17.2) ficam livres pra escalar dano/outros atributos aqui. **Quanto mais tiros, mais impreciso:** cada bala da rajada mira a direção fixa da mira (1 das 8) com um desvio angular aleatório, sorteado dentro de um cone que se abre conforme a quantidade de balas aumenta — 🔢 fórmula exata (largura do cone por bala) fica como placeholder ajustável em teste, sem uma curva fechada ainda.
+- **Ultimate:** giro do Gunslinger disparando nas 8 direções — **8 Animation Events distintos**, um por frame-chave do giro, cada um disparando um tiro Hitscan naquela direção específica (Rotating Line/Sweep, Seção 13) com seu próprio `Projectile_Impact`.
+- **Passiva:** monstros dropam **2× mais loot** (🔢 ajustável) — dobra a quantidade de qualquer item que já tenha dropado, não altera a chance de drop em si.
+- **Cartas específicas:** nenhuma — mudança em relação à versão anterior, a quantidade de tiros não vem mais de carta de baú.
 - **Desbloqueio:** vencer 30 dias jogando com o Ranger.
 
 ### 17.9 Assassin ✅
 - **Dano Base / Vida Base:** 2,5 / 28 (maior Dano Base do MVP).
-- **Ataque primário:** dash curto na direção da mira (categoria Dash Damage — Seção 13) que causa dano em área no ponto de chegada. O deslocamento tem **distância limitada mesmo que o mouse esteja muito mais longe** — o dash sempre percorre a mesma distância curta, independente de onde a mira estiver apontando além desse alcance.
-- **Ultimate:** o Assassin fica envolto em sombras (stealth) — **monstros deixam de enxergá-lo** e passam a se comportar como se estivessem sozinhos (voltam ao padrão de movimentação aleatória, sem perseguir); durante a duração, o **dano do dash aumenta muito** e o **dash fica sem cooldown**, permitindo encadear vários dashes seguidos.
-- **Passiva:** nenhuma.
+- **Ataque primário:** dash curto em **1 de 8 direções fixas** (Dash Damage, Seção 13) — animação em 2 partes, `Deadly_Dash_Start`/`Deadly_Dash_End`. Um trigger circular nos pés do Assassin acompanha o dash e causa dano **a todo mundo que ele tocar ao longo do trajeto inteiro** (não só no ponto de chegada — correção em relação à versão anterior deste documento), aplicando knockback. O deslocamento tem distância fixa e curta, mesmo que a mira aponte muito mais longe.
+- **Ultimate — stealth, regra completa:**
+  - Assassin muda pra uma **sprite mais sombria**, com seu próprio conjunto completo de `walk`/`idle`/`damage`/`die`. Imune a dano durante as animações de entrar/sair da forma sombria (mesmo padrão do Druid).
+  - **Monstros deixam de enxergá-lo**: precisam continuar sabendo que existe um jogador na área (não voltam pro estado "nunca detectado"), mas ficam **sem alvo**, alternando `idle`/`walk` como se estivessem sozinhos — **inclusive os monstros de emboscada (Skeleton/Gargoyle, Seção 22)**, que **não devem voltar pro estado dormente/desativado** nessa condição, só alternar `walk`/`idle` normalmente. 🔲 **Isso é trabalho novo pro `EnemyController`/emboscada quando o Assassin for construído (Sprint 27, Deadline 7)** — hoje `isInCombat` só existe como "detectado" ou "não detectado"; vai precisar de um terceiro estado ("detectado, mas sem alvo válido") que a emboscada respeita sem re-dormir.
+  - O ataque primário ganha uma variante sombria, **Thousand_Blades**, substituindo o Deadly_Dash enquanto a ultimate estiver ativa: `ITS_Thousand_Blades_Start` → `ITS_Thousand_Blades_Effect` (solta o dano no fim do dash, antes do End) → `ITS_Thousand_Blades_End`, nas mesmas 8 direções, valendo **2× o dano** do Deadly_Dash normal (🔢 ajustável).
+  - **Dash fica sem cooldown** durante a ultimate, permitindo encadear vários seguidos.
+- **Passiva:** **maior velocidade de movimento base** do elenco — característica intrínseca do kit, não um efeito periódico (traço reatribuído do Rogue nesta revisão, ver Seção 17.5).
 - **Cartas específicas:** nenhuma.
 - **Desbloqueio:** alcançar o Andar 6. 🟡 Ainda precisa ser definido se esse critério utiliza Original Floor Identity 6 ou Active Floor Position 6 após remoções de Tower Layers (Seção 24, Seção 53).
 
 ### 17.10 Blood Mage ✅
 - **Dano Base / Vida Base:** 2,1 / 34.
-- **Ataque primário:** projétil reto na direção da mira (Straight Projectile) que **cura o próprio Blood Mage ao acertar** — mecanismo de lifesteal estrutural, baseado no dano causado, não uma cura independente (ver separação formal na Seção 33).
-- **Ultimate:** bola jogada na posição do mouse que cresce e perde o centro — **dano em 2 fases espaciais**: primeiro um quadrado interno, depois 8 quadrados formados nos vértices ao redor (Ground Target/Impact Area em duas fases — Seção 13).
-- **Passiva (dupla):** *(1)* **lifesteal em todo ataque** — cura baseada em percentual do dano causado, com teto por hit baseado em % da Vida Máxima (regra completa na Seção 33); *(2)* pet **Elemental de Sangue**, não alvejado por monstros, com o mesmo bloqueio inicial de movimento (summon-lock) no início do dia que a Phoenix do Mage.
+- **Ataque primário:** projétil reto em 1 de 8 direções fixas (Straight Projectile, Seção 13) com reserva de dano (perfuração, Seção 13); ao esgotar a reserva ou alcançar a distância máxima, toca sua própria animação de impacto.
+- **Lifesteal do primário — 1 cura só, entregue com atraso pela orb de sangue** (não é cura dupla por hit): ao causar dano, o monstro atingido ganha um efeito breve; ao acabar, nasce uma **orb de sangue** que viaja reto até o Blood Mage. Ao tocá-lo, ele toca `Consume_Blood` (**sem** Animation Event — a cura é imediata no contato — e **sem Exit Time**, pra não travar movimento/outras ações) e **só aí** se cura em **50% do dano que causou** (🔢 ajustável) — é a mesma passiva de lifesteal formal da Seção 33 (teto por hit em % da Vida Máxima), só que com a entrega visual atrasada pela viagem da orb em vez de instantânea no momento do hit.
+- **Ultimate — onda de choque em anel, regra completa:** o Blood Mage pula e, no frame da queda (Animation Event), nasce uma onda em forma de anel que cresce em 3 etapas de tamanho — **2×2 → 4×4 → 8×8**. **O dano viaja com a borda da onda, não preenche a área toda**: quando o anel 4×4 aparece, o quadrado 2×2 original já está seguro — é uma zona segura dinâmica, o jogador precisa dar um passo pra dentro ou pra fora no tempo certo pra desviar. Dano no instante de cada etapa = **5× o dano do Blood Mage** (🔢 ajustável). Monstros atingidos sofrem a mesma condição do primário (efeito breve → orb de sangue → cura ao chegar).
+- **Passiva (dupla):** *(1)* lifesteal em todo ataque, descrito acima; *(2)* pet **Elemental de Sangue** — ver "Pets de início de dia (Mage/Blood Mage)" abaixo, comportamento idêntico ao da Phoenix do Mage.
 - **Cartas específicas:** dano, velocidade e velocidade de ataque do pet Elemental de Sangue, em %.
 - **Desbloqueio:** matar X unidades de um monstro específico em um único dia. 🔢 monstro e valor de X pendentes de balanceamento — a estrutura do critério (monstro específico + quantidade em um único dia) já está definida, só os valores exatos ficam em aberto.
+
+### Pets de início de dia (Mage/Blood Mage) — comportamento compartilhado ✅
+Phoenix (Mage) e Elemental de Sangue (Blood Mage) usam exatamente o mesmo comportamento — só a arte muda por herói:
+- **Sumão:** o herói toca uma animação de conjuração com um Animation Event no meio que sumona o pet; o pet nasce já com sua própria animação de surgimento (`summon`), depois passa a alternar `walk`/`idle`/`attack`.
+- **Não é alvo válido** — monstros nunca o atacam, e ele não tem Vida própria (não pode morrer/ser destruído por dano).
+- **Raio de perseguição/ataque tem centro no herói, não no pet** — o pet persegue e ataca qualquer monstro dentro desse raio ao redor do herói; fora dele, o pet ignora monstros e tenta ficar a uma distância curta do herói (🔢 ajustável), nunca sai da tela/visão do herói.
+- **Ataque do pet:** igual a um Melee comum do Bestiário — 4 triggers fixos direcionais, Animation Event decide o dano de quem estiver dentro no instante certo. Persegue até ficar em alcance de contato, então ataca.
+- **Animações do pet:** `walk`, `idle`, `attack`, `summon`.
+- **Bloqueio de movimento do herói durante o summon:** ver a regra geral de "só anda durante `walk`" (Seção 16) — aqui é só uma aplicação concreta dela, ainda sujeita à mesma validação em playtest.
 
 ---
 
@@ -539,9 +588,16 @@ Com hordas grandes, todo Melee tentando ficar dentro do `attackRadius` ao mesmo 
 
 ### Idle de patrulha vs. `idle_combat` — duas animações "paradas" distintas ✅
 Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunca uma só, porque servem a dois momentos diferentes:
-- **`idle`** — só toca **antes de detectar o jogador**, durante a movimentação aleatória de patrulha: o monstro alterna entre `walk` (andando aleatoriamente) e `idle` (parado num ponto). Alguns monstros (ex.: Gargoyle) ficam parados o tempo todo nessa fase, nunca andando. **Regra rígida, sem exceção: uma vez que `idle` começou, ela tem que tocar até o fim antes de qualquer transição — em hipótese nenhuma o monstro anda "durante" o clipe de `idle`.** Isso vale mesmo que o jogador seja detectado no meio do clipe: a detecção **não** interrompe o `idle` — o monstro só reage (troca pra `walk`/`idle_combat` de combate) depois que a animação de patrulha termina por completo, criando um pequeno atraso de reação intencional. Na prática, toda transição que sai de `Idle` no Animator usa Exit Time (perto de 1.0), nunca sai no meio do clipe, inclusive a transição pra combate.
+- **`idle`** — só toca **antes de detectar o jogador**, durante a movimentação aleatória de patrulha: o monstro alterna entre `walk` (andando aleatoriamente) e `idle` (parado num ponto). **Regra rígida, sem exceção: uma vez que `idle` começou, ela tem que tocar até o fim antes de qualquer transição — em hipótese nenhuma o monstro anda "durante" o clipe de `idle`.** Isso vale mesmo que o jogador seja detectado no meio do clipe: a detecção **não** interrompe o `idle` — o monstro só reage (troca pra `walk`/`idle_combat` de combate) depois que a animação de patrulha termina por completo, criando um pequeno atraso de reação intencional. Na prática, toda transição que sai de `Idle` no Animator usa Exit Time (perto de 1.0), nunca sai no meio do clipe, inclusive a transição pra combate.
 - **`idle_combat`** — toca **depois que o jogador foi detectado**, sempre que o monstro está parado em combate: colado no jogador (Melee, entre um contato e outro do cooldown), segurando distância em alcance (Ranged, entre um disparo e outro), ou esperando o cooldown liberar o próximo ataque real (exceções/Bosses com animação `attack` de verdade). Sem essa animação, o monstro pareceria "andar parado no lugar" enquanto solta magia, flecha, ou fica grudado no jogador — o que nunca deve acontecer. É uma animação simples, sem Animation Event, sem duração fixa pra tocar até o fim (fica em loop enquanto o monstro estiver parado em combate) — geralmente um blend tree de só 4 direções (não precisa da mesma fidelidade direcional do `walk`).
-- As duas coexistem com `walk`: fora de combate, o monstro está em `walk` ou `idle`; em combate, está em `walk` (perseguindo/reposicionando) ou `idle_combat` (parado). Nunca usa `idle` de patrulha depois de detectar o jogador, e nunca usa `idle_combat` antes de detectar.
+- As duas coexistem com `walk`: fora de combate, o monstro está em `walk` ou `idle`; em combate, está em `walk` (perseguindo/reposicionando) ou `idle_combat` (parado). Nunca usa `idle` de patrulha depois de detectar o jogador, e nunca usa `idle_combat` antes de detectar — **exceto a variante "emboscada" abaixo**, que é a única do jogo em que se volta pro `idle` de patrulha depois de já ter detectado o jogador.
+
+### Variante de idle "emboscada" — Gargoyle, Skeletons do Andar 5 (Sprint 16) ✅
+Alguns monstros (Gargoyle, Skeleton, Headless Skeleton, Skeletal Horse, Skeleton Mage, Skeleton Minotaur, Skeleton Rider e Skeleton Warrior — todos Andar 5, ver Bestiário) não vagam sozinhos: ficam parados numa única pose até detectar o jogador, e não têm arte de `idle` direcional (NE/NW/SE/SW) — só 1 sprite estático, sem direção. Diferenças em relação ao `idle` de patrulha padrão:
+- **`idle` não é mais um Blend Tree direcional** — é um único clipe de 1 frame (o próprio 1º frame do `activate`, sem arte própria). Usa um Animator base à parte (`Base_Melee_Ambush`/`Base_Ranged_Ambush`), incompatível com o `Base_Melee`/`Base_Ranged` comum (cujo `Idle` é Blend Tree).
+- Ao detectar o jogador, toca **`activate`** — um clipe não-direcional próprio, 1 vez, antes de entrar em `walk`/`idle_combat` normalmente (via Exit Time, mesmo mecanismo do `Idle -> Walk`/`Idle -> IdleCombat` comum).
+- **É a única exceção do jogo em que a detecção pode reverter.** Em todo o resto do Bestiário, uma vez detectado o jogador o monstro persegue para sempre (nunca existe transição de volta a `idle`/patrulha). Nas emboscadas, se o jogador sair do raio de observação, o monstro volta pro `idle` estático **instantaneamente, sem nenhuma animação de transição** — o jogador não estaria nem olhando pra ele nesse instante, então não existe (nem faz sentido existir) um clipe de "voltar a dormir". Na prática, as transições `Walk -> Idle` e `IdleCombat -> Idle` desses Animators não têm Exit Time nem duração — são um snap direto, condicionadas só a `InCombat == false`.
+- Fora dessa diferença de ativação/desativação, ataque, dano e morte seguem 100% o padrão Melee/Ranged comum (inclusive o Skeleton Mage, que além disso tem uma exceção própria de ataque — ver abaixo).
 
 ### Atributos de monstro comum ✅
 Vida, Vida Máxima, velocidade de ataque (= cooldown de contato/disparo), velocidade de movimento, raio de observação, raio de ataque. **Sem Armadura** (Seção 11).
@@ -554,6 +610,8 @@ Três coisas independentes, nunca uma só: **receber dano ≠ reagir visualmente
 
 ### Exceções — monstros com arquitetura própria, orientada por Animation Event ✅
 Alguns monstros quebram a regra padrão acima porque têm uma mecânica genuinamente distinta (um objeto próprio no mundo, uma janela de vulnerabilidade, etc.). Para esses, o momento exato em que algo acontece (dano, cura, stun, explosão) é decidido por um **Animation Event dentro do próprio clipe** — a animação é a fonte de verdade do timing, não um timer independente. Documentados individualmente no Bestiário (Seção 51): Goblin Sapper (bomba), Orc Shaman (o totem que ele planta — prefab separado, o Shaman em si usa animações padrão), Burning Skull (explosão suicida), Serpent (janela de exposição), e o projétil do Bicephalous (vira o próprio monstro). Bosses (abaixo) também usam esse modelo, por terem mais de um ataque.
+
+**Skeleton Mage / Zombie Mage (Andar 5) — área de conjuração no chão, não projétil.** Remudança registrada aqui: chegaram a ter dano só por contato direto do projétil (revisão anterior desta mesma sprint); voltou a ser uma área no chão. Ao entrar em alcance, toca uma animação de conjuração (`cast`, no lugar do `attack`/projétil comum) com um **Animation Event** que instancia um prefab de área na posição atual do jogador naquele instante exato — não é mirado, e não segue o jogador depois de nascer. Esse prefab (`GroundTargetHazard`) tem sua própria animação de aviso e seu próprio **Animation Event**: só causa dano se o jogador ainda estiver dentro do trigger dele naquele frame — dando uma janela real pra fugir do círculo antes do estouro, diferente do golpe/disparo comum (que não tem telegraph). Implementado como `GroundCasterEnemyController` (herda de `RangedEnemyController`, reaproveita 100% do Move()/InAttackRange() — mantém distância normalmente —, só troca o que acontece no `ExecuteAttackHit()`).
 
 ### Riders / geração de unidades ao morrer ✅
 Alguns monstros, ao morrer, geram outras unidades (ex.: Orc Rider gera 1 Warg + 1 Orc Blade). Unidades geradas podem dropar loot próprio. **Nem todo monstro com nome "Rider" usa isso** — o Skeleton Rider deixou de ter essa mecânica (Sprint 16) e hoje é um Melee comum.
@@ -861,7 +919,7 @@ Preservado sem alteração: 3 opções sem duplicar tipo no mesmo sorteio, escol
 ## 31. Cartas (Pergaminho)
 
 ### Regras de sorteio ✅
-3 cartas aleatórias por pergaminho, nunca repetindo tipo entre si no mesmo sorteio. Escolhe exatamente 1. Bônus aumentam por nível do andar. 🔢 curva exata. Buffs escolhidos são **Run-Persistent** (Seção 15). Buffs repetidos entre pergaminhos diferentes acumulam. **1 reroll gratuito por dia de run**, confirmado. Rerolls adicionais compráveis na aba Bonuses. 🔢 preço. Cartas com teto (ex.: 5 flechas do Ranger) param de aparecer ao atingir o limite.
+3 cartas aleatórias por pergaminho, nunca repetindo tipo entre si no mesmo sorteio. Escolhe exatamente 1. Bônus aumentam por nível do andar. 🔢 curva exata. Buffs escolhidos são **Run-Persistent** (Seção 15). Buffs repetidos entre pergaminhos diferentes acumulam. **1 reroll gratuito por dia de run**, confirmado. Rerolls adicionais compráveis na aba Bonuses. 🔢 preço. Cartas com teto (ex.: cura periódica do Cleric, absorção do shield do Paladin) param de aparecer ao atingir o limite. **Correção (pós-detalhamento de heróis):** a quantidade de flechas do Ranger, de vinhas do Druid e de balas do Gunslinger **não vêm mais de carta nenhuma** — passaram a escalar com o Tier de Arma (Seção 19, Seção 17.2/17.4/17.8), a mesma progressão que já multiplica Dano/Vida Base de todo herói.
 
 ### Pools ✅
 **Universal:** Velocidade de Ataque, Dano de Ataque, Velocidade de Movimento, Vida — em %. **Específica por herói:** listadas em cada ficha da Seção 17. **De Employee:** só entra no sorteio se houver employees possuídos naquele dia.

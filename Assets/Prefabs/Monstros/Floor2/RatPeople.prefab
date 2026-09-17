@@ -199,7 +199,7 @@ MonoBehaviour:
     observationRadius: 6
     attackRadius: 5
     flankRadius: 3
-    attackDamage: 10
+    attackDamage: 2
     attackAnimationCooldown: 2.5
   energyReward: 20
   monsterEssenceDropAmount: 1
@@ -209,8 +209,11 @@ MonoBehaviour:
   minWalkDuration: 2
   maxWalkDuration: 4
   patrolRadius: 3
+  staysDormantUntilDetected: 0
   hasAttackAnimation: 1
   maxAttackAnimationDuration: 5
   maxDieDuration: 3
+  attackSpeedStepPerHit: 0.5
+  maxAttackSpeedMultiplier: 3
   projectileSpeed: 6
   projectilePrefab: {fileID: 999183690986960401, guid: bdd5cebdb4a885641ba3c7202ff94cb6, type: 3}

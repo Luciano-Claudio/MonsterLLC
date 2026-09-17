@@ -35,6 +35,14 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     [SerializeField]
     private MonsterType monsterType = MonsterType.Melee;
 
+    // Emboscada (ex.: Skeletons/Gargoyle do Andar 5): não vaga sozinho, fica numa única
+    // pose parada (não-direcional) até detectar o jogador, aí toca "activate" 1 vez antes
+    // de entrar em Walk/IdleCombat. Ortogonal ao MonsterType — tanto Melee quanto Ranged
+    // podem ser emboscada, daí os 2 base controllers extras abaixo em vez de reaproveitar
+    // Base_Melee/Base_Ranged (cujo Idle é um Blend Tree direcional, incompatível).
+    [SerializeField]
+    private bool isAmbushMonster = false;
+
     [SerializeField]
     private string destinationFolder =
         "Assets/Animation/Monsters/Floor1";
@@ -49,12 +57,23 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     [SerializeField]
     private RuntimeAnimatorController baseRangedController;
 
+    [SerializeField]
+    private RuntimeAnimatorController baseMeleeAmbushController;
+
+    [SerializeField]
+    private RuntimeAnimatorController baseRangedAmbushController;
+
     // =========================================================
     // SPRITE SHEETS
     // =========================================================
 
     [SerializeField]
     private Texture2D idleSpriteSheet;
+
+    // Emboscada: substitui o Idle direcional. 1 linha só (como Die) — o "parado" nem é um
+    // clipe próprio, é o frame 0 desta sheet virando um clipe estático de 1 frame.
+    [SerializeField]
+    private Texture2D activateSpriteSheet;
 
     [SerializeField]
     private Texture2D walkSpriteSheet;
@@ -177,6 +196,22 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
                 monsterType
             );
 
+        isAmbushMonster =
+            EditorGUILayout.Toggle(
+                "Emboscada (sem Idle direcional)",
+                isAmbushMonster
+            );
+
+        if (isAmbushMonster)
+        {
+            EditorGUILayout.HelpBox(
+                "Fica parado numa única pose (sem NE/NW/SE/SW) até detectar o jogador, " +
+                "aí toca 'activate' 1 vez. Se perder o jogador de vista, volta pra pose " +
+                "parada sem animação de transição.",
+                MessageType.None
+            );
+        }
+
         GUILayout.Space(5);
 
         EditorGUILayout.BeginHorizontal();
@@ -213,40 +248,58 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             EditorStyles.boldLabel
         );
 
-        baseMeleeController =
-            (RuntimeAnimatorController)
-            EditorGUILayout.ObjectField(
-                "Base Melee",
-                baseMeleeController,
-                typeof(RuntimeAnimatorController),
-                false
-            );
-
-        baseRangedController =
-            (RuntimeAnimatorController)
-            EditorGUILayout.ObjectField(
-                "Base Ranged",
-                baseRangedController,
-                typeof(RuntimeAnimatorController),
-                false
-            );
-
-        GUILayout.Space(5);
-
-        if (monsterType == MonsterType.Melee)
+        if (isAmbushMonster)
         {
-            EditorGUILayout.HelpBox(
-                "Este monstro usará o Base_Melee.",
-                MessageType.None
-            );
+            baseMeleeAmbushController =
+                (RuntimeAnimatorController)
+                EditorGUILayout.ObjectField(
+                    "Base Melee (Ambush)",
+                    baseMeleeAmbushController,
+                    typeof(RuntimeAnimatorController),
+                    false
+                );
+
+            baseRangedAmbushController =
+                (RuntimeAnimatorController)
+                EditorGUILayout.ObjectField(
+                    "Base Ranged (Ambush)",
+                    baseRangedAmbushController,
+                    typeof(RuntimeAnimatorController),
+                    false
+                );
         }
         else
         {
-            EditorGUILayout.HelpBox(
-                "Este monstro usará o Base_Ranged.",
-                MessageType.None
-            );
+            baseMeleeController =
+                (RuntimeAnimatorController)
+                EditorGUILayout.ObjectField(
+                    "Base Melee",
+                    baseMeleeController,
+                    typeof(RuntimeAnimatorController),
+                    false
+                );
+
+            baseRangedController =
+                (RuntimeAnimatorController)
+                EditorGUILayout.ObjectField(
+                    "Base Ranged",
+                    baseRangedController,
+                    typeof(RuntimeAnimatorController),
+                    false
+                );
         }
+
+        GUILayout.Space(5);
+
+        string baseControllerLabel =
+            (isAmbushMonster ? "Base_" : "Base_") +
+            (monsterType == MonsterType.Melee ? "Melee" : "Ranged") +
+            (isAmbushMonster ? "_Ambush" : "");
+
+        EditorGUILayout.HelpBox(
+            "Este monstro usará o " + baseControllerLabel + ".",
+            MessageType.None
+        );
     }
 
     // =========================================================
@@ -260,11 +313,22 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             EditorStyles.boldLabel
         );
 
-        idleSpriteSheet =
-            DrawTextureField(
-                "Idle",
-                idleSpriteSheet
-            );
+        if (isAmbushMonster)
+        {
+            activateSpriteSheet =
+                DrawTextureField(
+                    "Activate",
+                    activateSpriteSheet
+                );
+        }
+        else
+        {
+            idleSpriteSheet =
+                DrawTextureField(
+                    "Idle",
+                    idleSpriteSheet
+                );
+        }
 
         walkSpriteSheet =
             DrawTextureField(
@@ -312,7 +376,14 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             "1ª linha = E\n" +
             "2ª linha = W\n" +
             "3ª linha = S\n" +
-            "4ª linha = N",
+            "4ª linha = N" +
+
+            (isAmbushMonster
+                ? "\n\nActivate: 1 linha só (igual Die). O 1º frame dela vira o " +
+                  "clipe 'idle' estático (não-direcional). IdleCombat, nesse caso, " +
+                  "é derivado do 1º frame de cada direção do Walk (não existe mais " +
+                  "sheet de Idle direcional pra tirar isso)."
+                : ""),
             MessageType.None
         );
     }
@@ -403,18 +474,40 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             );
 
         // =====================================================
-        // IDLE + IDLE COMBAT
+        // IDLE (+ ACTIVATE, se emboscada) + IDLE COMBAT
         // =====================================================
 
-        GenerateDirectionalAnimationSet(
-            idleSpriteSheet,
-            "idle",
-            diagonalDirections,
-            outputDirectory,
-            true,
-            generatedClips,
-            true
-        );
+        if (isAmbushMonster)
+        {
+            // 1 clipe não-direcional (igual Die) tocado 1x ao detectar o jogador, mais o
+            // "parado" estático derivado do próprio 1º frame dele — não existe sheet de
+            // Idle direcional pra esses monstros.
+            GenerateSingleRowAnimation(
+                activateSpriteSheet,
+                "activate",
+                outputDirectory,
+                false,
+                generatedClips
+            );
+
+            GenerateStaticIdleFromFirstFrame(
+                activateSpriteSheet,
+                outputDirectory,
+                generatedClips
+            );
+        }
+        else
+        {
+            GenerateDirectionalAnimationSet(
+                idleSpriteSheet,
+                "idle",
+                diagonalDirections,
+                outputDirectory,
+                true,
+                generatedClips,
+                true
+            );
+        }
 
         // =====================================================
         // WALK
@@ -427,7 +520,9 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             outputDirectory,
             true,
             generatedClips,
-            false
+            // Emboscada não tem sheet de Idle direcional pra tirar o IdleCombat, então
+            // usa o 1º frame de cada direção do Walk em vez disso.
+            isAmbushMonster
         );
 
         // =====================================================
@@ -509,10 +604,11 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             );
         }
 
+        // Contagem real em vez de tabela fixa — com Melee/Ranged x Emboscada
+        // (sim/não) já são 4 combinações possíveis, e uma tabela hardcoded vira
+        // fonte de bug a cada nova combinação.
         int expectedClips =
-            monsterType == MonsterType.Melee
-                ? 21
-                : 25;
+            generatedClips.Count;
 
         EditorUtility.DisplayDialog(
             "Monster Generated",
@@ -594,6 +690,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         if (
+            !isAmbushMonster &&
             monsterType == MonsterType.Melee &&
             baseMeleeController == null
         )
@@ -606,6 +703,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         if (
+            !isAmbushMonster &&
             monsterType == MonsterType.Ranged &&
             baseRangedController == null
         )
@@ -617,7 +715,42 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             return false;
         }
 
-        if (idleSpriteSheet == null)
+        if (
+            isAmbushMonster &&
+            monsterType == MonsterType.Melee &&
+            baseMeleeAmbushController == null
+        )
+        {
+            ShowError(
+                "Selecione o Base_Melee_Ambush.controller."
+            );
+
+            return false;
+        }
+
+        if (
+            isAmbushMonster &&
+            monsterType == MonsterType.Ranged &&
+            baseRangedAmbushController == null
+        )
+        {
+            ShowError(
+                "Selecione o Base_Ranged_Ambush.controller."
+            );
+
+            return false;
+        }
+
+        if (isAmbushMonster && activateSpriteSheet == null)
+        {
+            ShowError(
+                "Selecione o Sprite Sheet de Activate."
+            );
+
+            return false;
+        }
+
+        if (!isAmbushMonster && idleSpriteSheet == null)
         {
             ShowError(
                 "Selecione o Sprite Sheet de Idle."
@@ -679,6 +812,18 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         // =====================================================
 
         if (
+            isAmbushMonster &&
+            !ValidateSingleRowSpriteSheet(
+                activateSpriteSheet,
+                "Activate"
+            )
+        )
+        {
+            return false;
+        }
+
+        if (
+            !isAmbushMonster &&
             !ValidateDirectionalSpriteSheet(
                 idleSpriteSheet,
                 "Idle"
@@ -971,6 +1116,39 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     }
 
     // =========================================================
+    // GENERATE STATIC IDLE (EMBOSCADA)
+    // =========================================================
+
+    // O "parado" das emboscadas não é um clipe recortado à parte — é o próprio 1º frame
+    // da sheet de Activate, virando um clipe de 1 frame igual ao IdleCombat direcional.
+    private void GenerateStaticIdleFromFirstFrame(
+        Texture2D spriteSheet,
+        string outputDirectory,
+        Dictionary<string, AnimationClip> generatedClips
+    )
+    {
+        List<Sprite> orderedSprites =
+            LoadSprites(spriteSheet)
+                .OrderBy(
+                    sprite => sprite.rect.x
+                )
+                .ToList();
+
+        AnimationClip idleClip =
+            CreateSingleFrameClip(
+                "idle",
+                orderedSprites[0],
+                outputDirectory
+            );
+
+        RegisterGeneratedClip(
+            generatedClips,
+            "idle",
+            idleClip
+        );
+    }
+
+    // =========================================================
     // CREATE / UPDATE ANIMATION CLIP
     // =========================================================
 
@@ -1242,9 +1420,13 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         )
     {
         RuntimeAnimatorController baseController =
-            monsterType == MonsterType.Melee
-                ? baseMeleeController
-                : baseRangedController;
+            isAmbushMonster
+                ? (monsterType == MonsterType.Melee
+                    ? baseMeleeAmbushController
+                    : baseRangedAmbushController)
+                : (monsterType == MonsterType.Melee
+                    ? baseMeleeController
+                    : baseRangedController);
 
         string overridePath =
             outputDirectory +

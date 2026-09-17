@@ -14,6 +14,13 @@ public abstract class EnemyController : MonoBehaviour
     [SerializeField] private float maxWalkDuration = 4f;
     [SerializeField] private float patrolRadius = 3f;
 
+    // Emboscada (ex.: Skeletons/Gargoyle do Andar 5): nunca vaga sozinho, fica na pose
+    // parada (idle estático, não-direcional) até detectar o jogador — e, ao contrário de
+    // todo o resto do jogo, pode "desistir" e voltar a dormir se o jogador se afastar de
+    // novo, sem nenhuma animação de transição (o player já não estaria nem olhando pra
+    // ele nesse momento).
+    [SerializeField] private bool staysDormantUntilDetected = false;
+
     // Falso pra monstros que nunca têm animação de attack real (ex.: Slimes — só contato,
     // pra sempre). Verdadeiro é o padrão pra todo o resto do Melee/Ranged comum.
     [Header("Animação de ataque (arte real + Animation Event)")]
@@ -35,6 +42,16 @@ public abstract class EnemyController : MonoBehaviour
     private enum AttackAnimState { Idle, Attacking }
     private AttackAnimState attackAnimState = AttackAnimState.Idle;
     private float attackAnimElapsed;
+    private bool attackHitFired; // já conectou nesse ciclo de ataque? evita golpe duplicado se o teto de aceleração for atingido depois do Hit Event já ter disparado
+
+    // Regra nova (substitui "dano durante o attack vira só flash, sem mais nada"): cada
+    // interrupção acelera a própria animação do golpe em andamento — visualmente fica
+    // óbvio que o dano "pegou", sem cancelar o compromisso com o ataque. Acima do teto, o
+    // golpe resolve na hora, sem esperar a animação terminar de acelerar.
+    [Header("Aceleração do ataque ao ser interrompido (feedback visual de dano)")]
+    [SerializeField] private float attackSpeedStepPerHit = 0.5f; // 🔢 ajustável
+    [SerializeField] private float maxAttackSpeedMultiplier = 3f; // 🔢 ajustável — acima disso, o golpe sai instantâneo
+    private float attackSpeedMultiplier = 1f;
 
     private Vector2 spawnOrigin;
     private float dieElapsed;
@@ -79,6 +96,7 @@ public abstract class EnemyController : MonoBehaviour
         if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
 
         UpdateDamageFlash();
+        UpdateKnockback();
 
         if (isDead)
         {
@@ -132,6 +150,14 @@ public abstract class EnemyController : MonoBehaviour
             return;
         }
 
+        if (staysDormantUntilDetected)
+        {
+            // Nunca vaga sozinho — só a pose parada (idle estático) até detectar.
+            SetMoving(false);
+            SetInCombat(false);
+            return;
+        }
+
         patrolAI.Tick(Time.deltaTime, () => spawnOrigin + Random.insideUnitCircle * patrolRadius);
 
         // A fase "Walking" do PatrolAI dura um tempo aleatório fixo, sem saber a
@@ -163,6 +189,22 @@ public abstract class EnemyController : MonoBehaviour
 
     private void UpdateCombat()
     {
+        // Só monstros de emboscada desistem — o resto do jogo persegue pra sempre depois
+        // de detectar (regra padrão, inalterada). Sem animação de transição de volta: se
+        // o jogador já saiu do raio de observação, ele nem está olhando pra esse monstro
+        // nesse instante — snap direto pra pose parada.
+        if (staysDormantUntilDetected)
+        {
+            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+            if (distanceToPlayer > stats.observationRadius)
+            {
+                isInCombat = false;
+                SetMoving(false);
+                SetInCombat(false);
+                return;
+            }
+        }
+
         SetInCombat(true);
         // Direção de movimento != direção de mira: o Ranged foge do player (MoveX/MoveY
         // aponta pra longe dele), mas continua precisando "olhar" pro player enquanto
@@ -186,6 +228,12 @@ public abstract class EnemyController : MonoBehaviour
 
         attackAnimState = AttackAnimState.Attacking;
         attackAnimElapsed = 0f;
+        attackHitFired = false;
+        attackSpeedMultiplier = 1f;
+        // Não confiar no valor default do parâmetro no Animator (Unity cria Float novo
+        // com default 0, não 1) — sem isso, o primeiro ataque de cada instância tocaria
+        // a 0x de velocidade e travaria parado pra sempre.
+        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", 1f);
         AnimatorTrigger("AttackTrigger");
     }
 
@@ -195,6 +243,7 @@ public abstract class EnemyController : MonoBehaviour
     public void AnimationHitEvent()
     {
         if (attackAnimState != AttackAnimState.Attacking) return; // proteção — evento chamado fora de hora não faz nada
+        attackHitFired = true;
         ExecuteAttackHit();
     }
 
@@ -208,6 +257,25 @@ public abstract class EnemyController : MonoBehaviour
     private void EndAttackAnimation()
     {
         attackAnimState = AttackAnimState.Idle;
+        attackSpeedMultiplier = 1f;
+        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", 1f);
+    }
+
+    // Cada hit recebido durante o próprio golpe acelera a animação em vez de só piscar —
+    // GDD/Bestiário (Sprint 16, revisão): "dano não interrompe o ataque" continua valendo,
+    // mas precisa de feedback visual real, não silêncio. Passado o teto, resolve na hora.
+    private void AccelerateAttack()
+    {
+        attackSpeedMultiplier += attackSpeedStepPerHit;
+
+        if (attackSpeedMultiplier >= maxAttackSpeedMultiplier)
+        {
+            if (!attackHitFired) ExecuteAttackHit(); // só golpeia de novo se o Hit Event original ainda não tinha disparado
+            EndAttackAnimation();
+            return;
+        }
+
+        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", attackSpeedMultiplier);
     }
 
     protected void SetMoving(bool isMoving)
@@ -262,10 +330,15 @@ public abstract class EnemyController : MonoBehaviour
         }
 
         // Receber dano != reagir visualmente != interromper uma ação. Comprometido com a
-        // animação de ataque de verdade, o dano nunca cancela ela — só um flash leve, sem
-        // trocar de estado no Animator (não existe transição Attack -> Damage). Fora do
-        // ataque, toca a reação normal (DamageTrigger).
-        if (attackAnimState == AttackAnimState.Attacking) TriggerDamageFlash();
+        // animação de ataque de verdade, o dano nunca cancela ela (não existe transição
+        // Attack -> Damage) — mas precisa de feedback visual de verdade, não só o flash:
+        // cada hit acelera a própria animação do golpe (AccelerateAttack). Fora do ataque,
+        // toca a reação normal (DamageTrigger).
+        if (attackAnimState == AttackAnimState.Attacking)
+        {
+            TriggerDamageFlash();
+            AccelerateAttack();
+        }
         else AnimatorTrigger("DamageTrigger");
     }
 
@@ -284,6 +357,25 @@ public abstract class EnemyController : MonoBehaviour
         if (damageFlashTimer <= 0f) return;
         damageFlashTimer -= Time.deltaTime;
         if (damageFlashTimer <= 0f && spriteRenderer != null) spriteRenderer.color = spriteOriginalColor;
+    }
+
+    // Knockback (heróis, ex.: Barbarian — GDD Seção 17): monstros aqui não usam física
+    // (Rigidbody), todo movimento já é por transform.Translate — o empurrão é só mais uma
+    // translação, decaindo com o tempo, independente do que a IA/animação estiver fazendo
+    // no momento (posição != estado de animação, mesma filosofia do flash de dano acima).
+    private Vector2 knockbackVelocity;
+    private const float KnockbackDecay = 8f; // 🔢 GDD placeholder — quão rápido o empurrão perde força
+
+    public void ApplyKnockback(Vector2 direction, float force)
+    {
+        knockbackVelocity = direction.normalized * force;
+    }
+
+    private void UpdateKnockback()
+    {
+        if (knockbackVelocity.sqrMagnitude <= 0.01f) return;
+        transform.Translate(knockbackVelocity * Time.deltaTime);
+        knockbackVelocity = Vector2.Lerp(knockbackVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);
     }
 
     protected virtual void Die()
