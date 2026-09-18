@@ -348,7 +348,7 @@ Diferente do projétil de monstro comum (que aplica seu dano cheio de uma vez e 
 ### Movimentação Ortogonal/Diagonal — 8 direções, sprites próprias (Sprint 17+) ✅
 Todo projétil de herói e de monstro tem 8 sprites de trajetória (N/NE/E/SE/S/SW/W/NW) escolhidas no instante do disparo — precisa de um Animator próprio no projétil (blend tree ou 8 estados diretos) pra tocar a sprite certa durante o voo, igual ao herói/monstro que o disparou. Alguns projéteis (tipicamente os que não são flecha/faca — ex.: bola de fogo) também têm uma **animação de impacto/desaparecimento** ao invés de simplesmente sumir quando a reserva de dano zera ou a distância máxima é alcançada.
 
-**Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Andar 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. Relacionado: monstros/heróis vão precisar de efeitos visuais de status (congelado, em chamas, curando) renderizados **na frente** do sprite base — provavelmente um GameObject filho dedicado por entidade só pra essa camada de efeito, ainda não desenhado.
+**Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Andar 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. **A parte de "efeito visual de status na frente do sprite" já foi desenhada** (Seção 33, "Efeitos Nocivos") — o que fica pendente aqui é só se os três *gatilhos* (projétil, golpe direto, área de herói) acabam compartilhando o mesmo código de aplicação de Efeito ou continuam isolados por conteúdo.
 
 ---
 
@@ -396,8 +396,8 @@ Regra de partida: o herói só se move enquanto o Animator estiver genuinamente 
 ### Knockback ✅
 Vários ataques de herói (Barbarian primário/ultimate, flechas/facas do Ranger, orbes do Paladin, dash do Assassin, etc. — cada um documentado na própria ficha) empurram o monstro atingido pra trás no instante do Animation Event de dano. 🔢 força/distância do knockback e se ele varia por herói ainda não têm valor definido — placeholder ajustável em teste.
 
-### Prioridade visual entre efeitos simultâneos 🟡
-Uma entidade pode estar sob mais de uma condição/efeito ao mesmo tempo (ex.: Barbarian com a passiva de baixa vida ativa **e** pegando fogo), mas só **uma** animação de efeito pode tocar por cima do sprite base por vez. Precisa existir uma ordem de prioridade entre efeitos (ex.: efeitos de ataque recebido — like estar em chamas — vencem efeitos de passiva/buff próprio, que descrevem o estado do próprio personagem). A hierarquia completa **ainda não foi definida** — cada ficha de herói abaixo já aponta quais efeitos próprios existem; a ordem de prioridade entre todos eles fica pendente até existirem exemplos suficientes pra comparar (mesma observação já registrada na Seção 13 pra "chão com condição negativa").
+### Prioridade visual entre Efeitos Nocivos simultâneos ✅ (correção — não envolve passiva)
+**Correção de uma confusão registrada aqui ontem:** a passiva de herói (brilho do Barbarian, bolha do Paladin, aura do Cleric) **nunca** disputa esse sistema — ela sempre tem seu próprio slot visual dedicado, documentado na ficha de cada herói (Seção 17) e na Seção 33. O que de fato precisa de prioridade é só entre **Efeitos Nocivos** (status que monstro aplica no herói) quando mais de um está ativo ao mesmo tempo — regra completa, com categorias e exemplo, na Seção 33 ("Efeitos Nocivos"). Continua 🟡 só a lista de categorias em si (hoje só Prisão e DoT existem — cresce conforme novos monstros forem desenhados), não a estrutura do sistema, que já está fechada.
 
 ---
 
@@ -497,7 +497,7 @@ Uma entidade pode estar sob mais de uma condição/efeito ao mesmo tempo (ex.: B
 - **Ataque primário:** dash curto em **1 de 8 direções fixas** (Dash Damage, Seção 13) — animação em 2 partes, `Deadly_Dash_Start`/`Deadly_Dash_End`. Um trigger circular nos pés do Assassin acompanha o dash e causa dano **a todo mundo que ele tocar ao longo do trajeto inteiro** (não só no ponto de chegada — correção em relação à versão anterior deste documento), aplicando knockback. O deslocamento tem distância fixa e curta, mesmo que a mira aponte muito mais longe.
 - **Ultimate — stealth, regra completa:**
   - Assassin muda pra uma **sprite mais sombria**, com seu próprio conjunto completo de `walk`/`idle`/`damage`/`die`. Imune a dano durante as animações de entrar/sair da forma sombria (mesmo padrão do Druid).
-  - **Monstros deixam de enxergá-lo**: precisam continuar sabendo que existe um jogador na área (não voltam pro estado "nunca detectado"), mas ficam **sem alvo**, alternando `idle`/`walk` como se estivessem sozinhos — **inclusive os monstros de emboscada (Skeleton/Gargoyle, Seção 22)**, que **não devem voltar pro estado dormente/desativado** nessa condição, só alternar `walk`/`idle` normalmente. 🔲 **Isso é trabalho novo pro `EnemyController`/emboscada quando o Assassin for construído (Sprint 27, Deadline 7)** — hoje `isInCombat` só existe como "detectado" ou "não detectado"; vai precisar de um terceiro estado ("detectado, mas sem alvo válido") que a emboscada respeita sem re-dormir.
+  - **Monstros deixam de enxergá-lo**, ficando sem alvo, como se estivessem sozinhos. **Único cuidado real (Sprint 27, quando o Assassin for construído):** os monstros de emboscada (Skeleton/Gargoyle, Seção 22) não podem voltar pra pose dormente/desativada nessa condição — continuam andando/parados normalmente, sem re-dormir. Fora esse ponto específico, não há mais regra nova a definir aqui; a implementação em si (como cada tipo de monstro perde o alvo durante o stealth) fica pra quando o Assassin chegar.
   - O ataque primário ganha uma variante sombria, **Thousand_Blades**, substituindo o Deadly_Dash enquanto a ultimate estiver ativa: `ITS_Thousand_Blades_Start` → `ITS_Thousand_Blades_Effect` (solta o dano no fim do dash, antes do End) → `ITS_Thousand_Blades_End`, nas mesmas 8 direções, valendo **2× o dano** do Deadly_Dash normal (🔢 ajustável).
   - **Dash fica sem cooldown** durante a ultimate, permitindo encadear vários seguidos.
 - **Passiva:** **maior velocidade de movimento base** do elenco — característica intrínseca do kit, não um efeito periódico (traço reatribuído do Rogue nesta revisão, ver Seção 17.5).
@@ -942,8 +942,10 @@ Não alvejados por monstros. Sumonados no início de cada dia com animação (~2
 ### Summons temporários alvejáveis (Necromancer) ✅
 Alvejáveis por monstros, tempo de vida próprio, podem stackar. **São destruídos ao morrer o herói — regra padrão, sem exceção, mesmo para o Necromancer** (Seção 18).
 
-### Efeitos persistentes/periódicos vinculados ao herói (Paladin — shield; Plague Doctor — orbs orbitais) ✅
-Gira/aparece ao redor do herói periodicamente, objeto filho do GameObject principal. Shields têm vida própria distinta da vida do herói.
+### Passivas com camada visual própria — não são "Efeito" (Paladin — shield; Plague Doctor — orbs orbitais; Barbarian — brilho de baixa vida) ✅
+Gira/aparece ao redor do herói periodicamente, objeto filho do GameObject principal. Shields têm vida própria distinta da vida do herói. **Importante (fonte de confusão registrada — Sprint 17):** passiva de herói nunca usa o sprite/prioridade do sistema de Efeitos Nocivos abaixo — tem sempre seu próprio slot visual dedicado, exclusivo daquele herói (a bolha do Paladin, a aura do Cleric, o brilho do Barbarian). "Efeito", a partir de agora neste documento, significa exclusivamente status nocivo que um **monstro aplica no herói** — nunca o contrário.
+
+**Implementação (Sprint 17) — mesma estrutura técnica pras duas camadas (passiva e Efeito Nocivo), só a prioridade de renderização muda:** cada slot é um GameObject filho dedicado com `SpriteRenderer` + `Animator` próprio, tocando uma animação em loop, pixel art, semi-transparente, **na frente** da entidade (sprite base do herói/monstro) — igual ao `DomeStart/DomeCycle/DomeEnd` do Paladin, só generalizado pra qualquer passiva ou Efeito. Exemplos concretos: cura periódica do Cleric = cruzes douradas subindo; bolha do Paladin = bolha translúcida com a base atrás (`DomeBase`); brilho de baixa vida do Barbarian = auréola; Burn (Efeito Nocivo) = chamas subindo. Nunca é Particle System — mesmo padrão Animator+sprite do resto do jogo.
 
 ### Defesa — três mecanismos distintos, sem generalização ✅
 - **Cura periódica** (Cleric): recupera vida ao longo do tempo; pode escalar com Vida Máxima.
@@ -951,6 +953,18 @@ Gira/aparece ao redor do herói periodicamente, objeto filho do GameObject princ
 - **Lifesteal** (Blood Mage): nasce do dano causado, não é cura independente — `Cura = percentual do dano causado`, com teto de cura por hit baseado em % da Vida Máxima (referência: 10% do dano como cura, teto de 3% da Vida Máxima por hit — valores no documento de balanceamento). Vida Máxima entra aqui só como **limite superior**, não como base do cálculo.
 
 Essas três mecânicas não constituem sistema defensivo universal — são recursos próprios de heróis específicos (Seção 11).
+
+### Efeitos Nocivos — status que monstro aplica no herói (Sprint 17+) ✅
+Sistema à parte, sem relação com passiva de herói (ver acima). Cada Efeito Nocivo é código próprio rodando seu próprio cooldown/duração — não existe um "gerenciador de efeitos" único, cada um é independente.
+
+- **Duração e renovação:** um Efeito tem uma duração fixa (ex.: Fire, 3s). Enquanto a fonte que aplica o efeito continuar em contato com o herói (ex.: o jogador parado em cima de um totem), a duração se **renova continuamente** — nunca cai abaixo do valor cheio. Só quando a fonte é destruída ou termina por conta própria (o totem expira) é que a duração começa a contar de verdade até zerar.
+- **Múltiplos efeitos simultâneos (stack):** o herói pode estar sob vários Efeitos diferentes ao mesmo tempo (ex.: Fire de um totem + Freeze de outro totem do mesmo Shaman) — cada um continua aplicando sua própria lógica (dano por segundo, paralisia, etc.) em paralelo, independente dos outros.
+- **1 sprite só na frente do herói por vez — prioridade por categoria:** mesmo com vários Efeitos ativos em paralelo, só **1** anima na frente do sprite do herói. Cada Efeito pertence a uma categoria, e existe uma ordem de prioridade entre categorias decidindo qual sprite aparece quando mais de uma está ativa. **Categorias confirmadas até agora (lista cresce conforme novos monstros forem desenhados — 🟡 não é lista fechada):**
+  - **Prisão** (ex.: Freeze) — prioridade mais alta.
+  - **DoT** (ex.: Burn) — prioridade mais baixa.
+- **Exemplo de referência (Shaman, Andar 3):** um totem de fogo aplica Fire (DoT, 3s) e outro totem aplica Freeze (Prisão, 1s). Se o herói pegar os dois ao mesmo tempo: o dano do Fire continua contando normalmente em segundo plano, mas a sprite exibida é a do Freeze (Prisão > DoT). Quando o Freeze (1s, menor duração) termina, a sprite volta pra Burn — que ainda está ativo, e agora é o único Efeito restante.
+- Efeito Nocivo é exclusivo de monstro sobre herói — não existe efeito de herói sobre monstro nem de monstro sobre si mesmo documentado aqui (se surgir, é uma variação futura, não presumir agora).
+- **Ordem de renderização entre as duas camadas (Sprint 17):** passiva sempre desenha **na frente** de Efeito Nocivo — o Sorting Layer/Order in Layer da camada de passiva (Seção acima) tem que ficar numericamente acima do que a camada de Efeito Nocivo vier a usar, sempre, sem exceção por herói.
 
 ---
 
@@ -1350,6 +1364,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 | **Employee System Document** | IA detalhada, virtualização técnica |
 | **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares. Atualizado na Sprint 16 (correção) pro modelo híbrido de combate (Seção 22 — `attack` real com Animation Event, sem contato passivo), com exceções documentadas por ficha |
 | **Economy & Balance Document** ✅ *(parcial — `docs/gdd/economy-balance.md`)* | Tabela dos 15 tiers e valores dos 15 materiais migrados nesta revisão; curva de demanda, multiplicador de vida da forma de urso e demais valores 🔢 continuam pendentes |
+| **Valores de Calibragem — Habilidades** ✅ *(existe — `docs/gdd/balance-values.md`, Sprint 17)* | Índice de todo campo `🔢` de habilidade de herói/monstro (cooldowns, aceleração de animação, knockback, etc.) e onde ele mora no código — nasce junto com o Hero Design Document, serve de guia de migração pro XML/JSON futuro |
 | **Chest & Card Document** | Pools de carta, curva de bônus, chance de Mimic |
 | **Quest Document** | Progresso das 3 linhas |
 | **UI/UX Document** | Layout final de HUD, loja, telas, Settings |

@@ -19,8 +19,13 @@ public class Barbarian : HeroController
     [SerializeField] private GameObject ultimateProjectilePrefab; // precisa ter HeroProjectile
     [SerializeField] private float ultimateDamageMultiplier = 2f; // 🔢 GDD: "2x o dano atual da arma"
 
+    // Objeto filho, ativo enquanto a passiva estiver valendo alguma coisa. GDD Seção 33
+    // (Efeitos Nocivos): passiva de herói nunca é "Efeito" e sempre renderiza NA FRENTE de
+    // qualquer Efeito Nocivo (status de monstro sobre o herói) — o Sorting Layer/Order in
+    // Layer desse GameObject precisa ficar numericamente acima do que a camada de Efeito
+    // vier a usar quando esse sistema for implementado.
     [Header("Passiva — mais dano com vida perdida (GDD Seção 17.1)")]
-    [SerializeField] private GameObject passiveGlowEffect; // objeto filho, ativo enquanto a passiva estiver valendo alguma coisa
+    [SerializeField] private GameObject passiveGlowEffect;
 
     // Rede de segurança — se o Animation Event de fim (attack ou ultimate) nunca disparar,
     // força o fim da ação em vez de travar o herói pra sempre em "isAttacking" (mesmo

@@ -37,6 +37,12 @@ public static class GameEvents
     public static event Action<GameState> OnGameStateChanged;
     public static void GameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
 
+    // Floating Combat Text — quem sofreu dano (herói ou monstro) não sabe nada de UI/texto,
+    // só avisa aqui. position já vem calculada em cima do sprite (topo/"cabeça"), não é o
+    // pivot bruto da entidade.
+    public static event Action<Vector3, float> OnDamageTaken;
+    public static void DamageTaken(Vector3 position, float amount) => OnDamageTaken?.Invoke(position, amount);
+
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.
 }

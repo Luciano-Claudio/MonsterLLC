@@ -844,7 +844,7 @@ GameObject:
   - component: {fileID: 313385397}
   m_Layer: 5
   m_Name: BagLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1087,7 +1087,7 @@ GameObject:
   - component: {fileID: 450555042}
   m_Layer: 5
   m_Name: FloorLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1374,7 +1374,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.396, y: -0.257, z: -10}
+  m_LocalPosition: {x: -0.25, y: -0.825, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1535,7 +1535,7 @@ GameObject:
   - component: {fileID: 522937131}
   m_Layer: 5
   m_Name: TimeLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1688,8 +1688,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 721605310}
   - {fileID: 519420032}
+  - {fileID: 721605310}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &534396912
@@ -1705,7 +1705,7 @@ GameObject:
   - component: {fileID: 534396913}
   m_Layer: 5
   m_Name: Icon_E
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1883,7 +1883,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 00000000
+  m_ApplyToSortingLayers: 00000000c5eed759f5f12e45d14254a3
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -1975,7 +1975,7 @@ GameObject:
   - component: {fileID: 639771545}
   m_Layer: 5
   m_Name: HealthLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2281,7 +2281,7 @@ Transform:
   m_GameObject: {fileID: 721605309}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.396, y: -0.257, z: -10}
+  m_LocalPosition: {x: -0.25, y: -0.825, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2793,6 +2793,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayTimer
   timeRemaining: 100
+--- !u!1 &1006531350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1006531351}
+  - component: {fileID: 1006531352}
+  m_Layer: 0
+  m_Name: FloatingCombatTextSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1006531351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006531350}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.7625098, y: -10.97443, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1950039880}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1006531352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006531350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 084a2f0d597a5fb4e81057928d1bca0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Core::FloatingCombatTextSpawner
+  floatingCombatTextPrefab: {fileID: 8881336211041242449, guid: 4c03c0df37b36cd4c8bf72ffbb79073a, type: 3}
+  canvasParent: {fileID: 1385680709}
 --- !u!4 &1079011997 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3329988320532267137, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
@@ -2848,10 +2894,9 @@ GameObject:
   - component: {fileID: 1385680712}
   - component: {fileID: 1385680715}
   - component: {fileID: 1385680714}
-  - component: {fileID: 1385680716}
   m_Layer: 5
   m_Name: Canvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3036,18 +3081,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeIndicatorUI
   label: {fileID: 522937131}
---- !u!114 &1385680716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1385680704}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64806b621cd6422c9d6a344bf51384fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AttackBudgetIndicatorUI
 --- !u!1 &1406913215
 GameObject:
   m_ObjectHideFlags: 0
@@ -3418,7 +3451,7 @@ GameObject:
   - component: {fileID: 1739592563}
   m_Layer: 5
   m_Name: EnergyLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3557,7 +3590,7 @@ GameObject:
   - component: {fileID: 1777718704}
   m_Layer: 5
   m_Name: InteractPromptCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3636,7 +3669,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -1554758959
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!224 &1777718708
@@ -3862,7 +3895,7 @@ GameObject:
   - component: {fileID: 1933900538}
   m_Layer: 5
   m_Name: DemandLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3999,7 +4032,7 @@ GameObject:
   - component: {fileID: 1935236772}
   m_Layer: 5
   m_Name: GoldLabel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4155,6 +4188,7 @@ Transform:
   - {fileID: 1385680709}
   - {fileID: 612726514}
   - {fileID: 1777718708}
+  - {fileID: 1006531351}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1967595112
@@ -4443,11 +4477,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3329988320532267137, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.396
+      value: -0.25
       objectReference: {fileID: 0}
     - target: {fileID: 3329988320532267137, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.118
+      value: -0.45
       objectReference: {fileID: 0}
     - target: {fileID: 3329988320532267137, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4479,10 +4513,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3329988320532267137, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5747829164707123993, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}
-      propertyPath: knockbackForce
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7333212314175848863, guid: 14f378cb9c9e5f9419563e3bee2cd4a0, type: 3}

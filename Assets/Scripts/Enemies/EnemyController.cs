@@ -243,6 +243,14 @@ public abstract class EnemyController : MonoBehaviour
     public void AnimationHitEvent()
     {
         if (attackAnimState != AttackAnimState.Attacking) return; // proteção — evento chamado fora de hora não faz nada
+        // A Attack state é uma Blend Tree 2D Freeform Directional — pra quase qualquer
+        // ângulo de mira, 2 clipes diagonais tocam misturados ao mesmo tempo (raramente a
+        // mira cai exatamente numa das 4 diagonais puras). Cada clipe carrega seu próprio
+        // AnimationHitEvent, e o Animator dispara o evento de TODO clipe com peso > 0 na
+        // mistura, não só do dominante — sem essa trava, um golpe só chamava isso 2x (dano
+        // dobrado, projétil duplicado sobreposto). attackHitFired já existia mas só era
+        // consultado em AccelerateAttack(), nunca aqui.
+        if (attackHitFired) return;
         attackHitFired = true;
         ExecuteAttackHit();
     }
@@ -317,11 +325,23 @@ public abstract class EnemyController : MonoBehaviour
         animator.SetFloat("AimY", direction.y);
     }
 
+    [SerializeField] private float floatingTextHeightAdjust = -0.5f; // 🔢 ajuste fino, negativo baixa o texto
+
+    // Topo do sprite, não o pivot bruto — assim o texto flutuante nasce acima da "cabeça"
+    // tanto de um Rat pequeno quanto de um Dragon gigante, sem precisar de um offset
+    // configurado por monstro. floatingTextHeightAdjust corrige o bounds do sprite (pixel
+    // art costuma ter bastante espaço transparente, então o topo "cru" fica alto demais).
+    private Vector3 GetFloatingTextSpawnPosition() =>
+        spriteRenderer != null
+            ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
+            : transform.position;
+
     public void TakeDamage(float amount)
     {
         if (isDead) return;
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         Debug.Log($"[{GetType().Name}] Recebeu {amount} de dano. HP = {stats.health}/{stats.maxHealth}");
+        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount);
 
         if (HealthSystem.IsDead(stats.health))
         {

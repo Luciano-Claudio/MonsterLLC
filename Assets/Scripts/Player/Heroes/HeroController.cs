@@ -60,6 +60,13 @@ public abstract class HeroController : MonoBehaviour
     [SerializeField] private float ultimateEnergyLockoutDuration = 2f;
     private float ultimateEnergyLockoutRemaining;
 
+    // Prisão (GDD Seção 33, Efeitos Nocivos — ex.: Freeze) — incapacitação total: sem
+    // movimento, sem atacar, sem ultimate, até o efeito acabar. Hook público pro futuro
+    // sistema de Efeitos chamar (ainda não existe em código, só a estrutura de herói já
+    // fica pronta). Bool, não Trigger — vários efeitos de Prisão podem se sobrepor
+    // (Seção 33), quem some por último é quem chama SetTrapped(false) de verdade.
+    protected bool isTrapped;
+
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 
@@ -78,7 +85,7 @@ public abstract class HeroController : MonoBehaviour
         // único vira só o caso onde attackHeld fica true por 1 frame só.
         controls.Gameplay.Attack.performed += ctx => attackHeld = true;
         controls.Gameplay.Attack.canceled += ctx => attackHeld = false;
-        controls.Gameplay.Ultimate.performed += ctx => { if (GameplayGate.IsActive && !isDead) TryUseUltimate(); };
+        controls.Gameplay.Ultimate.performed += ctx => { if (GameplayGate.IsActive && !isDead && !isTrapped) TryUseUltimate(); };
     }
 
     protected virtual void Start()
@@ -141,7 +148,7 @@ public abstract class HeroController : MonoBehaviour
         // !isAttacking aqui é o que impede um attackSpeed alto de disparar um novo ataque
         // por cima de uma animação ainda tocando (ex.: attackSpeed maior que a duração do
         // próprio golpe) — cooldown cuida do ritmo, isAttacking cuida de nunca sobrepor.
-        if (attackHeld && !isAttacking && attackCooldown.TryConsume()) PrimaryAttack();
+        if (attackHeld && !isAttacking && !isTrapped && attackCooldown.TryConsume()) PrimaryAttack();
 
         bool wantsToMove = moveInput.sqrMagnitude > 0.0001f;
         if (animator != null) animator.SetBool("IsMoving", wantsToMove);
@@ -157,8 +164,10 @@ public abstract class HeroController : MonoBehaviour
     private void UpdateAimDirection(Vector2 screenPosition)
     {
         // Trava a mira durante o golpe/ultimate — mesma regra do Bestiário (Seção 22): a
-        // direção de um ataque real não muda no meio da própria animação.
-        if (isAttacking) return;
+        // direção de um ataque real não muda no meio da própria animação. Preso (Seção 33)
+        // pelo mesmo motivo: incapacitado não vira nem olhando — AimX/AimY ficam
+        // congelados na direção de quando o Trapped começou.
+        if (isAttacking || isTrapped) return;
         if (Camera.main == null) return;
 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(
@@ -198,6 +207,33 @@ public abstract class HeroController : MonoBehaviour
         ultimateEnergyLockoutRemaining = ultimateEnergyLockoutDuration;
     }
 
+    // Chamado pelo (futuro) sistema de Efeitos Nocivos quando uma Prisão (ex.: Freeze)
+    // começa/termina no herói — GDD Seção 33. Interrompe qualquer ação em andamento na
+    // hora (igual o Die já faz hoje) e reseta as flags internas de Attack/Damage, senão o
+    // jogador ficaria incapaz de agir pra sempre depois que a Prisão passasse.
+    public void SetTrapped(bool trapped)
+    {
+        isTrapped = trapped;
+        if (trapped)
+        {
+            isAttacking = false;
+            isReactingToDamage = false;
+            damageSpeedMultiplier = 1f;
+            if (animator != null) animator.SetFloat("DamageSpeedMultiplier", 1f);
+        }
+        if (animator != null) animator.SetBool("IsTrapped", trapped);
+    }
+
+    [SerializeField] private float floatingTextHeightAdjust = -0.5f; // 🔢 ajuste fino, negativo baixa o texto
+
+    // Topo do sprite, não o pivot bruto — mesmo critério do EnemyController, pra não
+    // precisar configurar um offset por herói. floatingTextHeightAdjust corrige o bounds
+    // do sprite (pixel art costuma ter espaço transparente, topo "cru" fica alto demais).
+    private Vector3 GetFloatingTextSpawnPosition() =>
+        spriteRenderer != null
+            ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
+            : transform.position;
+
     public void TakeDamage(float amount)
     {
         // Guarda contra reentrância: sem isso, dois hits antes do respawn terminar
@@ -207,11 +243,14 @@ public abstract class HeroController : MonoBehaviour
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
+        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount);
 
         // Golpe fatal vai direto pro DieTrigger — não dispara Damage no mesmo frame que
         // já vai morrer.
         if (HealthSystem.IsDead(stats.health)) OnDeath();
-        else if (isAttacking) TriggerDamageFlash();
+        // isTrapped aqui também: sem Trapped -> Damage no grafo, um DamageTrigger disparado
+        // preso ficaria armado e só dispararia (fora de hora) quando o Trapped terminasse.
+        else if (isAttacking || isTrapped) TriggerDamageFlash();
         else if (isReactingToDamage) AccelerateDamageReaction();
         else StartDamageReaction();
     }
@@ -284,6 +323,12 @@ public abstract class HeroController : MonoBehaviour
         isAttacking = false; // sem isso, um herói morto no meio de uma ação renasceria sem poder agir de novo (PrimaryAttack/UseUltimate ignoram clique enquanto isAttacking)
         isReactingToDamage = false;
         damageSpeedMultiplier = 1f;
+        isTrapped = false; // mesmo motivo — morrer preso não pode renascer incapaz de agir
+        if (animator != null)
+        {
+            animator.SetFloat("DamageSpeedMultiplier", 1f);
+            animator.SetBool("IsTrapped", false);
+        }
         dieElapsed = 0f;
         dieHandled = false;
         AnimatorTrigger("DieTrigger");
