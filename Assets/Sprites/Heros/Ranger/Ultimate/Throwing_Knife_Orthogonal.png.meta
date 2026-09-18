@@ -328,7 +328,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -339,10 +339,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -363,9 +363,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -420,12 +420,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 108
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -442,12 +442,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_1
       rect:
         serializedVersion: 2
-        x: 41
-        y: 108
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -464,12 +464,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_2
       rect:
         serializedVersion: 2
-        x: 73
-        y: 108
-        width: 15
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -486,12 +486,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_3
       rect:
         serializedVersion: 2
-        x: 106
-        y: 108
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -508,12 +508,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_4
       rect:
         serializedVersion: 2
-        x: 138
-        y: 108
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -530,12 +530,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_5
       rect:
         serializedVersion: 2
-        x: 170
-        y: 108
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -552,12 +552,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_6
       rect:
         serializedVersion: 2
-        x: 202
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -574,12 +574,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_7
       rect:
         serializedVersion: 2
-        x: 234
-        y: 108
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -596,12 +596,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_8
       rect:
         serializedVersion: 2
-        x: 264
-        y: 108
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -618,12 +618,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_9
       rect:
         serializedVersion: 2
-        x: 296
-        y: 108
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -640,12 +640,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_10
       rect:
         serializedVersion: 2
-        x: 330
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -662,12 +662,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_11
       rect:
         serializedVersion: 2
-        x: 340
-        y: 109
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -684,12 +684,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_12
       rect:
         serializedVersion: 2
-        x: 362
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -706,12 +706,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_13
       rect:
         serializedVersion: 2
-        x: 394
-        y: 108
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -728,12 +728,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_14
       rect:
         serializedVersion: 2
-        x: 427
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -750,12 +750,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_15
       rect:
         serializedVersion: 2
-        x: 447
-        y: 109
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -772,12 +772,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_16
       rect:
         serializedVersion: 2
-        x: 459
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -794,12 +794,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_17
       rect:
         serializedVersion: 2
-        x: 482
-        y: 113
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -816,12 +816,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_18
       rect:
         serializedVersion: 2
-        x: 491
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -838,12 +838,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_19
       rect:
         serializedVersion: 2
-        x: 523
-        y: 108
-        width: 11
-        height: 20
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -860,12 +860,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_20
       rect:
         serializedVersion: 2
-        x: 554
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -882,12 +882,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_21
       rect:
         serializedVersion: 2
-        x: 562
-        y: 113
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -904,12 +904,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_22
       rect:
         serializedVersion: 2
-        x: 370
-        y: 98
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -926,12 +926,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_23
       rect:
         serializedVersion: 2
-        x: 395
-        y: 76
-        width: 11
+        x: 736
+        y: 96
+        width: 32
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -948,12 +948,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_24
       rect:
         serializedVersion: 2
-        x: 418
-        y: 98
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -970,12 +970,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_25
       rect:
         serializedVersion: 2
-        x: 12
-        y: 76
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -992,12 +992,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_26
       rect:
         serializedVersion: 2
-        x: 41
-        y: 76
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1014,12 +1014,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_27
       rect:
         serializedVersion: 2
-        x: 72
-        y: 76
-        width: 15
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1036,12 +1036,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_28
       rect:
         serializedVersion: 2
-        x: 104
-        y: 76
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1058,12 +1058,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_29
       rect:
         serializedVersion: 2
-        x: 136
-        y: 76
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1080,12 +1080,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_30
       rect:
         serializedVersion: 2
-        x: 168
-        y: 76
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1102,12 +1102,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_31
       rect:
         serializedVersion: 2
-        x: 201
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1124,12 +1124,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_32
       rect:
         serializedVersion: 2
-        x: 236
-        y: 76
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1146,12 +1146,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_33
       rect:
         serializedVersion: 2
-        x: 269
-        y: 76
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1168,12 +1168,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_34
       rect:
         serializedVersion: 2
-        x: 301
-        y: 76
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1190,12 +1190,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_35
       rect:
         serializedVersion: 2
-        x: 319
-        y: 77
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1212,12 +1212,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_36
       rect:
         serializedVersion: 2
-        x: 331
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1234,12 +1234,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_37
       rect:
         serializedVersion: 2
-        x: 354
-        y: 81
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1256,12 +1256,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_38
       rect:
         serializedVersion: 2
-        x: 363
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1278,12 +1278,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_39
       rect:
         serializedVersion: 2
-        x: 426
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1300,12 +1300,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_40
       rect:
         serializedVersion: 2
-        x: 434
-        y: 81
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1322,12 +1322,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_41
       rect:
         serializedVersion: 2
-        x: 458
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1344,12 +1344,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_42
       rect:
         serializedVersion: 2
-        x: 468
-        y: 77
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1366,12 +1366,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_43
       rect:
         serializedVersion: 2
-        x: 490
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1388,12 +1388,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_44
       rect:
         serializedVersion: 2
-        x: 522
-        y: 76
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1410,12 +1410,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_45
       rect:
         serializedVersion: 2
-        x: 555
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1432,12 +1432,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_46
       rect:
         serializedVersion: 2
-        x: 498
-        y: 66
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1454,12 +1454,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_47
       rect:
         serializedVersion: 2
-        x: 525
-        y: 63
-        width: 8
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1476,12 +1476,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_48
       rect:
         serializedVersion: 2
-        x: 546
-        y: 66
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 736
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1498,12 +1498,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_49
       rect:
         serializedVersion: 2
-        x: 10
-        y: 44
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1520,12 +1520,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_50
       rect:
         serializedVersion: 2
-        x: 41
-        y: 44
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1542,12 +1542,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_51
       rect:
         serializedVersion: 2
-        x: 73
-        y: 44
-        width: 15
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1564,12 +1564,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_52
       rect:
         serializedVersion: 2
-        x: 106
-        y: 44
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1586,12 +1586,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_53
       rect:
         serializedVersion: 2
-        x: 138
-        y: 44
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1608,12 +1608,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_54
       rect:
         serializedVersion: 2
-        x: 170
-        y: 44
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1630,12 +1630,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_55
       rect:
         serializedVersion: 2
-        x: 202
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1652,12 +1652,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_56
       rect:
         serializedVersion: 2
-        x: 234
-        y: 44
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1674,12 +1674,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_57
       rect:
         serializedVersion: 2
-        x: 264
-        y: 44
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1696,12 +1696,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_58
       rect:
         serializedVersion: 2
-        x: 297
-        y: 44
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1718,12 +1718,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_59
       rect:
         serializedVersion: 2
-        x: 330
-        y: 44
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1740,12 +1740,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_60
       rect:
         serializedVersion: 2
-        x: 363
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1762,12 +1762,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_61
       rect:
         serializedVersion: 2
-        x: 383
-        y: 45
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1784,12 +1784,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_62
       rect:
         serializedVersion: 2
-        x: 395
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1806,12 +1806,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_63
       rect:
         serializedVersion: 2
-        x: 418
-        y: 49
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1828,12 +1828,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_64
       rect:
         serializedVersion: 2
-        x: 427
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1850,12 +1850,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_65
       rect:
         serializedVersion: 2
-        x: 459
-        y: 44
-        width: 11
-        height: 21
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1872,12 +1872,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_66
       rect:
         serializedVersion: 2
-        x: 490
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1894,12 +1894,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_67
       rect:
         serializedVersion: 2
-        x: 498
-        y: 49
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1916,12 +1916,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_68
       rect:
         serializedVersion: 2
-        x: 522
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1938,12 +1938,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_69
       rect:
         serializedVersion: 2
-        x: 532
-        y: 45
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1960,12 +1960,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_70
       rect:
         serializedVersion: 2
-        x: 554
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1982,12 +1982,12 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_71
       rect:
         serializedVersion: 2
-        x: 331
-        y: 12
-        width: 11
+        x: 672
+        y: 32
+        width: 32
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2004,20 +2004,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_72
       rect:
         serializedVersion: 2
-        x: 354
-        y: 34
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5b10126f05db16290800000000000000
-      internalID: -7898824116006747723
+      spriteID: b36addfab0673c142a823f4b578aab5b
+      internalID: 1373588219
       vertices: []
       indices: 
       edges: []
@@ -2026,20 +2026,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_73
       rect:
         serializedVersion: 2
-        x: 562
-        y: 34
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 736
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d525a83bdb21318d0800000000000000
-      internalID: -2876935130989309347
+      spriteID: 28f3a3eed1f5a4c47ab3ae174b027d8c
+      internalID: 519433592
       vertices: []
       indices: 
       edges: []
@@ -2048,20 +2048,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_74
       rect:
         serializedVersion: 2
-        x: 12
-        y: 12
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 01991497045cdcec0800000000000000
-      internalID: -3544960450967791344
+      spriteID: d5946f2055f2f2542a2e51e9290fb4e4
+      internalID: -511264812
       vertices: []
       indices: 
       edges: []
@@ -2070,20 +2070,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_75
       rect:
         serializedVersion: 2
-        x: 41
-        y: 12
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2eb0e05a8b06b08c0800000000000000
-      internalID: -4032022695220737054
+      spriteID: b926cd36caa629e44b54aa6f976faecf
+      internalID: -805157634
       vertices: []
       indices: 
       edges: []
@@ -2092,20 +2092,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_76
       rect:
         serializedVersion: 2
-        x: 72
-        y: 12
-        width: 15
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ebbafb2f660b21100800000000000000
-      internalID: 77318099824520126
+      spriteID: d16f517502502e64591f643caeecb9be
+      internalID: -1481393094
       vertices: []
       indices: 
       edges: []
@@ -2114,20 +2114,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_77
       rect:
         serializedVersion: 2
-        x: 104
-        y: 12
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: dfa7eeaf9b6778480800000000000000
-      internalID: -8897011997696165123
+      spriteID: cb9775704f56d6347a3ae865d5e0987d
+      internalID: -19970450
       vertices: []
       indices: 
       edges: []
@@ -2136,20 +2136,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_78
       rect:
         serializedVersion: 2
-        x: 136
-        y: 12
-        width: 14
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bfe2b456bbba54000800000000000000
-      internalID: 19610594739695355
+      spriteID: 57388ce925c032d41a4d2e6cf0d0d89e
+      internalID: 822100897
       vertices: []
       indices: 
       edges: []
@@ -2158,20 +2158,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_79
       rect:
         serializedVersion: 2
-        x: 168
-        y: 12
-        width: 14
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3a997b3ee21e30040800000000000000
-      internalID: 4612778034862725539
+      spriteID: e3ec875213f93f84aaef8cd9f3ce36c8
+      internalID: 1682539442
       vertices: []
       indices: 
       edges: []
@@ -2180,20 +2180,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_80
       rect:
         serializedVersion: 2
-        x: 201
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a78c1a4f4e526eb90800000000000000
-      internalID: -7213036087900256134
+      spriteID: e780d1e14e90394478cd16b2f093142f
+      internalID: 810501878
       vertices: []
       indices: 
       edges: []
@@ -2202,20 +2202,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_81
       rect:
         serializedVersion: 2
-        x: 236
-        y: 12
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6bd6376dc4acfa090800000000000000
-      internalID: -8020969979959349834
+      spriteID: c69cba745d63c394ebb58d51971ab529
+      internalID: 99058006
       vertices: []
       indices: 
       edges: []
@@ -2224,20 +2224,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_82
       rect:
         serializedVersion: 2
-        x: 269
-        y: 12
-        width: 11
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6b48d4119f576b4f0800000000000000
-      internalID: -813332970096196426
+      spriteID: f718ecc39e8af214f849fa55373621e3
+      internalID: 1195653322
       vertices: []
       indices: 
       edges: []
@@ -2246,20 +2246,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_83
       rect:
         serializedVersion: 2
-        x: 301
-        y: 12
-        width: 10
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d02da2f381a8a5410800000000000000
-      internalID: 1466636465406136845
+      spriteID: c8a8c399975898245b47ed69f5ad2da5
+      internalID: -1180178597
       vertices: []
       indices: 
       edges: []
@@ -2268,20 +2268,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_84
       rect:
         serializedVersion: 2
-        x: 362
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f4d523f38ecb734d0800000000000000
-      internalID: -3154845308271043249
+      spriteID: 07b40788d1c29c3428ac35395b9916a8
+      internalID: -1418198662
       vertices: []
       indices: 
       edges: []
@@ -2290,20 +2290,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_85
       rect:
         serializedVersion: 2
-        x: 370
-        y: 17
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7688bd11645b13c50800000000000000
-      internalID: 6643290237900130407
+      spriteID: 1a030eb82a4e4244e92280669e86015e
+      internalID: 2002827344
       vertices: []
       indices: 
       edges: []
@@ -2312,20 +2312,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_86
       rect:
         serializedVersion: 2
-        x: 394
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2958d12789147c8d0800000000000000
-      internalID: -2826218118146325102
+      spriteID: 6ad561b5e7120eb4296a96370d8336f5
+      internalID: -1415824502
       vertices: []
       indices: 
       edges: []
@@ -2334,20 +2334,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_87
       rect:
         serializedVersion: 2
-        x: 404
-        y: 13
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 26d8ae31935516b30800000000000000
-      internalID: 4278794824614317410
+      spriteID: e1bc59cb8dc5c6848ae60182b4f9da82
+      internalID: 581969373
       vertices: []
       indices: 
       edges: []
@@ -2356,20 +2356,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_88
       rect:
         serializedVersion: 2
-        x: 426
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6bb832f4c316fba90800000000000000
-      internalID: -7296005959663252554
+      spriteID: 3f00afae59da76441b5ecef8efdc2253
+      internalID: -1009230959
       vertices: []
       indices: 
       edges: []
@@ -2378,20 +2378,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_89
       rect:
         serializedVersion: 2
-        x: 458
-        y: 12
-        width: 10
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 081e570c15c649c80800000000000000
-      internalID: -8316903513469361792
+      spriteID: b1cc862e573db7645bb75ef6f216c05a
+      internalID: 1352059012
       vertices: []
       indices: 
       edges: []
@@ -2400,20 +2400,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_90
       rect:
         serializedVersion: 2
-        x: 491
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8cc8977466a4b8b90800000000000000
-      internalID: -7238610172921672504
+      spriteID: 8a99bf970d1c7194da17db47e48e7467
+      internalID: 744308511
       vertices: []
       indices: 
       edges: []
@@ -2422,20 +2422,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_91
       rect:
         serializedVersion: 2
-        x: 511
-        y: 13
-        width: 13
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f922b1de5fa156480800000000000000
-      internalID: -8906683044507999585
+      spriteID: f5fae48480cd3964dbdbf416e37109f1
+      internalID: 1207759364
       vertices: []
       indices: 
       edges: []
@@ -2444,20 +2444,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_92
       rect:
         serializedVersion: 2
-        x: 523
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3986414b94725f950800000000000000
-      internalID: 6482130436177029267
+      spriteID: f3de64fc768bbf14ca988813352cd044
+      internalID: -48356837
       vertices: []
       indices: 
       edges: []
@@ -2466,20 +2466,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_93
       rect:
         serializedVersion: 2
-        x: 546
-        y: 17
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6132e05231d71dc80800000000000000
-      internalID: -8299715117087579370
+      spriteID: 6e83cb3d0b4c3b54e8fb89218186cb67
+      internalID: -1741760144
       vertices: []
       indices: 
       edges: []
@@ -2488,20 +2488,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_94
       rect:
         serializedVersion: 2
-        x: 555
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 76cf52ccc3369b310800000000000000
-      internalID: 1421276270186331239
+      spriteID: f467748a985012143af8c0c1ccec6e7a
+      internalID: -104521503
       vertices: []
       indices: 
       edges: []
@@ -2510,20 +2510,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_95
       rect:
         serializedVersion: 2
-        x: 434
-        y: 2
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 90516523642440db0800000000000000
-      internalID: -4826660031374682871
+      spriteID: d71bcb0b3d630584cb1007fc8d33ff49
+      internalID: -346722818
       vertices: []
       indices: 
       edges: []
@@ -2532,20 +2532,20 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_96
       rect:
         serializedVersion: 2
-        x: 461
+        x: 672
         y: 0
-        width: 8
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2ab3d603adf0e7c30800000000000000
-      internalID: 4358938919130971042
+      spriteID: 44c1ce5704fee7c41bfa8f0ffe7ecc65
+      internalID: 396775038
       vertices: []
       indices: 
       edges: []
@@ -2554,20 +2554,64 @@ TextureImporter:
       name: Throwing_Knife_Orthogonal_97
       rect:
         serializedVersion: 2
-        x: 482
-        y: 2
-        width: 12
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: eb7d6841bd15e1cc0800000000000000
-      internalID: -3738460639286863938
+      spriteID: dd0d4fbe0520ca342a83e2b7f6471a60
+      internalID: 1176990820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throwing_Knife_Orthogonal_98
+      rect:
+        serializedVersion: 2
+        x: 736
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 985fbe73f5fa62a47a5650870ab5c802
+      internalID: 613910497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Throwing_Knife_Orthogonal_99
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49d0f7034a2ee114e9190257527f6676
+      internalID: -1296491773
       vertices: []
       indices: 
       edges: []
@@ -2576,7 +2620,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 91db0c6bc2c7f074eb6dabcd4e2089a4
     internalID: 0
     vertices: []
     indices: 
@@ -2584,7 +2628,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.40625},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Throwing_Knife_Orthogonal_0: -1838531696441449737
       Throwing_Knife_Orthogonal_1: 1062745823560643903
@@ -2656,34 +2702,36 @@ TextureImporter:
       Throwing_Knife_Orthogonal_7: -3919366323451916298
       Throwing_Knife_Orthogonal_70: -8308021929052683920
       Throwing_Knife_Orthogonal_71: 3893238945561523295
-      Throwing_Knife_Orthogonal_72: -7898824116006747723
-      Throwing_Knife_Orthogonal_73: -2876935130989309347
-      Throwing_Knife_Orthogonal_74: -3544960450967791344
-      Throwing_Knife_Orthogonal_75: -4032022695220737054
-      Throwing_Knife_Orthogonal_76: 77318099824520126
-      Throwing_Knife_Orthogonal_77: -8897011997696165123
-      Throwing_Knife_Orthogonal_78: 19610594739695355
-      Throwing_Knife_Orthogonal_79: 4612778034862725539
+      Throwing_Knife_Orthogonal_72: 1373588219
+      Throwing_Knife_Orthogonal_73: 519433592
+      Throwing_Knife_Orthogonal_74: -511264812
+      Throwing_Knife_Orthogonal_75: -805157634
+      Throwing_Knife_Orthogonal_76: -1481393094
+      Throwing_Knife_Orthogonal_77: -19970450
+      Throwing_Knife_Orthogonal_78: 822100897
+      Throwing_Knife_Orthogonal_79: 1682539442
       Throwing_Knife_Orthogonal_8: -6672536170427602879
-      Throwing_Knife_Orthogonal_80: -7213036087900256134
-      Throwing_Knife_Orthogonal_81: -8020969979959349834
-      Throwing_Knife_Orthogonal_82: -813332970096196426
-      Throwing_Knife_Orthogonal_83: 1466636465406136845
-      Throwing_Knife_Orthogonal_84: -3154845308271043249
-      Throwing_Knife_Orthogonal_85: 6643290237900130407
-      Throwing_Knife_Orthogonal_86: -2826218118146325102
-      Throwing_Knife_Orthogonal_87: 4278794824614317410
-      Throwing_Knife_Orthogonal_88: -7296005959663252554
-      Throwing_Knife_Orthogonal_89: -8316903513469361792
+      Throwing_Knife_Orthogonal_80: 810501878
+      Throwing_Knife_Orthogonal_81: 99058006
+      Throwing_Knife_Orthogonal_82: 1195653322
+      Throwing_Knife_Orthogonal_83: -1180178597
+      Throwing_Knife_Orthogonal_84: -1418198662
+      Throwing_Knife_Orthogonal_85: 2002827344
+      Throwing_Knife_Orthogonal_86: -1415824502
+      Throwing_Knife_Orthogonal_87: 581969373
+      Throwing_Knife_Orthogonal_88: -1009230959
+      Throwing_Knife_Orthogonal_89: 1352059012
       Throwing_Knife_Orthogonal_9: -5512947399023849065
-      Throwing_Knife_Orthogonal_90: -7238610172921672504
-      Throwing_Knife_Orthogonal_91: -8906683044507999585
-      Throwing_Knife_Orthogonal_92: 6482130436177029267
-      Throwing_Knife_Orthogonal_93: -8299715117087579370
-      Throwing_Knife_Orthogonal_94: 1421276270186331239
-      Throwing_Knife_Orthogonal_95: -4826660031374682871
-      Throwing_Knife_Orthogonal_96: 4358938919130971042
-      Throwing_Knife_Orthogonal_97: -3738460639286863938
+      Throwing_Knife_Orthogonal_90: 744308511
+      Throwing_Knife_Orthogonal_91: 1207759364
+      Throwing_Knife_Orthogonal_92: -48356837
+      Throwing_Knife_Orthogonal_93: -1741760144
+      Throwing_Knife_Orthogonal_94: -104521503
+      Throwing_Knife_Orthogonal_95: -346722818
+      Throwing_Knife_Orthogonal_96: 396775038
+      Throwing_Knife_Orthogonal_97: 1176990820
+      Throwing_Knife_Orthogonal_98: 613910497
+      Throwing_Knife_Orthogonal_99: -1296491773
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

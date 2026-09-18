@@ -179,8 +179,9 @@ MonoBehaviour:
   maxDieDuration: 3
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  floatingTextHeightAdjust: -0.5
   projectileSpeed: 6
-  projectilePrefab: {fileID: 999183690986960401, guid: bdd5cebdb4a885641ba3c7202ff94cb6, type: 3}
+  projectilePrefab: {fileID: 7258247481004021426, guid: 94167cd80b7184448a7d4ea43824f8f1, type: 3}
 --- !u!70 &114669544724366304
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -215,6 +216,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.005004183, y: 0.12397359}
-  m_Size: {x: 0.7697923, y: 0.2513925}
+  m_Offset: {x: 0.0050042113, y: 0.36260924}
+  m_Size: {x: 0.76979244, y: 0.7286652}
   m_Direction: 1

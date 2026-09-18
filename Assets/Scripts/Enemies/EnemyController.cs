@@ -39,6 +39,12 @@ public abstract class EnemyController : MonoBehaviour
     protected AttackCooldown attackAnimationCooldown;
     protected bool isInCombat;
 
+    // Uma vez que o monstro sofre dano, ele trava em combate pra sempre — nem um monstro
+    // de emboscada (staysDormantUntilDetected) pode voltar a dormir depois disso. Sem isso,
+    // dava pra ficar atacando um monstro de longe (ex.: leque do Ranger) sem ele nunca vir
+    // pro corpo a corpo, já que ataques à distância não entram no observationRadius sozinhos.
+    private bool combatLocked;
+
     private enum AttackAnimState { Idle, Attacking }
     private AttackAnimState attackAnimState = AttackAnimState.Idle;
     private float attackAnimElapsed;
@@ -193,7 +199,7 @@ public abstract class EnemyController : MonoBehaviour
         // de detectar (regra padrão, inalterada). Sem animação de transição de volta: se
         // o jogador já saiu do raio de observação, ele nem está olhando pra esse monstro
         // nesse instante — snap direto pra pose parada.
-        if (staysDormantUntilDetected)
+        if (staysDormantUntilDetected && !combatLocked)
         {
             float distanceToPlayer = Vector2.Distance(transform.position, player.position);
             if (distanceToPlayer > stats.observationRadius)
@@ -339,6 +345,13 @@ public abstract class EnemyController : MonoBehaviour
     public void TakeDamage(float amount)
     {
         if (isDead) return;
+
+        // Aggro instantâneo — sofrer dano põe o monstro em combate na hora, independente
+        // de distância/observationRadius. Sem isso, ataques à distância (ex.: leque do
+        // Ranger) deixavam o player "pokar" um monstro parado sem ele nunca vir de verdade.
+        combatLocked = true;
+        isInCombat = true;
+
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         Debug.Log($"[{GetType().Name}] Recebeu {amount} de dano. HP = {stats.health}/{stats.maxHealth}");
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount);

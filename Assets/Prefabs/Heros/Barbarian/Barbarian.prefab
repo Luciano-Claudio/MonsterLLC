@@ -329,9 +329,9 @@ GameObject:
   - component: {fileID: 3329988320532267137}
   - component: {fileID: 4930347559286135248}
   - component: {fileID: 2357303437903931235}
-  - component: {fileID: 5747829164707123993}
-  - component: {fileID: 1281415004293993549}
   - component: {fileID: 3324995967069510033}
+  - component: {fileID: 1281415004293993549}
+  - component: {fileID: 5747829164707123993}
   m_Layer: 8
   m_Name: Barbarian
   m_TagString: Player
@@ -445,66 +445,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &5747829164707123993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7333212314175848863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 706f2b1e20814910b0dfb3bc65e02a7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Barbarian
-  stats:
-    health: 4200
-    maxHealth: 4200
-    damage: 200
-    critChance: 0.1
-    moveSpeed: 5
-    attackSpeed: 0.5
-    energy: 0
-    maxEnergy: 100
-  respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
-  damageSpeedStepPerHit: 0.5
-  maxDamageSpeedMultiplier: 3
-  damageReactionDuration: 0.5
-  ultimateEnergyLockoutDuration: 2
-  attackHitboxNE: {fileID: 3806751581263164396}
-  attackHitboxNW: {fileID: 3256150972072358283}
-  attackHitboxSE: {fileID: 239541866548571686}
-  attackHitboxSW: {fileID: 9218440592649366789}
-  groundCrackPrefab: {fileID: 0}
-  groundCrackDuration: 3
-  knockbackForce: 0
-  ultimateProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
-  ultimateDamageMultiplier: 2
-  passiveGlowEffect: {fileID: 1443145589066052241}
-  maxActionDuration: 3
---- !u!95 &1281415004293993549
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7333212314175848863}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1058ee72d994eb04ab9208d8532c97ff, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!70 &3324995967069510033
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -542,6 +482,67 @@ CapsuleCollider2D:
   m_Offset: {x: -0.13247901, y: 0.11403309}
   m_Size: {x: 0.7533487, y: 0.26316032}
   m_Direction: 1
+--- !u!95 &1281415004293993549
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7333212314175848863}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1058ee72d994eb04ab9208d8532c97ff, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5747829164707123993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7333212314175848863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 706f2b1e20814910b0dfb3bc65e02a7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Barbarian
+  stats:
+    health: 4200
+    maxHealth: 4200
+    damage: 200
+    critChance: 0.1
+    moveSpeed: 5
+    attackSpeed: 0.5
+    energy: 0
+    maxEnergy: 100
+  respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
+  maxDieDuration: 3
+  damageSpeedStepPerHit: 0.5
+  maxDamageSpeedMultiplier: 3
+  damageReactionDuration: 0.5
+  ultimateEnergyLockoutDuration: 2
+  floatingTextHeightAdjust: -0.5
+  attackHitboxNE: {fileID: 3806751581263164396}
+  attackHitboxNW: {fileID: 3256150972072358283}
+  attackHitboxSE: {fileID: 239541866548571686}
+  attackHitboxSW: {fileID: 9218440592649366789}
+  groundCrackPrefab: {fileID: 0}
+  groundCrackDuration: 3
+  knockbackForce: 0
+  ultimateProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
+  ultimateDamageMultiplier: 2
+  passiveGlowEffect: {fileID: 1443145589066052241}
+  maxActionDuration: 3
 --- !u!1 &8256355451532891382
 GameObject:
   m_ObjectHideFlags: 0

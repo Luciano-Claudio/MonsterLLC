@@ -138,12 +138,12 @@ TextureImporter:
       name: RubishProjectile_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 85
-        width: 9
-        height: 9
-      alignment: 1
-      pivot: {x: 0, y: 1}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -160,10 +160,10 @@ TextureImporter:
       name: RubishProjectile_2
       rect:
         serializedVersion: 2
-        x: 44
-        y: 87
-        width: 9
-        height: 9
+        x: 64
+        y: 64
+        width: 32
+        height: 32
       alignment: 2
       pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,12 +182,12 @@ TextureImporter:
       name: RubishProjectile_3
       rect:
         serializedVersion: 2
-        x: 85
-        y: 85
-        width: 9
-        height: 9
-      alignment: 3
-      pivot: {x: 1, y: 1}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -204,12 +204,12 @@ TextureImporter:
       name: RubishProjectile_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 44
-        width: 9
-        height: 9
-      alignment: 4
-      pivot: {x: 0, y: 0.5}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -226,12 +226,12 @@ TextureImporter:
       name: RubishProjectile_5
       rect:
         serializedVersion: 2
-        x: 87
-        y: 44
-        width: 9
-        height: 9
-      alignment: 5
-      pivot: {x: 1, y: 0.5}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -248,12 +248,12 @@ TextureImporter:
       name: RubishProjectile_6
       rect:
         serializedVersion: 2
-        x: 2
-        y: 2
-        width: 9
-        height: 9
-      alignment: 6
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -270,12 +270,12 @@ TextureImporter:
       name: RubishProjectile_7
       rect:
         serializedVersion: 2
-        x: 43
+        x: 64
         y: 0
-        width: 9
-        height: 9
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -289,23 +289,23 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RubishProjectile_8
+      name: RubishProjectile_1
       rect:
         serializedVersion: 2
-        x: 85
-        y: 2
-        width: 9
-        height: 9
-      alignment: 8
-      pivot: {x: 1, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 2
+      pivot: {x: 0.5, y: 1}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 40e4c997e345f3d4f8baf1adaf9662a0
-      internalID: -2058401325
+      spriteID: 43c392c7a7a86fa4d87940fb52b970a6
+      internalID: -9194113129554473823
       vertices: []
       indices: 
       edges: []
@@ -324,7 +324,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":9.0,"y":9.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":1.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":2,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       RubishProjectile_0: 3555299381714107574
       RubishProjectile_1: -9194113129554473823
@@ -334,7 +334,6 @@ TextureImporter:
       RubishProjectile_5: -566604747
       RubishProjectile_6: -902115128
       RubishProjectile_7: -577832376
-      RubishProjectile_8: -2058401325
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

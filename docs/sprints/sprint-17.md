@@ -1,6 +1,6 @@
 # Sprint 17 — Ranger (Primário) → Detalhamento dos 10 Heróis + Barbarian Completo
 
-🟡 **EM ANDAMENTO — isto é pré-documentação, não o relatório de fechamento.** Escrito no fim do primeiro dia de trabalho pra não perder o fio das decisões (e remudanças) de hoje. Quando a sprint fechar de verdade, isso vira o relatório final (segue o [template](_template.md)) e ganha entrada em `sprints/index.md`/`changelog.md` — ainda não tem nenhuma das duas.
+✅ **FECHADA.** Começou como a sprint mais simples do plano (só o leque de flechas do Ranger) e virou dois dias de trabalho: Dia 1 pivotou pro detalhamento dos 10 heróis do MVP no GDD e pro Barbarian completo (primeiro herói 100% animado do jogo, com o Ranger ficando de placeholder até "a vez dele chegar de verdade" — combinado explicitamente com o usuário). Dia 2 fechou o escopo original de verdade: sistema de Floating Combat Text, correção de um bug real de dano duplicado (afetava Barbarian e todos os monstros, não só o Ranger), e o Ranger primário completo (formação em cunha/V, mira livre, perfuração). Ver "Dia 2" mais abaixo pra essa segunda metade.
 
 ## Como o dia começou vs. como ele terminou
 
@@ -118,14 +118,38 @@ Regra nova: usar a ultimate bloqueia o ganho de Energia por **2s** (`ultimateEne
 - **Modificados:** `Assets/Scripts/Player/Heroes/HeroController.cs` (a maior mudança do dia — Animator, cooldown universal, aceleração de dano, lockout de energia, morte adiada), `Assets/Scripts/Enemies/EnemyController.cs` (knockback + aceleração de ataque), `Assets/Scripts/Core/DirectionUtility.cs` (`GetDirectionName`), `Assets/Scripts/World/FloorPopulationManager.cs` (`monsterPrefabs`), `Assets/Animation/Base/Base_Melee.controller`, `Base_Ranged.controller`, `Base_Melee_Ambush.controller`, `Base_Ranged_Ambush.controller` (parâmetro `AttackSpeedMultiplier` + correção do `MoveX`).
 - **GDD:** `docs/gdd/index.md` (Seções 13, 16, 17 reescritas), `docs/gdd/bestiary.md` (referências corrigidas).
 
-## Pendências abertas pra amanhã
+## Pendências abertas no fim do Dia 1 (status no fim da sprint, ver Dia 2 abaixo)
 
-- Fechar a sprint de verdade: **Ranger** ainda não foi atualizado pra bater com o GDD novo (8 direções fixas, perfuração, Tier de Arma em vez de carta).
-- `passiveGlowEffect` do Barbarian continua vazio (nenhum GameObject de brilho criado ainda) — não bloqueia teste, só fica sem efeito visual.
-- Reatribuir `monsterPrefabs` nos 2 `FloorPopulationManager` da `_TestScene` (perderam a referência ao renomear o campo).
-- Prioridade entre efeitos visuais simultâneos (Seção 16) continua 🟡, sem hierarquia definida.
+- ~~Fechar a sprint de verdade: **Ranger** ainda não foi atualizado pra bater com o GDD novo (8 direções fixas, perfuração, Tier de Arma em vez de carta).~~ **Resolvido no Dia 2.**
+- `passiveGlowEffect` do Barbarian continua vazio (nenhum GameObject de brilho criado ainda) — **resolvido no Dia 2** (Passive Glow Effect finalizado).
+- Reatribuir `monsterPrefabs` nos 2 `FloorPopulationManager` da `_TestScene` (perderam a referência ao renomear o campo) — não confirmado, segue como dívida técnica pra sprint seguinte.
+- Prioridade entre efeitos visuais simultâneos (Seção 16) continua 🟡, sem hierarquia definida — resolvido parcialmente no Dia 2 (distinção Passiva vs Efeito Nocivo formalizada na Seção 33), lista de categorias de Efeito Nocivo em si continua 🟡 (só Prisão/DoT existem).
 - Dependência nova da ultimate do Assassin com o sistema de emboscada (Seção 22) só está anotada, não implementada — fica pra quando o Assassin (Sprint 27) chegar.
 - Valores `🔢` ainda são chutes de primeiro teste: `attackSpeedStepPerHit`/`maxAttackSpeedMultiplier` (monstro), `damageSpeedStepPerHit`/`maxDamageSpeedMultiplier`/`damageReactionDuration` (herói), `ultimateEnergyLockoutDuration` (2s).
+
+---
+
+## Dia 2 — Floating Combat Text, bug de dano duplicado, e o Ranger de verdade
+
+### Floating Combat Text
+Sistema de número de dano flutuante, pedido pelo usuário como "o único ponto antes de ir pro Ranger de verdade". Caminho até a versão final foi longo: (1) tentativa com `TextMeshPro` 3D solto — nunca ficou 100% claro por que a posição/direção não batia (câmera estática descartada como causa via teste do usuário), abandonado; (2) tentativa com Canvas World Space — `CanvasScaler` força o `Scale` do Canvas de volta pra `(1,1,1)` automaticamente em World Space (baseado em `Dynamic Pixels Per Unit`), fazendo o texto renderizar gigante mesmo com Scale manual pequeno; (3) **solução final:** Canvas de tela (Screen Space - Overlay, reaproveitando o Canvas de HUD que já existia) + `Camera.WorldToScreenPoint()` recalculado a cada frame — técnica padrão da indústria pra isso, evita todas as pegadinhas de Canvas novo. `Assets/Scripts/Core/FloatingCombatText.cs` e `FloatingCombatTextSpawner.cs` (novos), `GameEvents.OnDamageTaken` (novo evento), `GetFloatingTextSpawnPosition()`/`floatingTextHeightAdjust` em `EnemyController`/`HeroController`.
+
+### Bug de dano duplicado (descoberto graças ao Floating Combat Text)
+Usuário notou visualmente (2 números por hit) que monstros aplicavam dano em dobro no herói. Causa raiz: a `Attack` state (monstros e Barbarian) é uma Blend Tree 2D Freeform Directional com só 4 pontos diagonais — pra quase qualquer ângulo de mira, 2 clipes tocam misturados ao mesmo tempo, e o Animator dispara o Animation Event de **todo** clipe com peso > 0, não só do dominante. Cada clipe carregava seu próprio `AnimationHitEvent`/`AnimationAttackHitEvent`, disparando 2x por golpe. Corrigido com trava de idempotência (`attackHitFired` já existia mas só era consultado em `AccelerateAttack()`, nunca no evento em si) em `EnemyController.AnimationHitEvent()` **e** em `Barbarian.cs` (`AnimationAttackHitEvent`/`AnimationUltimateLandEvent` — o Barbarian tinha o mesmo bug, nunca reportado por afetar monstros com HP alto, menos perceptível). Diagnosticado via log de stack trace temporário em `HeroController.TakeDamage()`, mesma técnica que resolveu o bug de posição do Floating Combat Text.
+
+### Regra nova: aggro instantâneo ao tomar dano
+`EnemyController.TakeDamage()` agora força `isInCombat = true` na hora, independente de distância — evita o jogador "pokar" um monstro parado de longe (leque do Ranger) sem ele nunca vir de verdade. Trava (`combatLocked`) garante que monstros de emboscada (`staysDormantUntilDetected`) não voltem a dormir depois de serem atingidos uma vez.
+
+### Ranger — primário completo
+Reconstruído do zero em cima do esqueleto do Dia 1: Animator real (Idle/Walk/Damage com Blend Tree de 4 diagonais, Attack com Blend Tree de **8** pontos, Die sem Blend Tree), `ArrowFormation.cs` (formação em cunha/V — todas as flechas paralelas na mesma direção, só nascem deslocadas, gera o teto ponta-de-1-se-ímpar/ponta-de-2-se-par pra qualquer quantidade futura), depois revisado pra mira livre (`RawAimDirection`, novo em `HeroController` — direção crua do mouse sem o snap de 8 direções, só a pose visual continua presa nas 8 poses possíveis) com rotação real do sprite (`Quaternion.Euler` baseado no ângulo, substitui completamente o Blend Tree/8-sprites da flecha em si — 1 sprite só, gira de verdade; mesmo padrão aplicado ao `EnemyProjectile.cs` genérico de monstro). Perfuração/reserva de dano implementada na `RangerArrow` (idêntico ao `HeroProjectile`). Teto de flechas revisado pra **15** (não mais 7), +1 por tier de arma — decisão de gosto do usuário ("gostei d+ de ter muitas flechas na tela").
+
+### Arquivos novos/alterados no Dia 2
+`Assets/Scripts/Core/FloatingCombatText.cs`, `FloatingCombatTextSpawner.cs`, `Assets/Scripts/Core/Combat/ArrowFormation.cs` (novos); `HeroController.cs` (`RawAimDirection`, `floatingTextHeightAdjust`), `EnemyController.cs` (aggro instantâneo, `AnimationHitEvent` idempotente, `floatingTextHeightAdjust`), `Barbarian.cs` (trava idempotente no Attack/Ultimate), `Ranger.cs`/`RangerArrow.cs` (reescritos), `EnemyProjectile.cs`/`RangedEnemyController.cs` (rotação real, API `Launch()`), `DirectionUtility.cs` (`GetDirectionIndex`), `docs/gdd/index.md` (Seção 17.2 revisada, Seção 33 Efeitos Nocivos vs Passiva, `balance-values.md` novo).
+
+### Dívida técnica real no fim da sprint
+- Reatribuir `monsterPrefabs` nos 2 `FloorPopulationManager` da `_TestScene` — nunca confirmado.
+- Lista de categorias de Efeito Nocivo (só Prisão/DoT existem) — cresce conforme novos monstros.
+- Valores `🔢` de balanceamento em geral, incluindo os novos do Ranger (`attackDamageMultiplier`, `arrowLateralStep`/`arrowForwardStep`, `knockbackForce` da flecha).
 
 ## Testes executados
 

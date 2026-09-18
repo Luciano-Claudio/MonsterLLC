@@ -33,6 +33,15 @@ public class Barbarian : HeroController
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
     private float actionElapsed;
 
+    // Attack e Ultimate são Blend Tree 2D Freeform Directional — pra quase qualquer ângulo
+    // de mira, 2 clipes diagonais tocam misturados ao mesmo tempo, e cada clipe carrega seu
+    // próprio Animation Event de hit. O Animator dispara o evento de TODO clipe com peso > 0
+    // na mistura, não só do dominante — sem essa trava, um golpe/ultimate só chamava o
+    // Hit/Land Event 2x (dano dobrado no golpe, 8 projéteis da ultimate saindo em dobro).
+    // Mesma causa raiz já corrigida em EnemyController.AnimationHitEvent().
+    private bool attackHitFired;
+    private bool ultimateLandFired;
+
     private static readonly Vector2[] EightDirections =
     {
         Vector2.up,                                   // N
@@ -69,12 +78,16 @@ public class Barbarian : HeroController
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
+        attackHitFired = false;
         AnimatorTrigger("AttackTrigger");
     }
 
     // Animation Event, no frame exato em que a espada toca o chão.
     public void AnimationAttackHitEvent()
     {
+        if (attackHitFired) return;
+        attackHitFired = true;
+
         Collider2D hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
@@ -110,12 +123,16 @@ public class Barbarian : HeroController
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
+        ultimateLandFired = false;
         AnimatorTrigger("UltimateTrigger");
     }
 
     // Animation Event, no frame exato em que o Barbarian cai no chão.
     public void AnimationUltimateLandEvent()
     {
+        if (ultimateLandFired) return;
+        ultimateLandFired = true;
+
         if (ultimateProjectilePrefab == null) return;
 
         float reserve = stats.damage * GetPassiveDamageMultiplier() * ultimateDamageMultiplier;

@@ -2,6 +2,17 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 17 — Ranger (Primário) → Detalhamento dos 10 Heróis + Barbarian Completo
+
+- Os 10 heróis do MVP detalhados por completo no GDD (mecânica de projétil de herói com reserva de dano/perfuração, regra de mira sempre igual à mira do mouse, movimento só permitido durante `Walk`).
+- Barbarian 100% implementado com Animator real (golpe em área com 4 hitboxes direcionais, ultimate com 8 projéteis, passiva de dano por vida perdida) — primeiro herói do jogo com isso.
+- Cooldown universal de ataque (`AttackCooldown`) movido pra base `HeroController`, mecânica de aceleração de animação sob hits repetidos (monstro e herói) pra nunca travar o jogador incapaz de se mover, e lockout de 2s no ganho de Energia pós-ultimate.
+- Sistema de Floating Combat Text (Screen Space Canvas + `Camera.WorldToScreenPoint`, depois de descartar TextMeshPro 3D solto e Canvas World Space por pegadinhas de posicionamento/escala).
+- Corrigido bug real de dano duplicado (Barbarian e todo monstro Melee/Ranged): Blend Tree de ataque mistura 2 clipes simultâneos pra quase qualquer ângulo, cada um disparando seu próprio Animation Event — corrigido com trava de idempotência.
+- Ranger primário completo: formação de flechas em cunha (V), mira livre com rotação real do sprite (em vez de 8 variações/Blend Tree), perfuração/reserva de dano, teto de 15 flechas (+1 por tier de arma).
+- Regra nova: sofrer dano põe qualquer monstro em combate instantaneamente, independente de distância — evita ataques à distância sem nunca atrair o monstro.
+- **Inicia a Deadline 5 (Heróis I + Floor Content I)** — ver [relatório completo](sprints/sprint-17.md).
+
 ## Sprint 16 — Teste de Viabilidade de Combate Real + Correção + Pivô Híbrido Final
 
 - Testado na prática o combate 100% orientado por animação (Telegraph/Hitbox/Recovery) em 3 monstros reais (Rat, Goblin, Rat People) — inviável em custo de produção pra escopo solo.

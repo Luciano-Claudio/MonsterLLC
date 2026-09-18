@@ -251,6 +251,7 @@ MonoBehaviour:
   maxDieDuration: 3
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 5979887795308949347}
   attackHitboxNW: {fileID: 2411170178247101939}
   attackHitboxSE: {fileID: 7100359997142546434}
@@ -294,8 +295,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.21877117, y: 0.12910797}
-  m_Size: {x: 1.4476465, y: 0.2506257}
+  m_Offset: {x: -0.21877116, y: 0.25244159}
+  m_Size: {x: 1.4476466, y: 0.4972939}
   m_Direction: 1
 --- !u!1 &4660843584238629015
 GameObject:

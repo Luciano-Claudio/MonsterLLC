@@ -70,6 +70,12 @@ public abstract class HeroController : MonoBehaviour
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 
+    // Direção crua do mouse, sem o snap de 8 direções — Animator/animação continuam usando
+    // AimDirection (só existem 8 poses), mas alguns heróis podem preferir a direção exata
+    // pra mecânicas próprias (ex.: trajetória das flechas do Ranger). Congela junto com
+    // AimDirection durante isAttacking/isTrapped, mesmo motivo.
+    protected Vector2 RawAimDirection { get; private set; } = Vector2.down;
+
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>();
@@ -176,6 +182,7 @@ public abstract class HeroController : MonoBehaviour
         if (toMouse.sqrMagnitude < 0.0001f) return;
 
         AimDirection = DirectionUtility.SnapTo8Directions(toMouse);
+        RawAimDirection = toMouse.normalized;
 
         // GDD Seção 16: não existe MoveX/MoveY pro herói (ao contrário dos monstros,
         // Seção 22) — walk/attack/ultimate usam sempre a mira, nunca a direção de
