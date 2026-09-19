@@ -32,4 +32,14 @@ public static class DirectionUtility
 
         return Mathf.RoundToInt(angle / 45f) % 8;
     }
+
+    // Inverso de GetDirectionIndex — dado o índice (0-7, mesma ordem de DirectionNames:
+    // E, NE, N, NW, W, SW, S, SE), devolve o vetor unitário daquela direção fixa. Usado
+    // quando a direção nasce de uma das 8 direções fixas conhecidas (ex.: cada faca da
+    // Ultimate do Ranger), não de mira real.
+    public static Vector2 DirectionFromIndex(int index)
+    {
+        float angle = index * 45f * Mathf.Deg2Rad;
+        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+    }
 }

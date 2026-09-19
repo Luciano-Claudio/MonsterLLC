@@ -24,6 +24,17 @@ public class Ranger : HeroController
     // EnemyController.AnimationHitEvent()), não apenas defensiva.
     private bool shotFired;
 
+    [Header("Ultimate — 8 facas nas 8 direções fixas (GDD Seção 17.2)")]
+    [SerializeField] private GameObject knifePrefab; // precisa ter RangerKnife
+    [SerializeField] private float ultimateDamageMultiplier = 2f; // 🔢 GDD: "2x o dano do Ranger" em voo, 1x no chão
+
+    // A Ultimate também é Blend Tree 2D Freeform Directional (4 pontos diagonais, igual
+    // Idle/Walk/Damage) — mesmo risco de evento duplicado do Attack, só que aqui cada uma
+    // das 8 facas tem seu PRÓPRIO Animation Event/método (pedido explícito do usuário, não
+    // um método único parametrizado), então a trava precisa ser por direção: um clique só
+    // pode disparar o evento de uma direção 2x sem afetar as outras 7.
+    private readonly bool[] knifeThrown = new bool[8];
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
@@ -83,7 +94,44 @@ public class Ranger : HeroController
 
     protected override void UseUltimate()
     {
-        Debug.Log("[Ranger] Ultimate (facas persistentes) ainda não implementada — Sprint 18.");
+        // Guarda própria — HeroController não bloqueia Ultimate por isAttacking, então cada
+        // herói se protege (mesmo padrão do Barbarian).
+        if (isAttacking) return;
+        isAttacking = true;
+        actionElapsed = 0f;
+        for (int i = 0; i < knifeThrown.Length; i++) knifeThrown[i] = false;
+        AnimatorTrigger("UltimateTrigger");
+    }
+
+    // 8 Animation Events, um por direção fixa (E/NE/N/NW/W/SW/S/SE, mesma ordem de
+    // DirectionUtility) — método próprio por direção em vez de 1 método parametrizado,
+    // pra ligar cada um no frame exato do giro em que aquela direção "atira" de verdade.
+    public void AnimationThrowKnife_E() => ThrowKnife(0);
+    public void AnimationThrowKnife_NE() => ThrowKnife(1);
+    public void AnimationThrowKnife_N() => ThrowKnife(2);
+    public void AnimationThrowKnife_NW() => ThrowKnife(3);
+    public void AnimationThrowKnife_W() => ThrowKnife(4);
+    public void AnimationThrowKnife_SW() => ThrowKnife(5);
+    public void AnimationThrowKnife_S() => ThrowKnife(6);
+    public void AnimationThrowKnife_SE() => ThrowKnife(7);
+
+    private void ThrowKnife(int directionIndex)
+    {
+        if (knifeThrown[directionIndex]) return;
+        knifeThrown[directionIndex] = true;
+
+        Vector2 dir = DirectionUtility.DirectionFromIndex(directionIndex);
+        float flightDamage = stats.damage * ultimateDamageMultiplier;
+        float groundedDamage = stats.damage;
+
+        var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity);
+        knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage);
+    }
+
+    // Animation Event, no fim do clipe da Ultimate.
+    public void AnimationUltimateEndEvent()
+    {
+        isAttacking = false;
     }
 
     // Sem Card Framework ainda (Sprint 35) — incremento manual só pra provar o leque nesta sprint.

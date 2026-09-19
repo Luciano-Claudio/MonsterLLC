@@ -2,6 +2,14 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 18 — Ranger (Ultimate)
+
+- Ultimate do Ranger completa: giro lançando 8 facas nas 8 direções fixas via Animation Events (8 métodos nomeados, um por direção, com trava individual contra disparo duplicado — a Ultimate é Blend Tree de 4 diagonais, mesmo risco já corrigido no Attack).
+- `RangerKnife` — projétil de 2 fases: perfura em voo (2× dano), e ao esgotar a reserva ou alcançar a distância máxima vira Persistent Area no chão (30s, dano em tick, 1×), incluindo quem já estava na área no instante do pouso.
+- Animator com 9 estados soltos pra faca (8 direções fixas + fase "no chão"), sem Blend Tree — direção nunca muda depois do lançamento.
+- Estado `Trapped` do Ranger construído (reaproveitando o hook `SetTrapped()` já existente desde o Barbarian) — sem sistema real que o acione ainda, mas pronto pra quando Efeitos Nocivos existir.
+- Ranger está completo (primário + ultimate) — continua a Deadline 5.
+
 ## Sprint 17 — Ranger (Primário) → Detalhamento dos 10 Heróis + Barbarian Completo
 
 - Os 10 heróis do MVP detalhados por completo no GDD (mecânica de projétil de herói com reserva de dano/perfuração, regra de mira sempre igual à mira do mouse, movimento só permitido durante `Walk`).

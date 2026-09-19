@@ -70,6 +70,8 @@ AnimationClip:
       value: {fileID: 613910497, guid: 428aa5ba43745b74db32511264989920, type: 3}
     - time: 2
       value: {fileID: -1296491773, guid: 428aa5ba43745b74db32511264989920, type: 3}
+    - time: 2.0833333
+      value: {fileID: 4214278052233978371, guid: 3bee75c00dc1136418b2f40ea49af848, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -117,12 +119,13 @@ AnimationClip:
     - {fileID: 1176990820, guid: 428aa5ba43745b74db32511264989920, type: 3}
     - {fileID: 613910497, guid: 428aa5ba43745b74db32511264989920, type: 3}
     - {fileID: -1296491773, guid: 428aa5ba43745b74db32511264989920, type: 3}
+    - {fileID: 4214278052233978371, guid: 3bee75c00dc1136418b2f40ea49af848, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 2.0833333
+    m_StopTime: 2.1666665
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -141,4 +144,67 @@ AnimationClip:
   m_EulerEditorCurves: []
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 0.8333333
+    functionName: AnimationThrowKnife_N
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1
+    functionName: AnimationThrowKnife_NE
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.1666666
+    functionName: AnimationThrowKnife_E
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.3333334
+    functionName: AnimationThrowKnife_SE
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.5
+    functionName: AnimationThrowKnife_S
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.6666666
+    functionName: AnimationThrowKnife_SW
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.8333334
+    functionName: AnimationThrowKnife_W
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 2
+    functionName: AnimationThrowKnife_NW
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 2.0833333
+    functionName: AnimationUltimateEndEvent
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
