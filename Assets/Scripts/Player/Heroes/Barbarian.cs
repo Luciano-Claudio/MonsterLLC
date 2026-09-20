@@ -19,13 +19,15 @@ public class Barbarian : HeroController
     [SerializeField] private GameObject ultimateProjectilePrefab; // precisa ter HeroProjectile
     [SerializeField] private float ultimateDamageMultiplier = 2f; // 🔢 GDD: "2x o dano atual da arma"
 
-    // Objeto filho, ativo enquanto a passiva estiver valendo alguma coisa. GDD Seção 33
-    // (Efeitos Nocivos): passiva de herói nunca é "Efeito" e sempre renderiza NA FRENTE de
-    // qualquer Efeito Nocivo (status de monstro sobre o herói) — o Sorting Layer/Order in
-    // Layer desse GameObject precisa ficar numericamente acima do que a camada de Efeito
-    // vier a usar quando esse sistema for implementado.
-    [Header("Passiva — mais dano com vida perdida (GDD Seção 17.1)")]
-    [SerializeField] private GameObject passiveGlowEffect;
+    // Habilidade Secundária (Shift) — buff temporário de dano e velocidade (GDD Seção 16/17.1,
+    // Sprint 18→19). 1 animação só, sem direções, sem fases (igual "die") — não bloqueia
+    // ataque/ultimate/movimento, e não é cancelável: roda até o fim sozinha.
+    [Header("Habilidade Secundária (Shift) — dano e velocidade temporários")]
+    [SerializeField] private float secondaryAbilityDamageMultiplier = 2f; // 🔢 ajustável
+    [SerializeField] private float secondaryAbilitySpeedMultiplier = 1.5f; // 🔢 ajustável
+    [SerializeField] private float secondaryAbilityDuration = 5f; // 🔢 ajustável
+    private float secondaryAbilityRemaining;
+    private float baseMoveSpeed;
 
     // Rede de segurança — se o Animation Event de fim (attack ou ultimate) nunca disparar,
     // força o fim da ação em vez de travar o herói pra sempre em "isAttacking" (mesmo
@@ -54,6 +56,12 @@ public class Barbarian : HeroController
         new Vector2(-0.7071f, 0.7071f),                // NW
     };
 
+    protected override void Awake()
+    {
+        base.Awake();
+        baseMoveSpeed = stats.moveSpeed;
+    }
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
@@ -70,7 +78,15 @@ public class Barbarian : HeroController
             }
         }
 
-        UpdatePassiveGlow();
+        if (secondaryAbilityRemaining > 0f)
+        {
+            secondaryAbilityRemaining -= Time.deltaTime;
+            if (secondaryAbilityRemaining <= 0f)
+            {
+                stats.moveSpeed = baseMoveSpeed;
+                isUsingSecondaryAbility = false;
+            }
+        }
     }
 
     protected override void PrimaryAttack()
@@ -91,7 +107,7 @@ public class Barbarian : HeroController
         Collider2D hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        float damage = stats.damage * GetPassiveDamageMultiplier();
+        float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier();
 
         var results = new Collider2D[16];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
@@ -135,7 +151,7 @@ public class Barbarian : HeroController
 
         if (ultimateProjectilePrefab == null) return;
 
-        float reserve = stats.damage * GetPassiveDamageMultiplier() * ultimateDamageMultiplier;
+        float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier() * ultimateDamageMultiplier;
         foreach (Vector2 dir in EightDirections)
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity);
@@ -149,6 +165,19 @@ public class Barbarian : HeroController
     {
         isAttacking = false;
     }
+
+    // Não seta isAttacking — de propósito: essa habilidade não bloqueia nada, ataque/
+    // ultimate/movimento continuam funcionando normalmente durante o buff. Não cancelável
+    // (sem override de CancelSecondaryAbility) — roda até secondaryAbilityDuration acabar.
+    protected override void UseSecondaryAbility()
+    {
+        secondaryAbilityRemaining = secondaryAbilityDuration;
+        stats.moveSpeed = baseMoveSpeed * secondaryAbilitySpeedMultiplier;
+        AnimatorTrigger("SecondaryAbilityTrigger");
+    }
+
+    private float GetSecondaryAbilityDamageMultiplier() =>
+        secondaryAbilityRemaining > 0f ? secondaryAbilityDamageMultiplier : 1f;
 
     // Classifica AimDirection (congelada em isAttacking) num dos 4 quadrantes diagonais —
     // mesmo critério que o Blend Tree 2D do Animator usa pra escolher entre atk_ne/nw/se/sw.
@@ -170,10 +199,4 @@ public class Barbarian : HeroController
     }
 
     private float GetPassiveDamageMultiplier() => 1f + GetPassiveDamageSteps() * 0.25f;
-
-    private void UpdatePassiveGlow()
-    {
-        if (passiveGlowEffect == null) return;
-        passiveGlowEffect.SetActive(GetPassiveDamageSteps() > 0);
-    }
 }

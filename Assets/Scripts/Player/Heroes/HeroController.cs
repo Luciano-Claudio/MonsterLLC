@@ -67,6 +67,20 @@ public abstract class HeroController : MonoBehaviour
     // (Seção 33), quem some por último é quem chama SetTrapped(false) de verdade.
     protected bool isTrapped;
 
+    // Habilidade Secundária (Shift, GDD Seção 16) — terceira ação de todo herói, cooldown
+    // próprio mais alto que o do primário. Só habilidades que transformam/incapacitam o
+    // herói são canceláveis (Shift de novo no meio dela) — CancelSecondaryAbility() default
+    // não faz nada, então heróis sem cancelamento (a maioria) simplesmente ignoram o clique
+    // repetido, sem precisar checar nada a mais.
+    [SerializeField] private float secondaryAbilityCooldownDuration = 8f; // 🔢 maior que o do primário, ajustável por herói
+    private AttackCooldown secondaryAbilityCooldown;
+    protected bool isUsingSecondaryAbility;
+
+    // Flag simples (não por-instância — só existe 1 herói jogável por vez) pra habilidades
+    // tipo camuflagem/stealth: enquanto true, EnemyController trata o player como
+    // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
+    public static bool IsPlayerUntargetable;
+
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 
@@ -82,6 +96,7 @@ public abstract class HeroController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
+        secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
         controls = new PlayerControls();
         controls.Gameplay.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Gameplay.Move.canceled += ctx => moveInput = Vector2.zero;
@@ -92,6 +107,15 @@ public abstract class HeroController : MonoBehaviour
         controls.Gameplay.Attack.performed += ctx => attackHeld = true;
         controls.Gameplay.Attack.canceled += ctx => attackHeld = false;
         controls.Gameplay.Ultimate.performed += ctx => { if (GameplayGate.IsActive && !isDead && !isTrapped) TryUseUltimate(); };
+        // Shift: se já está usando, tenta cancelar (só faz efeito em habilidade cancelável —
+        // CancelSecondaryAbility() default não faz nada); senão, tenta usar (respeitando
+        // cooldown próprio, maior que o do primário).
+        controls.Gameplay.SecondaryAbility.performed += ctx =>
+        {
+            if (!GameplayGate.IsActive || isDead || isTrapped) return;
+            if (isUsingSecondaryAbility) CancelSecondaryAbility();
+            else TryUseSecondaryAbility();
+        };
     }
 
     protected virtual void Start()
@@ -150,6 +174,7 @@ public abstract class HeroController : MonoBehaviour
 
         if (ultimateEnergyLockoutRemaining > 0f) ultimateEnergyLockoutRemaining -= Time.deltaTime;
 
+        secondaryAbilityCooldown.Tick(Time.deltaTime);
         attackCooldown.Tick(Time.deltaTime);
         // !isAttacking aqui é o que impede um attackSpeed alto de disparar um novo ataque
         // por cima de uma animação ainda tocando (ex.: attackSpeed maior que a duração do
@@ -212,6 +237,13 @@ public abstract class HeroController : MonoBehaviour
         stats.energy = 0f;
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
         ultimateEnergyLockoutRemaining = ultimateEnergyLockoutDuration;
+    }
+
+    private void TryUseSecondaryAbility()
+    {
+        if (!secondaryAbilityCooldown.TryConsume()) return;
+        isUsingSecondaryAbility = true;
+        UseSecondaryAbility();
     }
 
     // Chamado pelo (futuro) sistema de Efeitos Nocivos quando uma Prisão (ex.: Freeze)
@@ -331,6 +363,8 @@ public abstract class HeroController : MonoBehaviour
         isReactingToDamage = false;
         damageSpeedMultiplier = 1f;
         isTrapped = false; // mesmo motivo — morrer preso não pode renascer incapaz de agir
+        isUsingSecondaryAbility = false;
+        IsPlayerUntargetable = false; // sem isso, morrer camuflado deixaria os monstros cegos pro respawn inteiro
         if (animator != null)
         {
             animator.SetFloat("DamageSpeedMultiplier", 1f);
@@ -398,4 +432,10 @@ public abstract class HeroController : MonoBehaviour
 
     protected abstract void PrimaryAttack();
     protected abstract void UseUltimate();
+    protected abstract void UseSecondaryAbility();
+
+    // Default no-op — só heróis com habilidade cancelável (ex.: camuflagem do Ranger)
+    // sobrescrevem isso. Sem override, apertar Shift de novo em habilidade não-cancelável
+    // simplesmente não faz nada (não reinicia, não interrompe).
+    protected virtual void CancelSecondaryAbility() { }
 }

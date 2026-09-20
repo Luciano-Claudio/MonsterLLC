@@ -7,6 +7,11 @@ public abstract class EnemyController : MonoBehaviour
     public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
     public FloorDefinition ownerFloor;
 
+    // Bosses são imunes a knockback (decisão do usuário, Sprint 18→19) — sem isso, ataques
+    // com empurrão forte (ex.: golpe do Barbarian) tirariam o boss da própria arena/posição
+    // de telegraph, além de trivializar mecânicas de boss pensadas em torno de posição fixa.
+    [SerializeField] private bool isBoss = false;
+
     [Header("Patrulha (GDD Seção 22 — idle/walk aleatório antes de detectar o jogador)")]
     [SerializeField] private float minIdleDuration = 1.5f;
     [SerializeField] private float maxIdleDuration = 3.5f;
@@ -121,6 +126,13 @@ public abstract class EnemyController : MonoBehaviour
 
         if (player == null) return;
 
+        // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin)
+        // — o monstro perde o alvo de verdade (isInCombat=false), não só congela: continua
+        // se movendo/tocando a própria animação de patrulha normalmente, só sem saber que o
+        // player existe. Precisa redetectar via observationRadius depois que acabar (ver
+        // guarda em UpdatePatrol) — não retoma perseguição sozinho quando a camuflagem cai.
+        if (HeroController.IsPlayerUntargetable) isInCombat = false;
+
         if (hasAttackAnimation) attackAnimationCooldown.Tick(Time.deltaTime);
 
         if (attackAnimState == AttackAnimState.Attacking)
@@ -150,7 +162,11 @@ public abstract class EnemyController : MonoBehaviour
     private void UpdatePatrol()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        if (distanceToPlayer <= stats.observationRadius)
+        // !IsPlayerUntargetable aqui é o que faz a camuflagem funcionar de verdade — sem
+        // isso, forçar isInCombat=false no Update() não adiantaria nada, porque esse
+        // check de distância reativaria o combate sozinho no frame seguinte (o player
+        // continua fisicamente perto, só "invisível" pro monstro).
+        if (distanceToPlayer <= stats.observationRadius && !HeroController.IsPlayerUntargetable)
         {
             isInCombat = true;
             return;
@@ -401,6 +417,7 @@ public abstract class EnemyController : MonoBehaviour
 
     public void ApplyKnockback(Vector2 direction, float force)
     {
+        if (isBoss) return;
         knockbackVelocity = direction.normalized * force;
     }
 

@@ -208,6 +208,7 @@ MonoBehaviour:
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
   ultimateEnergyLockoutDuration: 2
+  secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
   arrowPrefab: {fileID: 3826008860373041601, guid: 06edcbb77a27b774b8bfb6bc5cc5e410, type: 3}
   arrowCount: 1
@@ -217,3 +218,5 @@ MonoBehaviour:
   maxActionDuration: 3
   knifePrefab: {fileID: 8418045878962532076, guid: 736bb58838368264d957839686df32b3, type: 3}
   ultimateDamageMultiplier: 2
+  secondaryAbilityHealPerTick: 2
+  secondaryAbilityHealTickInterval: 1

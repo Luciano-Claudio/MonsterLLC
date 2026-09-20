@@ -35,13 +35,36 @@ public class Ranger : HeroController
     // pode disparar o evento de uma direção 2x sem afetar as outras 7.
     private readonly bool[] knifeThrown = new bool[8];
 
+    // Habilidade Secundária (Shift) — camuflagem (GDD Seção 16/17.2, Sprint 18→19). 3 fases,
+    // cada uma 1 estado só sem direção (igual "die"): start (se escondendo) -> during
+    // (escondido, teto de tempo — ver secondaryAbilityMaxDuration) -> end (surgindo).
+    // Bloqueia tudo (isAttacking reaproveitado — mesmo gate que já bloqueia
+    // PrimaryAttack/UseUltimate, e o movimento fica preso porque nenhum dos 3 estados é
+    // "Walk"). Cancelável: Shift de novo adianta pra "end" antes do teto de tempo acabar.
+    [Header("Habilidade Secundária (Shift) — camuflagem")]
+    // % da Vida Máxima curada por tick, não valor fixo — com tick a cada 1s e teto de 5s na
+    // fase "during", 10%/s dá um teto de cura total de 50% se o jogador ficar camuflado o
+    // tempo inteiro (10% × 5 ticks) — o cap emerge do próprio tick rate × duração, não
+    // precisa de uma variável de teto separada.
+    [SerializeField] private float secondaryAbilityHealPercentPerTick = 0.1f; // 🔢 ajustável
+    [SerializeField] private float secondaryAbilityHealTickInterval = 1f; // 🔢 ajustável
+    [SerializeField] private float secondaryAbilityMaxDuration = 5f; // 🔢 teto de tempo camuflado, passível de nerf/buff — cancelável antes disso
+    private AttackCooldown secondaryAbilityHealTick;
+    private bool isCamouflaged; // só true durante a fase "during" — controla o tick de cura
+    private float camouflageElapsed;
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
 
         base.Update();
 
-        if (isAttacking)
+        // !isCamouflaged aqui é essencial: a fase "during" da camuflagem tem seu próprio
+        // teto de tempo (secondaryAbilityMaxDuration, maior que maxActionDuration) e sua
+        // própria rede de segurança (camouflageElapsed, logo abaixo) — não pode usar a
+        // mesma rede genérica do Attack/Ultimate, senão a camuflagem seria cortada cedo
+        // demais (maxActionDuration é calibrado pro tiro único do primário, bem mais curto).
+        if (isAttacking && !isCamouflaged)
         {
             actionElapsed += Time.deltaTime;
             if (actionElapsed >= maxActionDuration)
@@ -49,6 +72,19 @@ public class Ranger : HeroController
                 Debug.LogWarning("[Ranger] Animation Event de fim de ataque nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
             }
+        }
+
+        if (isCamouflaged)
+        {
+            secondaryAbilityHealTick.Tick(Time.deltaTime);
+            if (secondaryAbilityHealTick.TryConsume())
+            {
+                stats.health = Mathf.Min(stats.health + stats.maxHealth * secondaryAbilityHealPercentPerTick, stats.maxHealth);
+                GameEvents.HealthChanged(stats.health, stats.maxHealth);
+            }
+
+            camouflageElapsed += Time.deltaTime;
+            if (camouflageElapsed >= secondaryAbilityMaxDuration) EndCamouflage();
         }
     }
 
@@ -132,6 +168,51 @@ public class Ranger : HeroController
     public void AnimationUltimateEndEvent()
     {
         isAttacking = false;
+    }
+
+    protected override void UseSecondaryAbility()
+    {
+        // isAttacking bloqueia PrimaryAttack/UseUltimate (mesma trava que eles já usam) e,
+        // como nenhum dos 3 estados da camuflagem é "Walk", o movimento já fica preso
+        // sozinho (regra geral do HeroController, Seção 16) — não precisa de flag nova.
+        isAttacking = true;
+        actionElapsed = 0f;
+        AnimatorTrigger("SecondaryAbilityTrigger");
+    }
+
+    // Animation Event, no fim do clipe de "se escondendo" — o Animator já transiciona
+    // sozinho pro estado "during" (Exit Time, sem condição), esse evento só sincroniza a
+    // parte de código (começa a cura, avisa os monstros que o player sumiu).
+    public void AnimationCamouflageHiddenEvent()
+    {
+        IsPlayerUntargetable = true;
+        isCamouflaged = true;
+        camouflageElapsed = 0f;
+        secondaryAbilityHealTick = new AttackCooldown(secondaryAbilityHealTickInterval);
+    }
+
+    // Shift de novo durante a camuflagem — só faz efeito depois que "during" realmente
+    // começou (cancelar no meio da animação de esconder ainda não existe como caso de uso).
+    protected override void CancelSecondaryAbility()
+    {
+        if (!isCamouflaged) return;
+        EndCamouflage();
+    }
+
+    // Compartilhado entre o cancelamento manual (Shift de novo) e o teto de tempo
+    // (secondaryAbilityMaxDuration estourado) — os dois terminam a camuflagem do mesmo jeito.
+    private void EndCamouflage()
+    {
+        isCamouflaged = false;
+        IsPlayerUntargetable = false;
+        AnimatorTrigger("SecondaryAbilityEndTrigger");
+    }
+
+    // Animation Event, no fim do clipe de "reaparecendo".
+    public void AnimationCamouflageEndEvent()
+    {
+        isAttacking = false;
+        isUsingSecondaryAbility = false;
     }
 
     // Sem Card Framework ainda (Sprint 35) — incremento manual só pra provar o leque nesta sprint.
