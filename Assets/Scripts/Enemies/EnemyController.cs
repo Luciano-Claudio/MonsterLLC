@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class EnemyController : MonoBehaviour
+public abstract class EnemyController : MonoBehaviour, IDamageable
 {
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20;
@@ -84,6 +84,7 @@ public abstract class EnemyController : MonoBehaviour
         patrolAI = new PatrolAI(minIdleDuration, maxIdleDuration, minWalkDuration, maxWalkDuration);
         attackAnimationCooldown = new AttackCooldown(stats.attackAnimationCooldown);
         SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move(), deixando o Blend Tree de Idle indefinido por alguns frames
+        statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
     }
 
     // Unity sobrecarrega "==" / "!=" pra detectar objetos destruídos/inexistentes, mas o
@@ -123,6 +124,8 @@ public abstract class EnemyController : MonoBehaviour
             }
             return;
         }
+
+        if (statusEffectController != null) statusEffectController.Tick(Time.deltaTime);
 
         if (player == null) return;
 
@@ -427,6 +430,12 @@ public abstract class EnemyController : MonoBehaviour
         transform.Translate(knockbackVelocity * Time.deltaTime);
         knockbackVelocity = Vector2.Lerp(knockbackVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);
     }
+
+    // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
+    // com HeroController (ver StatusEffectController.cs), não duplicado aqui. Trapped
+    // (Seção 33 também) continua à parte, é incapacitação via HeroController.SetTrapped(),
+    // não dano ao longo do tempo.
+    private StatusEffectController statusEffectController;
 
     protected virtual void Die()
     {

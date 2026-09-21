@@ -25,11 +25,18 @@ public class RangerKnife : MonoBehaviour
     [SerializeField] private float groundedKnockbackForce = 2f; // 🔢
     [SerializeField] private string groundedStateName = "Grounded"; // nome do 9º estado no Animator
 
+    // Efeito Nocivo Bleeding (GDD, Sprint 19) — tanto o hit em voo quanto o tick no chão
+    // aplicam, além do dano normal: metade do dano do Ranger por segundo, por 5s (🔢
+    // passível de nerf/buff). Reaplicar (ex.: pisar em várias facas seguidas) só reseta a
+    // duração pros 5s cheios de novo, não empilha.
+    [SerializeField] private float bleedDuration = 5f; // 🔢 passível de nerf/buff
+
     private Animator animator;
     private CircleCollider2D circleCollider;
     private Vector2 direction;
     private float flightDamageReserve;
     private float groundedDamagePerTick;
+    private float bleedDamagePerSecond;
     private float distanceTraveled;
     private float groundedElapsed;
     private AttackCooldown groundedTick;
@@ -41,13 +48,22 @@ public class RangerKnife : MonoBehaviour
         circleCollider = GetComponent<CircleCollider2D>();
     }
 
-    public void Launch(Vector2 dir, float flightDamage, float groundedDamage)
+    public void Launch(Vector2 dir, float flightDamage, float groundedDamage, float bleedPerSecond)
     {
         direction = dir.normalized;
         flightDamageReserve = flightDamage;
         groundedDamagePerTick = groundedDamage;
+        bleedDamagePerSecond = bleedPerSecond;
 
         if (animator != null) animator.Play(DirectionUtility.GetDirectionName(direction));
+    }
+
+    // Efeito Nocivo Bleeding — usado tanto no hit em voo quanto no tick no chão. Imune a
+    // Bleeding não recebe (mesmo padrão do Fire Elemental com Fire, ver MageFireball).
+    private void ApplyBleeding(EnemyController enemy)
+    {
+        var statusEffects = enemy.GetComponent<StatusEffectController>();
+        if (statusEffects != null) statusEffects.ApplyStatusEffect(StatusEffectType.Bleeding, bleedDuration, bleedDamagePerSecond);
     }
 
     private void Update()
@@ -79,6 +95,7 @@ public class RangerKnife : MonoBehaviour
             float damageDealt = Mathf.Min(flightDamageReserve, enemy.stats.health);
             enemy.TakeDamage(damageDealt);
             enemy.ApplyKnockback(direction, flightKnockbackForce);
+            ApplyBleeding(enemy);
 
             flightDamageReserve -= damageDealt;
             if (flightDamageReserve <= 0f) BecomeGrounded();
@@ -137,6 +154,7 @@ public class RangerKnife : MonoBehaviour
             enemy.TakeDamage(groundedDamagePerTick);
             Vector2 away = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
             enemy.ApplyKnockback(away, groundedKnockbackForce);
+            ApplyBleeding(enemy);
         }
     }
 }

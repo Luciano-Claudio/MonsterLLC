@@ -2,6 +2,9 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 19b — Sistema de Efeitos Nocivos (Fire + Bleeding) + correções de base em Mira/Shift](sprint-19b-efeitos-nocivos.md) — Efeitos Nocivos genérico, `DiagonalAimX/Y`, bugs de mira corrigidos em todo herói
+- [Sprint 19 — Mage Completo (Primário + Ultimate + Secundária/Shift + Pet Phoenix)](sprint-19.md) — Mage 100% jogável, além do escopo original
+- [Sprint 18b — Habilidade Secundária (Shift) — Barbarian + Ranger](sprint-18b-habilidade-secundaria.md) — Shift genérico pra todo herói, Barbarian e Ranger completos
 - [Sprint 18 — Ranger (Ultimate)](sprint-18.md) — completa o Ranger
 - [Sprint 17 — Ranger (Primário) → Detalhamento dos 10 Heróis + Barbarian Completo](sprint-17.md) — **inicia a Deadline 5**
 - [Sprint 16 — Teste de Viabilidade de Combate Real + Correção + Pivô Híbrido Final](sprint-16.md) — **fecha a Deadline 4**

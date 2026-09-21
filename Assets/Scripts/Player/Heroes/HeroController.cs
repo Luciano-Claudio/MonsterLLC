@@ -1,7 +1,7 @@
 using UnityEngine;
 using EasyTransition;
 
-public abstract class HeroController : MonoBehaviour
+public abstract class HeroController : MonoBehaviour, IDamageable
 {
     public HeroStats stats = new HeroStats();
     public TransitionSettings respawnTransition;
@@ -13,6 +13,11 @@ public abstract class HeroController : MonoBehaviour
     private const float DamageFlashDuration = 0.08f;
     private Vector2 moveInput;
     private bool isDead;
+
+    // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
+    // com EnemyController (ver StatusEffectController.cs). Trapped continua à parte, é
+    // incapacitação via SetTrapped(), não dano ao longo do tempo.
+    private StatusEffectController statusEffectController;
 
     // Cooldown do ataque primário, compartilhado por todo herói — GDD: attackSpeed é
     // "ataques por segundo", então o cooldown em si é o inverso (attackSpeed=2 -> ataca a
@@ -56,7 +61,10 @@ public abstract class HeroController : MonoBehaviour
 
     // Energia é recurso escasso de propósito — sem essa janela, matar vários monstros com
     // a própria ultimate (comum, já que ela costuma limpar a área) já reabasteceria a
-    // próxima ultimate sozinha. 🔢 2s é chute inicial, ajustável em teste.
+    // próxima ultimate sozinha. 🔢 2s é chute inicial, ajustável em teste. Cobre só o
+    // impacto inicial (explosão/projétil) — farmar energia com a área PERSISTENTE que a
+    // própria ultimate deixa no chão depois (Mage/Ranger, Seção 13) é intencional, não
+    // precisa de proteção nenhuma (decisão explícita do usuário, Sprint 19).
     [SerializeField] private float ultimateEnergyLockoutDuration = 2f;
     private float ultimateEnergyLockoutRemaining;
 
@@ -90,6 +98,19 @@ public abstract class HeroController : MonoBehaviour
     // AimDirection durante isAttacking/isTrapped, mesmo motivo.
     protected Vector2 RawAimDirection { get; private set; } = Vector2.down;
 
+    // Distância crua (não normalizada) até o mouse no instante da mira — o teleporte do Mage
+    // (GDD Seção 16/17.3) precisa saber A DISTÂNCIA, não só a direção, pra respeitar um
+    // alcance máximo. Congela junto com RawAimDirection pelo mesmo motivo (isAttacking/
+    // isTrapped), de graça, por reaproveitar o mesmo "if" de UpdateAimDirection.
+    protected float RawAimDistance { get; private set; }
+
+    // Mesma mira, só que travada nas 4 diagonais (nunca cardeal pura) — alimenta
+    // DiagonalAimX/Y, usado pelos Blend Trees que só têm pose desenhada pras diagonais
+    // (Idle/Walk/Damage/SummonPet). AimDirection sozinho pode devolver um cardeal puro
+    // (N/E/S/W), o que nesses Blend Trees cai numa zona onde as 2 diagonais vizinhas ficam
+    // exatamente equidistantes — ver DirectionUtility.SnapTo4Diagonals.
+    protected Vector2 DiagonalAimDirection { get; private set; } = new Vector2(-0.70710678f, -0.70710678f);
+
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>();
@@ -97,10 +118,17 @@ public abstract class HeroController : MonoBehaviour
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
+        statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
         controls = new PlayerControls();
         controls.Gameplay.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Gameplay.Move.canceled += ctx => moveInput = Vector2.zero;
-        controls.Gameplay.Look.performed += ctx => UpdateAimDirection(ctx.ReadValue<Vector2>());
+        // Não usa .performed aqui de propósito — esse evento só dispara quando o mouse se
+        // MOVE, e enquanto isAttacking/isTrapped a mira é ignorada (não fica em fila). Se o
+        // jogador mexe o mouse durante uma ação longa (ex.: o teleporte do Mage) e para de
+        // mexer antes dela acabar, nenhum evento novo chega pra "acordar" a mira depois —
+        // ela ficava presa na direção antiga até o próximo movimento. Lendo a posição atual
+        // todo frame no Update() (ver UpdateAimDirection ali embaixo) resolve isso de vez:
+        // a mira sempre reflete onde o mouse ESTÁ, não só o último evento de movimento.
         // Segurar o botão continua atacando sozinho, respeitando o cooldown — mesmo padrão
         // do movimento (bool guardado aqui, lido/consumido todo frame no Update()). O clique
         // único vira só o caso onde attackHeld fica true por 1 frame só.
@@ -141,6 +169,7 @@ public abstract class HeroController : MonoBehaviour
         if (!GameplayGate.IsActive) return;
 
         UpdateDamageFlash();
+        UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
 
         if (isDead)
         {
@@ -156,6 +185,8 @@ public abstract class HeroController : MonoBehaviour
             }
             return;
         }
+
+        if (statusEffectController != null) statusEffectController.Tick(Time.deltaTime);
 
         // Terminou sozinho (sem ter atingido o teto de aceleração) -- reseta pro próximo
         // hit começar do zero, não escalado. Escala pelo próprio multiplicador: acelerado
@@ -207,7 +238,9 @@ public abstract class HeroController : MonoBehaviour
         if (toMouse.sqrMagnitude < 0.0001f) return;
 
         AimDirection = DirectionUtility.SnapTo8Directions(toMouse);
+        DiagonalAimDirection = DirectionUtility.SnapTo4Diagonals(toMouse);
         RawAimDirection = toMouse.normalized;
+        RawAimDistance = toMouse.magnitude;
 
         // GDD Seção 16: não existe MoveX/MoveY pro herói (ao contrário dos monstros,
         // Seção 22) — walk/attack/ultimate usam sempre a mira, nunca a direção de
@@ -216,6 +249,11 @@ public abstract class HeroController : MonoBehaviour
         {
             animator.SetFloat("AimX", AimDirection.x);
             animator.SetFloat("AimY", AimDirection.y);
+            // Par separado, só pros Blend Trees de 4 pontos (ver DiagonalAimDirection) —
+            // não substitui AimX/AimY, que continuam alimentando os Blend Trees de 8 pontos
+            // (Attack/Ultimate/Teleport do Mage, que têm pose real pra cardeal).
+            animator.SetFloat("DiagonalAimX", DiagonalAimDirection.x);
+            animator.SetFloat("DiagonalAimY", DiagonalAimDirection.y);
         }
     }
 
@@ -233,6 +271,11 @@ public abstract class HeroController : MonoBehaviour
     private void TryUseUltimate()
     {
         if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy)) return;
+        // Releitura forçada antes de congelar — o Input System processa este clique ANTES
+        // do Update() deste frame, então sem isso a mira congelaria com o valor do frame
+        // ANTERIOR (podendo estar bem perto do herói se o mouse só chegou na posição final
+        // no exato frame do clique), não com a posição real do mouse agora.
+        UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         UseUltimate();
         stats.energy = 0f;
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
@@ -241,7 +284,16 @@ public abstract class HeroController : MonoBehaviour
 
     private void TryUseSecondaryAbility()
     {
+        // Mesma trava que PrimaryAttack()/UseUltimate() já tinham e a Habilidade Secundária
+        // não tinha — sem isso, apertar Shift em cima do fim de outra ação (Attack, Ultimate,
+        // SummonPet) ainda inicia a habilidade, só que UpdateAimDirection() logo abaixo
+        // também é bloqueada pela mesma isAttacking (é a mesma trava, ver o "if" dela), então
+        // a releitura forçada vira no-op silencioso e a habilidade acaba usando a mira
+        // CONGELADA da ação anterior (podia estar longe da mira real, ex.: o "micro-teleport"
+        // do Mage e a pose errada no teleport_end — causa raiz encontrada em produção).
+        if (isAttacking) return;
         if (!secondaryAbilityCooldown.TryConsume()) return;
+        UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         isUsingSecondaryAbility = true;
         UseSecondaryAbility();
     }
@@ -375,7 +427,9 @@ public abstract class HeroController : MonoBehaviour
         AnimatorTrigger("DieTrigger");
         Debug.Log("[HeroController] Morreu — aguardando Animation Event de fim do die...");
 
-        // 1. Cancela estados temporários — nenhum existe ainda (hook pra ultimates com duração/transformações)
+        // 1. Cancela estados temporários — hook pra ultimates com duração/transformações e
+        // pra pets de kit (GDD: "ao morrer o herói, o pet retorna junto na transição").
+        OnHeroDeath();
 
         // 2. Destrói loot carregado
         BagController.Instance.Bag.Clear();
@@ -438,4 +492,9 @@ public abstract class HeroController : MonoBehaviour
     // sobrescrevem isso. Sem override, apertar Shift de novo em habilidade não-cancelável
     // simplesmente não faz nada (não reinicia, não interrompe).
     protected virtual void CancelSecondaryAbility() { }
+
+    // Chamado no início de OnDeath(), antes de qualquer outra limpeza. Default no-op — só
+    // heróis com estado que precisa ser desfeito na morte (ex.: pet do Mage/Blood Mage)
+    // sobrescrevem isso.
+    protected virtual void OnHeroDeath() { }
 }

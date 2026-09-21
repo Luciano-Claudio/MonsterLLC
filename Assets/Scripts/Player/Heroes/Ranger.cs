@@ -27,6 +27,9 @@ public class Ranger : HeroController
     [Header("Ultimate — 8 facas nas 8 direções fixas (GDD Seção 17.2)")]
     [SerializeField] private GameObject knifePrefab; // precisa ter RangerKnife
     [SerializeField] private float ultimateDamageMultiplier = 2f; // 🔢 GDD: "2x o dano do Ranger" em voo, 1x no chão
+    // Efeito Nocivo Bleeding (Sprint 19) — tanto o hit em voo quanto o tick no chão aplicam,
+    // além do dano normal: metade do dano do Ranger por segundo, por 5s (ver RangerKnife).
+    [SerializeField] private float bleedDamageMultiplier = 0.5f; // 🔢 "metade do dano do Ranger por segundo" — passível de nerf
 
     // A Ultimate também é Blend Tree 2D Freeform Directional (4 pontos diagonais, igual
     // Idle/Walk/Damage) — mesmo risco de evento duplicado do Attack, só que aqui cada uma
@@ -159,9 +162,10 @@ public class Ranger : HeroController
         Vector2 dir = DirectionUtility.DirectionFromIndex(directionIndex);
         float flightDamage = stats.damage * ultimateDamageMultiplier;
         float groundedDamage = stats.damage;
+        float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier;
 
         var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity);
-        knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage);
+        knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond);
     }
 
     // Animation Event, no fim do clipe da Ultimate.

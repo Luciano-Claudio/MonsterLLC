@@ -42,4 +42,20 @@ public static class DirectionUtility
         float angle = index * 45f * Mathf.Deg2Rad;
         return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
     }
+
+    // Direção crua encaixada só nas 4 diagonais (NE/NW/SE/SW) — NUNCA cardeal pura. Usada
+    // pelos Blend Trees que só têm pose desenhada pras diagonais (Idle/Walk/Damage/SummonPet
+    // — e hoje todo estado do Barbarian/Ranger). SnapTo8Directions sozinho pode devolver um
+    // cardeal puro (N/E/S/W); num Blend Tree que só tem as 4 diagonais como amostra, isso cai
+    // numa "zona morta" de 45° em volta de cada eixo cardeal, onde as 2 diagonais vizinhas
+    // ficam EXATAMENTE equidistantes — o cálculo de peso do Unity fica instável bem no meio
+    // dessa zona (ruído mínimo decide pra qual lado pende), o que parece um "flip" aleatório
+    // perto do eixo. Aqui não existe zona ambígua: cada metade do plano (dividida só pelo
+    // sinal de X e de Y, uma linha sem largura) sempre resolve pra exatamente 1 diagonal.
+    public static Vector2 SnapTo4Diagonals(Vector2 direction)
+    {
+        float x = direction.x >= 0f ? 0.70710678f : -0.70710678f;
+        float y = direction.y >= 0f ? 0.70710678f : -0.70710678f;
+        return new Vector2(x, y);
+    }
 }

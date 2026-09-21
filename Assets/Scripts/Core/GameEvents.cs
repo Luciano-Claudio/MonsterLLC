@@ -43,6 +43,13 @@ public static class GameEvents
     public static event Action<Vector3, float> OnDamageTaken;
     public static void DamageTaken(Vector3 position, float amount) => OnDamageTaken?.Invoke(position, amount);
 
+    // Início de um novo dia (inclusive o Dia 1) — dispara de dentro de
+    // DayTimer.ResetForNewDay(), fonte única chamada tanto pelo fim de dia normal
+    // (ShopHandler) quanto por novo jogo/continuar (MainMenuUI). Pets de início de dia
+    // (Phoenix/Elemental de Sangue, Sprint 19+) escutam isso pra se re-sumonar.
+    public static event Action OnDayStart;
+    public static void DayStarted() => OnDayStart?.Invoke();
+
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.
 }

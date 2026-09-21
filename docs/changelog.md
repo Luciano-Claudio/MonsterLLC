@@ -2,6 +2,34 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Sprint 19b — Sistema de Efeitos Nocivos (Fire + Bleeding) + correções de base em Mira/Shift
+
+- `StatusEffectController`/`IDamageable` — sistema genérico de dano-ao-longo-do-tempo, compartilhado entre herói e monstro, com imunidade por tipo configurável.
+- Fire (Mage) migrado pro sistema novo; Bleeding (Ranger, hit em voo + tick no chão da Ultimate) implementado pela primeira vez — metade do dano do Ranger por segundo, 5s.
+- Enum com os 12 tipos de Efeito já desenhados nomeados (`Fire`, `Bleeding`, `Fear`, `Heal`, `Ice`, `Nature`, `Petrification`, `Poison`, `Shock`, `Sickness`, `Sleep`, `Stun`) — só Fire/Bleeding com mecânica real hoje.
+- Farm de energia da Ultimate esclarecido: lockout bloqueia só o impacto inicial (explosão/projétil), área persistente continua dando energia normalmente (intencional).
+- Mira agora lida por polling todo frame (não só em evento de movimento) + releitura forçada antes de congelar em Ultimate/Shift — corrige mira presa depois de ações longas e "micro-teleport" do Mage.
+- `isAttacking` agora trava a Habilidade Secundária contra sobreposição de outra ação em andamento (causa raiz do micro-teleport).
+- `DiagonalAimX`/`DiagonalAimY` — novo par de parâmetros pra Blend Tree de 4 pontos (só diagonal, sem pose cardeal real), corrigindo um "flip" perto dos eixos N/E/S/W. Religado no Barbarian, Ranger e Mage — virou regra de arquitetura no GDD.
+
+## Sprint 19 — Mage Completo (Primário + Ultimate + Secundária/Shift + Pet Phoenix)
+
+- Mage sai com o kit inteiro de uma vez (não só primário + pet como o plano original previa) — Ultimate e Shift entraram junto.
+- Ataque primário: hitbox filho rotacionando em tempo real, dano no Animation Event da própria animação de fogo.
+- Ultimate: `MageFireball` de 3 fases (Projectile → Exploding → Grounded → Disappearing), ângulo livre (exceção do MVP), explode e deixa rastro persistente de 30s.
+- Shift: teleporte guiado por projétil — o Mage só reaparece quando o `MageTeleportProjectile` termina de viajar, não num tempo fixo.
+- Phoenix (pet): trava no alvo até ele morrer, teleporta pro spawn point ao mudar de Floor, toca animação de `die` própria quando o Mage morre.
+- `GameEvents.OnDayStart`/`DayTimer.ResetForNewDay()` — fonte única de "novo dia começou", cobre Dia 1 e todo dia seguinte.
+
+## Sprint 18b — Habilidade Secundária (Shift) — Barbarian + Ranger
+
+- Todo herói ganha uma terceira habilidade (Shift), com cooldown próprio (maior que o do primário) — arquitetura genérica na base `HeroController` (cooldown, uso/cancelamento, bloqueio configurável por herói).
+- Barbarian: buff temporário de dano (2×) e velocidade (1.5×) por 5s, não bloqueia nada, não cancelável — perdeu o glow visual da passiva antiga (mecânica de escala de dano continua igual).
+- Ranger: camuflagem em 3 fases, bloqueia tudo, cancelável, cura 10% da Vida Máxima por segundo (teto de 50% em 5s) — monstros perdem o alvo de verdade durante a camuflagem (não congelam mais na animação).
+- Bosses agora são imunes a knockback (`EnemyController.isBoss`).
+- ESC agora pausa o jogo (só o input — menu clássico ainda não existe).
+- As 8 habilidades secundárias restantes (Mage, Druid, Rogue, Cleric, Paladin, Gunslinger, Assassin, Blood Mage) especificadas no GDD, sem código ainda.
+
 ## Sprint 18 — Ranger (Ultimate)
 
 - Ultimate do Ranger completa: giro lançando 8 facas nas 8 direções fixas via Animation Events (8 métodos nomeados, um por direção, com trava individual contra disparo duplicado — a Ultimate é Blend Tree de 4 diagonais, mesmo risco já corrigido no Attack).

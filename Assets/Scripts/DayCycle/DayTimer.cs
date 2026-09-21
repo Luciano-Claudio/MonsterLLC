@@ -40,6 +40,9 @@ public class DayTimer : MonoBehaviour
         timeRemaining = duration;
         dayEnded = false;
         GameEvents.TimeChanged(timeRemaining);
+        // Fonte única de "um novo dia começou" — cobre tanto o Dia 1 (MainMenuUI) quanto
+        // todo dia seguinte (ShopHandler), sem precisar duplicar a chamada nos dois lugares.
+        GameEvents.DayStarted();
     }
 
     private void EndDay()
