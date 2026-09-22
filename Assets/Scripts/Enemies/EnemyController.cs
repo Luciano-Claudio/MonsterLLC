@@ -205,10 +205,15 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // no frame em que só a intenção (IsMoving) foi marcada. Sem isso, a entidade desliza
     // pela tela ainda com a pose de Idle enquanto a transição (que tem Exit Time) espera
     // o clipe de patrulha terminar.
-    protected void MoveInDirection(Vector2 direction)
+    // walkStateName existe pra monstros com mais de um estado de "andando" (ex.: Goblin
+    // Sapper — "Walk"/"Walk_Bomb" dependendo de IsArmed) — sem isso, essa checagem (o
+    // Animator já entrou de fato no estado de Walk, não só a intenção foi marcada) só
+    // reconheceria o nome padrão "Walk", travando o monstro na pose andando sem nunca se
+    // mover de verdade.
+    protected void MoveInDirection(Vector2 direction, string walkStateName = "Walk")
     {
         SetMoveDirection(direction);
-        if (AnimatorStateCheck.IsInState(animator, "Walk"))
+        if (AnimatorStateCheck.IsInState(animator, walkStateName))
             transform.Translate(direction * stats.moveSpeed * Time.deltaTime);
     }
 
@@ -331,23 +336,40 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 
     // Alimenta MoveX/MoveY — Blend Tree 2D (Freeform Directional) do Walk, direção de
-    // movimento crua (pode ser fuga, aproximação, o que for).
+    // movimento crua (pode ser fuga, aproximação, o que for). Também alimenta
+    // DiagonalMoveX/DiagonalMoveY (DirectionUtility.SnapTo4Diagonals) — todo Blend Tree de
+    // Idle/Walk/Damage do Base_Melee/Base_Ranged só tem pose desenhada pras 4 diagonais
+    // (sem cardeal real), então usa o par diagonal pra evitar a mesma instabilidade de
+    // "flip" perto dos eixos cardeais já corrigida do lado do herói (regra de arquitetura,
+    // GDD) — MoveX/MoveY continuam sendo alimentados normalmente, caso algum Blend Tree
+    // futuro tenha pose cardeal real e precise do valor cru.
     protected void SetMoveDirection(Vector2 direction)
     {
         if (animator == null) return;
         animator.SetFloat("MoveX", direction.x);
         animator.SetFloat("MoveY", direction.y);
+
+        Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
+        animator.SetFloat("DiagonalMoveX", diagonal.x);
+        animator.SetFloat("DiagonalMoveY", diagonal.y);
     }
 
     // Alimenta AimX/AimY — Blend Tree 2D (Freeform Directional) do Attack e do
     // IdleCombat, sempre em direção ao player de verdade, independente de pra onde o
-    // monstro está se movendo.
+    // monstro está se movendo. Também alimenta DiagonalAimX/DiagonalAimY, mesmo motivo do
+    // DiagonalMoveX/Y acima — usado pelo Attack/IdleCombat de todo Melee (só 4 diagonais,
+    // nunca tem pose cardeal real) e pelo IdleCombat de Ranged (o Attack de Ranged tem
+    // pose real de 8 direções, então esse continua em AimX/AimY puro).
     protected void SetAimDirection(Vector2 direction)
     {
         if (direction.sqrMagnitude > 0.0001f) AimDirection = direction;
         if (animator == null) return;
         animator.SetFloat("AimX", direction.x);
         animator.SetFloat("AimY", direction.y);
+
+        Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
+        animator.SetFloat("DiagonalAimX", diagonal.x);
+        animator.SetFloat("DiagonalAimY", diagonal.y);
     }
 
     [SerializeField] private float floatingTextHeightAdjust = -0.5f; // 🔢 ajuste fino, negativo baixa o texto

@@ -338,7 +338,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
 
         attackDiagonalSpriteSheet =
             DrawTextureField(
-                "Attack Diagonal",
+                "Attack Diagonal (opcional)",
                 attackDiagonalSpriteSheet
             );
 
@@ -526,18 +526,21 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         );
 
         // =====================================================
-        // ATTACK DIAGONAL
+        // ATTACK DIAGONAL (opcional)
         // =====================================================
 
-        GenerateDirectionalAnimationSet(
-            attackDiagonalSpriteSheet,
-            "attack",
-            diagonalDirections,
-            outputDirectory,
-            false,
-            generatedClips,
-            false
-        );
+        if (attackDiagonalSpriteSheet != null)
+        {
+            GenerateDirectionalAnimationSet(
+                attackDiagonalSpriteSheet,
+                "attack",
+                diagonalDirections,
+                outputDirectory,
+                false,
+                generatedClips,
+                false
+            );
+        }
 
         // =====================================================
         // ATTACK ORTHOGONAL - RANGED
@@ -768,14 +771,10 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             return false;
         }
 
-        if (attackDiagonalSpriteSheet == null)
-        {
-            ShowError(
-                "Selecione o Sprite Sheet de Attack Diagonal."
-            );
-
-            return false;
-        }
+        // Attack Diagonal é opcional — monstros sem animação de ataque real (ex.: Slime,
+        // que só tem dano de contato passivo, hasAttackAnimation=false) simplesmente não
+        // geram clipes de attack nenhum, em vez de exigir uma sheet descartável só pra
+        // passar da validação.
 
         if (
             monsterType == MonsterType.Ranged &&
@@ -844,6 +843,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         if (
+            attackDiagonalSpriteSheet != null &&
             !ValidateDirectionalSpriteSheet(
                 attackDiagonalSpriteSheet,
                 "Attack Diagonal"
