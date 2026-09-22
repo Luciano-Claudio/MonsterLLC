@@ -21,6 +21,7 @@ public class GoblinSapperController : EnemyController
     [Header("Auto-explosão ao morrer")]
     [SerializeField] private float dieExplosionDamageMultiplier = 2.5f; // 🔢 ajustável
     [SerializeField] private float dieExplosionRadius = 1.8f; // 🔢 ajustável
+    [SerializeField] private float dieExplosionOffsetY = 0f; // 🔢 sobe a área de explosão em relação ao pivô
 
     private SapperPhase phase = SapperPhase.Armed;
     private float fleeElapsed;
@@ -97,17 +98,29 @@ public class GoblinSapperController : EnemyController
     protected override bool InAttackRange() => false;
     protected override void ExecuteAttackHit() { }
 
-    // Animation Event no frame de explosão do próprio clipe "die" (auto-explosão ao morrer,
-    // centrada no próprio Goblin Sapper).
+    // Animation Event no frame de explosão — só existe no clipe "die_bomb" (morreu armado,
+    // ainda com a bomba em mãos). "die" normal (morreu fugindo, já sem bomba) não tem esse
+    // evento. O guard de phase é rede de segurança — se o evento acabar entrando no clipe
+    // errado por engano, não explode mesmo assim.
     public void AnimationDieExplodeEvent()
     {
+        if (phase != SapperPhase.Armed) return;
+
         var results = new Collider2D[4];
-        int count = Physics2D.OverlapCircle(transform.position, dieExplosionRadius, ContactFilter2D.noFilter, results);
+        int count = Physics2D.OverlapCircle(DieExplosionCenter, dieExplosionRadius, ContactFilter2D.noFilter, results);
         for (int i = 0; i < count; i++)
         {
             if (!results[i].CompareTag("Player")) continue;
             var hero = results[i].GetComponent<HeroController>();
             if (hero != null) hero.TakeDamage(stats.attackDamage * dieExplosionDamageMultiplier);
         }
+    }
+
+    private Vector3 DieExplosionCenter => transform.position + new Vector3(0f, dieExplosionOffsetY, 0f);
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(DieExplosionCenter, dieExplosionRadius);
     }
 }

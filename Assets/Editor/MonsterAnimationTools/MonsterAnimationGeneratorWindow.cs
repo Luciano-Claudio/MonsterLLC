@@ -916,11 +916,16 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         List<List<Sprite>> rows =
             GroupSpritesByRows(sprites);
 
-        if (rows.Count != 4)
+        // 2 linhas também é válido — alguns monstros desenham a mesma pose pras 2 diagonais
+        // de cima (NE/SE) e a mesma pose pras 2 de baixo (NW/SW), sem precisar de 4 linhas
+        // redundantes (ex.: Ancient Troll). GenerateDirectionalAnimationSet reaproveita cada
+        // linha pras 2 direções correspondentes nesse caso.
+        if (rows.Count != 4 && rows.Count != 2)
         {
             ShowError(
                 animationLabel +
-                " precisa possuir exatamente 4 linhas.\n\n" +
+                " precisa possuir 4 linhas (ou 2, se as diagonais de cima/baixo forem " +
+                "idênticas).\n\n" +
 
                 "Linhas encontradas: " +
                 rows.Count
@@ -1011,8 +1016,13 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             string direction =
                 directions[rowIndex];
 
+            // Sheet de 2 linhas (validado em ValidateDirectionalSpriteSheet) — linha 0
+            // cobre os índices 0 e 2 (se/ne), linha 1 cobre 1 e 3 (sw/nw). Sheet de 4
+            // linhas continua indexando 1 pra 1, sem repetição.
             List<Sprite> rowSprites =
-                rows[rowIndex];
+                rows.Count == 4
+                    ? rows[rowIndex]
+                    : rows[rowIndex % 2];
 
             string clipName =
                 animationName +

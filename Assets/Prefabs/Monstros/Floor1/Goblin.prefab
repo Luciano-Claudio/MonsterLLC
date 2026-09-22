@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 4777283918321709951}
   - component: {fileID: 9004076194777983037}
   - component: {fileID: 5449260729127824909}
+  - component: {fileID: 999999999992002}
   m_Layer: 9
   m_Name: Goblin
   m_TagString: Enemy
@@ -549,8 +550,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 1
-    maxHealth: 1
+    health: 10
+    maxHealth: 10
     moveSpeed: 2
     observationRadius: 6
     attackRadius: 1
@@ -616,8 +617,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.06971043, y: 0.30183896}
-  m_Size: {x: 0.875325, y: 0.61421293}
+  m_Offset: {x: -0.06971046, y: 0.072820336}
+  m_Size: {x: 0.87532514, y: 0.15617777}
   m_Direction: 1
 --- !u!114 &5449260729127824909
 MonoBehaviour:
@@ -633,3 +634,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::StatusEffectController
   statusAnimator: {fileID: 7132890997151114213}
   tickInterval: 1
+  immunities: 
+--- !u!58 &999999999992002
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8514974410491700178}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.06971043, y: 0.3545475}
+  m_Radius: 0.39732552

@@ -83,6 +83,7 @@ GameObject:
   - component: {fileID: 7151322188087831145}
   - component: {fileID: 7594644153769881251}
   - component: {fileID: 4235217663262873961}
+  - component: {fileID: 999999999992001}
   m_Layer: 9
   m_Name: Rat
   m_TagString: Enemy
@@ -231,8 +232,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 1
-    maxHealth: 1
+    health: 5
+    maxHealth: 5
     moveSpeed: 2
     observationRadius: 6
     attackRadius: 1
@@ -298,8 +299,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.21877116, y: 0.25244159}
-  m_Size: {x: 1.4476466, y: 0.4972939}
+  m_Offset: {x: -0.21877117, y: 0.06510461}
+  m_Size: {x: 1.4476467, y: 0.12262146}
   m_Direction: 1
 --- !u!114 &4235217663262873961
 MonoBehaviour:
@@ -315,6 +316,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::StatusEffectController
   statusAnimator: {fileID: 6122368759109594702}
   tickInterval: 1
+  immunities: 
+--- !u!58 &999999999992001
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803111323614218692}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.21380402, y: 0.25740814}
+  m_Radius: 0.61223793
 --- !u!1 &4660843584238629015
 GameObject:
   m_ObjectHideFlags: 0

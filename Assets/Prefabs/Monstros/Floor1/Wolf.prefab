@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 7477575200371350483}
   - component: {fileID: 4867890230272832628}
   - component: {fileID: 5185480786361197923}
+  - component: {fileID: 999999999992003}
   m_Layer: 9
   m_Name: Wolf
   m_TagString: Enemy
@@ -616,8 +617,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.13240278, y: 0.32474265}
-  m_Size: {x: 1.5302824, y: 0.6418964}
+  m_Offset: {x: 0.06295206, y: 0.08993398}
+  m_Size: {x: 1.3913821, y: 0.1722806}
   m_Direction: 1
 --- !u!114 &5185480786361197923
 MonoBehaviour:
@@ -634,3 +635,39 @@ MonoBehaviour:
   statusAnimator: {fileID: 120493618279500117}
   tickInterval: 1
   immunities: 
+--- !u!58 &999999999992003
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5740043677470749445}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.056337357, y: 0.4934044}
+  m_Radius: 0.7486563

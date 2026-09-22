@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3253667991040235351}
   - component: {fileID: 2497600774487499895}
   - component: {fileID: 9038629623320653973}
+  - component: {fileID: 999999999992005}
   m_Layer: 9
   m_Name: Goblin_Raider
   m_TagString: Enemy
@@ -219,8 +220,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.013254855, y: 0.47999176}
-  m_Size: {x: 0.9842989, y: 0.96343666}
+  m_Offset: {x: -0.013254898, y: 0.12192911}
+  m_Size: {x: 0.984299, y: 0.24731901}
   m_Direction: 1
 --- !u!114 &9038629623320653973
 MonoBehaviour:
@@ -237,6 +238,42 @@ MonoBehaviour:
   statusAnimator: {fileID: 4230148281252137024}
   tickInterval: 1
   immunities: 
+--- !u!58 &999999999992005
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799366162278603121}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.013254881, y: 0.6043205}
+  m_Radius: 0.61839676
 --- !u!1 &1913194693762413973
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,8 +15,9 @@ GameObject:
   - component: {fileID: 3570181869238389165}
   - component: {fileID: 114669544724366304}
   - component: {fileID: 9207790455098620356}
+  - component: {fileID: 999999999992007}
   m_Layer: 9
-  m_Name: RatPeople
+  m_Name: Rat_People
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -165,7 +166,7 @@ MonoBehaviour:
     observationRadius: 6
     attackRadius: 5
     flankRadius: 3
-    attackDamage: 2
+    attackDamage: 6
     attackAnimationCooldown: 2.5
   energyReward: 20
   monsterEssenceDropAmount: 1
@@ -219,8 +220,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0050042113, y: 0.36260924}
-  m_Size: {x: 0.76979244, y: 0.7286652}
+  m_Offset: {x: 0.0050041825, y: 0.121310025}
+  m_Size: {x: 0.76979256, y: 0.24606812}
   m_Direction: 1
 --- !u!114 &9207790455098620356
 MonoBehaviour:
@@ -236,6 +237,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::StatusEffectController
   statusAnimator: {fileID: 2552793646901448714}
   tickInterval: 1
+  immunities: 
+--- !u!58 &999999999992007
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5063562546389433202}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.005004227, y: 0.49199295}
+  m_Radius: 0.50354385
 --- !u!1 &8649892838830578953
 GameObject:
   m_ObjectHideFlags: 0
