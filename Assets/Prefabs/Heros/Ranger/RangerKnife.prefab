@@ -80,8 +80,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1160704501
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -4989373623918768094, guid: 352d4a6eeade9564e8db60379f3b3b4c, type: 3}
@@ -172,3 +172,4 @@ MonoBehaviour:
   groundedRadius: 0.6
   groundedKnockbackForce: 2
   groundedStateName: Grounded
+  bleedDuration: 5

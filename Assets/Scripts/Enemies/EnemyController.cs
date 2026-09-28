@@ -1,4 +1,6 @@
 using UnityEngine;
+using Pathfinding;
+using Pathfinding.RVO;
 
 public abstract class EnemyController : MonoBehaviour, IDamageable
 {
@@ -39,6 +41,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Mesma rede de segurança, pro clipe de die.
     public float maxDieDuration = 3f;
 
+    [Header("Debug — só pra visualização em Editor, não afeta gameplay")]
+    [SerializeField] private bool showAttackRadiusGizmo = false;
+    [SerializeField] private float attackRadiusGizmoOffsetY = 0f; // sobe o centro do gizmo em relação ao pivô — pivô cru costuma ficar nos pés, atrapalha julgar o alcance visualmente
+
     protected Transform player;
     protected PatrolAI patrolAI;
     protected AttackCooldown attackAnimationCooldown;
@@ -75,6 +81,19 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     private const float DamageFlashDuration = 0.08f;
 
+    // A* Pathfinding Project (AIPath) — pode não existir em prefabs ainda não migrados/
+    // placeholder, por isso "!= null" em todo uso, mesma convenção do animator acima. Quando
+    // presente, ele que move o transform de verdade (path + RVO); sem ele, cai no
+    // transform.Translate manual de sempre (fallback, ver MoveInDirection).
+    protected IAstarAI ai;
+
+    // Ponto de destino projetado à frente na direção desejada, não um waypoint real — os
+    // controllers (Melee/Ranged/Slime/Sapper) recalculam a direção a cada frame (perseguir,
+    // fugir, vagar), nunca têm um alvo fixo de verdade, então "destino" pro AIPath é só
+    // "continue nessa direção"; o valor só precisa ser longe o bastante pra não bater no
+    // próprio ponto atual a cada frame.
+    private const float AiDestinationLookahead = 4f;
+
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving/SetInCombat/SetMoveDirection)
@@ -85,7 +104,50 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         attackAnimationCooldown = new AttackCooldown(stats.attackAnimationCooldown);
         SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move(), deixando o Blend Tree de Idle indefinido por alguns frames
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
+
+        ai = GetComponent<IAstarAI>();
+        if (ai != null)
+        {
+            ai.maxSpeed = stats.moveSpeed; // fonte única de verdade continua sendo EnemyStats, não o Inspector do AIPath
+            ai.updateRotation = false; // sprite 2D nunca gira o GameObject — só o Blend Tree troca a pose (mesma regra do herói)
+
+            // true — já tentei false (deixar o AIPath só calcular, mover o transform na mão em
+            // MoveInDirection), mas isso exigia sincronizar a posição interna dele todo frame
+            // via Teleport(), e Teleport() reseta o histórico de movimento (prevPosition1/2 e a
+            // velocidade do RVO) a cada chamada — resultado: velocity ficava travado em zero
+            // pra sempre, monstro completamente parado. updatePosition=true é o jeito como a
+            // biblioteca foi desenhada pra ser usada; o empurrão físico no player que isso causa
+            // (via rigid2D.MovePosition) é resolvido à parte, com Linear Damping no Rigidbody2D
+            // do herói (qualquer velocidade injetada pela física decai rápido, sem deslizar) —
+            // não brigando com o sistema de posição interno do AIPath nem desligando colisão.
+            ai.updatePosition = true;
+            ai.isStopped = true; // só libera quando MoveInDirection/SetMoving mandar de verdade
+
+            // canSearch nessa versão do pacote é derivado de autoRepath.mode, cujo default é
+            // "Never" — sem isso, o AIPath nunca busca path nenhum (hasPath/velocity ficam
+            // zerados pra sempre, mesmo com destination setado certinho e a animação de Walk
+            // tocando normal, já que animação e path são coisas independentes). Isso não dá
+            // pra configurar direto no YAML do prefab (é uma property calculada, não um campo
+            // simples), então tem que ser em código.
+            ai.canSearch = true;
+        }
+
+        // Regra de prioridade RVO (decisão do usuário): quem dá mais dano tem prioridade maior
+        // no desvio — os outros cedem espaço pra ele chegar perto do player, em vez de todo
+        // mundo competir igual. Função própria (não depende do resto do elenco atual), então
+        // continua correta conforme novos monstros forem adicionados no futuro, sem precisar
+        // reajustar os já existentes. Casos como o Goblin Sapper (dano real é a bomba, não o
+        // stats.attackDamage base) sobrescrevem isso depois de base.Awake() — ver
+        // GoblinSapperController.
+        var rvo = GetComponent<RVOController>();
+        if (rvo != null) rvo.priority = DamageToRvoPriority(stats.attackDamage);
     }
+
+    private const float RvoPriorityReferenceDamage = 25f; // 🔢 dano "alto" de referência — igual/acima disso, satura em prioridade máxima
+    private const float RvoPriorityFloor = 0.2f; // 🔢 nem o monstro mais fraco cede espaço pra todo mundo sempre
+
+    protected static float DamageToRvoPriority(float damage) =>
+        Mathf.Lerp(RvoPriorityFloor, 1f, Mathf.Clamp01(damage / RvoPriorityReferenceDamage));
 
     // Unity sobrecarrega "==" / "!=" pra detectar objetos destruídos/inexistentes, mas o
     // operador "?." do C# ignora essa sobrecarga e checa a referência crua — num Animator
@@ -102,10 +164,23 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (playerObj != null) player = playerObj.transform;
     }
 
+    // AIPath/RVOController têm Update/FixedUpdate próprios, fora do controle desse Update()
+    // — GameplayGate não usa Time.timeScale (por isso Coroutine não respeita ele, comentário
+    // de AnimationDieEndEvent acima), e o Floor Sleep sempre foi "custo zero" pro monstro
+    // dormente. Sem isso, migrar pro AIPath reintroduziria custo de path/RVO rodando durante
+    // pausa e em Floors dormentes — desligar os componentes de verdade (não só isStopped)
+    // nas transições é o que preserva as duas garantias.
+    private bool aiSimulating = true;
+
     protected virtual void Update()
     {
-        if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
+        bool shouldSimulate = GameplayGate.IsActive && FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor);
+        if (shouldSimulate != aiSimulating)
+        {
+            aiSimulating = shouldSimulate;
+            SetAiSimulating(shouldSimulate);
+        }
+        if (!shouldSimulate) return;
 
         UpdateDamageFlash();
         UpdateKnockback();
@@ -213,8 +288,46 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected void MoveInDirection(Vector2 direction, string walkStateName = "Walk")
     {
         SetMoveDirection(direction);
-        if (AnimatorStateCheck.IsInState(animator, walkStateName))
-            transform.Translate(direction * stats.moveSpeed * Time.deltaTime);
+        bool canWalk = AnimatorStateCheck.IsInState(animator, walkStateName);
+
+        if (ai != null)
+        {
+            ai.isStopped = !canWalk;
+            if (canWalk)
+            {
+                ai.destination = transform.position + (Vector3)(direction * AiDestinationLookahead);
+
+                // Chamada direta, não depende do sistema automático de repath (autoRepath) —
+                // esse objeto é uma classe aninhada do AIPath que não sobrevive corretamente
+                // sendo configurada via YAML de prefab escrito à mão (fica num estado zerado/
+                // inválido); SearchPath() é a API pública direta, documentada, sem essa
+                // dependência. Throttle manual pra não buscar path todo frame.
+                if (Time.time >= nextRepathTime)
+                {
+                    ai.SearchPath();
+                    nextRepathTime = Time.time + RepathInterval;
+                }
+
+                // updatePosition=true (Awake) — o próprio AIPath move o transform/Rigidbody2D
+                // a cada frame, já com path + desvio do RVO resolvidos.
+            }
+            return;
+        }
+
+        if (canWalk) transform.Translate(direction * stats.moveSpeed * Time.deltaTime);
+    }
+
+    private float nextRepathTime;
+    private const float RepathInterval = 0.3f; // 🔢 com que frequência recalcula o path — ajustável
+
+    private void SetAiSimulating(bool simulating)
+    {
+        if (ai == null) return;
+        if (!simulating) ai.isStopped = true; // trava o destino também, pra não retomar andando um frame antes do resto acordar
+        var aiBehaviour = ai as Behaviour;
+        if (aiBehaviour != null) aiBehaviour.enabled = simulating;
+        var rvo = GetComponent<RVOController>();
+        if (rvo != null) rvo.enabled = simulating; // OnEnable/OnDisable do próprio RVOController já tira/põe o agente no RVOSimulator
     }
 
     private void UpdateCombat()
@@ -319,6 +432,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected void SetMoving(bool isMoving)
     {
         if (animator != null) animator.SetBool("IsMoving", isMoving);
+        // Cobre todo estado "parado de propósito" que nunca chama MoveInDirection de novo
+        // depois (colado em attackRadius, emboscada dormente, etc.) — sem isso o AIPath
+        // ficaria tentando alcançar o último destino projetado pra sempre, mesmo com o
+        // Blend Tree já em Idle/IdleCombat.
+        if (ai != null && !isMoving) ai.isStopped = true;
     }
 
     // GDD Seção 22: true sempre que o monstro está em combate (perseguindo OU parado
@@ -382,6 +500,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         spriteRenderer != null
             ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
             : transform.position;
+
+    // Só pra visualização em Editor (criação/ajuste de monstro) — não roda em build, não afeta
+    // gameplay. virtual pra GoblinSapperController (e qualquer outro com gizmo próprio)
+    // conseguir somar o próprio desenho por cima via base.OnDrawGizmosSelected().
+    protected virtual void OnDrawGizmosSelected()
+    {
+        if (!showAttackRadiusGizmo) return;
+        Vector3 center = transform.position + new Vector3(0, attackRadiusGizmoOffsetY, 0);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(center, stats.attackRadius);
+    }
 
     public void TakeDamage(float amount)
     {
@@ -467,6 +596,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         var collider = GetComponent<Collider2D>();
         if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca
 
+        SetMoving(false); // trava o AIPath (ai.isStopped) — Update() nem chama mais Move()/MoveInDirection depois disso
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward);
     }

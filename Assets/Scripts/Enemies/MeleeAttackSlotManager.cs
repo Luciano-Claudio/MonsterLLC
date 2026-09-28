@@ -16,7 +16,13 @@ public class MeleeAttackSlotManager : MonoBehaviour
 {
     public static MeleeAttackSlotManager Instance { get; private set; }
 
-    [SerializeField] private int maxMeleeNearPlayer = 12;
+    [SerializeField] private int maxMeleeNearPlayer = 8;
+
+    // Raio do anel de flanco — geral pra todo Melee, não mais por monstro (EnemyStats). Um
+    // valor central é mais fácil de balancear junto com maxMeleeNearPlayer (os dois definem
+    // a mesma "lotação" perto do player) do que 14 campos espalhados por prefab.
+    [SerializeField] private float flankRadius = 7f; // 🔢 ajustável
+    public float FlankRadius => flankRadius;
 
     private readonly Dictionary<FloorDefinition, SlotPool> pools = new();
 

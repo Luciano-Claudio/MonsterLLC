@@ -131,6 +131,10 @@ GameObject:
   - component: {fileID: 5346229295701290061}
   - component: {fileID: 999999999990001}
   - component: {fileID: 999999999990003}
+  - component: {fileID: 999999999993001}
+  - component: {fileID: 999999999993002}
+  - component: {fileID: 999999999993003}
+  - component: {fileID: 999999999994001}
   m_Layer: 9
   m_Name: Goblin_Sapper
   m_TagString: Enemy
@@ -243,7 +247,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9034550362159185036}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -296,8 +300,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.062846124, y: 0.058477804}
-  m_Size: {x: 0.86159706, y: 0.12749304}
+  m_Offset: {x: -0.06452569, y: 0.058477804}
+  m_Size: {x: 0.43492532, y: 0.1274945}
   m_Direction: 1
 --- !u!114 &2655295641280067265
 MonoBehaviour:
@@ -332,8 +336,7 @@ MonoBehaviour:
     moveSpeed: 4
     observationRadius: 6
     attackRadius: 1.5
-    flankRadius: 3
-    attackDamage: 6
+    attackDamage: 12
     attackAnimationCooldown: 2.5
   energyReward: 20
   monsterEssenceDropAmount: 1
@@ -348,6 +351,8 @@ MonoBehaviour:
   hasAttackAnimation: 0
   maxAttackAnimationDuration: 5
   maxDieDuration: 3
+  showAttackRadiusGizmo: 0
+  attackRadiusGizmoOffsetY: 0.5
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
   floatingTextHeightAdjust: -0.5
@@ -356,7 +361,7 @@ MonoBehaviour:
   reloadDuration: 4
   minSafeDistanceFromPlayer: 6
   safeFleeRadius: 4
-  dieExplosionDamageMultiplier: 2
+  dieExplosionDamageMultiplier: 1
   dieExplosionRadius: 1.5
   dieExplosionOffsetY: 0.7
 --- !u!114 &999999999990001
@@ -407,3 +412,151 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: -0.06971043, y: 0.34845543}
   m_Radius: 0.34182167
+--- !u!114 &999999999993001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9034550362159185036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 373b52eb9bf8c40f785bb6947a1aee66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1073741824
+  drawGizmos: 1
+  detailedGizmos: 0
+  startEndModifier:
+    addPoints: 0
+    exactStartPoint: 3
+    exactEndPoint: 3
+    useRaycasting: 0
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    useGraphRaycasting: 0
+  traversableTags: -1
+  tagCostMultipliers:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  tagEntryCosts: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  graphMask:
+    value: -1
+--- !u!114 &999999999993002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9034550362159185036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6eb1402c17e84a9282a7f0f62eb584f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1073741824
+  radius: 0.22
+  height: 2
+  simulateMovement: 1
+  maxSpeed: 4
+  gravity: {x: 0, y: 0, z: 0}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  endReachedDistance: 0.2
+  whenCloseToDestination: 0
+  rvoDensityBehavior:
+    enabled: 0
+    densityThreshold: 0.5
+    returnAfterBeingPushedAway: 0
+    progressAverage: 0
+    lastJobDensityResult: 0
+  repathRateCompatibility: NaN
+  canSearchCompability: 0
+  orientation: 1
+  enableRotation: 1
+  autoRepath:
+    mode: 0
+    period: NaN
+    sensitivity: 10
+    maximumPeriod: 2
+    visualizeSensitivity: 0
+  maxAcceleration: -2.5
+  rotationSpeed: 32400
+  slowdownDistance: 0.6
+  pickNextWaypointDist: 2
+  alwaysDrawGizmos: 0
+  slowWhenNotFacingTarget: 1
+  preventMovingBackwards: 0
+  constrainInsideGraph: 0
+--- !u!114 &999999999993003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9034550362159185036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 560112f876f5746c780eca0d404e7139, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1073741824
+  radiusBackingField: 0.5
+  heightBackingField: 2
+  centerBackingField: 1
+  locked: 0
+  lockWhenNotMoving: 1
+  agentTimeHorizon: 2
+  obstacleTimeHorizon: 0.5
+  maxNeighbours: 10
+  layer: 1
+  collidesWith: -1
+  wallAvoidForce: 1
+  wallAvoidFalloff: 1
+  priority: 0.5
+  debug: 0
+--- !u!114 &999999999994001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9034550362159185036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f217bbc7b6e9a6448bf1b69b1190898, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  physicalCollider: {fileID: 0}

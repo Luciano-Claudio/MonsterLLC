@@ -79,8 +79,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1160704501
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -9194113129554473823, guid: 48a28043b6ecb1941aa7c3714c8676de, type: 3}
@@ -146,3 +146,15 @@ MonoBehaviour:
   damage: 5
   lifetime: 3
   ownerFloor: {fileID: 0}
+  impactMode: 0
+  appliesStatusEffect: 0
+  statusEffectType: 0
+  statusEffectDuration: 5
+  statusEffectDamagePerSecond: 2
+  explodesOnImpact: 1
+  explosionRadius: 1.5
+  circleCollider: {fileID: 0}
+  groundedRadius: 1.2
+  groundedDuration: 4
+  groundedTickInterval: 1
+  groundedDamagePerSecond: 2

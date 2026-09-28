@@ -29,6 +29,12 @@ public class MeleeEnemyController : EnemyController
     private float flankAngle;
     private bool flankAngleInitialized;
 
+    // Geral pra todo Melee agora, configurado no MeleeAttackSlotManager (não mais por
+    // monstro em EnemyStats) — mesmo lugar que já decide quantos cabem perto do player,
+    // faz sentido o raio do anel de flanco morar junto. Fallback só pro caso raro do
+    // manager não existir na cena ainda (mesmo padrão null-safe do resto da classe).
+    private float FlankRadius => MeleeAttackSlotManager.Instance != null ? MeleeAttackSlotManager.Instance.FlankRadius : 3f;
+
     protected override void Awake()
     {
         base.Awake();
@@ -50,13 +56,13 @@ public class MeleeEnemyController : EnemyController
         // quem pegou vaga primeiro ficaria com ela pra sempre, perseguindo o player pelo
         // Floor inteiro, enquanto outros monstros de verdade perto agora não conseguem
         // nenhuma. Libera assim que cair fora do próprio flankRadius.
-        if (hasAttackSlot && distance > stats.flankRadius)
+        if (hasAttackSlot && distance > FlankRadius)
         {
             if (MeleeAttackSlotManager.Instance != null) MeleeAttackSlotManager.Instance.ReleaseSlot(ownerFloor);
             hasAttackSlot = false;
         }
 
-        if (hasAttackSlot || distance > stats.flankRadius)
+        if (hasAttackSlot || distance > FlankRadius)
         {
             // já garantiu vaga, ou ainda está longe demais até pra flanquear -> aproxima normalmente
             SetMoving(true);
@@ -101,7 +107,7 @@ public class MeleeEnemyController : EnemyController
     {
         float arcRad = flankArcDegrees * Mathf.Deg2Rad;
         flankAngle += Random.Range(-arcRad, arcRad);
-        Vector2 offset = new Vector2(Mathf.Cos(flankAngle), Mathf.Sin(flankAngle)) * stats.flankRadius;
+        Vector2 offset = new Vector2(Mathf.Cos(flankAngle), Mathf.Sin(flankAngle)) * FlankRadius;
         return (Vector2)player.position + offset;
     }
 

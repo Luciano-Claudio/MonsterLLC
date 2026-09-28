@@ -1,4 +1,5 @@
 using UnityEngine;
+using Pathfinding.RVO;
 
 // Exceção à regra padrão (Bestiário) — ciclo armado (persegue) -> planta bomba no contato ->
 // foge (sem bomba) até recarregar -> volta a perseguir. Some-se a isso uma camada de dano de
@@ -33,6 +34,13 @@ public class GoblinSapperController : EnemyController
         fleeAI = new PatrolAI(1f, 2f, 1.5f, 3f); // 🔢 timers curtos de ir/parar dentro do raio seguro
         var contactDamage = GetComponent<EnemyContactDamage>();
         if (contactDamage != null) contactDamage.Initialize(stats.attackDamage, stats.attackAnimationCooldown);
+
+        // Sobrescreve a prioridade RVO que base.Awake() já calculou em cima de
+        // stats.attackDamage — o dano real do Sapper é a bomba, não o contato base (regra do
+        // usuário: quem dá mais dano tem prioridade maior no desvio, e a bomba dá muito mais
+        // que qualquer ataque comum do Bestiário).
+        var rvo = GetComponent<RVOController>();
+        if (rvo != null) rvo.priority = DamageToRvoPriority(stats.attackDamage * bombExplosionDamageMultiplier);
     }
 
     protected override void Move()
@@ -118,8 +126,9 @@ public class GoblinSapperController : EnemyController
 
     private Vector3 DieExplosionCenter => transform.position + new Vector3(0f, dieExplosionOffsetY, 0f);
 
-    private void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
+        base.OnDrawGizmosSelected(); // gizmo do attackRadius (EnemyController), se ligado no Inspector
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(DieExplosionCenter, dieExplosionRadius);
     }

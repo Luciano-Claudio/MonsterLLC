@@ -36,6 +36,16 @@ public class EnemyProjectile : MonoBehaviour
     [SerializeField] private float statusEffectDuration = 5f; // 🔢 ajustável
     [SerializeField] private float statusEffectDamagePerSecond = 2f; // 🔢 ajustável
 
+    // Sprint 20 assumiu que isso já existia como comportamento padrão (Rat People "explode em
+    // área ao contato ou na distância máxima") — checado na prática (Goblin Raider, mesma
+    // classe) e não existia: sem isso, o impacto só aplicava dano direto no que tocou o
+    // trigger, nunca uma explosão de verdade. Correção isolada (Seção 0, item 2 da sprint):
+    // burst instantâneo no ponto de impacto, uma vez só, seja o impacto por contato direto ou
+    // por alcançar o limite da trajetória sem acertar ninguém.
+    [Header("Explosão em área ao impacto (opcional)")]
+    [SerializeField] private bool explodesOnImpact = false;
+    [SerializeField] private float explosionRadius = 1.5f; // 🔢 ajustável
+
     [Header("Área persistente (só ImpactSurface)")]
     [SerializeField] private CircleCollider2D circleCollider; // mesmo collider do voo, redimensionado ao virar área
     [SerializeField] private float groundedRadius = 1.2f; // 🔢 ajustável
@@ -93,11 +103,17 @@ public class EnemyProjectile : MonoBehaviour
 
         if (phase == Phase.Flying)
         {
-            var hero = other.GetComponent<HeroController>();
-            if (hero != null)
+            // Se explode em área, o dano vem só do burst (ApplyImpactExplosion, chamado dentro
+            // de HitPlayer) — não aplica dano direto aqui também, senão o player levaria hit
+            // duplo (contato + explosão) no mesmo instante.
+            if (!explodesOnImpact)
             {
-                hero.TakeDamage(damage);
-                if (appliesStatusEffect) ApplyStatus(hero);
+                var hero = other.GetComponent<HeroController>();
+                if (hero != null)
+                {
+                    hero.TakeDamage(damage);
+                    if (appliesStatusEffect) ApplyStatus(hero);
+                }
             }
             HitPlayer();
             return;
@@ -128,14 +144,33 @@ public class EnemyProjectile : MonoBehaviour
     // Chegou no fim da trajetória (lifetime) sem acertar ninguém.
     private void ReachedLimit()
     {
+        if (explodesOnImpact) ApplyImpactExplosion();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
     }
 
     private void HitPlayer()
     {
+        if (explodesOnImpact) ApplyImpactExplosion();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
+    }
+
+    // Burst instantâneo no ponto de impacto — dispara 1 vez só (via ReachedLimit/HitPlayer),
+    // "ao contato ou na distância máxima", nunca as duas.
+    private void ApplyImpactExplosion()
+    {
+        var results = new Collider2D[4];
+        int count = Physics2D.OverlapCircle(transform.position, explosionRadius, ContactFilter2D.noFilter, results);
+        for (int i = 0; i < count; i++)
+        {
+            if (!results[i].CompareTag("Player")) continue;
+            var hero = results[i].GetComponent<HeroController>();
+            if (hero == null) continue;
+
+            hero.TakeDamage(damage);
+            if (appliesStatusEffect) ApplyStatus(hero);
+        }
     }
 
     private void StartImpact()

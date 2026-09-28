@@ -7,9 +7,8 @@ public class EnemyStats
     public float observationRadius = 6f;
     public float attackRadius = 1.5f; // alcance de contato (Melee) ou de disparo/manutenção de distância (Ranged)
 
-    // Só usado pelo Melee quando a "vaga" perto do player está lotada (MeleeAttackSlotManager)
-    // — o raio do anel onde ele fica flanqueando em vez de fechar até o attackRadius.
-    public float flankRadius = 3f;
+    // flankRadius saiu daqui — agora é geral, configurado direto no MeleeAttackSlotManager
+    // (ver MeleeEnemyController.FlankRadius), não mais por monstro.
 
     // Único dano do jogo agora: o golpe/disparo real da animação de ataque, decidido por
     // Animation Event — testamos ter também um dano de contato passivo em paralelo
