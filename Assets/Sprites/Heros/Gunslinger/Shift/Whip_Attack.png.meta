@@ -1,0 +1,767 @@
+fileFormatVersion: 2
+guid: f6928b55858a3d94ca9a9139ab5b40af
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8610774976160954621
+    second: Whip_Attack_0
+  - first:
+      213: -1841872323687398949
+    second: Whip_Attack_1
+  - first:
+      213: -7233420949973498720
+    second: Whip_Attack_2
+  - first:
+      213: -499290010554691973
+    second: Whip_Attack_3
+  - first:
+      213: 9061735891082618151
+    second: Whip_Attack_4
+  - first:
+      213: -9122644934398992309
+    second: Whip_Attack_5
+  - first:
+      213: 8083927008563558624
+    second: Whip_Attack_6
+  - first:
+      213: -6959956415850019737
+    second: Whip_Attack_7
+  - first:
+      213: 5238661947774802702
+    second: Whip_Attack_8
+  - first:
+      213: 992200563413436545
+    second: Whip_Attack_9
+  - first:
+      213: -2097115548372375395
+    second: Whip_Attack_10
+  - first:
+      213: 3918176777001045342
+    second: Whip_Attack_11
+  - first:
+      213: -7763538745774558440
+    second: Whip_Attack_12
+  - first:
+      213: 3232985840841538934
+    second: Whip_Attack_13
+  - first:
+      213: -4393053527544717881
+    second: Whip_Attack_14
+  - first:
+      213: -2964986348979241956
+    second: Whip_Attack_15
+  - first:
+      213: 2933172442185015129
+    second: Whip_Attack_16
+  - first:
+      213: 3820244009719030453
+    second: Whip_Attack_17
+  - first:
+      213: -5007322758987799646
+    second: Whip_Attack_18
+  - first:
+      213: 8554882874811244274
+    second: Whip_Attack_19
+  - first:
+      213: 7174023632710813148
+    second: Whip_Attack_20
+  - first:
+      213: -6070982539656142215
+    second: Whip_Attack_21
+  - first:
+      213: -5119623021919858800
+    second: Whip_Attack_22
+  - first:
+      213: 8021433798972073804
+    second: Whip_Attack_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Whip_Attack_0
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 108
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3078a11f7c1608880800000000000000
+      internalID: -8610774976160954621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_1
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 107
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd14df851ea5076e0800000000000000
+      internalID: -1841872323687398949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_2
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 108
+        width: 19
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a406f568f9bd9b90800000000000000
+      internalID: -7233420949973498720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_3
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 108
+        width: 25
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7e8cf8716a2219f0800000000000000
+      internalID: -499290010554691973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_4
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 107
+        width: 25
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 725236428c0c1cd70800000000000000
+      internalID: 9061735891082618151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_5
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 108
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b40a12914cad56180800000000000000
+      internalID: -9122644934398992309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_6
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 76
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e8fd97a8c0ef2070800000000000000
+      internalID: 8083927008563558624
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_7
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 75
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7640f05e384496f90800000000000000
+      internalID: -6959956415850019737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_8
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 76
+        width: 19
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0b197f294773b840800000000000000
+      internalID: 5238661947774802702
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_9
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 76
+        width: 25
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1884330d72105cd00800000000000000
+      internalID: 992200563413436545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_10
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 75
+        width: 25
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d98e05e058c85e2e0800000000000000
+      internalID: -2097115548372375395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_11
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 76
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5d0550f409206630800000000000000
+      internalID: 3918176777001045342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_12
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 44
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 813302ac4ae524490800000000000000
+      internalID: -7763538745774558440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_13
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 43
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67d3a3f3e7fdddc20800000000000000
+      internalID: 3232985840841538934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_14
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 44
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cd9b63971db803c0800000000000000
+      internalID: -4393053527544717881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_15
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 31
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1cb531ff904ad6d0800000000000000
+      internalID: -2964986348979241956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_16
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 31
+        width: 14
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95f1769abc8b4b820800000000000000
+      internalID: 2933172442185015129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_17
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 44
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b2ed92bfab340530800000000000000
+      internalID: 3820244009719030453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_18
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 12
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a3adca0b7a628ab0800000000000000
+      internalID: -5007322758987799646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_19
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 11
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fe523026ac09b670800000000000000
+      internalID: 8554882874811244274
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_20
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 5
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd54cfdfb704f8360800000000000000
+      internalID: 7174023632710813148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_21
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 9
+        width: 15
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 972623eab898fbba0800000000000000
+      internalID: -6070982539656142215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_22
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 13
+        width: 14
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09f0e8a8cf173f8b0800000000000000
+      internalID: -5119623021919858800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Whip_Attack_23
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 12
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c47ea017a8bd15f60800000000000000
+      internalID: 8021433798972073804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Whip_Attack_0: -8610774976160954621
+      Whip_Attack_1: -1841872323687398949
+      Whip_Attack_10: -2097115548372375395
+      Whip_Attack_11: 3918176777001045342
+      Whip_Attack_12: -7763538745774558440
+      Whip_Attack_13: 3232985840841538934
+      Whip_Attack_14: -4393053527544717881
+      Whip_Attack_15: -2964986348979241956
+      Whip_Attack_16: 2933172442185015129
+      Whip_Attack_17: 3820244009719030453
+      Whip_Attack_18: -5007322758987799646
+      Whip_Attack_19: 8554882874811244274
+      Whip_Attack_2: -7233420949973498720
+      Whip_Attack_20: 7174023632710813148
+      Whip_Attack_21: -6070982539656142215
+      Whip_Attack_22: -5119623021919858800
+      Whip_Attack_23: 8021433798972073804
+      Whip_Attack_3: -499290010554691973
+      Whip_Attack_4: 9061735891082618151
+      Whip_Attack_5: -9122644934398992309
+      Whip_Attack_6: 8083927008563558624
+      Whip_Attack_7: -6959956415850019737
+      Whip_Attack_8: 5238661947774802702
+      Whip_Attack_9: 992200563413436545
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
