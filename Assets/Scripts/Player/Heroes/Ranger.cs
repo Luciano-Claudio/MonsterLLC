@@ -131,11 +131,13 @@ public class Ranger : HeroController
         isAttacking = false;
     }
 
+    // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar
+    // energia — não precisa mais desse "return" aqui dentro, virado tarde demais pra impedir
+    // o gasto.
+    protected override bool CanUseUltimate() => !isAttacking;
+
     protected override void UseUltimate()
     {
-        // Guarda própria — HeroController não bloqueia Ultimate por isAttacking, então cada
-        // herói se protege (mesmo padrão do Barbarian).
-        if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
         for (int i = 0; i < knifeThrown.Length; i++) knifeThrown[i] = false;
@@ -194,6 +196,11 @@ public class Ranger : HeroController
         camouflageElapsed = 0f;
         secondaryAbilityHealTick = new AttackCooldown(secondaryAbilityHealTickInterval);
     }
+
+    // Imune a dano a viagem INTEIRA da camuflagem (start + during + end), não só o "during"
+    // — um Slime de contato ou um golpe que já estava a caminho não pode contar enquanto o
+    // Ranger está se escondendo/escondido/reaparecendo.
+    protected override bool IsDamageImmune => isUsingSecondaryAbility;
 
     // Shift de novo durante a camuflagem — só faz efeito depois que "during" realmente
     // começou (cancelar no meio da animação de esconder ainda não existe como caso de uso).

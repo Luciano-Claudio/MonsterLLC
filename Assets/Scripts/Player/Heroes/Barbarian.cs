@@ -134,9 +134,13 @@ public class Barbarian : HeroController
         isAttacking = false;
     }
 
+    // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar
+    // energia — não precisa mais desse "return" aqui dentro, virado tarde demais pra impedir
+    // o gasto.
+    protected override bool CanUseUltimate() => !isAttacking;
+
     protected override void UseUltimate()
     {
-        if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
         ultimateLandFired = false;

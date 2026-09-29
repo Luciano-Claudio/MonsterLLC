@@ -597,6 +597,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca
 
         SetMoving(false); // trava o AIPath (ai.isStopped) — Update() nem chama mais Move()/MoveInDirection depois disso
+
+        // Corrida clássica de Trigger do Animator: se um DamageTrigger de um hit anterior ainda
+        // não foi consumido pelo Animator quando o DieTrigger é setado logo em seguida (comum
+        // em monstros que levam 2-3 hits pra morrer — cada hit não-letal dispara DamageTrigger,
+        // ver TakeDamage()), o Unity pode processar só o DamageTrigger e descartar o DieTrigger
+        // sem nunca seguir a transição de morte — o monstro fica preso no destino do Damage
+        // (IdleCombat, já que InCombat continua true) pra sempre, só resgatado pelo timeout de
+        // segurança (maxDieDuration). AttackTrigger não entra aqui: TakeDamage() nunca o seta
+        // (só o início do próprio golpe do monstro faz isso, em outro lugar), então não existe
+        // cenário real de corrida com ele nesse ponto.
+        if (animator != null) animator.ResetTrigger("DamageTrigger");
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward);
     }

@@ -24,4 +24,12 @@ public class AttackCooldown
         timeRemaining = cooldownDuration;
         return true;
     }
+
+    // Arma o timer sem checar IsReady — separado de TryConsume() pros cooldowns de "tempo de
+    // uso" (Habilidade Secundária): a checagem de "pronto pra usar" acontece no clique, mas o
+    // timer só deve começar a contar quando a habilidade termina de verdade, não no clique.
+    public void Start()
+    {
+        timeRemaining = cooldownDuration;
+    }
 }

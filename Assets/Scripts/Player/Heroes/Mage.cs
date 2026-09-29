@@ -129,11 +129,13 @@ public class Mage : HeroController
         isAttacking = false;
     }
 
+    // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar
+    // energia — não precisa mais desse "return" aqui dentro, virado tarde demais pra impedir
+    // o gasto.
+    protected override bool CanUseUltimate() => !isAttacking;
+
     protected override void UseUltimate()
     {
-        // Guarda própria — HeroController não bloqueia Ultimate por isAttacking, então cada
-        // herói se protege (mesmo padrão do Barbarian/Ranger).
-        if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
         ultimateFired = false;
@@ -166,6 +168,11 @@ public class Mage : HeroController
     {
         isAttacking = false;
     }
+
+    // Imune a dano a viagem INTEIRA do teleporte (teleport_start + voo do projétil +
+    // teleport_end), não só enquanto isTeleporting — um Slime de contato ou um golpe que já
+    // estava a caminho não pode contar enquanto o Mage está sumindo/viajando/reaparecendo.
+    protected override bool IsDamageImmune => isUsingSecondaryAbility;
 
     // Bloqueia tudo (isAttacking, mesma regra do Ranger) — não cancelável, roda até o fim.
     protected override void UseSecondaryAbility()

@@ -83,6 +83,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     [SerializeField] private float secondaryAbilityCooldownDuration = 8f; // 🔢 maior que o do primário, ajustável por herói
     private AttackCooldown secondaryAbilityCooldown;
     protected bool isUsingSecondaryAbility;
+    private bool wasUsingSecondaryAbility; // detecta a transição true -> false no Update(), ver comentário lá
 
     // Flag simples (não por-instância — só existe 1 herói jogável por vez) pra habilidades
     // tipo camuflagem/stealth: enquanto true, EnemyController trata o player como
@@ -111,11 +112,36 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // exatamente equidistantes — ver DirectionUtility.SnapTo4Diagonals.
     protected Vector2 DiagonalAimDirection { get; private set; } = new Vector2(-0.70710678f, -0.70710678f);
 
+    // Sprint 21 (Druid) — exposição read-only do vetor de movimento cru, mesmo padrão de
+    // AimDirection. GDD Seção 16 diz "não existe MoveX/MoveY pro herói" de propósito, mas a
+    // Coruja do Druid anda olhando pras 4 direções cardeais de pra-onde-o-jogador-está-andando,
+    // não pra mira do mouse — só esse caso quebra a regra geral.
+    protected Vector2 MoveInput => moveInput;
+
+    // Collider físico (CapsuleCollider2D) — offset.x precisa espelhar conforme a direção da
+    // mira, mesmo motivo do FlippedColliderOffsetX.cs do Bestiário, só que o sinal usado lá
+    // (SpriteRenderer.flipX) nunca muda em herói NENHUM: a arte de cada herói é sempre um
+    // clipe dedicado por diagonal (idle_ne/nw/se/sw etc.), nunca um clipe espelhado via
+    // flipX. O sinal real de "olhando pra E ou pra W" é DiagonalAimDirection.x (o mesmo que
+    // já alimenta o Blend Tree). offset.x já configurado no prefab é assumido tunado pra E
+    // (DiagonalAimDirection.x >= 0) — nunca precisa de 2 campos, só espelha (× -1) pra W.
+    private CapsuleCollider2D bodyCollider;
+    private float bodyColliderOffsetXFacingEast;
+
+    // Druid sobrescreve pra false — ele já cuida do próprio collider físico (tem 2 formas,
+    // humana e Alce, cada uma com offset/size próprios) e reaplica esse mesmo espelhamento
+    // por conta própria em cima disso. Deixar os dois mecanismos ativos ao mesmo tempo faria
+    // o daqui sobrescrever com um offset "humano" errado por cima do que o Druid acabou de
+    // aplicar pra forma Alce.
+    protected virtual bool AutoFlipBodyCollider => true;
+
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
+        bodyCollider = GetComponent<CapsuleCollider2D>();
+        if (bodyCollider != null) bodyColliderOffsetXFacingEast = bodyCollider.offset.x;
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
@@ -168,8 +194,21 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     {
         if (!GameplayGate.IsActive) return;
 
+        // Detecta o instante em que a Habilidade Secundária termina de verdade (qualquer
+        // herói, qualquer motivo — timeout ou cancelamento manual, os dois convergem pro
+        // mesmo "isUsingSecondaryAbility = false" no Animation Event de fim de cada um) e só
+        // AÍ arma o cooldown. Cooldown é "tempo de uso", não "tempo desde o clique" — sem
+        // isso, o cooldown corria por baixo dos panos enquanto o jogador ainda estava
+        // transformado/escondido, deixando o tempo de espera real mais curto que o
+        // configurado. Checado antes do "if (isDead)" de propósito: morrer no meio da
+        // habilidade também zera isUsingSecondaryAbility (OnDeath), e não queremos perder essa
+        // transição só porque o resto do Update() retorna cedo nesse frame.
+        if (wasUsingSecondaryAbility && !isUsingSecondaryAbility) secondaryAbilityCooldown.Start();
+        wasUsingSecondaryAbility = isUsingSecondaryAbility;
+
         UpdateDamageFlash();
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
+        if (AutoFlipBodyCollider) ApplyBodyColliderFlip();
 
         if (isDead)
         {
@@ -257,6 +296,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         }
     }
 
+    // Espelha offset.x do collider físico conforme DiagonalAimDirection.x — ver comentário
+    // do campo bodyColliderOffsetXFacingEast. Roda toda vez que a mira for recalculada
+    // (mesmo Update() de UpdateAimDirection), não precisa de LateUpdate separado porque o
+    // Collider2D não depende de pose do Animator, só do valor lógico da mira.
+    private void ApplyBodyColliderFlip()
+    {
+        if (bodyCollider == null) return;
+        var offset = bodyCollider.offset;
+        offset.x = DiagonalAimDirection.x < 0f ? -bodyColliderOffsetXFacingEast : bodyColliderOffsetXFacingEast;
+        bodyCollider.offset = offset;
+    }
+
     private void HandleEnemyKilled(int energyValue)
     {
         // Janela de bloqueio pós-ultimate — sem isso, uma ultimate boa (que geralmente
@@ -270,6 +321,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     private void TryUseUltimate()
     {
+        // Sprint 21 (Druid) — só o Alce tem Ultimate com duração até hoje, então só ele
+        // sobrescreve IsUltimateActive/CancelUltimate (default false/no-op, sem efeito nos
+        // outros heróis). Checa ANTES do gate de energia: a energia já está zerada desde a
+        // ativação (ver embaixo), então o gate bloquearia o próprio cancelamento se viesse depois.
+        if (IsUltimateActive) { CancelUltimate(); return; }
+        // Checa ANTES de gastar energia — sem isso, um herói que recusa a Ultimate por dentro
+        // (ex.: Coruja do Druid, isAttacking de qualquer herói) ainda perdia a energia toda,
+        // já que UseUltimate() é void e o "return" cedo dele é invisível pra quem chamou.
+        if (!CanUseUltimate()) return;
         if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy)) return;
         // Releitura forçada antes de congelar — o Input System processa este clique ANTES
         // do Update() deste frame, então sem isso a mira congelaria com o valor do frame
@@ -292,7 +352,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // CONGELADA da ação anterior (podia estar longe da mira real, ex.: o "micro-teleport"
         // do Mage e a pose errada no teleport_end — causa raiz encontrada em produção).
         if (isAttacking) return;
-        if (!secondaryAbilityCooldown.TryConsume()) return;
+        // Só checa (IsReady), não consome mais aqui — o timer é armado depois, no Update(),
+        // quando a habilidade termina de verdade (ver comentário lá e em AttackCooldown.Start()).
+        if (!secondaryAbilityCooldown.IsReady) return;
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         isUsingSecondaryAbility = true;
         UseSecondaryAbility();
@@ -325,12 +387,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
             : transform.position;
 
-    public void TakeDamage(float amount)
+    public virtual void TakeDamage(float amount)
     {
         // Guarda contra reentrância: sem isso, dois hits antes do respawn terminar
         // disparam OnDeath() duas vezes (penalidade de -30s duplicada, PlayTransition
         // duplicado — o EasyTransition não suporta duas transições concorrentes).
         if (isDead) return;
+        if (IsDamageImmune) return;
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
@@ -424,12 +487,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         }
         dieElapsed = 0f;
         dieHandled = false;
-        AnimatorTrigger("DieTrigger");
-        Debug.Log("[HeroController] Morreu — aguardando Animation Event de fim do die...");
 
         // 1. Cancela estados temporários — hook pra ultimates com duração/transformações e
-        // pra pets de kit (GDD: "ao morrer o herói, o pet retorna junto na transição").
+        // pra pets de kit (GDD: "ao morrer o herói, o pet retorna junto na transição"). Roda
+        // ANTES do DieTrigger de propósito: o Alce do Druid troca o runtimeAnimatorController
+        // de volta pro humano aqui dentro — se o Trigger disparasse antes, pegaria o
+        // controller errado (sem estado "Die"), viraria no-op, e a troca de controller logo
+        // em seguida resetaria o Trigger já "gasto" sem nunca tocar animação de morte nenhuma.
         OnHeroDeath();
+
+        AnimatorTrigger("DieTrigger");
+        Debug.Log("[HeroController] Morreu — aguardando Animation Event de fim do die...");
 
         // 2. Destrói loot carregado
         BagController.Instance.Bag.Clear();
@@ -446,7 +514,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Chamado por um Animation Event no último frame do clipe "die" (mesmo padrão do
     // EnemyController) — a animação é a fonte de verdade do timing: o jogador só volta pro
     // andar inicial depois que a morte terminou de tocar por completo.
-    public void AnimationDieEndEvent()
+    public virtual void AnimationDieEndEvent()
     {
         if (dieHandled) return; // proteção — evento + timeout de segurança não chamam Respawn() duas vezes
         dieHandled = true;
@@ -488,10 +556,33 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected abstract void UseUltimate();
     protected abstract void UseSecondaryAbility();
 
+    // Default true — cada herói que tem alguma janela em que a própria Ultimate não pode
+    // rodar (isAttacking de qualquer um, isUsingSecondaryAbility do Druid enquanto Coruja)
+    // sobrescreve isso, em vez de só dar "return" por dentro de UseUltimate(). TryUseUltimate()
+    // checa ANTES de gastar energia — um "return" só de dentro de UseUltimate() não seria
+    // visto por quem chamou, e a energia seria gasta de qualquer jeito.
+    protected virtual bool CanUseUltimate() => true;
+
+    // Default false — só heróis cuja Habilidade Secundária esconde/transforma o jogador de
+    // verdade (camuflagem do Ranger, teleporte do Mage, Coruja do Druid) sobrescrevem isso.
+    // Cobre um caso que IsPlayerUntargetable sozinho não cobre: um Slime de dano por contato
+    // não "escolhe" o jogador como alvo, só bate por estar encostado fisicamente — sem essa
+    // trava direto no TakeDamage(), o dano de contato (ou de um golpe que já estava a
+    // caminho) ainda contava mesmo com o jogador "escondido"/em transição.
+    protected virtual bool IsDamageImmune => false;
+
     // Default no-op — só heróis com habilidade cancelável (ex.: camuflagem do Ranger)
     // sobrescrevem isso. Sem override, apertar Shift de novo em habilidade não-cancelável
     // simplesmente não faz nada (não reinicia, não interrompe).
     protected virtual void CancelSecondaryAbility() { }
+
+    // Sprint 21 (Druid) — par simétrico a CancelSecondaryAbility, só que pra Ultimate. Default
+    // false/no-op — só o Alce (única Ultimate com duração até hoje) sobrescreve. A GDD pede
+    // "cancelamento manual" (apertar o botão de Ultimate de novo enquanto ativa cancela), mesma
+    // UX que Shift já usa pra Habilidade Secundária.
+    protected virtual bool IsUltimateActive => false;
+
+    protected virtual void CancelUltimate() { }
 
     // Chamado no início de OnDeath(), antes de qualquer outra limpeza. Default no-op — só
     // heróis com estado que precisa ser desfeito na morte (ex.: pet do Mage/Blood Mage)

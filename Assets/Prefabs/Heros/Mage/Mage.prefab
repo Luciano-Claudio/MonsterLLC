@@ -21,7 +21,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &134436095861227057
 Transform:
   m_ObjectHideFlags: 0
@@ -199,9 +199,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mage
   stats:
-    health: 100
-    maxHealth: 100
-    damage: 10
+    health: 24
+    maxHealth: 24
+    damage: 2.4
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::StatusEffectController
   statusAnimator: {fileID: 5027192718664090439}
   tickInterval: 1
-  immunities: 
+  immunities:
 --- !u!1 &5909618122711402853
 GameObject:
   m_ObjectHideFlags: 0
