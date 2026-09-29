@@ -166,7 +166,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -177,10 +177,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -201,9 +201,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -258,12 +258,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_0
       rect:
         serializedVersion: 2
-        x: 3
-        y: 108
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -280,12 +280,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_1
       rect:
         serializedVersion: 2
-        x: 35
-        y: 108
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -302,12 +302,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_2
       rect:
         serializedVersion: 2
-        x: 67
-        y: 108
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -324,12 +324,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_3
       rect:
         serializedVersion: 2
-        x: 99
-        y: 108
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -346,12 +346,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_4
       rect:
         serializedVersion: 2
-        x: 131
-        y: 108
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -368,12 +368,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_5
       rect:
         serializedVersion: 2
-        x: 163
-        y: 108
-        width: 20
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -390,12 +390,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_6
       rect:
         serializedVersion: 2
-        x: 195
-        y: 108
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -412,12 +412,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_7
       rect:
         serializedVersion: 2
-        x: 227
-        y: 108
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -434,12 +434,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_8
       rect:
         serializedVersion: 2
-        x: 259
-        y: 108
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -456,12 +456,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_9
       rect:
         serializedVersion: 2
-        x: 291
-        y: 108
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -478,12 +478,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_10
       rect:
         serializedVersion: 2
-        x: 323
-        y: 108
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -500,12 +500,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_11
       rect:
         serializedVersion: 2
-        x: 6
-        y: 76
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -522,12 +522,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_12
       rect:
         serializedVersion: 2
-        x: 38
-        y: 76
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -544,12 +544,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_13
       rect:
         serializedVersion: 2
-        x: 70
-        y: 76
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -566,12 +566,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_14
       rect:
         serializedVersion: 2
-        x: 102
-        y: 76
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -588,12 +588,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_15
       rect:
         serializedVersion: 2
-        x: 135
-        y: 76
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -610,12 +610,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_16
       rect:
         serializedVersion: 2
-        x: 169
-        y: 76
-        width: 20
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -632,12 +632,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_17
       rect:
         serializedVersion: 2
-        x: 199
-        y: 76
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -654,12 +654,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_18
       rect:
         serializedVersion: 2
-        x: 230
-        y: 76
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -676,12 +676,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_19
       rect:
         serializedVersion: 2
-        x: 262
-        y: 76
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -698,12 +698,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_20
       rect:
         serializedVersion: 2
-        x: 294
-        y: 76
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -720,12 +720,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_21
       rect:
         serializedVersion: 2
-        x: 326
-        y: 76
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -742,12 +742,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_22
       rect:
         serializedVersion: 2
-        x: 3
-        y: 44
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -764,12 +764,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_23
       rect:
         serializedVersion: 2
-        x: 35
-        y: 44
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -786,12 +786,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_24
       rect:
         serializedVersion: 2
-        x: 67
-        y: 44
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -808,12 +808,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_25
       rect:
         serializedVersion: 2
-        x: 99
-        y: 44
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -830,12 +830,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_26
       rect:
         serializedVersion: 2
-        x: 131
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -852,12 +852,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_27
       rect:
         serializedVersion: 2
-        x: 163
-        y: 44
-        width: 20
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -874,12 +874,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_28
       rect:
         serializedVersion: 2
-        x: 195
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -896,12 +896,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_29
       rect:
         serializedVersion: 2
-        x: 227
-        y: 44
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -918,12 +918,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_30
       rect:
         serializedVersion: 2
-        x: 259
-        y: 44
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -940,12 +940,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_31
       rect:
         serializedVersion: 2
-        x: 291
-        y: 44
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -962,12 +962,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_32
       rect:
         serializedVersion: 2
-        x: 323
-        y: 44
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -984,12 +984,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_33
       rect:
         serializedVersion: 2
-        x: 6
-        y: 12
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1006,12 +1006,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_34
       rect:
         serializedVersion: 2
-        x: 38
-        y: 12
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1028,12 +1028,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_35
       rect:
         serializedVersion: 2
-        x: 70
-        y: 12
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1050,12 +1050,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_36
       rect:
         serializedVersion: 2
-        x: 102
-        y: 12
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1072,12 +1072,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_37
       rect:
         serializedVersion: 2
-        x: 135
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1094,12 +1094,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_38
       rect:
         serializedVersion: 2
-        x: 169
-        y: 12
-        width: 20
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1116,12 +1116,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_39
       rect:
         serializedVersion: 2
-        x: 199
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1138,12 +1138,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_40
       rect:
         serializedVersion: 2
-        x: 230
-        y: 12
-        width: 23
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1160,12 +1160,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_41
       rect:
         serializedVersion: 2
-        x: 262
-        y: 12
-        width: 23
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1182,12 +1182,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_42
       rect:
         serializedVersion: 2
-        x: 294
-        y: 12
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1204,12 +1204,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesForestBeastIdle_43
       rect:
         serializedVersion: 2
-        x: 326
-        y: 12
-        width: 23
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1226,7 +1226,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 9aa58f65cc7d03a4ea0bf1e5e485fbdd
     internalID: 0
     vertices: []
     indices: 
@@ -1234,7 +1234,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.40625},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Minifantasy_TrueHeroesForestBeastIdle_0: 9144347146188642531
       Minifantasy_TrueHeroesForestBeastIdle_1: -1785530209039558440
