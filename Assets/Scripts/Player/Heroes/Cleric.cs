@@ -86,12 +86,20 @@ public class Cleric : HeroController
     // foi consumido pela base antes de chegar aqui (HeroController.Update()) mesmo nesse
     // caso — aceito de propósito (decisão da sprint, zero risco pros outros 9 heróis; mudar
     // isso exigiria mexer no gate compartilhado por todo herói).
+    // Hook da base (HeroController) — chamado ANTES do cooldown ser consumido. Já popula
+    // pendingTargets aqui mesmo (reaproveitado por PrimaryAttack() logo em seguida, no mesmo
+    // frame): sem monstro no raio, devolve false e a base nem chama TryConsume(), então o
+    // clique no vazio não gasta o cooldown do Cleric.
+    protected override bool ShouldConsumeCooldownOnAttack()
+    {
+        FindNearestEnemiesInRadius(projectileCount, pendingTargets);
+        return pendingTargets.Count > 0;
+    }
+
     protected override void PrimaryAttack()
     {
         if (isAttacking) return;
-
-        FindNearestEnemiesInRadius(projectileCount, pendingTargets);
-        if (pendingTargets.Count == 0) return; // exceção do MVP — sem alvo, não acontece nada
+        if (pendingTargets.Count == 0) return; // exceção do MVP — sem alvo, não acontece nada (já checado por ShouldConsumeCooldownOnAttack)
 
         isAttacking = true;
         actionElapsed = 0f;

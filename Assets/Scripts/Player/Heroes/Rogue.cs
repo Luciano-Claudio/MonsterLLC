@@ -232,15 +232,25 @@ public class Rogue : HeroController
         Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), false);
     }
 
+    // IsDamageImmune vale desde o instante em que isRolling vira true (UseSecondaryAbility),
+    // não só a partir de algum Animation Event — a Cambalhota é imune a dano a viagem
+    // inteira, por isso TakeDamage() nem chega a tirar vida do Rogue enquanto ela dura (ver
+    // HeroController.TakeDamage: "if (IsDamageImmune) return;" acontece ANTES de qualquer
+    // outra coisa). Isso também é por que a morte "durante a Cambalhota" não acontece pela
+    // via normal de dano hoje — só é alcançável por uma fonte futura que ignore essa trava.
     protected override bool IsDamageImmune => isRolling;
 
     // Mesmo precedente do Alce do Druid (isElkForm) — sem isso, morrer no meio da Cambalhota
-    // deixaria isRolling travado em true pra sempre, e o próximo Update() pós-respawn tentaria
-    // mover o Rogue sozinho na direção congelada. IsDamageImmune só cobre morte por dano
-    // recebido durante a cambalhota — não qualquer outra fonte futura.
+    // deixaria isRolling travado em true pra sempre. Chama EndRoll() (não só "isRolling =
+    // false" direto) porque o estado da Cambalhota não é só a flag: IgnoreLayerCollision
+    // ficou ligado lá em UseSecondaryAbility() e só EndRoll() desliga de volta — sem isso, o
+    // Rogue morreria sem colisão física com monstro nenhum e continuaria assim pra sempre
+    // depois do respawn (a flag reseta, a layer collision não). O Animator não precisa de
+    // ajuda aqui: DieTrigger já é uma transição Any State (sem Exit Time) no Rogue.controller,
+    // então interrompe o clipe "Roll" na hora, de qualquer estado, sem configuração extra.
     protected override void OnHeroDeath()
     {
-        isRolling = false;
+        EndRoll();
     }
 
     // Passiva (GDD Seção 17.5) — "4× mais Energia de Ultimate por kill".

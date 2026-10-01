@@ -249,7 +249,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // !isAttacking aqui é o que impede um attackSpeed alto de disparar um novo ataque
         // por cima de uma animação ainda tocando (ex.: attackSpeed maior que a duração do
         // próprio golpe) — cooldown cuida do ritmo, isAttacking cuida de nunca sobrepor.
-        if (attackHeld && !isAttacking && !isTrapped && attackCooldown.TryConsume()) PrimaryAttack();
+        // ShouldConsumeCooldownOnAttack() vem ANTES do TryConsume() de propósito — sem isso,
+        // o Cleric (primeiro herói cujo clique pode "não fazer nada" por falta de alvo no
+        // raio) gastava o cooldown inteiro num clique que nem chegou a lançar o projétil.
+        if (attackHeld && !isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && attackCooldown.TryConsume())
+            PrimaryAttack();
 
         bool wantsToMove = moveInput.sqrMagnitude > 0.0001f;
         if (animator != null) animator.SetBool("IsMoving", wantsToMove);
@@ -575,6 +579,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // checa ANTES de gastar energia — um "return" só de dentro de UseUltimate() não seria
     // visto por quem chamou, e a energia seria gasta de qualquer jeito.
     protected virtual bool CanUseUltimate() => true;
+
+    // Default true — todo herói existente sempre "faz alguma coisa" ao atacar (projétil,
+    // golpe etc.), então o clique sempre gasta o cooldown. Só o Cleric sobrescreve: sem
+    // monstro no raio de ataque, PrimaryAttack() não faz nada (exceção de MVP, Sprint 23),
+    // e sem esse hook o cooldown seria gasto à toa, deixando o Cleric "travado" por até 1
+    // cooldown inteiro assim que um monstro aparecesse no raio logo depois do clique.
+    protected virtual bool ShouldConsumeCooldownOnAttack() => true;
 
     // Default false — só heróis cuja Habilidade Secundária esconde/transforma o jogador de
     // verdade (camuflagem do Ranger, teleporte do Mage, Coruja do Druid) sobrescrevem isso.
