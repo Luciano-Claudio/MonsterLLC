@@ -308,6 +308,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         bodyCollider.offset = offset;
     }
 
+    // Sprint 22 (Rogue) — multiplicador de Energia de Ultimate ganho por kill. Default 1f,
+    // sem efeito em nenhum herói existente. Só o Rogue sobrescreve (passiva: "4× mais Energia
+    // de Ultimate por kill").
+    protected virtual float UltimateEnergyMultiplier => 1f;
+
     private void HandleEnemyKilled(int energyValue)
     {
         // Janela de bloqueio pós-ultimate — sem isso, uma ultimate boa (que geralmente
@@ -315,7 +320,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // ultimate infinita. Energia é recurso escasso de propósito.
         if (ultimateEnergyLockoutRemaining > 0f) return;
 
-        stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, energyValue);
+        int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier);
+        stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, adjustedEnergy);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
 
@@ -386,6 +392,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         spriteRenderer != null
             ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
             : transform.position;
+
+    // Exposto publicamente (IsDamageImmune em si é protected, cada herói sobrescreve) pra
+    // quem aplica dano de fora (ex.: EnemyProjectile) saber se o TakeDamage() abaixo vai ser
+    // um no-op ANTES de decidir aplicar um Efeito Nocivo (ex.: Fire) junto — sem isso, o
+    // Efeito Nocivo "colava" mesmo com o dano bloqueado pela imunidade (Cambalhota do Rogue,
+    // Owl do Druid, etc.), já que TakeDamage() não devolvia nenhum sinal de "bloqueei".
+    public bool IsCurrentlyDamageImmune => isDead || IsDamageImmune;
 
     public virtual void TakeDamage(float amount)
     {

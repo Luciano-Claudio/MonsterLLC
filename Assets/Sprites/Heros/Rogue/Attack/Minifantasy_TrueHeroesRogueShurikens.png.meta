@@ -400,7 +400,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -411,10 +411,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -435,9 +435,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -492,12 +492,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_0
       rect:
         serializedVersion: 2
-        x: 199
-        y: 103
-        width: 11
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -514,12 +514,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_1
       rect:
         serializedVersion: 2
-        x: 210
-        y: 112
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -536,12 +536,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_2
       rect:
         serializedVersion: 2
-        x: 227
-        y: 108
-        width: 17
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -558,12 +558,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_3
       rect:
         serializedVersion: 2
-        x: 245
-        y: 114
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -580,12 +580,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_4
       rect:
         serializedVersion: 2
-        x: 256
-        y: 109
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -602,12 +602,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_5
       rect:
         serializedVersion: 2
-        x: 269
-        y: 121
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -624,12 +624,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_6
       rect:
         serializedVersion: 2
-        x: 292
-        y: 118
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -646,12 +646,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_7
       rect:
         serializedVersion: 2
-        x: 310
-        y: 113
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -668,12 +668,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_8
       rect:
         serializedVersion: 2
-        x: 324
-        y: 108
-        width: 18
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -690,12 +690,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_9
       rect:
         serializedVersion: 2
-        x: 11
-        y: 108
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -712,12 +712,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_10
       rect:
         serializedVersion: 2
-        x: 41
-        y: 108
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -734,12 +734,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_11
       rect:
         serializedVersion: 2
-        x: 75
-        y: 108
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -756,12 +756,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_12
       rect:
         serializedVersion: 2
-        x: 105
-        y: 108
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -778,12 +778,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_13
       rect:
         serializedVersion: 2
-        x: 137
-        y: 108
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -800,12 +800,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_14
       rect:
         serializedVersion: 2
-        x: 168
-        y: 108
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -822,12 +822,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_15
       rect:
         serializedVersion: 2
-        x: 208
-        y: 103
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -844,12 +844,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_16
       rect:
         serializedVersion: 2
-        x: 228
-        y: 99
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -866,12 +866,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_17
       rect:
         serializedVersion: 2
-        x: 267
-        y: 108
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -888,12 +888,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_18
       rect:
         serializedVersion: 2
-        x: 281
-        y: 100
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -910,12 +910,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_19
       rect:
         serializedVersion: 2
-        x: 288
-        y: 100
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -932,12 +932,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_20
       rect:
         serializedVersion: 2
-        x: 299
-        y: 108
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -954,12 +954,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_21
       rect:
         serializedVersion: 2
-        x: 330
-        y: 100
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -976,12 +976,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_22
       rect:
         serializedVersion: 2
-        x: 339
-        y: 106
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -998,12 +998,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_23
       rect:
         serializedVersion: 2
-        x: 361
-        y: 108
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1020,12 +1020,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_24
       rect:
         serializedVersion: 2
-        x: 395
-        y: 108
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1042,12 +1042,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_25
       rect:
         serializedVersion: 2
-        x: 425
-        y: 108
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1064,12 +1064,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_26
       rect:
         serializedVersion: 2
-        x: 459
-        y: 108
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1086,12 +1086,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_27
       rect:
         serializedVersion: 2
-        x: 242
-        y: 100
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1108,12 +1108,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_28
       rect:
         serializedVersion: 2
-        x: 260
-        y: 96
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1130,12 +1130,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_29
       rect:
         serializedVersion: 2
-        x: 305
-        y: 96
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1152,12 +1152,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_30
       rect:
         serializedVersion: 2
-        x: 199
-        y: 80
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1174,12 +1174,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_31
       rect:
         serializedVersion: 2
-        x: 206
-        y: 71
-        width: 11
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1196,12 +1196,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_32
       rect:
         serializedVersion: 2
-        x: 228
-        y: 82
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1218,12 +1218,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_33
       rect:
         serializedVersion: 2
-        x: 236
-        y: 76
-        width: 17
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1240,12 +1240,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_34
       rect:
         serializedVersion: 2
-        x: 260
-        y: 89
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1262,12 +1262,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_35
       rect:
         serializedVersion: 2
-        x: 281
-        y: 77
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1284,12 +1284,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_36
       rect:
         serializedVersion: 2
-        x: 288
-        y: 81
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1306,12 +1306,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_37
       rect:
         serializedVersion: 2
-        x: 305
-        y: 86
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1328,12 +1328,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_38
       rect:
         serializedVersion: 2
-        x: 330
-        y: 76
-        width: 18
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1350,12 +1350,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_39
       rect:
         serializedVersion: 2
-        x: 10
-        y: 76
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1372,12 +1372,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_40
       rect:
         serializedVersion: 2
-        x: 42
-        y: 76
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1394,12 +1394,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_41
       rect:
         serializedVersion: 2
-        x: 76
-        y: 76
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1416,12 +1416,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_42
       rect:
         serializedVersion: 2
-        x: 106
-        y: 76
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1438,12 +1438,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_43
       rect:
         serializedVersion: 2
-        x: 138
-        y: 76
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1460,12 +1460,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_44
       rect:
         serializedVersion: 2
-        x: 174
-        y: 76
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1482,12 +1482,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_45
       rect:
         serializedVersion: 2
-        x: 199
-        y: 71
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1504,12 +1504,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_46
       rect:
         serializedVersion: 2
-        x: 245
-        y: 67
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1526,12 +1526,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_47
       rect:
         serializedVersion: 2
-        x: 256
-        y: 68
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1548,12 +1548,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_48
       rect:
         serializedVersion: 2
-        x: 268
-        y: 76
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1570,12 +1570,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_49
       rect:
         serializedVersion: 2
-        x: 300
-        y: 76
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1592,12 +1592,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_50
       rect:
         serializedVersion: 2
-        x: 310
-        y: 68
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1614,12 +1614,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_51
       rect:
         serializedVersion: 2
-        x: 324
-        y: 74
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1636,12 +1636,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_52
       rect:
         serializedVersion: 2
-        x: 335
-        y: 68
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1658,12 +1658,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_53
       rect:
         serializedVersion: 2
-        x: 362
-        y: 76
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1680,12 +1680,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_54
       rect:
         serializedVersion: 2
-        x: 396
-        y: 76
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1702,12 +1702,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_55
       rect:
         serializedVersion: 2
-        x: 426
-        y: 76
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1724,12 +1724,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_56
       rect:
         serializedVersion: 2
-        x: 458
-        y: 76
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1746,12 +1746,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_57
       rect:
         serializedVersion: 2
-        x: 227
-        y: 68
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1768,12 +1768,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_58
       rect:
         serializedVersion: 2
-        x: 269
-        y: 64
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1790,12 +1790,12 @@ TextureImporter:
       name: Minifantasy_TrueHeroesRogueShurikens_59
       rect:
         serializedVersion: 2
-        x: 292
-        y: 64
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1808,1375 +1808,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_60
-      rect:
-        serializedVersion: 2
-        x: 199
-        y: 39
-        width: 11
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9b5bcf9430def4500800000000000000
-      internalID: 382785091731764665
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_61
-      rect:
-        serializedVersion: 2
-        x: 210
-        y: 48
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e98c07afd06d2cef0800000000000000
-      internalID: -89273687069374306
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_62
-      rect:
-        serializedVersion: 2
-        x: 227
-        y: 53
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 401507721fde5b6f0800000000000000
-      internalID: -669367349590077180
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_63
-      rect:
-        serializedVersion: 2
-        x: 245
-        y: 50
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4765d01a960a03360800000000000000
-      internalID: 7147388984170993268
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_64
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 45
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4a65ecee8e27fac30800000000000000
-      internalID: 4372840107964520100
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_65
-      rect:
-        serializedVersion: 2
-        x: 269
-        y: 57
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5049b2301c64576d0800000000000000
-      internalID: -2993408582522006523
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_66
-      rect:
-        serializedVersion: 2
-        x: 292
-        y: 54
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ff96730bae4d35d60800000000000000
-      internalID: 7877874277644986879
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_67
-      rect:
-        serializedVersion: 2
-        x: 310
-        y: 49
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: cd5143828067f5990800000000000000
-      internalID: -7395062285712747044
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_68
-      rect:
-        serializedVersion: 2
-        x: 324
-        y: 44
-        width: 18
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 725caecc773969490800000000000000
-      internalID: -7739836766841289433
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_69
-      rect:
-        serializedVersion: 2
-        x: 11
-        y: 44
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1d0f11d2474bbacf0800000000000000
-      internalID: -239899744068833071
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_70
-      rect:
-        serializedVersion: 2
-        x: 41
-        y: 44
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 27f9020cdbb4859e0800000000000000
-      internalID: -1632471586577539214
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_71
-      rect:
-        serializedVersion: 2
-        x: 75
-        y: 44
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: feb1df74637045670800000000000000
-      internalID: 8526447924236590063
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_72
-      rect:
-        serializedVersion: 2
-        x: 105
-        y: 44
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 192d477259ba3e3e0800000000000000
-      internalID: -2025586750286146927
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_73
-      rect:
-        serializedVersion: 2
-        x: 137
-        y: 44
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: dcbc7368faac729d0800000000000000
-      internalID: -2799045788167582771
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_74
-      rect:
-        serializedVersion: 2
-        x: 168
-        y: 44
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a29a3a55c118c7ce0800000000000000
-      internalID: -1406107024950580950
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_75
-      rect:
-        serializedVersion: 2
-        x: 208
-        y: 39
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3645f3289b9014120800000000000000
-      internalID: 2396207169096602723
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_76
-      rect:
-        serializedVersion: 2
-        x: 228
-        y: 35
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5c7160e7156d42990800000000000000
-      internalID: -7411563441249970235
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_77
-      rect:
-        serializedVersion: 2
-        x: 236
-        y: 44
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7feb65d1fe5e16ac0800000000000000
-      internalID: -3863554190155006217
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_78
-      rect:
-        serializedVersion: 2
-        x: 267
-        y: 44
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 116e4e8e1da7b00c0800000000000000
-      internalID: -4608454751709501935
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_79
-      rect:
-        serializedVersion: 2
-        x: 281
-        y: 36
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6655cf4bd40a9dd80800000000000000
-      internalID: -8225366988806138522
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_80
-      rect:
-        serializedVersion: 2
-        x: 288
-        y: 36
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3d30765c7501066c0800000000000000
-      internalID: -4152300887275535405
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_81
-      rect:
-        serializedVersion: 2
-        x: 299
-        y: 44
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: acc54b06b4eb17000800000000000000
-      internalID: 32015903322561738
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_82
-      rect:
-        serializedVersion: 2
-        x: 330
-        y: 36
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: eef6f1da36060f3e0800000000000000
-      internalID: -2022010251466805266
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_83
-      rect:
-        serializedVersion: 2
-        x: 339
-        y: 42
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c9dcaf2c382d37fe0800000000000000
-      internalID: -1192378012969284196
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_84
-      rect:
-        serializedVersion: 2
-        x: 361
-        y: 44
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: da0cf19fd0a9102d0800000000000000
-      internalID: -3314198465963114323
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_85
-      rect:
-        serializedVersion: 2
-        x: 395
-        y: 44
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 98a4c4cbb55b04970800000000000000
-      internalID: 8737182682704530057
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_86
-      rect:
-        serializedVersion: 2
-        x: 425
-        y: 44
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 02e79cc90f76d74b0800000000000000
-      internalID: -5441078491673428448
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_87
-      rect:
-        serializedVersion: 2
-        x: 459
-        y: 44
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: fd3f0912769fe0240800000000000000
-      internalID: 4760016077517288415
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_88
-      rect:
-        serializedVersion: 2
-        x: 242
-        y: 36
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5a746109ceee3b1f0800000000000000
-      internalID: -1030217189940639835
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_89
-      rect:
-        serializedVersion: 2
-        x: 260
-        y: 32
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7a0d42e175f3f7430800000000000000
-      internalID: 3782811855414939815
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_90
-      rect:
-        serializedVersion: 2
-        x: 305
-        y: 32
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e693298d9fab6efd0800000000000000
-      internalID: -2312955776365086354
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_91
-      rect:
-        serializedVersion: 2
-        x: 199
-        y: 16
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e57910cc9b76c8f10800000000000000
-      internalID: 2273305959604524894
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_92
-      rect:
-        serializedVersion: 2
-        x: 206
-        y: 7
-        width: 11
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 39bb0dae7a7e0b7e0800000000000000
-      internalID: -1751645546662020205
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_93
-      rect:
-        serializedVersion: 2
-        x: 228
-        y: 18
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 40006f932eabf7180800000000000000
-      internalID: -9115361639976796156
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_94
-      rect:
-        serializedVersion: 2
-        x: 242
-        y: 21
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: efabd2d9a75ad2ab0800000000000000
-      internalID: -5031183262661362946
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_95
-      rect:
-        serializedVersion: 2
-        x: 260
-        y: 25
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4cec6a5e39da6f4a0800000000000000
-      internalID: -6559864956493836604
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_96
-      rect:
-        serializedVersion: 2
-        x: 281
-        y: 13
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 312c3e1add10b5990800000000000000
-      internalID: -7396315911610449389
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_97
-      rect:
-        serializedVersion: 2
-        x: 288
-        y: 17
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 54366fe9e4df300e0800000000000000
-      internalID: -2304720070167338171
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_98
-      rect:
-        serializedVersion: 2
-        x: 305
-        y: 22
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b8501a7490f005e20800000000000000
-      internalID: 3337183856412394891
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_99
-      rect:
-        serializedVersion: 2
-        x: 330
-        y: 12
-        width: 18
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: eecb7f1a97da6cb70800000000000000
-      internalID: 8919006849973861614
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_100
-      rect:
-        serializedVersion: 2
-        x: 10
-        y: 12
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f426fd6708732d900800000000000000
-      internalID: 707689116340281935
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_101
-      rect:
-        serializedVersion: 2
-        x: 42
-        y: 12
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 71bb678828ad82a00800000000000000
-      internalID: 732075193617791767
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_102
-      rect:
-        serializedVersion: 2
-        x: 76
-        y: 12
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: afbaec6336b69e7b0800000000000000
-      internalID: -5194502621329708038
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_103
-      rect:
-        serializedVersion: 2
-        x: 106
-        y: 12
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2207928fc88800000800000000000000
-      internalID: 150139040264226
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_104
-      rect:
-        serializedVersion: 2
-        x: 138
-        y: 12
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a8319d3fb8f1ee910800000000000000
-      internalID: 1868465581357339530
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_105
-      rect:
-        serializedVersion: 2
-        x: 174
-        y: 12
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 72ffe708d4dc1bea0800000000000000
-      internalID: -5858675907480322265
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_106
-      rect:
-        serializedVersion: 2
-        x: 199
-        y: 7
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7f381540f958fefe0800000000000000
-      internalID: -1157559661192182793
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_107
-      rect:
-        serializedVersion: 2
-        x: 236
-        y: 12
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 54d914ccce3a89d60800000000000000
-      internalID: 7897242184028626245
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_108
-      rect:
-        serializedVersion: 2
-        x: 245
-        y: 3
-        width: 7
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 15547c87d32a37450800000000000000
-      internalID: 6085385906410702161
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_109
-      rect:
-        serializedVersion: 2
-        x: 256
-        y: 4
-        width: 7
-        height: 15
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8cd1320ade74499b0800000000000000
-      internalID: -5074351794220229176
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_110
-      rect:
-        serializedVersion: 2
-        x: 268
-        y: 12
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 750d124f444018ae0800000000000000
-      internalID: -1548952102638596009
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_111
-      rect:
-        serializedVersion: 2
-        x: 300
-        y: 12
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ca22404f38a402b70800000000000000
-      internalID: 8872173196514960044
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_112
-      rect:
-        serializedVersion: 2
-        x: 310
-        y: 4
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a4a76bcc6bc694b70800000000000000
-      internalID: 8883751272339372618
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_113
-      rect:
-        serializedVersion: 2
-        x: 324
-        y: 10
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 37ce0f0ec9a029960800000000000000
-      internalID: 7607154389487250547
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_114
-      rect:
-        serializedVersion: 2
-        x: 335
-        y: 4
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d4302348aeb674d70800000000000000
-      internalID: 9027302633071838029
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_115
-      rect:
-        serializedVersion: 2
-        x: 362
-        y: 12
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f72e701f525183350800000000000000
-      internalID: 5996566156545614463
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_116
-      rect:
-        serializedVersion: 2
-        x: 396
-        y: 12
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3329e7c1ac9b93a40800000000000000
-      internalID: 5348510310191764019
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_117
-      rect:
-        serializedVersion: 2
-        x: 426
-        y: 12
-        width: 13
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4e81ec21be412bab0800000000000000
-      internalID: -4993906036935091996
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_118
-      rect:
-        serializedVersion: 2
-        x: 458
-        y: 12
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a83910f70c2ea5740800000000000000
-      internalID: 5141671240989250442
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_119
-      rect:
-        serializedVersion: 2
-        x: 227
-        y: 4
-        width: 11
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d8263505baf1af9b0800000000000000
-      internalID: -5045685611867708787
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_120
-      rect:
-        serializedVersion: 2
-        x: 269
-        y: 0
-        width: 15
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: fd1673f57ec7f7bc0800000000000000
-      internalID: -3783167828791172641
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_TrueHeroesRogueShurikens_121
-      rect:
-        serializedVersion: 2
-        x: 292
-        y: 0
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 75604daca5b9449d0800000000000000
-      internalID: -2790935054810610089
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 02ce0abe965b467448bbf12d16456d95
     internalID: 0
     vertices: []
     indices: 
@@ -3184,35 +1820,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.40625},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Minifantasy_TrueHeroesRogueShurikens_0: 418322719233474349
       Minifantasy_TrueHeroesRogueShurikens_1: -2844914611649333654
       Minifantasy_TrueHeroesRogueShurikens_10: 7481039564955606109
-      Minifantasy_TrueHeroesRogueShurikens_100: 707689116340281935
-      Minifantasy_TrueHeroesRogueShurikens_101: 732075193617791767
-      Minifantasy_TrueHeroesRogueShurikens_102: -5194502621329708038
-      Minifantasy_TrueHeroesRogueShurikens_103: 150139040264226
-      Minifantasy_TrueHeroesRogueShurikens_104: 1868465581357339530
-      Minifantasy_TrueHeroesRogueShurikens_105: -5858675907480322265
-      Minifantasy_TrueHeroesRogueShurikens_106: -1157559661192182793
-      Minifantasy_TrueHeroesRogueShurikens_107: 7897242184028626245
-      Minifantasy_TrueHeroesRogueShurikens_108: 6085385906410702161
-      Minifantasy_TrueHeroesRogueShurikens_109: -5074351794220229176
       Minifantasy_TrueHeroesRogueShurikens_11: -1928707382945043695
-      Minifantasy_TrueHeroesRogueShurikens_110: -1548952102638596009
-      Minifantasy_TrueHeroesRogueShurikens_111: 8872173196514960044
-      Minifantasy_TrueHeroesRogueShurikens_112: 8883751272339372618
-      Minifantasy_TrueHeroesRogueShurikens_113: 7607154389487250547
-      Minifantasy_TrueHeroesRogueShurikens_114: 9027302633071838029
-      Minifantasy_TrueHeroesRogueShurikens_115: 5996566156545614463
-      Minifantasy_TrueHeroesRogueShurikens_116: 5348510310191764019
-      Minifantasy_TrueHeroesRogueShurikens_117: -4993906036935091996
-      Minifantasy_TrueHeroesRogueShurikens_118: 5141671240989250442
-      Minifantasy_TrueHeroesRogueShurikens_119: -5045685611867708787
       Minifantasy_TrueHeroesRogueShurikens_12: 8307204798641689533
-      Minifantasy_TrueHeroesRogueShurikens_120: -3783167828791172641
-      Minifantasy_TrueHeroesRogueShurikens_121: -2790935054810610089
       Minifantasy_TrueHeroesRogueShurikens_13: 5494966516630950646
       Minifantasy_TrueHeroesRogueShurikens_14: 7443021668320910641
       Minifantasy_TrueHeroesRogueShurikens_15: 5728044899660194518
@@ -3265,49 +1881,9 @@ TextureImporter:
       Minifantasy_TrueHeroesRogueShurikens_58: -2823286649235241112
       Minifantasy_TrueHeroesRogueShurikens_59: -1667928442394118599
       Minifantasy_TrueHeroesRogueShurikens_6: 7177916149661807464
-      Minifantasy_TrueHeroesRogueShurikens_60: 382785091731764665
-      Minifantasy_TrueHeroesRogueShurikens_61: -89273687069374306
-      Minifantasy_TrueHeroesRogueShurikens_62: -669367349590077180
-      Minifantasy_TrueHeroesRogueShurikens_63: 7147388984170993268
-      Minifantasy_TrueHeroesRogueShurikens_64: 4372840107964520100
-      Minifantasy_TrueHeroesRogueShurikens_65: -2993408582522006523
-      Minifantasy_TrueHeroesRogueShurikens_66: 7877874277644986879
-      Minifantasy_TrueHeroesRogueShurikens_67: -7395062285712747044
-      Minifantasy_TrueHeroesRogueShurikens_68: -7739836766841289433
-      Minifantasy_TrueHeroesRogueShurikens_69: -239899744068833071
       Minifantasy_TrueHeroesRogueShurikens_7: -2582522587709259883
-      Minifantasy_TrueHeroesRogueShurikens_70: -1632471586577539214
-      Minifantasy_TrueHeroesRogueShurikens_71: 8526447924236590063
-      Minifantasy_TrueHeroesRogueShurikens_72: -2025586750286146927
-      Minifantasy_TrueHeroesRogueShurikens_73: -2799045788167582771
-      Minifantasy_TrueHeroesRogueShurikens_74: -1406107024950580950
-      Minifantasy_TrueHeroesRogueShurikens_75: 2396207169096602723
-      Minifantasy_TrueHeroesRogueShurikens_76: -7411563441249970235
-      Minifantasy_TrueHeroesRogueShurikens_77: -3863554190155006217
-      Minifantasy_TrueHeroesRogueShurikens_78: -4608454751709501935
-      Minifantasy_TrueHeroesRogueShurikens_79: -8225366988806138522
       Minifantasy_TrueHeroesRogueShurikens_8: 1399354244303000155
-      Minifantasy_TrueHeroesRogueShurikens_80: -4152300887275535405
-      Minifantasy_TrueHeroesRogueShurikens_81: 32015903322561738
-      Minifantasy_TrueHeroesRogueShurikens_82: -2022010251466805266
-      Minifantasy_TrueHeroesRogueShurikens_83: -1192378012969284196
-      Minifantasy_TrueHeroesRogueShurikens_84: -3314198465963114323
-      Minifantasy_TrueHeroesRogueShurikens_85: 8737182682704530057
-      Minifantasy_TrueHeroesRogueShurikens_86: -5441078491673428448
-      Minifantasy_TrueHeroesRogueShurikens_87: 4760016077517288415
-      Minifantasy_TrueHeroesRogueShurikens_88: -1030217189940639835
-      Minifantasy_TrueHeroesRogueShurikens_89: 3782811855414939815
       Minifantasy_TrueHeroesRogueShurikens_9: -3035976682769816805
-      Minifantasy_TrueHeroesRogueShurikens_90: -2312955776365086354
-      Minifantasy_TrueHeroesRogueShurikens_91: 2273305959604524894
-      Minifantasy_TrueHeroesRogueShurikens_92: -1751645546662020205
-      Minifantasy_TrueHeroesRogueShurikens_93: -9115361639976796156
-      Minifantasy_TrueHeroesRogueShurikens_94: -5031183262661362946
-      Minifantasy_TrueHeroesRogueShurikens_95: -6559864956493836604
-      Minifantasy_TrueHeroesRogueShurikens_96: -7396315911610449389
-      Minifantasy_TrueHeroesRogueShurikens_97: -2304720070167338171
-      Minifantasy_TrueHeroesRogueShurikens_98: 3337183856412394891
-      Minifantasy_TrueHeroesRogueShurikens_99: 8919006849973861614
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

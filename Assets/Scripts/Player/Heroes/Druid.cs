@@ -40,7 +40,10 @@ public class Druid : HeroController
     [SerializeField] private Vector2 humanColliderSize = new Vector2(1f, 1f); // 🔢 ajustável, tamanho do CapsuleCollider2D na forma humana
     [SerializeField] private Vector2 elkColliderOffset;
     [SerializeField] private Vector2 elkColliderSize = new Vector2(1f, 1f); // 🔢 ajustável, tamanho do CapsuleCollider2D na forma Alce
-    private CapsuleCollider2D bodyCollider;
+    // Nome diferente do "bodyCollider" privado do HeroController de propósito — Unity não
+    // aceita 2 campos com o mesmo nome numa cadeia de herança, mesmo sendo private em classes
+    // diferentes ("The same field name is serialized multiple times").
+    private CapsuleCollider2D druidBodyCollider;
 
     // Os offsets acima (humanColliderOffset/elkColliderOffset) são tunados pra direção E —
     // o Druid tem 2 formas de collider (humana/Alce), então ele não usa o mecanismo genérico
@@ -72,7 +75,7 @@ public class Druid : HeroController
     {
         base.Awake();
         humanController = animator != null ? animator.runtimeAnimatorController : null;
-        bodyCollider = GetComponent<CapsuleCollider2D>();
+        druidBodyCollider = GetComponent<CapsuleCollider2D>();
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
     }
 
@@ -88,10 +91,10 @@ public class Druid : HeroController
 
     private void ApplyCurrentColliderShape()
     {
-        if (bodyCollider == null) return;
+        if (druidBodyCollider == null) return;
         bool facingWest = DiagonalAimDirection.x < 0f;
-        bodyCollider.offset = new Vector2(facingWest ? -currentBaseOffset.x : currentBaseOffset.x, currentBaseOffset.y);
-        bodyCollider.size = currentBaseSize;
+        druidBodyCollider.offset = new Vector2(facingWest ? -currentBaseOffset.x : currentBaseOffset.x, currentBaseOffset.y);
+        druidBodyCollider.size = currentBaseSize;
     }
 
     protected override void Update()

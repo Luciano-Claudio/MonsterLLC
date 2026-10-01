@@ -135,8 +135,12 @@ public class EnemyProjectile : MonoBehaviour
         if (hero != null && hero == heroInGroundedArea) heroInGroundedArea = null;
     }
 
+    // Só aplica se o dano em si não foi bloqueado (ex.: Cambalhota do Rogue, Owl do Druid) —
+    // TakeDamage() sozinho não avisava disso, por isso o check extra via
+    // IsCurrentlyDamageImmune antes de cada chamada (ver HeroController).
     private void ApplyStatus(HeroController hero)
     {
+        if (hero.IsCurrentlyDamageImmune) return;
         var statusController = hero.GetComponent<StatusEffectController>();
         if (statusController != null) statusController.ApplyStatusEffect(statusEffectType, statusEffectDuration, statusEffectDamagePerSecond);
     }
