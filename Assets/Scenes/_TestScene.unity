@@ -143172,6 +143172,67 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1001 &593872567
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 990000002}
+    m_Modifications:
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.12863
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.17988
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657694654762816894, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_Name
+      value: Cleric
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657694654762816894, guid: bced5f500445d0b499055d344251684e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: bced5f500445d0b499055d344251684e, type: 3}
 --- !u!1 &601624223
 GameObject:
   m_ObjectHideFlags: 0
@@ -146820,6 +146881,11 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!4 &700244429 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
+  m_PrefabInstance: {fileID: 593872567}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &703448412
 GameObject:
   m_ObjectHideFlags: 0
@@ -158323,7 +158389,9 @@ MonoBehaviour:
     prefab: {fileID: 223030176114211151, guid: a78e42f334e04074fb9f700096cbe072, type: 3}
   - name: Rogue
     prefab: {fileID: 8504150220569845969, guid: 482bc15dde4c22847b40a7ca162f7e0a, type: 3}
-  heroToSpawn: Rogue
+  - name: Cleric
+    prefab: {fileID: 6657694654762816894, guid: bced5f500445d0b499055d344251684e, type: 3}
+  heroToSpawn: Cleric
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -158433,6 +158501,7 @@ Transform:
   - {fileID: 259444717}
   - {fileID: 788142669}
   - {fileID: 1533177839}
+  - {fileID: 700244429}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1004331642

@@ -211,6 +211,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         if (statusEffectController != null) statusEffectController.Tick(Time.deltaTime);
 
+        // Sprint 23 (Cleric) — paralisia da Oração é direto o Efeito WordOfPain estar ativo,
+        // sem flag própria: incapacitação total (IA/ataque/movimento travam) exatamente
+        // enquanto o Efeito durar, sem risco de desincronizar com o fim dele. Dano/outros
+        // Efeitos Nocivos continuam normais (Tick() acima já rodou antes desse return).
+        if (statusEffectController != null && statusEffectController.IsEffectActive(StatusEffectType.WordOfPain))
+        {
+            SetMoving(false); // trava o AIPath enquanto durar, mesmo critério de "parado de propósito"
+            return;
+        }
+
         if (player == null) TryFindPlayer();
         if (player == null) return;
 

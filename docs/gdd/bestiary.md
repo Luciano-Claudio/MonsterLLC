@@ -1790,23 +1790,6 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 40 | **🔢 Vida estimada:** 350
 
-#### Cave Troll
-- **Tipo:** Melee
-- **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
-- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
-- **Drops:**
-  - Monster Essence: 720-2.880 | Chance: 100%
-  - Monster Fragment: 120-480 | Chance: 100%
-  - Spirit Dust: 72-240 | Chance: 100%
-  - Arcane Shard: 24-48 | Chance: 12%
-  - Dark Crystal: 24 | Chance: 8%
-  - Soul Fragment: 24 | Chance: 6,4%
-- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
-- **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
-- **🔢 Dano estimado:** 50 | **🔢 Vida estimada:** 450
-
 #### Spider Queen — **Exceção pontual**
 - **Tipo:** Melee/Ranged híbrido
 - **Movimentação:** Persegue diretamente o jogador.
@@ -1880,6 +1863,25 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 90 | **🔢 Vida estimada:** 1000
+
+#### Cave Troll
+- **Tipo:** Melee
+- **Movimentação:** Persegue diretamente o jogador
+- **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
+- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
+- **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
+- **Drops:**
+  - Monster Essence: 720-2.880 | Chance: 100%
+  - Monster Fragment: 120-480 | Chance: 100%
+  - Spirit Dust: 72-240 | Chance: 100%
+  - Arcane Shard: 24-48 | Chance: 12%
+  - Dark Crystal: 24 | Chance: 8%
+  - Soul Fragment: 24 | Chance: 6,4%
+- **Animações necessárias:** idle, walk, idle_combat, attack (com Animation Event), damage e die.
+- **Asset de origem:** Minifantasy_Dark_Orc_Army_v1.0
+- **🔢 Dano estimado:** 50 | **🔢 Vida estimada:** 450
+
+**Correção (movido do Andar 2):** drops/stats ainda na escala antiga de Floor 2 (placeholder de teste) — balanceamento pra escala de Floor 3 fica pendente pro boss pass real.
 
 ---
 
