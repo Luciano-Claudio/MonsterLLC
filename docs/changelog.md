@@ -2,6 +2,19 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Pós-Sprint 22 — Sistema de Spawn de Herói (MainMenuUI) + 3 bugs de detecção de monstro
+
+Trabalho de infraestrutura entre sprints (pedido direto do usuário, fora do escopo de qualquer sprint numerada) — até aqui, `MainMenuUI.NewGame()` só criava o `RunState`, sem nenhum herói de verdade nascendo na cena; todo teste deste projeto até a Sprint 22 dependia de um herói pré-colocado manualmente. Relevante pra **todo herói futuro**: é o primeiro "New Game" que efetivamente coloca o jogador no mundo.
+
+- **`MainMenuUI.SpawnHero()`** — novo registro `availableHeroes` (`{name, prefab}`, 1 entrada por herói pronto — Barbarian/Ranger/Mage/Druid/Rogue hoje; adicionar um novo é só arrastar o prefab, sem mexer em mais nada) + `heroToSpawn` (campo de Inspector, ainda sem UI real de seleção — isso fica pra quando a tela de Hero Select virar botões de verdade, fora de escopo por enquanto). Instancia em `(0,0,0)` dentro do GameObject raiz `//HEROS` (criado na cena, mesma convenção `//ENTITIES`/`//SYSTEMS` da Sprint 02) e aponta `CinemachineCamera.Target.TrackingTarget` pro herói recém-nascido.
+- **3 bugs reais de monstro nunca detectar o herói, achados testando o fluxo novo pela primeira vez** (nenhum sintoma dos 3 tinha como aparecer antes, já que o herói sempre existia desde o início da cena):
+  1. `EnemyController.Start()` buscava a tag `"Player"` **uma única vez** — se o herói ainda não existisse nesse instante (agora é sempre o caso, ele só nasce no `SpawnHero()`), a referência ficava `null` pra sempre e `Update()` desistia de tudo. Corrigido com retry lazy (`TryFindPlayer()`, chamado de novo em `Update()` enquanto `player == null`).
+  2. O GameObject `Systems` (dono do `MainMenuUI`/`GameStateManager`/etc.) estava com Layer e Tag `Player` por engano — `FindGameObjectWithTag("Player")` podia achar ele em vez do herói de verdade. Corrigido pra `Default`/`Untagged`.
+  3. **Causa raiz real, a mais sutil:** `HeroController.IsPlayerUntargetable` (`public static bool`, usado pela camuflagem do Ranger e pela Coruja do Druid) tinha ficado travado em `true` de um teste anterior — campos `static` **não resetam entre sessões de Play** se "Reload Domain" estiver desligado no Enter Play Mode Settings do projeto, só um recompile de verdade reseta. Qualquer monstro checava `!IsPlayerUntargetable` antes de reagir à distância, então ficavam permanentemente "cegos". `SpawnHero()` agora força `IsPlayerUntargetable = false` no início de toda run nova — não depende de sorte/recompile.
+- **Fix separado, achado no caminho:** `Druid.cs` tinha seu próprio campo `private CapsuleCollider2D bodyCollider`, mesmo nome do campo já existente em `HeroController` — Unity não aceita 2 campos com o mesmo nome na mesma cadeia de herança ("The same field name is serialized multiple times"), mesmo os dois sendo `private` em classes diferentes. Renomeado pra `druidBodyCollider` (mesmo precedente já usado no `Mage` com `mageSpriteRenderer`).
+
+**Lição geral pra lembrar em qualquer bug "funcionava antes, parou do nada":** campo `static` que nenhum teste zera explicitamente é sempre suspeito — o sintoma só aparece depois de uma sequência específica de testes anteriores na mesma sessão de Editor, nunca num clone limpo do projeto.
+
 ## Sprint 19b — Sistema de Efeitos Nocivos (Fire + Bleeding) + correções de base em Mira/Shift
 
 - `StatusEffectController`/`IDamageable` — sistema genérico de dano-ao-longo-do-tempo, compartilhado entre herói e monstro, com imunidade por tipo configurável.

@@ -160,6 +160,15 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     protected virtual void Start()
     {
+        TryFindPlayer();
+    }
+
+    // Busca "lazy" — antes o Player já existia na cena quando todo monstro rodava Start(), uma
+    // tentativa só bastava. Agora que o herói só nasce quando o MainMenuUI instancia ele (depois
+    // do Start() de todo monstro já ter rodado), sem retry a referência ficava null pra sempre e
+    // o monstro nunca detectava ninguém. Chamado de novo em Update() enquanto ainda não achou.
+    private void TryFindPlayer()
+    {
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
     }
@@ -202,6 +211,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         if (statusEffectController != null) statusEffectController.Tick(Time.deltaTime);
 
+        if (player == null) TryFindPlayer();
         if (player == null) return;
 
         // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin)
