@@ -46,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -57,10 +57,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -81,9 +81,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -135,37 +135,15 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Minifantasy_SpiderQueenWebProjectiles_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 46
-        width: 11
-        height: 42
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a9efb8a7bd24a83c0800000000000000
-      internalID: -4356596179106267494
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Minifantasy_SpiderQueenWebProjectiles_1
       rect:
         serializedVersion: 2
-        x: 42
-        y: 46
-        width: 54
-        height: 50
+        x: 43
+        y: 87
+        width: 10
+        height: 9
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -178,55 +156,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Minifantasy_SpiderQueenWebProjectiles_2
-      rect:
-        serializedVersion: 2
-        x: 2
-        y: 8
-        width: 9
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bcc570773bf3cef10800000000000000
-      internalID: 2300283549708147915
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Minifantasy_SpiderQueenWebProjectiles_3
-      rect:
-        serializedVersion: 2
-        x: 42
-        y: 4
-        width: 52
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f8745377b5ba7aba0800000000000000
-      internalID: -6077700762782840945
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: fba7ae841ab59df49873c231b9962db8
     internalID: 0
     vertices: []
     indices: 
@@ -234,12 +168,18 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Minifantasy_SpiderQueenWebProjectiles_0: -4356596179106267494
       Minifantasy_SpiderQueenWebProjectiles_1: 5826414278143340620
       Minifantasy_SpiderQueenWebProjectiles_2: 2300283549708147915
       Minifantasy_SpiderQueenWebProjectiles_3: -6077700762782840945
+      Minifantasy_SpiderQueenWebProjectiles_4: -1297343845
+      Minifantasy_SpiderQueenWebProjectiles_5: 149670604
+      Minifantasy_SpiderQueenWebProjectiles_6: -704834756
+      Minifantasy_SpiderQueenWebProjectiles_7: -2111701788
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

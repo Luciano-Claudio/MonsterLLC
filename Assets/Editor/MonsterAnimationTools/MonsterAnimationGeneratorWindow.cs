@@ -13,17 +13,11 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         Ranged
     }
 
-    // Quais Animation Events entram automaticamente num clipe recém-criado.
-    // AnimationHitEvent (attack) nasce em 50% — é só um ponto de partida, o frame exato
-    // do golpe varia por clipe e continua sendo ajuste manual (arrastar no Animation
-    // window). AnimationAttackEndEvent/AnimationDieEndEvent nascem no fim, que já serve
-    // na maioria dos casos.
-    private enum ClipEventKind
-    {
-        None,
-        Attack,
-        Die
-    }
+    // ClipEventKind e toda a lógica de corte/criação de clipe (LoadSprites,
+    // GroupSpritesByRows, CreateOrUpdateClip, CreateSingleFrameClip, SetLoop,
+    // EnsureFolderExists, NormalizePath, ContainsInvalidFolderCharacters) foram extraídos
+    // pra MonsterAnimationUtility (Sprint 25) — reaproveitados também pelo
+    // CustomAnimationGeneratorWindow. Comportamento idêntico, só de local novo.
 
     // =========================================================
     // MONSTER
@@ -464,7 +458,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         string outputDirectory =
             GetMonsterOutputDirectory();
 
-        EnsureFolderExists(
+        MonsterAnimationUtility.EnsureFolderExists(
             outputDirectory
         );
 
@@ -505,7 +499,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
                 outputDirectory,
                 true,
                 generatedClips,
-                true
+                false
             );
         }
 
@@ -520,9 +514,12 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             outputDirectory,
             true,
             generatedClips,
-            // Emboscada não tem sheet de Idle direcional pra tirar o IdleCombat, então
-            // usa o 1º frame de cada direção do Walk em vez disso.
-            isAmbushMonster
+            // IdleCombat sempre vem do 1º frame do Walk, nunca do Idle (decisão do usuário)
+            // — o Idle às vezes tem uma pose muito diferente da de combate (alguns monstros
+            // desenham Idle "descansando"/fora de postura), enquanto o Walk sempre tem uma
+            // pose de movimento coerente com estar em combate. Antes só emboscada usava o
+            // Walk aqui (por não ter sheet de Idle direcional); agora é o padrão pra todos.
+            true
         );
 
         // =====================================================
@@ -645,7 +642,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             return false;
         }
 
-        if (ContainsInvalidFolderCharacters(monsterName))
+        if (MonsterAnimationUtility.ContainsInvalidFolderCharacters(monsterName))
         {
             ShowError(
                 "O nome do monstro contém caracteres inválidos para uma pasta."
@@ -664,7 +661,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         destinationFolder =
-            NormalizePath(destinationFolder);
+            MonsterAnimationUtility.NormalizePath(destinationFolder);
 
         if (
             destinationFolder != "Assets" &&
@@ -897,7 +894,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     )
     {
         List<Sprite> sprites =
-            LoadSprites(spriteSheet);
+            MonsterAnimationUtility.LoadSprites(spriteSheet);
 
         if (sprites.Count == 0)
         {
@@ -914,7 +911,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         List<List<Sprite>> rows =
-            GroupSpritesByRows(sprites);
+            MonsterAnimationUtility.GroupSpritesByRows(sprites);
 
         // 2 linhas também é válido — alguns monstros desenham a mesma pose pras 2 diagonais
         // de cima (NE/SE) e a mesma pose pras 2 de baixo (NW/SW), sem precisar de 4 linhas
@@ -960,7 +957,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     )
     {
         List<Sprite> sprites =
-            LoadSprites(spriteSheet);
+            MonsterAnimationUtility.LoadSprites(spriteSheet);
 
         if (sprites.Count == 0)
         {
@@ -973,7 +970,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         }
 
         List<List<Sprite>> rows =
-            GroupSpritesByRows(sprites);
+            MonsterAnimationUtility.GroupSpritesByRows(sprites);
 
         if (rows.Count != 1)
         {
@@ -1006,10 +1003,10 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     )
     {
         List<Sprite> sprites =
-            LoadSprites(spriteSheet);
+            MonsterAnimationUtility.LoadSprites(spriteSheet);
 
         List<List<Sprite>> rows =
-            GroupSpritesByRows(sprites);
+            MonsterAnimationUtility.GroupSpritesByRows(sprites);
 
         for (int rowIndex = 0; rowIndex < 4; rowIndex++)
         {
@@ -1030,14 +1027,15 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
                 direction;
 
             AnimationClip clip =
-                CreateOrUpdateClip(
+                MonsterAnimationUtility.CreateOrUpdateClip(
                     clipName,
                     rowSprites,
                     outputDirectory,
+                    fps,
                     loop,
                     animationName == "attack"
-                        ? ClipEventKind.Attack
-                        : ClipEventKind.None
+                        ? MonsterAnimationUtility.ClipEventKind.Attack
+                        : MonsterAnimationUtility.ClipEventKind.None
                 );
 
             RegisterGeneratedClip(
@@ -1070,10 +1068,11 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
                     direction;
 
                 AnimationClip idleCombatClip =
-                    CreateSingleFrameClip(
+                    MonsterAnimationUtility.CreateSingleFrameClip(
                         idleCombatName,
                         rowSprites[0],
-                        outputDirectory
+                        outputDirectory,
+                        fps
                     );
 
                 RegisterGeneratedClip(
@@ -1098,7 +1097,7 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     )
     {
         List<Sprite> sprites =
-            LoadSprites(spriteSheet);
+            MonsterAnimationUtility.LoadSprites(spriteSheet);
 
         List<Sprite> orderedSprites =
             sprites
@@ -1108,14 +1107,15 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
                 .ToList();
 
         AnimationClip clip =
-            CreateOrUpdateClip(
+            MonsterAnimationUtility.CreateOrUpdateClip(
                 animationName,
                 orderedSprites,
                 outputDirectory,
+                fps,
                 loop,
                 animationName == "die"
-                    ? ClipEventKind.Die
-                    : ClipEventKind.None
+                    ? MonsterAnimationUtility.ClipEventKind.Die
+                    : MonsterAnimationUtility.ClipEventKind.None
             );
 
         RegisterGeneratedClip(
@@ -1138,17 +1138,18 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
     )
     {
         List<Sprite> orderedSprites =
-            LoadSprites(spriteSheet)
+            MonsterAnimationUtility.LoadSprites(spriteSheet)
                 .OrderBy(
                     sprite => sprite.rect.x
                 )
                 .ToList();
 
         AnimationClip idleClip =
-            CreateSingleFrameClip(
+            MonsterAnimationUtility.CreateSingleFrameClip(
                 "idle",
                 orderedSprites[0],
-                outputDirectory
+                outputDirectory,
+                fps
             );
 
         RegisterGeneratedClip(
@@ -1156,267 +1157,6 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             "idle",
             idleClip
         );
-    }
-
-    // =========================================================
-    // CREATE / UPDATE ANIMATION CLIP
-    // =========================================================
-
-    private AnimationClip CreateOrUpdateClip(
-        string clipName,
-        List<Sprite> sprites,
-        string outputDirectory,
-        bool shouldLoop,
-        ClipEventKind eventKind = ClipEventKind.None
-    )
-    {
-        string clipPath =
-            outputDirectory +
-            "/" +
-            clipName +
-            ".anim";
-
-        AnimationClip clip =
-            AssetDatabase.LoadAssetAtPath<AnimationClip>(
-                clipPath
-            );
-
-        bool isNewClip =
-            clip == null;
-
-        if (isNewClip)
-        {
-            clip =
-                new AnimationClip();
-
-            clip.name =
-                clipName;
-
-            AssetDatabase.CreateAsset(
-                clip,
-                clipPath
-            );
-        }
-
-        clip.frameRate =
-            fps;
-
-        EditorCurveBinding spriteBinding =
-            new EditorCurveBinding
-            {
-                type = typeof(SpriteRenderer),
-
-                path = "",
-
-                propertyName = "m_Sprite"
-            };
-
-        ObjectReferenceKeyframe[] keyframes =
-            new ObjectReferenceKeyframe[
-                sprites.Count
-            ];
-
-        for (int i = 0; i < sprites.Count; i++)
-        {
-            keyframes[i] =
-                new ObjectReferenceKeyframe
-                {
-                    time =
-                        i / fps,
-
-                    value =
-                        sprites[i]
-                };
-        }
-
-        AnimationUtility.SetObjectReferenceCurve(
-            clip,
-            spriteBinding,
-            keyframes
-        );
-
-        SetLoop(
-            clip,
-            shouldLoop
-        );
-
-        // Só na criação — rodar o gerador de novo num monstro que já existe (ex.: depois
-        // de recortar a sprite sheet de novo) não pode sobrescrever o frame exato que
-        // você já ajustou manualmente num AnimationHitEvent.
-        if (isNewClip && eventKind != ClipEventKind.None)
-        {
-            float clipDuration =
-                sprites.Count / fps;
-
-            ApplyDefaultAnimationEvents(
-                clip,
-                eventKind,
-                clipDuration
-            );
-        }
-
-        EditorUtility.SetDirty(
-            clip
-        );
-
-        return clip;
-    }
-
-    // =========================================================
-    // DEFAULT ANIMATION EVENTS (ATTACK / DIE)
-    // =========================================================
-
-    private void ApplyDefaultAnimationEvents(
-        AnimationClip clip,
-        ClipEventKind eventKind,
-        float clipDuration
-    )
-    {
-        AnimationEvent[] events;
-
-        if (eventKind == ClipEventKind.Attack)
-        {
-            events = new[]
-            {
-                new AnimationEvent
-                {
-                    time = clipDuration * 0.5f,
-                    functionName = "AnimationHitEvent"
-                },
-                new AnimationEvent
-                {
-                    time = clipDuration,
-                    functionName = "AnimationAttackEndEvent"
-                }
-            };
-        }
-        else
-        {
-            events = new[]
-            {
-                new AnimationEvent
-                {
-                    time = clipDuration,
-                    functionName = "AnimationDieEndEvent"
-                }
-            };
-        }
-
-        AnimationUtility.SetAnimationEvents(
-            clip,
-            events
-        );
-    }
-
-    // =========================================================
-    // IDLE COMBAT
-    // =========================================================
-
-    private AnimationClip CreateSingleFrameClip(
-        string clipName,
-        Sprite sprite,
-        string outputDirectory
-    )
-    {
-        string clipPath =
-            outputDirectory +
-            "/" +
-            clipName +
-            ".anim";
-
-        AnimationClip clip =
-            AssetDatabase.LoadAssetAtPath<AnimationClip>(
-                clipPath
-            );
-
-        if (clip == null)
-        {
-            clip =
-                new AnimationClip();
-
-            clip.name =
-                clipName;
-
-            AssetDatabase.CreateAsset(
-                clip,
-                clipPath
-            );
-        }
-
-        clip.frameRate =
-            fps;
-
-        EditorCurveBinding spriteBinding =
-            new EditorCurveBinding
-            {
-                type = typeof(SpriteRenderer),
-
-                path = "",
-
-                propertyName = "m_Sprite"
-            };
-
-        ObjectReferenceKeyframe[] keyframes =
-        {
-            new ObjectReferenceKeyframe
-            {
-                time = 0f,
-
-                value = sprite
-            },
-
-            new ObjectReferenceKeyframe
-            {
-                time = 1f / fps,
-
-                value = sprite
-            }
-        };
-
-        AnimationUtility.SetObjectReferenceCurve(
-            clip,
-            spriteBinding,
-            keyframes
-        );
-
-        SetLoop(
-            clip,
-            true
-        );
-
-        EditorUtility.SetDirty(
-            clip
-        );
-
-        return clip;
-    }
-
-    // =========================================================
-    // LOOP
-    // =========================================================
-
-    private void SetLoop(
-        AnimationClip clip,
-        bool shouldLoop
-    )
-    {
-        SerializedObject serializedClip =
-            new SerializedObject(
-                clip
-            );
-
-        SerializedProperty loopProperty =
-            serializedClip.FindProperty(
-                "m_AnimationClipSettings.m_LoopTime"
-            );
-
-        if (loopProperty != null)
-        {
-            loopProperty.boolValue =
-                shouldLoop;
-
-            serializedClip.ApplyModifiedProperties();
-        }
     }
 
     // =========================================================
@@ -1719,69 +1459,13 @@ private string NormalizeAnimationName(
 }
 
     // =========================================================
-    // LOAD SPRITES
-    // =========================================================
-
-    private List<Sprite> LoadSprites(
-        Texture2D spriteSheet
-    )
-    {
-        string assetPath =
-            AssetDatabase.GetAssetPath(
-                spriteSheet
-            );
-
-        return AssetDatabase
-            .LoadAllAssetsAtPath(
-                assetPath
-            )
-            .OfType<Sprite>()
-            .ToList();
-    }
-
-    // =========================================================
-    // GROUP SPRITES BY ROW
-    // =========================================================
-
-    private List<List<Sprite>> GroupSpritesByRows(
-        List<Sprite> sprites
-    )
-    {
-        return sprites
-
-            .GroupBy(
-                sprite =>
-                    Mathf.RoundToInt(
-                        sprite.rect.y
-                    )
-            )
-
-            .OrderByDescending(
-                group =>
-                    group.Key
-            )
-
-            .Select(
-                group =>
-                    group
-                        .OrderBy(
-                            sprite =>
-                                sprite.rect.x
-                        )
-                        .ToList()
-            )
-
-            .ToList();
-    }
-
-    // =========================================================
     // OUTPUT DIRECTORY
     // =========================================================
 
     private string GetMonsterOutputDirectory()
     {
         string destination =
-            NormalizePath(
+            MonsterAnimationUtility.NormalizePath(
                 destinationFolder
             );
 
@@ -1801,62 +1485,6 @@ private string NormalizeAnimationName(
         return destination +
             "/" +
             cleanMonsterName;
-    }
-
-    // =========================================================
-    // CREATE FOLDERS
-    // =========================================================
-
-    private void EnsureFolderExists(
-        string folderPath
-    )
-    {
-        folderPath =
-            NormalizePath(
-                folderPath
-            );
-
-        if (
-            AssetDatabase.IsValidFolder(
-                folderPath
-            )
-        )
-        {
-            return;
-        }
-
-        string[] parts =
-            folderPath.Split('/');
-
-        string currentPath =
-            parts[0];
-
-        for (
-            int i = 1;
-            i < parts.Length;
-            i++
-        )
-        {
-            string nextPath =
-                currentPath +
-                "/" +
-                parts[i];
-
-            if (
-                !AssetDatabase.IsValidFolder(
-                    nextPath
-                )
-            )
-            {
-                AssetDatabase.CreateFolder(
-                    currentPath,
-                    parts[i]
-                );
-            }
-
-            currentPath =
-                nextPath;
-        }
     }
 
     // =========================================================
@@ -1912,51 +1540,6 @@ private string NormalizeAnimationName(
             selectedFolder.Substring(
                 projectAssetsPath.Length
             );
-    }
-
-    // =========================================================
-    // NORMALIZE PATH
-    // =========================================================
-
-    private string NormalizePath(
-        string path
-    )
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return "Assets";
-        }
-
-        return path
-            .Trim()
-            .Replace("\\", "/")
-            .TrimEnd('/');
-    }
-
-    // =========================================================
-    // INVALID FOLDER CHARACTERS
-    // =========================================================
-
-    private bool ContainsInvalidFolderCharacters(
-        string value
-    )
-    {
-        char[] invalidCharacters =
-        {
-            '/',
-            '\\',
-            ':',
-            '*',
-            '?',
-            '"',
-            '<',
-            '>',
-            '|'
-        };
-
-        return value.IndexOfAny(
-            invalidCharacters
-        ) >= 0;
     }
 
     // =========================================================
