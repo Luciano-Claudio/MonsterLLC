@@ -43,10 +43,15 @@ public class MainMenuUI : MonoBehaviour
         GameEvents.GoldChanged(CurrentRun.gold);
         GameEvents.BagChanged(BagController.Instance.Bag);
 
+        // SpawnHero ANTES do ResetForNewDay, de propósito — ResetForNewDay dispara
+        // GameEvents.DayStarted(), e o Mage (e futuramente o Blood Mage) só sumona o pet
+        // reagindo a esse evento (OnEnable -> GameEvents.OnDayStart += SummonPet). Se o dia
+        // começasse antes do herói existir, o evento já teria passado quando o Mage se
+        // inscrevesse, e o pet nunca nasceria no Dia 1 (bug real, encontrado em playtest).
+        SpawnHero(heroToSpawn);
+
         DayTimer.Instance.ResetForNewDay(100f);
         DemandTracker.Instance.StartDay(CurrentRun.day);
-
-        SpawnHero(heroToSpawn);
 
         GameStateManager.Instance.SetState(GameState.Gameplay);
     }
