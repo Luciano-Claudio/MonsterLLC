@@ -226,7 +226,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -237,10 +237,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -261,9 +261,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -318,12 +318,12 @@ TextureImporter:
       name: CentaurKingIdle_0
       rect:
         serializedVersion: 2
-        x: 7
-        y: 108
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -340,12 +340,12 @@ TextureImporter:
       name: CentaurKingIdle_1
       rect:
         serializedVersion: 2
-        x: 40
-        y: 108
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -362,12 +362,12 @@ TextureImporter:
       name: CentaurKingIdle_2
       rect:
         serializedVersion: 2
-        x: 72
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -384,12 +384,12 @@ TextureImporter:
       name: CentaurKingIdle_3
       rect:
         serializedVersion: 2
-        x: 104
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -406,12 +406,12 @@ TextureImporter:
       name: CentaurKingIdle_4
       rect:
         serializedVersion: 2
-        x: 135
-        y: 108
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -428,12 +428,12 @@ TextureImporter:
       name: CentaurKingIdle_5
       rect:
         serializedVersion: 2
-        x: 168
-        y: 108
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -450,12 +450,12 @@ TextureImporter:
       name: CentaurKingIdle_6
       rect:
         serializedVersion: 2
-        x: 200
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -472,12 +472,12 @@ TextureImporter:
       name: CentaurKingIdle_7
       rect:
         serializedVersion: 2
-        x: 232
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -494,12 +494,12 @@ TextureImporter:
       name: CentaurKingIdle_8
       rect:
         serializedVersion: 2
-        x: 263
-        y: 108
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -516,12 +516,12 @@ TextureImporter:
       name: CentaurKingIdle_9
       rect:
         serializedVersion: 2
-        x: 296
-        y: 108
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -538,12 +538,12 @@ TextureImporter:
       name: CentaurKingIdle_10
       rect:
         serializedVersion: 2
-        x: 328
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -560,12 +560,12 @@ TextureImporter:
       name: CentaurKingIdle_11
       rect:
         serializedVersion: 2
-        x: 360
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -582,12 +582,12 @@ TextureImporter:
       name: CentaurKingIdle_12
       rect:
         serializedVersion: 2
-        x: 391
-        y: 108
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -604,12 +604,12 @@ TextureImporter:
       name: CentaurKingIdle_13
       rect:
         serializedVersion: 2
-        x: 424
-        y: 108
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -626,12 +626,12 @@ TextureImporter:
       name: CentaurKingIdle_14
       rect:
         serializedVersion: 2
-        x: 456
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -648,12 +648,12 @@ TextureImporter:
       name: CentaurKingIdle_15
       rect:
         serializedVersion: 2
-        x: 488
-        y: 108
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -670,12 +670,12 @@ TextureImporter:
       name: CentaurKingIdle_16
       rect:
         serializedVersion: 2
-        x: 1
-        y: 76
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -692,12 +692,12 @@ TextureImporter:
       name: CentaurKingIdle_17
       rect:
         serializedVersion: 2
-        x: 33
-        y: 76
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -714,12 +714,12 @@ TextureImporter:
       name: CentaurKingIdle_18
       rect:
         serializedVersion: 2
-        x: 65
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -736,12 +736,12 @@ TextureImporter:
       name: CentaurKingIdle_19
       rect:
         serializedVersion: 2
-        x: 97
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -758,12 +758,12 @@ TextureImporter:
       name: CentaurKingIdle_20
       rect:
         serializedVersion: 2
-        x: 129
-        y: 76
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -780,12 +780,12 @@ TextureImporter:
       name: CentaurKingIdle_21
       rect:
         serializedVersion: 2
-        x: 161
-        y: 76
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -802,12 +802,12 @@ TextureImporter:
       name: CentaurKingIdle_22
       rect:
         serializedVersion: 2
-        x: 193
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -824,12 +824,12 @@ TextureImporter:
       name: CentaurKingIdle_23
       rect:
         serializedVersion: 2
-        x: 225
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -846,12 +846,12 @@ TextureImporter:
       name: CentaurKingIdle_24
       rect:
         serializedVersion: 2
-        x: 257
-        y: 76
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -868,12 +868,12 @@ TextureImporter:
       name: CentaurKingIdle_25
       rect:
         serializedVersion: 2
-        x: 289
-        y: 76
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -890,12 +890,12 @@ TextureImporter:
       name: CentaurKingIdle_26
       rect:
         serializedVersion: 2
-        x: 321
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -912,12 +912,12 @@ TextureImporter:
       name: CentaurKingIdle_27
       rect:
         serializedVersion: 2
-        x: 353
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -934,12 +934,12 @@ TextureImporter:
       name: CentaurKingIdle_28
       rect:
         serializedVersion: 2
-        x: 385
-        y: 76
-        width: 24
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -956,12 +956,12 @@ TextureImporter:
       name: CentaurKingIdle_29
       rect:
         serializedVersion: 2
-        x: 417
-        y: 76
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -978,12 +978,12 @@ TextureImporter:
       name: CentaurKingIdle_30
       rect:
         serializedVersion: 2
-        x: 449
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1000,12 +1000,12 @@ TextureImporter:
       name: CentaurKingIdle_31
       rect:
         serializedVersion: 2
-        x: 481
-        y: 76
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1022,12 +1022,12 @@ TextureImporter:
       name: CentaurKingIdle_32
       rect:
         serializedVersion: 2
-        x: 8
-        y: 44
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1044,12 +1044,12 @@ TextureImporter:
       name: CentaurKingIdle_33
       rect:
         serializedVersion: 2
-        x: 41
-        y: 44
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1066,12 +1066,12 @@ TextureImporter:
       name: CentaurKingIdle_34
       rect:
         serializedVersion: 2
-        x: 73
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1088,12 +1088,12 @@ TextureImporter:
       name: CentaurKingIdle_35
       rect:
         serializedVersion: 2
-        x: 105
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1110,12 +1110,12 @@ TextureImporter:
       name: CentaurKingIdle_36
       rect:
         serializedVersion: 2
-        x: 136
-        y: 44
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1132,12 +1132,12 @@ TextureImporter:
       name: CentaurKingIdle_37
       rect:
         serializedVersion: 2
-        x: 169
-        y: 44
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1154,12 +1154,12 @@ TextureImporter:
       name: CentaurKingIdle_38
       rect:
         serializedVersion: 2
-        x: 201
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1176,12 +1176,12 @@ TextureImporter:
       name: CentaurKingIdle_39
       rect:
         serializedVersion: 2
-        x: 233
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1198,12 +1198,12 @@ TextureImporter:
       name: CentaurKingIdle_40
       rect:
         serializedVersion: 2
-        x: 264
-        y: 44
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1220,12 +1220,12 @@ TextureImporter:
       name: CentaurKingIdle_41
       rect:
         serializedVersion: 2
-        x: 296
-        y: 44
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1242,12 +1242,12 @@ TextureImporter:
       name: CentaurKingIdle_42
       rect:
         serializedVersion: 2
-        x: 328
-        y: 44
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1264,12 +1264,12 @@ TextureImporter:
       name: CentaurKingIdle_43
       rect:
         serializedVersion: 2
-        x: 360
-        y: 44
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1286,12 +1286,12 @@ TextureImporter:
       name: CentaurKingIdle_44
       rect:
         serializedVersion: 2
-        x: 392
-        y: 44
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1308,12 +1308,12 @@ TextureImporter:
       name: CentaurKingIdle_45
       rect:
         serializedVersion: 2
-        x: 425
-        y: 44
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1330,12 +1330,12 @@ TextureImporter:
       name: CentaurKingIdle_46
       rect:
         serializedVersion: 2
-        x: 457
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1352,12 +1352,12 @@ TextureImporter:
       name: CentaurKingIdle_47
       rect:
         serializedVersion: 2
-        x: 489
-        y: 44
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1374,12 +1374,12 @@ TextureImporter:
       name: CentaurKingIdle_48
       rect:
         serializedVersion: 2
-        x: 1
-        y: 12
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1396,12 +1396,12 @@ TextureImporter:
       name: CentaurKingIdle_49
       rect:
         serializedVersion: 2
-        x: 33
-        y: 12
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1418,12 +1418,12 @@ TextureImporter:
       name: CentaurKingIdle_50
       rect:
         serializedVersion: 2
-        x: 65
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1440,12 +1440,12 @@ TextureImporter:
       name: CentaurKingIdle_51
       rect:
         serializedVersion: 2
-        x: 97
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1462,12 +1462,12 @@ TextureImporter:
       name: CentaurKingIdle_52
       rect:
         serializedVersion: 2
-        x: 129
-        y: 12
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1484,12 +1484,12 @@ TextureImporter:
       name: CentaurKingIdle_53
       rect:
         serializedVersion: 2
-        x: 161
-        y: 12
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1506,12 +1506,12 @@ TextureImporter:
       name: CentaurKingIdle_54
       rect:
         serializedVersion: 2
-        x: 193
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1528,12 +1528,12 @@ TextureImporter:
       name: CentaurKingIdle_55
       rect:
         serializedVersion: 2
-        x: 225
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1550,12 +1550,12 @@ TextureImporter:
       name: CentaurKingIdle_56
       rect:
         serializedVersion: 2
-        x: 257
-        y: 12
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1572,12 +1572,12 @@ TextureImporter:
       name: CentaurKingIdle_57
       rect:
         serializedVersion: 2
-        x: 289
-        y: 12
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1594,12 +1594,12 @@ TextureImporter:
       name: CentaurKingIdle_58
       rect:
         serializedVersion: 2
-        x: 321
-        y: 12
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1616,12 +1616,12 @@ TextureImporter:
       name: CentaurKingIdle_59
       rect:
         serializedVersion: 2
-        x: 353
-        y: 12
-        width: 23
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1638,12 +1638,12 @@ TextureImporter:
       name: CentaurKingIdle_60
       rect:
         serializedVersion: 2
-        x: 385
-        y: 12
-        width: 23
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1660,12 +1660,12 @@ TextureImporter:
       name: CentaurKingIdle_61
       rect:
         serializedVersion: 2
-        x: 417
-        y: 12
-        width: 22
-        height: 17
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1682,12 +1682,12 @@ TextureImporter:
       name: CentaurKingIdle_62
       rect:
         serializedVersion: 2
-        x: 449
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1704,12 +1704,12 @@ TextureImporter:
       name: CentaurKingIdle_63
       rect:
         serializedVersion: 2
-        x: 481
-        y: 12
-        width: 22
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1726,7 +1726,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 493668d5fd3478c40baa1bcf5c0c11ee
     internalID: 0
     vertices: []
     indices: 
@@ -1734,7 +1734,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.40625},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       CentaurKingIdle_0: -2878337178527372332
       CentaurKingIdle_1: 3419313731418280003

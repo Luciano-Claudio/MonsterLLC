@@ -310,7 +310,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -321,10 +321,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -345,9 +345,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -402,12 +402,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -424,12 +424,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_1
       rect:
         serializedVersion: 2
-        x: 43
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -446,12 +446,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_2
       rect:
         serializedVersion: 2
-        x: 75
-        y: 108
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -468,12 +468,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_3
       rect:
         serializedVersion: 2
-        x: 108
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -490,12 +490,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_4
       rect:
         serializedVersion: 2
-        x: 140
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -512,12 +512,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_5
       rect:
         serializedVersion: 2
-        x: 172
-        y: 108
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -534,12 +534,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_6
       rect:
         serializedVersion: 2
-        x: 204
-        y: 108
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -556,12 +556,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_7
       rect:
         serializedVersion: 2
-        x: 236
-        y: 108
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -578,12 +578,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_8
       rect:
         serializedVersion: 2
-        x: 268
-        y: 108
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -600,12 +600,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_9
       rect:
         serializedVersion: 2
-        x: 300
-        y: 108
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -622,12 +622,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_10
       rect:
         serializedVersion: 2
-        x: 332
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -644,12 +644,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_11
       rect:
         serializedVersion: 2
-        x: 364
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -666,12 +666,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_12
       rect:
         serializedVersion: 2
-        x: 396
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -688,12 +688,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_13
       rect:
         serializedVersion: 2
-        x: 428
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -710,12 +710,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_14
       rect:
         serializedVersion: 2
-        x: 460
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -732,12 +732,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_15
       rect:
         serializedVersion: 2
-        x: 492
-        y: 108
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -754,12 +754,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_16
       rect:
         serializedVersion: 2
-        x: 524
-        y: 108
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -776,12 +776,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_17
       rect:
         serializedVersion: 2
-        x: 555
-        y: 108
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -798,12 +798,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_18
       rect:
         serializedVersion: 2
-        x: 587
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -820,12 +820,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_19
       rect:
         serializedVersion: 2
-        x: 618
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -842,12 +842,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_20
       rect:
         serializedVersion: 2
-        x: 650
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -864,12 +864,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_21
       rect:
         serializedVersion: 2
-        x: 682
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -886,12 +886,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_22
       rect:
         serializedVersion: 2
-        x: 714
-        y: 108
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 96
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -908,12 +908,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_23
       rect:
         serializedVersion: 2
-        x: 11
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -930,12 +930,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_24
       rect:
         serializedVersion: 2
-        x: 42
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -952,12 +952,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_25
       rect:
         serializedVersion: 2
-        x: 73
-        y: 76
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -974,12 +974,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_26
       rect:
         serializedVersion: 2
-        x: 103
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -996,12 +996,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_27
       rect:
         serializedVersion: 2
-        x: 135
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1018,12 +1018,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_28
       rect:
         serializedVersion: 2
-        x: 166
-        y: 76
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1040,12 +1040,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_29
       rect:
         serializedVersion: 2
-        x: 198
-        y: 76
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1062,12 +1062,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_30
       rect:
         serializedVersion: 2
-        x: 230
-        y: 76
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1084,12 +1084,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_31
       rect:
         serializedVersion: 2
-        x: 262
-        y: 76
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1106,12 +1106,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_32
       rect:
         serializedVersion: 2
-        x: 294
-        y: 76
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1128,12 +1128,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_33
       rect:
         serializedVersion: 2
-        x: 327
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1150,12 +1150,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_34
       rect:
         serializedVersion: 2
-        x: 359
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1172,12 +1172,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_35
       rect:
         serializedVersion: 2
-        x: 393
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1194,12 +1194,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_36
       rect:
         serializedVersion: 2
-        x: 425
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1216,12 +1216,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_37
       rect:
         serializedVersion: 2
-        x: 457
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1238,12 +1238,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_38
       rect:
         serializedVersion: 2
-        x: 489
-        y: 76
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1260,12 +1260,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_39
       rect:
         serializedVersion: 2
-        x: 519
-        y: 76
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1282,12 +1282,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_40
       rect:
         serializedVersion: 2
-        x: 553
-        y: 76
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1304,12 +1304,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_41
       rect:
         serializedVersion: 2
-        x: 586
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1326,12 +1326,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_42
       rect:
         serializedVersion: 2
-        x: 619
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1348,12 +1348,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_43
       rect:
         serializedVersion: 2
-        x: 651
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1370,12 +1370,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_44
       rect:
         serializedVersion: 2
-        x: 683
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1392,12 +1392,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_45
       rect:
         serializedVersion: 2
-        x: 715
-        y: 76
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1414,12 +1414,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_46
       rect:
         serializedVersion: 2
-        x: 10
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1436,12 +1436,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_47
       rect:
         serializedVersion: 2
-        x: 43
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1458,12 +1458,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_48
       rect:
         serializedVersion: 2
-        x: 75
-        y: 44
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1480,12 +1480,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_49
       rect:
         serializedVersion: 2
-        x: 108
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1502,12 +1502,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_50
       rect:
         serializedVersion: 2
-        x: 140
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1524,12 +1524,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_51
       rect:
         serializedVersion: 2
-        x: 172
-        y: 44
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1546,12 +1546,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_52
       rect:
         serializedVersion: 2
-        x: 204
-        y: 44
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1568,12 +1568,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_53
       rect:
         serializedVersion: 2
-        x: 236
-        y: 44
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1590,12 +1590,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_54
       rect:
         serializedVersion: 2
-        x: 268
-        y: 44
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1612,12 +1612,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_55
       rect:
         serializedVersion: 2
-        x: 300
-        y: 44
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1634,12 +1634,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_56
       rect:
         serializedVersion: 2
-        x: 332
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1656,12 +1656,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_57
       rect:
         serializedVersion: 2
-        x: 364
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1678,12 +1678,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_58
       rect:
         serializedVersion: 2
-        x: 396
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1700,12 +1700,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_59
       rect:
         serializedVersion: 2
-        x: 428
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1722,12 +1722,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_60
       rect:
         serializedVersion: 2
-        x: 460
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1744,12 +1744,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_61
       rect:
         serializedVersion: 2
-        x: 492
-        y: 44
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1766,12 +1766,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_62
       rect:
         serializedVersion: 2
-        x: 524
-        y: 44
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1788,12 +1788,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_63
       rect:
         serializedVersion: 2
-        x: 555
-        y: 44
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1810,12 +1810,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_64
       rect:
         serializedVersion: 2
-        x: 587
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1832,12 +1832,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_65
       rect:
         serializedVersion: 2
-        x: 618
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1854,12 +1854,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_66
       rect:
         serializedVersion: 2
-        x: 650
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1876,12 +1876,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_67
       rect:
         serializedVersion: 2
-        x: 682
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1898,12 +1898,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_68
       rect:
         serializedVersion: 2
-        x: 714
-        y: 44
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1920,12 +1920,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_69
       rect:
         serializedVersion: 2
-        x: 11
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1942,12 +1942,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_70
       rect:
         serializedVersion: 2
-        x: 42
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1964,12 +1964,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_71
       rect:
         serializedVersion: 2
-        x: 73
-        y: 12
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 64
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1986,12 +1986,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_72
       rect:
         serializedVersion: 2
-        x: 103
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2008,12 +2008,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_73
       rect:
         serializedVersion: 2
-        x: 135
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 128
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2030,12 +2030,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_74
       rect:
         serializedVersion: 2
-        x: 166
-        y: 12
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 160
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2052,12 +2052,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_75
       rect:
         serializedVersion: 2
-        x: 198
-        y: 12
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2074,12 +2074,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_76
       rect:
         serializedVersion: 2
-        x: 230
-        y: 12
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 224
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2096,12 +2096,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_77
       rect:
         serializedVersion: 2
-        x: 262
-        y: 12
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2118,12 +2118,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_78
       rect:
         serializedVersion: 2
-        x: 294
-        y: 12
-        width: 14
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2140,12 +2140,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_79
       rect:
         serializedVersion: 2
-        x: 327
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 320
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2162,12 +2162,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_80
       rect:
         serializedVersion: 2
-        x: 359
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 352
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2184,12 +2184,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_81
       rect:
         serializedVersion: 2
-        x: 393
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2206,12 +2206,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_82
       rect:
         serializedVersion: 2
-        x: 425
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 416
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2228,12 +2228,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_83
       rect:
         serializedVersion: 2
-        x: 457
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 448
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2250,12 +2250,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_84
       rect:
         serializedVersion: 2
-        x: 489
-        y: 12
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2272,12 +2272,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_85
       rect:
         serializedVersion: 2
-        x: 519
-        y: 12
-        width: 13
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2294,12 +2294,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_86
       rect:
         serializedVersion: 2
-        x: 553
-        y: 12
-        width: 12
-        height: 12
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 544
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2316,12 +2316,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_87
       rect:
         serializedVersion: 2
-        x: 586
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2338,12 +2338,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_88
       rect:
         serializedVersion: 2
-        x: 619
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 608
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2360,12 +2360,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_89
       rect:
         serializedVersion: 2
-        x: 651
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 640
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2382,12 +2382,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_90
       rect:
         serializedVersion: 2
-        x: 683
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2404,12 +2404,12 @@ TextureImporter:
       name: Minifantasy_WerewolfWolfIdle_91
       rect:
         serializedVersion: 2
-        x: 715
-        y: 12
-        width: 11
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 704
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.40625}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2426,7 +2426,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5a8388073c5f7d7409cf2963b5a3f5cf
     internalID: 0
     vertices: []
     indices: 
@@ -2434,7 +2434,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.40625},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Minifantasy_WerewolfWolfIdle_0: -6107978567189620845
       Minifantasy_WerewolfWolfIdle_1: 6151531096913373514
