@@ -85,6 +85,10 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected bool isUsingSecondaryAbility;
     private bool wasUsingSecondaryAbility; // detecta a transição true -> false no Update(), ver comentário lá
 
+    // Teia da Spider Queen (Efeito Ice) — detecta a transição pra chamar SetTrapped() só nas
+    // bordas, ver Update().
+    private bool wasIceActive;
+
     // Flag simples (não por-instância — só existe 1 herói jogável por vez) pra habilidades
     // tipo camuflagem/stealth: enquanto true, EnemyController trata o player como
     // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
@@ -225,7 +229,24 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             return;
         }
 
-        if (statusEffectController != null) statusEffectController.Tick(Time.deltaTime);
+        if (statusEffectController != null)
+        {
+            statusEffectController.Tick(Time.deltaTime);
+
+            // Teia da Spider Queen (GDD Bestiário) — "gruda no jogador e o prende". O Efeito
+            // Ice em si não causa dano (ApplyStatusEffect chamado com damagePerSecond: 0, só
+            // pra mostrar o ícone — ainda sem arte própria, decisão do usuário: clonar o
+            // visual de outro Efeito por enquanto), a incapacitação de verdade é o
+            // isTrapped/SetTrapped() já existente (o comentário de SetTrapped já antecipava
+            // isso: "ex.: Freeze"). Detecta a transição (mesmo padrão de wasPlayerUntargetable
+            // em EnemyController) pra chamar SetTrapped() só 1x em cada borda, nunca todo
+            // frame — StatusEffectController.Tick() já remove o Efeito sozinho quando a
+            // duração acaba, então IsEffectActive virar false destrava automaticamente, sem
+            // precisar de um timer próprio aqui.
+            bool iceActive = statusEffectController.IsEffectActive(StatusEffectType.Ice);
+            if (iceActive != wasIceActive) SetTrapped(iceActive);
+            wasIceActive = iceActive;
+        }
 
         // Terminou sozinho (sem ter atingido o teto de aceleração) -- reseta pro próximo
         // hit começar do zero, não escalado. Escala pelo próprio multiplicador: acelerado
@@ -370,10 +391,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         UseSecondaryAbility();
     }
 
-    // Chamado pelo (futuro) sistema de Efeitos Nocivos quando uma Prisão (ex.: Freeze)
-    // começa/termina no herói — GDD Seção 33. Interrompe qualquer ação em andamento na
-    // hora (igual o Die já faz hoje) e reseta as flags internas de Attack/Damage, senão o
-    // jogador ficaria incapaz de agir pra sempre depois que a Prisão passasse.
+    // Chamado pelo sistema de Efeitos Nocivos quando uma Prisão (ex.: teia da Spider Queen,
+    // via Efeito Ice — ver Update()) começa/termina no herói — GDD Seção 33. Interrompe
+    // qualquer ação em andamento na hora (igual o Die já faz hoje) e reseta as flags internas
+    // de Attack/Damage, senão o jogador ficaria incapaz de agir pra sempre depois que a
+    // Prisão passasse.
     public void SetTrapped(bool trapped)
     {
         isTrapped = trapped;
@@ -504,6 +526,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         }
         dieElapsed = 0f;
         dieHandled = false;
+
+        // Efeito Nocivo ativo (ex.: Fire) não pode sobreviver congelado até o respawn — sem
+        // isso, Update() parava de chamar Tick() (guarda de isDead acima) e o efeito voltava
+        // sozinho depois do respawn, como se nunca tivesse morrido (bug real).
+        if (statusEffectController != null) statusEffectController.ClearAllEffects();
 
         // 1. Cancela estados temporários — hook pra ultimates com duração/transformações e
         // pra pets de kit (GDD: "ao morrer o herói, o pet retorna junto na transição"). Roda

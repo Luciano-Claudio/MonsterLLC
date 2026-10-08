@@ -298,7 +298,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -309,10 +309,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 8
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -333,9 +333,9 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -390,12 +390,12 @@ TextureImporter:
       name: GoblinKingIdle_0
       rect:
         serializedVersion: 2
-        x: 6
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -412,12 +412,12 @@ TextureImporter:
       name: GoblinKingIdle_1
       rect:
         serializedVersion: 2
-        x: 54
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 48
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -434,12 +434,12 @@ TextureImporter:
       name: GoblinKingIdle_2
       rect:
         serializedVersion: 2
-        x: 102
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -456,12 +456,12 @@ TextureImporter:
       name: GoblinKingIdle_3
       rect:
         serializedVersion: 2
-        x: 150
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 144
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -478,12 +478,12 @@ TextureImporter:
       name: GoblinKingIdle_4
       rect:
         serializedVersion: 2
-        x: 198
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -500,12 +500,12 @@ TextureImporter:
       name: GoblinKingIdle_5
       rect:
         serializedVersion: 2
-        x: 246
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 240
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -522,12 +522,12 @@ TextureImporter:
       name: GoblinKingIdle_6
       rect:
         serializedVersion: 2
-        x: 294
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -544,12 +544,12 @@ TextureImporter:
       name: GoblinKingIdle_7
       rect:
         serializedVersion: 2
-        x: 342
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 336
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -566,12 +566,12 @@ TextureImporter:
       name: GoblinKingIdle_8
       rect:
         serializedVersion: 2
-        x: 390
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -588,12 +588,12 @@ TextureImporter:
       name: GoblinKingIdle_9
       rect:
         serializedVersion: 2
-        x: 438
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 432
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -610,12 +610,12 @@ TextureImporter:
       name: GoblinKingIdle_10
       rect:
         serializedVersion: 2
-        x: 486
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -632,12 +632,12 @@ TextureImporter:
       name: GoblinKingIdle_11
       rect:
         serializedVersion: 2
-        x: 534
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 528
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -654,12 +654,12 @@ TextureImporter:
       name: GoblinKingIdle_12
       rect:
         serializedVersion: 2
-        x: 582
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -676,12 +676,12 @@ TextureImporter:
       name: GoblinKingIdle_13
       rect:
         serializedVersion: 2
-        x: 630
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 624
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -698,12 +698,12 @@ TextureImporter:
       name: GoblinKingIdle_14
       rect:
         serializedVersion: 2
-        x: 678
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -720,12 +720,12 @@ TextureImporter:
       name: GoblinKingIdle_15
       rect:
         serializedVersion: 2
-        x: 726
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 720
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -742,12 +742,12 @@ TextureImporter:
       name: GoblinKingIdle_16
       rect:
         serializedVersion: 2
-        x: 774
-        y: 155
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -764,12 +764,12 @@ TextureImporter:
       name: GoblinKingIdle_17
       rect:
         serializedVersion: 2
-        x: 822
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 816
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -786,12 +786,12 @@ TextureImporter:
       name: GoblinKingIdle_18
       rect:
         serializedVersion: 2
-        x: 870
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 864
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -808,12 +808,12 @@ TextureImporter:
       name: GoblinKingIdle_19
       rect:
         serializedVersion: 2
-        x: 918
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 912
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -830,12 +830,12 @@ TextureImporter:
       name: GoblinKingIdle_20
       rect:
         serializedVersion: 2
-        x: 966
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 960
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -852,12 +852,12 @@ TextureImporter:
       name: GoblinKingIdle_21
       rect:
         serializedVersion: 2
-        x: 1014
-        y: 155
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1008
+        y: 144
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -874,12 +874,12 @@ TextureImporter:
       name: GoblinKingIdle_22
       rect:
         serializedVersion: 2
-        x: 5
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -896,12 +896,12 @@ TextureImporter:
       name: GoblinKingIdle_23
       rect:
         serializedVersion: 2
-        x: 53
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 48
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -918,12 +918,12 @@ TextureImporter:
       name: GoblinKingIdle_24
       rect:
         serializedVersion: 2
-        x: 101
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -940,12 +940,12 @@ TextureImporter:
       name: GoblinKingIdle_25
       rect:
         serializedVersion: 2
-        x: 149
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 144
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -962,12 +962,12 @@ TextureImporter:
       name: GoblinKingIdle_26
       rect:
         serializedVersion: 2
-        x: 197
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -984,12 +984,12 @@ TextureImporter:
       name: GoblinKingIdle_27
       rect:
         serializedVersion: 2
-        x: 245
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 240
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1006,12 +1006,12 @@ TextureImporter:
       name: GoblinKingIdle_28
       rect:
         serializedVersion: 2
-        x: 293
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1028,12 +1028,12 @@ TextureImporter:
       name: GoblinKingIdle_29
       rect:
         serializedVersion: 2
-        x: 341
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 336
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1050,12 +1050,12 @@ TextureImporter:
       name: GoblinKingIdle_30
       rect:
         serializedVersion: 2
-        x: 389
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1072,12 +1072,12 @@ TextureImporter:
       name: GoblinKingIdle_31
       rect:
         serializedVersion: 2
-        x: 437
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 432
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1094,12 +1094,12 @@ TextureImporter:
       name: GoblinKingIdle_32
       rect:
         serializedVersion: 2
-        x: 485
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1116,12 +1116,12 @@ TextureImporter:
       name: GoblinKingIdle_33
       rect:
         serializedVersion: 2
-        x: 533
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 528
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1138,12 +1138,12 @@ TextureImporter:
       name: GoblinKingIdle_34
       rect:
         serializedVersion: 2
-        x: 581
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1160,12 +1160,12 @@ TextureImporter:
       name: GoblinKingIdle_35
       rect:
         serializedVersion: 2
-        x: 629
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 624
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1182,12 +1182,12 @@ TextureImporter:
       name: GoblinKingIdle_36
       rect:
         serializedVersion: 2
-        x: 677
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1204,12 +1204,12 @@ TextureImporter:
       name: GoblinKingIdle_37
       rect:
         serializedVersion: 2
-        x: 725
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 720
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1226,12 +1226,12 @@ TextureImporter:
       name: GoblinKingIdle_38
       rect:
         serializedVersion: 2
-        x: 773
-        y: 107
-        width: 37
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1248,12 +1248,12 @@ TextureImporter:
       name: GoblinKingIdle_39
       rect:
         serializedVersion: 2
-        x: 821
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 816
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1270,12 +1270,12 @@ TextureImporter:
       name: GoblinKingIdle_40
       rect:
         serializedVersion: 2
-        x: 869
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 864
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1292,12 +1292,12 @@ TextureImporter:
       name: GoblinKingIdle_41
       rect:
         serializedVersion: 2
-        x: 917
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 912
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1314,12 +1314,12 @@ TextureImporter:
       name: GoblinKingIdle_42
       rect:
         serializedVersion: 2
-        x: 965
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 960
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1336,12 +1336,12 @@ TextureImporter:
       name: GoblinKingIdle_43
       rect:
         serializedVersion: 2
-        x: 1013
-        y: 107
-        width: 37
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1008
+        y: 96
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1358,12 +1358,12 @@ TextureImporter:
       name: GoblinKingIdle_44
       rect:
         serializedVersion: 2
-        x: 5
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1380,12 +1380,12 @@ TextureImporter:
       name: GoblinKingIdle_45
       rect:
         serializedVersion: 2
-        x: 53
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 48
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1402,12 +1402,12 @@ TextureImporter:
       name: GoblinKingIdle_46
       rect:
         serializedVersion: 2
-        x: 101
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1424,12 +1424,12 @@ TextureImporter:
       name: GoblinKingIdle_47
       rect:
         serializedVersion: 2
-        x: 149
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 144
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1446,12 +1446,12 @@ TextureImporter:
       name: GoblinKingIdle_48
       rect:
         serializedVersion: 2
-        x: 197
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1468,12 +1468,12 @@ TextureImporter:
       name: GoblinKingIdle_49
       rect:
         serializedVersion: 2
-        x: 245
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 240
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1490,12 +1490,12 @@ TextureImporter:
       name: GoblinKingIdle_50
       rect:
         serializedVersion: 2
-        x: 293
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1512,12 +1512,12 @@ TextureImporter:
       name: GoblinKingIdle_51
       rect:
         serializedVersion: 2
-        x: 341
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 336
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1534,12 +1534,12 @@ TextureImporter:
       name: GoblinKingIdle_52
       rect:
         serializedVersion: 2
-        x: 389
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1556,12 +1556,12 @@ TextureImporter:
       name: GoblinKingIdle_53
       rect:
         serializedVersion: 2
-        x: 437
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 432
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1578,12 +1578,12 @@ TextureImporter:
       name: GoblinKingIdle_54
       rect:
         serializedVersion: 2
-        x: 485
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1600,12 +1600,12 @@ TextureImporter:
       name: GoblinKingIdle_55
       rect:
         serializedVersion: 2
-        x: 533
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 528
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1622,12 +1622,12 @@ TextureImporter:
       name: GoblinKingIdle_56
       rect:
         serializedVersion: 2
-        x: 581
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1644,12 +1644,12 @@ TextureImporter:
       name: GoblinKingIdle_57
       rect:
         serializedVersion: 2
-        x: 629
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 624
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1666,12 +1666,12 @@ TextureImporter:
       name: GoblinKingIdle_58
       rect:
         serializedVersion: 2
-        x: 677
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1688,12 +1688,12 @@ TextureImporter:
       name: GoblinKingIdle_59
       rect:
         serializedVersion: 2
-        x: 725
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 720
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1710,12 +1710,12 @@ TextureImporter:
       name: GoblinKingIdle_60
       rect:
         serializedVersion: 2
-        x: 773
-        y: 59
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1732,12 +1732,12 @@ TextureImporter:
       name: GoblinKingIdle_61
       rect:
         serializedVersion: 2
-        x: 821
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 816
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1754,12 +1754,12 @@ TextureImporter:
       name: GoblinKingIdle_62
       rect:
         serializedVersion: 2
-        x: 869
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 864
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1776,12 +1776,12 @@ TextureImporter:
       name: GoblinKingIdle_63
       rect:
         serializedVersion: 2
-        x: 917
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 912
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1798,12 +1798,12 @@ TextureImporter:
       name: GoblinKingIdle_64
       rect:
         serializedVersion: 2
-        x: 965
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 960
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1820,12 +1820,12 @@ TextureImporter:
       name: GoblinKingIdle_65
       rect:
         serializedVersion: 2
-        x: 1013
-        y: 59
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1008
+        y: 48
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1842,12 +1842,12 @@ TextureImporter:
       name: GoblinKingIdle_66
       rect:
         serializedVersion: 2
-        x: 5
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1864,12 +1864,12 @@ TextureImporter:
       name: GoblinKingIdle_67
       rect:
         serializedVersion: 2
-        x: 53
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 48
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1886,12 +1886,12 @@ TextureImporter:
       name: GoblinKingIdle_68
       rect:
         serializedVersion: 2
-        x: 101
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 96
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1908,12 +1908,12 @@ TextureImporter:
       name: GoblinKingIdle_69
       rect:
         serializedVersion: 2
-        x: 149
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 144
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1930,12 +1930,12 @@ TextureImporter:
       name: GoblinKingIdle_70
       rect:
         serializedVersion: 2
-        x: 197
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 192
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1952,12 +1952,12 @@ TextureImporter:
       name: GoblinKingIdle_71
       rect:
         serializedVersion: 2
-        x: 245
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 240
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1974,12 +1974,12 @@ TextureImporter:
       name: GoblinKingIdle_72
       rect:
         serializedVersion: 2
-        x: 293
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 288
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1996,12 +1996,12 @@ TextureImporter:
       name: GoblinKingIdle_73
       rect:
         serializedVersion: 2
-        x: 341
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 336
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2018,12 +2018,12 @@ TextureImporter:
       name: GoblinKingIdle_74
       rect:
         serializedVersion: 2
-        x: 389
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 384
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2040,12 +2040,12 @@ TextureImporter:
       name: GoblinKingIdle_75
       rect:
         serializedVersion: 2
-        x: 437
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 432
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2062,12 +2062,12 @@ TextureImporter:
       name: GoblinKingIdle_76
       rect:
         serializedVersion: 2
-        x: 485
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 480
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2084,12 +2084,12 @@ TextureImporter:
       name: GoblinKingIdle_77
       rect:
         serializedVersion: 2
-        x: 533
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 528
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2106,12 +2106,12 @@ TextureImporter:
       name: GoblinKingIdle_78
       rect:
         serializedVersion: 2
-        x: 581
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 576
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2128,12 +2128,12 @@ TextureImporter:
       name: GoblinKingIdle_79
       rect:
         serializedVersion: 2
-        x: 629
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 624
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2150,12 +2150,12 @@ TextureImporter:
       name: GoblinKingIdle_80
       rect:
         serializedVersion: 2
-        x: 677
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 672
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2172,12 +2172,12 @@ TextureImporter:
       name: GoblinKingIdle_81
       rect:
         serializedVersion: 2
-        x: 725
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 720
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2194,12 +2194,12 @@ TextureImporter:
       name: GoblinKingIdle_82
       rect:
         serializedVersion: 2
-        x: 773
-        y: 11
-        width: 38
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2216,12 +2216,12 @@ TextureImporter:
       name: GoblinKingIdle_83
       rect:
         serializedVersion: 2
-        x: 821
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 816
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2238,12 +2238,12 @@ TextureImporter:
       name: GoblinKingIdle_84
       rect:
         serializedVersion: 2
-        x: 869
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 864
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2260,12 +2260,12 @@ TextureImporter:
       name: GoblinKingIdle_85
       rect:
         serializedVersion: 2
-        x: 917
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 912
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2282,12 +2282,12 @@ TextureImporter:
       name: GoblinKingIdle_86
       rect:
         serializedVersion: 2
-        x: 965
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 960
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2304,12 +2304,12 @@ TextureImporter:
       name: GoblinKingIdle_87
       rect:
         serializedVersion: 2
-        x: 1013
-        y: 11
-        width: 38
-        height: 23
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1008
+        y: 0
+        width: 48
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29166666}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2326,7 +2326,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 39a2606ac78eca346abada7b3057a80a
     internalID: 0
     vertices: []
     indices: 
@@ -2334,7 +2334,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":48.0,"y":48.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.2916666567325592},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       GoblinKingIdle_0: 4589291183258465137
       GoblinKingIdle_1: 2069644052626335372

@@ -674,12 +674,20 @@ Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns")
   Floor 2: jogador fica 20s → BossTimer[Floor2] = 20s
   Sobe para o Floor 3 → BossTimer[Floor2] permanece guardado em 20s
   Retorna ao Floor 2 → volta a acumular a partir de 20s
-  Ao atingir o threshold (🔢 referência ~50s) → boss aparece
+  A cada 🔢 10s acumulados → nasce 1 boss
   ```
-- Trocar de Floor **não reseta**. Morte **não reseta**. Voltar ao térreo **não reseta**. Pausa **não avança** (Seção 9).
+- Trocar de Floor **não reseta**. Morte (de boss ou do jogador) **não reseta**. Voltar ao térreo **não reseta**. Pausa **não avança** (Seção 9).
 - **Reseta apenas quando o dia termina.**
-- Se houver múltiplos bosses possíveis no mesmo Floor, todos spawnam simultaneamente quando o timer completa (sujeito a balanceamento).
-- 🟡 **Pendência mantida:** como o timer não reseta ao ser atingido, a pergunta real não é "atingir o mesmo threshold de novo" — é: **após o primeiro Boss Spawn de um Floor, como é determinado o próximo spawn periódico daquele Floor, especialmente se o boss anterior ainda estiver vivo?** Não presumir novo intervalo fixo, reset parcial, fila, timer secundário, ou limite de bosses simultâneos.
+- **Correção (Sprint 24) — periodicidade e rotação, decisão do usuário:** o Boss Timer deixou de ser um threshold único por dia — é um intervalo fixo que se repete indefinidamente (até o reset do fim do dia), de 🔢 10s em 10s. Isso resolve a pendência antiga de "o que acontece após o primeiro Boss Spawn":
+  - Com N bosses disponíveis no Floor, a 1ª vez que o ciclo roda, a ordem é sorteada aleatoriamente entre os N (sem repetir dentro do próprio ciclo) — ex.: com 3 bosses, 1 aleatório nasce aos 10s, outro (excluindo o já sorteado) aos 20s, o último aos 30s.
+  - A aleatoriedade só acontece 1x: depois que os N já nasceram cada um 1x (ciclo completo), o ciclo reseta e **repete a mesma ordem já sorteada da primeira vez** — não sorteia de novo a cada ciclo.
+  - Caso degenerado com 1 boss só no Floor: nasce o mesmo boss repetidamente a cada 10s — sem exceção de código, é só N=1 na mesma lógica de rotação.
+  - **Bosses empilham:** se o boss anterior ainda estiver vivo quando o timer completar de novo, nasce um segundo em cima dele — os dois ficam vivos ao mesmo tempo. Não existe fila nem espera pelo boss anterior morrer.
+  - O timer **não reseta com a morte de um boss** — é um relógio fixo e contínuo enquanto o Floor acumula tempo, independente de quantos bosses nasceram ou morreram nesse meio tempo.
+  - **Local de nascimento:** mesma regra de posição de monstro comum (Seção 23, "Onde monstros nascem") — qualquer posição válida do mapa, não um ponto fixo de arena.
+  - **Agressão imediata:** diferente de monstro comum (que só entra em combate ao detectar o jogador por `observationRadius`), todo boss nasce já com o jogador como alvo e vai direto até ele, mesmo nascendo longe — sem fase de patrulha/idle.
+  - **Agressão imediata também vale na volta da Camuflagem (decisão do usuário):** enquanto o jogador está camuflado (Ranger, Seção 17/`IsPlayerUntargetable`), o boss perde o alvo igual a um monstro comum — mas no instante exato em que a camuflagem termina, ele recupera o alvo automaticamente, sem precisar que o jogador volte a entrar no `observationRadius`. Monstro comum continua exigindo essa redetecção normalmente; só o boss tem esse atalho.
+  - Todo Floor com elenco de boss definido usa esse sistema (não é uma feature opt-in por Floor) — Floors cujo elenco de boss ainda não foi produzido (ex.: Floor 3+ antes da Deadline 8) simplesmente não têm boss nenhum ainda por estarem incompletos na produção, não por uma exceção de design.
 
 ---
 
@@ -1455,7 +1463,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 | Último Active Floor da run | Não existe subida além dele — sem comportamento visual extra além de não haver escada de subida disponível |
 | Controle Remoto em cooldown | Ação bloqueada |
 | Boss Timer ao trocar de Floor / morrer / voltar ao térreo | Continua acumulado, não reseta |
-| Determinação do próximo Boss Spawn periódico após o primeiro, com o boss anterior ainda vivo | 🟡 não definido (Seção 22) |
+| Boss anterior ainda vivo quando o timer completa de novo | Nasce um segundo boss em cima dele — empilham, sem fila nem espera (Seção 22, correção Sprint 24) |
 | Floor Variant ao trocar de dia/morrer/remover Floor | Nunca sorteia de novo dentro da mesma run |
 
 ### Inventário / Loot / Employees
@@ -1482,7 +1490,6 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Controle Remoto (Seção 26):** decisão final entre Variante A (andares visitados) e Variante B (todos os Active Floors) — configurável por playtest, não uma lacuna estrutural.
 - Reanimação da animação de summon de pets permanentes ao retornar de uma morte.
 - Ajudante sem alvo no alcance / alvo morre antes do ataque concluir.
-- Determinação do próximo Boss Spawn periódico após o primeiro, com o boss anterior ainda vivo.
 - Tecla de pause/menu geral.
 - Condição exata que ativaria a Carta de Diamante do Gambler acima de 100% de vida.
 - Condição de desbloqueio de Demonologist, Necromancer, The Gambler, Plague Doctor.
@@ -1496,7 +1503,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Combat / Floor Transition (Seção 24):** definir o comportamento de Persistent Areas, projéteis, summons e outros efeitos temporários deixados no Floor anterior ao trocar de Floor. Independentemente da solução futura, eles não podem continuar causando dano enquanto aquele Floor não for o Current Combat Floor — pendência localizada do Combat System, não crítica da máquina de estados.
 
 🔢 **Balanceamento:**
-Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por andar, desbloqueio numérico do Mage e do Blood Mage, threshold do Boss Timer (~50s referência), curvas de Attack Speed por família de fonte, quantidade/distância de baús por Floor Variant, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37).
+Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por andar, desbloqueio numérico do Mage e do Blood Mage, intervalo do Boss Timer (10s referência, Sprint 24), curvas de Attack Speed por família de fonte, quantidade/distância de baús por Floor Variant, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37).
 
 ---
 

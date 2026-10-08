@@ -79,10 +79,18 @@ public class FloorPopulationManager : MonoBehaviour
         for (int i = 0; i < missing; i++) SpawnOne();
     }
 
+    // Sorteia um ponto caminhável dentro do próprio GridGraph do Floor — substitui a
+    // necessidade de vários spawnPoints colocados à mão. Só sabe quais pontos são "sala, não
+    // parede" porque o GridGraph já escaneou os colisores no Scan (Editor); com colliders
+    // faltando/parciais (você mencionou que alguns detalhes de Floor ainda não têm), o graph
+    // simplesmente considera aquela área caminhável até o collider real ser adicionado e o
+    // graph reescaneado — nada quebra, só o "chão" pode nascer maior do que a arte final.
+    // (Sprint 24: lógica movida pra FloorSpawnUtility, reaproveitada pelo BossSpawnManager —
+    // comportamento idêntico, cachedWalkableNodes continua sendo o cache por instância/Floor.)
     private void SpawnOne()
     {
         if (monsterPrefabs.Length == 0) return;
-        if (!TryGetRandomGraphPoint(out var spawnPosition)) return;
+        if (!FloorSpawnUtility.TryGetRandomWalkablePoint(ownerFloor, ref cachedWalkableNodes, out var spawnPosition)) return;
 
         var prefab = monsterPrefabs[Random.Range(0, monsterPrefabs.Length)];
         if (prefab == null) return;
@@ -91,54 +99,8 @@ public class FloorPopulationManager : MonoBehaviour
         var enemyController = enemyObj.GetComponent<EnemyController>();
         if (enemyController != null) enemyController.ownerFloor = ownerFloor;
 
-        RestrictToOwnerGraph(enemyObj);
+        FloorSpawnUtility.RestrictToOwnerGraph(enemyObj, ownerFloor);
 
         aliveEnemies.Add(enemyObj);
-    }
-
-    // Sorteia um ponto caminhável dentro do próprio GridGraph do Floor — substitui a
-    // necessidade de vários spawnPoints colocados à mão. Só sabe quais pontos são "sala, não
-    // parede" porque o GridGraph já escaneou os colisores no Scan (Editor); com colliders
-    // faltando/parciais (você mencionou que alguns detalhes de Floor ainda não têm), o graph
-    // simplesmente considera aquela área caminhável até o collider real ser adicionado e o
-    // graph reescaneado — nada quebra, só o "chão" pode nascer maior do que a arte final.
-    private bool TryGetRandomGraphPoint(out Vector3 point)
-    {
-        point = default;
-
-        if (cachedWalkableNodes == null)
-        {
-            var graph = GetOwnerGraph();
-            if (graph == null) return false;
-
-            cachedWalkableNodes = new List<GraphNode>();
-            graph.GetNodes(node => { if (node.Walkable) cachedWalkableNodes.Add(node); });
-        }
-
-        if (cachedWalkableNodes.Count == 0) return false;
-
-        point = (Vector3)PathUtilities.GetPointsOnNodes(cachedWalkableNodes, 1)[0];
-        return true;
-    }
-
-    private NavGraph GetOwnerGraph()
-    {
-        if (ownerFloor == null || string.IsNullOrEmpty(ownerFloor.astarGraphName)) return null;
-        if (AstarPath.active == null) return null;
-        return AstarPath.active.data.FindGraph(g => g.name == ownerFloor.astarGraphName);
-    }
-
-    // Restringe a busca de path do Seeker ao GridGraph do próprio Floor (evita, por exemplo,
-    // um monstro do Floor 2 encontrar um nó de path pertencente ao Floor 1). Precisa do
-    // AstarPath da cena já configurado (Editor) com um graph batizado igual a
-    // ownerFloor.astarGraphName — sem isso (ainda não configurado, ou nome não bate), o
-    // Seeker fica sem restrição (busca em todos os graphs), estado seguro de fallback.
-    private void RestrictToOwnerGraph(GameObject enemyObj)
-    {
-        var graph = GetOwnerGraph();
-        if (graph == null) return;
-
-        var seeker = enemyObj.GetComponent<Seeker>();
-        if (seeker != null) seeker.graphMask = GraphMask.FromGraph(graph);
     }
 }

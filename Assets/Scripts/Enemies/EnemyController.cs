@@ -1,13 +1,39 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
 using Pathfinding.RVO;
 
 public abstract class EnemyController : MonoBehaviour, IDamageable
 {
+    // Proteção central contra dano duplicado em ataques de área (bug real: primário do Mage
+    // e o ataque do Pet aplicavam 2x). Todo monstro tem 2 Collider2D no mesmo GameObject — um
+    // corpo físico (CapsuleCollider2D, sem trigger) e um trigger genérico maior (CircleCollider2D)
+    // — então qualquer Physics2D.OverlapXxx/Collider2D.Overlap() sem filtro encontra o MESMO
+    // monstro 2x, um por collider. Resolve o array bruto pra uma lista de EnemyController SEM
+    // repetição; todo ataque em área (hero, pet, boss) deve passar os resultados crus por aqui
+    // ANTES de aplicar dano, em vez de reimplementar esse dedup a cada script novo.
+    public static void CollectDistinct(Collider2D[] results, int count, List<EnemyController> output)
+    {
+        output.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            if (!results[i].CompareTag("Enemy")) continue;
+            var enemy = results[i].GetComponent<EnemyController>();
+            if (enemy == null || output.Contains(enemy)) continue;
+            output.Add(enemy);
+        }
+    }
+
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20;
     public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
     public FloorDefinition ownerFloor;
+
+    // Bestiário (Rat People Royalty) — "summons criados por este boss não geram loot". Quem
+    // sumona (ex.: RatPeopleThrowProjectile) seta isso false logo após o Instantiate(); todo
+    // monstro "de verdade" (spawn normal via FloorPopulationManager/BossSpawnManager) nunca
+    // toca nisso, então o default true cobre 100% do resto do jogo sem precisar de mudança.
+    public bool dropsLoot = true;
 
     // Bosses são imunes a knockback (decisão do usuário, Sprint 18→19) — sem isso, ataques
     // com empurrão forte (ex.: golpe do Barbarian) tirariam o boss da própria arena/posição
@@ -56,6 +82,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // pro corpo a corpo, já que ataques à distância não entram no observationRadius sozinhos.
     private bool combatLocked;
 
+    // Sprint 24 (Boss Spawn System) — detecta a transição true -> false da Camuflagem
+    // (mesmo padrão de wasUsingSecondaryAbility em HeroController.Update()), só pra saber o
+    // instante exato em que ela ACABA de cair (ver Update()).
+    private bool wasPlayerUntargetable;
+
     private enum AttackAnimState { Idle, Attacking }
     private AttackAnimState attackAnimState = AttackAnimState.Idle;
     private float attackAnimElapsed;
@@ -73,6 +104,13 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     private Vector2 spawnOrigin;
     private float dieElapsed;
     private bool isDead;
+
+    // Exposição read-only pra subclasse que precisa de um Update() próprio rodando por cima
+    // do ciclo de combate padrão (ex.: SpiderQueenController, teia automática em paralelo à
+    // perseguição) e precisa parar de agir no instante exato em que o monstro morre, sem
+    // esperar o próximo frame do Update() base decidir isso por conta própria.
+    protected bool IsDead => isDead;
+
     private bool dieHandled; // evita destruir/dropar loot duas vezes (evento + timeout de segurança)
     protected Animator animator;
     private SpriteRenderer spriteRenderer;
@@ -224,12 +262,20 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (player == null) TryFindPlayer();
         if (player == null) return;
 
-        // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin)
-        // — o monstro perde o alvo de verdade (isInCombat=false), não só congela: continua
-        // se movendo/tocando a própria animação de patrulha normalmente, só sem saber que o
-        // player existe. Precisa redetectar via observationRadius depois que acabar (ver
-        // guarda em UpdatePatrol) — não retoma perseguição sozinho quando a camuflagem cai.
-        if (HeroController.IsPlayerUntargetable) isInCombat = false;
+        // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin) —
+        // o monstro perde o alvo de verdade (isInCombat=false), não só congela: continua se
+        // movendo/tocando a própria animação de patrulha normalmente, só sem saber que o player
+        // existe. Monstro comum precisa redetectar via observationRadius depois que a
+        // camuflagem cai (ver guarda em UpdatePatrol) — não retoma perseguição sozinho.
+        //
+        // Boss é a ÚNICA exceção (decisão do usuário, Sprint 24): perde o alvo durante a
+        // camuflagem igual a qualquer monstro comum, mas RECUPERA automaticamente no instante
+        // exato em que ela cai, sem esperar o jogador voltar pro observationRadius — mesmo
+        // critério de "agressão imediata" do spawn, reaplicado na queda da camuflagem.
+        bool isPlayerUntargetable = HeroController.IsPlayerUntargetable;
+        if (isPlayerUntargetable) isInCombat = false;
+        else if (wasPlayerUntargetable && isBoss) ForceImmediateAggro();
+        wasPlayerUntargetable = isPlayerUntargetable;
 
         if (hasAttackAnimation) attackAnimationCooldown.Tick(Time.deltaTime);
 
@@ -562,6 +608,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             TriggerDamageFlash();
             AccelerateAttack();
         }
+        // DamageTrigger é uma transição Any State sem Exit Time (Base_Melee/Base_Ranged) —
+        // refirar enquanto JÁ está no estado Damage reinicia o clipe do zero a cada hit, em
+        // vez de deixar ele terminar. Dano repetido rápido (ex.: rastro/Fire da Ultimate do
+        // Mage) prendia o monstro no Damage pra sempre: MoveInDirection() só move de verdade
+        // quando o Animator confirma o estado "Walk", então ele nunca escapava pra sair da
+        // área de dano — só acumulava mais hits. Ainda pisca branco em todo hit (feedback
+        // visual continua), só não reinicia a pose enquanto já está reagindo a uma anterior.
+        else if (AnimatorStateCheck.IsInState(animator, "Damage")) TriggerDamageFlash();
         else AnimatorTrigger("DamageTrigger");
     }
 
@@ -593,6 +647,20 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     {
         if (isBoss) return;
         knockbackVelocity = direction.normalized * force;
+    }
+
+    // Sprint 24 (Boss Spawn System) — permite ao BossSpawnManager marcar o boss sem
+    // depender do Inspector de cada prefab já vir configurado certo.
+    public void SetIsBoss(bool value) => isBoss = value;
+
+    // Sprint 24 (Boss Spawn System) — decisão do usuário: todo boss nasce já em combate,
+    // mesmo longe do jogador, sem fase de patrulha/idle esperando observationRadius
+    // detectar (diferente de todo monstro comum). Chamado pelo BossSpawnManager logo após
+    // Instantiate(), e de novo internamente quando a Camuflagem cai (ver Update()).
+    public void ForceImmediateAggro()
+    {
+        combatLocked = true;
+        isInCombat = true;
     }
 
     private void UpdateKnockback()
@@ -635,15 +703,22 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Chamado por um Animation Event no último frame do clipe "die" — a animação é a
     // fonte de verdade do timing: o GameObject só é destruído e o loot só aparece
     // depois que a morte terminou de tocar por completo (GDD Seção 22).
-    public void AnimationDieEndEvent()
+    // virtual a partir da Sprint 24 — MotherSlimeController precisa rodar código (spawnar
+    // os 3 filhotes) no momento exato da morte, antes do Destroy(gameObject) deste método.
+    // Nenhum outro monstro sobrescreve isso hoje — zero mudança de comportamento pra eles.
+    public virtual void AnimationDieEndEvent()
     {
         if (dieHandled) return; // proteção — evento + timeout de segurança não destroem/dropam duas vezes
         dieHandled = true;
 
-        var lootObj = new GameObject("Loot_MonsterEssence");
-        lootObj.transform.position = transform.position;
-        var drop = lootObj.AddComponent<LootDrop>();
-        drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = monsterEssenceDropAmount };
+        // Bestiário (Rat People Royalty): "summons criados por este boss não geram loot".
+        if (dropsLoot)
+        {
+            var lootObj = new GameObject("Loot_MonsterEssence");
+            lootObj.transform.position = transform.position;
+            var drop = lootObj.AddComponent<LootDrop>();
+            drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = monsterEssenceDropAmount };
+        }
 
         Destroy(gameObject);
     }
