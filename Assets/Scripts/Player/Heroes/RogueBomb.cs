@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Projétil da Ultimate do Rogue — mesma estrutura do MageFireball (GDD Seção 13, Ground
@@ -26,6 +27,7 @@ public class RogueBomb : MonoBehaviour
     private float distanceTraveled;
     private bool exploded;
     private bool explosionHitFired;
+    private readonly List<EnemyController> explosionTargets = new();
 
     private Vector3 ExplosionCenter => transform.position + Vector3.up * explosionGizmoOffsetY;
 
@@ -97,11 +99,9 @@ public class RogueBomb : MonoBehaviour
     private void ApplyExplosionDamage()
     {
         var hits = Physics2D.OverlapCircleAll(ExplosionCenter, explosionRadius, enemyLayerMask);
-        foreach (var hit in hits)
-        {
-            var enemy = hit.GetComponent<EnemyController>();
-            if (enemy != null) enemy.TakeDamage(damage);
-        }
+        // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(hits, hits.Length, explosionTargets);
+        foreach (var enemy in explosionTargets) enemy.TakeDamage(damage);
     }
 
     // Animation Event, no último frame do clipe de explosão (só chamado se um Animator

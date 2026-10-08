@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // IA genérica de pet de início de dia (GDD: "Pets de início de dia (Mage/Blood Mage)") —
@@ -37,6 +38,7 @@ public class PetController : MonoBehaviour
     private bool isAttacking;
     private bool attackHitFired;
     private bool isDead;
+    private readonly List<EnemyController> hitTargets = new();
 
     public void Initialize(Transform petOwner, Transform spawnPoint)
     {
@@ -157,12 +159,9 @@ public class PetController : MonoBehaviour
 
         var results = new Collider2D[16];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Enemy")) continue;
-            var enemy = results[i].GetComponent<EnemyController>();
-            if (enemy != null) enemy.TakeDamage(damage);
-        }
+        // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(results, count, hitTargets);
+        foreach (var enemy in hitTargets) enemy.TakeDamage(damage);
     }
 
     // Animation Event, fim do clipe de ataque.

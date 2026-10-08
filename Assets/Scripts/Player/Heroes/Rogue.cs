@@ -9,6 +9,7 @@ public class Rogue : HeroController
     [SerializeField] private LayerMask enemyLayerMask; // configurar no Inspector = layer dos monstros (mesmo padrão do Druid)
     [SerializeField] private float pulseKnockbackForce = 4f; // 🔢 mesmo valor/padrão do knockbackForce do Barbarian — mesma categoria "Self Area Pulse"
     private bool pulseHitFired;
+    private readonly List<EnemyController> pulseTargets = new();
 
     // Debug — mesmo padrão da Vine/RogueBomb/EnemyController: NÃO é um trigger de verdade, é
     // só pra visualizar/posicionar o raio do OverlapCircleAll no Editor sem precisar rodar em
@@ -91,18 +92,15 @@ public class Rogue : HeroController
         pulseHitFired = true;
 
         var hits = Physics2D.OverlapCircleAll(PulseCenter, pulseRadius, enemyLayerMask);
-        foreach (var hit in hits)
+        // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
+        // trigger genérico), então OverlapCircleAll sem isso acertava o mesmo monstro 2x
+        // (mesmo bug real já corrigido no primário do Mage — ver EnemyController.CollectDistinct()).
+        // TakeDamage() já é seguro contra corpo já morto, sem checagem extra aqui.
+        EnemyController.CollectDistinct(hits, hits.Length, pulseTargets);
+        foreach (var enemy in pulseTargets)
         {
-            var enemy = hit.GetComponent<EnemyController>();
-            // TakeDamage() já é seguro contra corpo já morto (EnemyController guarda isDead
-            // internamente) — sem checagem extra aqui, diferente das vinhas do Druid (que
-            // precisavam do check pra não incluir cadáveres na ORDENAÇÃO por distância; aqui
-            // não existe ordenação nenhuma, é "todo mundo no raio").
-            if (enemy != null)
-            {
-                enemy.TakeDamage(stats.damage);
-                enemy.ApplyKnockback(AimDirection, pulseKnockbackForce);
-            }
+            enemy.TakeDamage(stats.damage);
+            enemy.ApplyKnockback(AimDirection, pulseKnockbackForce);
         }
     }
 

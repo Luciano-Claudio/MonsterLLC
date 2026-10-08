@@ -270,18 +270,14 @@ public class Mage : HeroController
         isAttacking = false;
     }
 
-    // GDD: "ao morrer o herói, o pet retorna junto na transição" — a Phoenix toca a própria
-    // animação de desaparecer (Disappear()), não some instantaneamente. currentPet vira null
-    // na hora pra SummonPet() do próximo dia não tentar destruir de novo um objeto que já vai
-    // se destruir sozinho no fim da própria animação.
+    // GDD (Seção 52, "Pet retorna junto"): a Phoenix NÃO desaparece na morte do herói — ela
+    // sobrevive e se teleporta sozinha pro térreo de graça, via PetController.HandleFloorChanged()
+    // (já inscrito em GameEvents.OnFloorChanged, que o Respawn() da base já dispara através de
+    // FloorManager.SetCurrentFloor). Chamar Disappear() aqui destruía o pet de vez e contradizia
+    // essa regra — era por isso que o pet nunca voltava depois do respawn. currentPet continua
+    // vivo e é só substituído no AnimationSummonPetEvent() do próximo dia, como já era.
     protected override void OnHeroDeath()
     {
-        if (currentPet != null)
-        {
-            currentPet.Disappear();
-            currentPet = null;
-        }
-
         // Morrer no meio do teleporte (entre a sprite sumir e o projétil chegar) não pode
         // deixar o Mage invisível pra sempre no respawn — o próprio HeroController.OnDeath()
         // já toca o DieTrigger, então a sprite precisa estar de volta pra morte aparecer.

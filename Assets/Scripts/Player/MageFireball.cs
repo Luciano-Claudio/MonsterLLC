@@ -43,6 +43,7 @@ public class MageFireball : MonoBehaviour
     private float groundedElapsed;
     private AttackCooldown groundedTick;
     private readonly HashSet<EnemyController> enemiesInRange = new();
+    private readonly List<EnemyController> explosionTargets = new();
 
     private void Awake()
     {
@@ -132,12 +133,10 @@ public class MageFireball : MonoBehaviour
 
         var results = new Collider2D[16];
         int count = Physics2D.OverlapCircle(transform.position, explosionRadius, ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Enemy")) continue;
-            var enemy = results[i].GetComponent<EnemyController>();
-            if (enemy != null) enemy.TakeDamage(impactDamage);
-        }
+        // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
+        // O dano no chão (UpdateGrounded) já é seguro — usa enemiesInRange, um HashSet.
+        EnemyController.CollectDistinct(results, count, explosionTargets);
+        foreach (var enemy in explosionTargets) enemy.TakeDamage(impactDamage);
     }
 
     // Animation Event, no fim do clipe "Explosion" — vira a área persistente no chão (mesmo

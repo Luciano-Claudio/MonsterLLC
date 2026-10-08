@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Barbarian : HeroController
@@ -43,6 +44,7 @@ public class Barbarian : HeroController
     // Mesma causa raiz já corrigida em EnemyController.AnimationHitEvent().
     private bool attackHitFired;
     private bool ultimateLandFired;
+    private readonly List<EnemyController> hitTargets = new();
 
     private static readonly Vector2[] EightDirections =
     {
@@ -111,12 +113,12 @@ public class Barbarian : HeroController
 
         var results = new Collider2D[16];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
+        // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
+        // trigger genérico), então Overlap() sem isso acertava o mesmo monstro 2x (mesmo bug
+        // real já corrigido no primário do Mage — ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(results, count, hitTargets);
+        foreach (var enemy in hitTargets)
         {
-            if (!results[i].CompareTag("Enemy")) continue;
-            var enemy = results[i].GetComponent<EnemyController>();
-            if (enemy == null) continue;
-
             enemy.TakeDamage(damage);
             enemy.ApplyKnockback(AimDirection, knockbackForce);
         }

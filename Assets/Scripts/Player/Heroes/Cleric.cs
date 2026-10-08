@@ -15,6 +15,7 @@ public class Cleric : HeroController
     // de desenhar a carta de verdade.
     [SerializeField] private int projectileCount = 1; // 🔢 teste
     private readonly List<EnemyController> pendingTargets = new List<EnemyController>();
+    private readonly List<EnemyController> prayerTargets = new List<EnemyController>();
 
     // Rede de segurança genérica — mesmo padrão do resto do elenco.
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
@@ -179,10 +180,13 @@ public class Cleric : HeroController
     public void AnimationPrayerCastEvent()
     {
         var hits = Physics2D.OverlapCircleAll(PrayerCenter, prayerRadius, enemyLayerMask);
-        foreach (var hit in hits)
+        // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
+        // Sem isso, um monstro com 2 Collider2D reaplicava WordOfPain 2x no mesmo cast (não
+        // dobra dano por tick, mas reinicia a duração à toa e desperdiça trabalho).
+        EnemyController.CollectDistinct(hits, hits.Length, prayerTargets);
+        foreach (var enemy in prayerTargets)
         {
-            var enemy = hit.GetComponent<EnemyController>();
-            if (enemy == null || HealthSystem.IsDead(enemy.stats.health)) continue;
+            if (HealthSystem.IsDead(enemy.stats.health)) continue;
 
             var statusEffects = enemy.GetComponent<StatusEffectController>();
             if (statusEffects != null) statusEffects.ApplyStatusEffect(StatusEffectType.WordOfPain, prayerDuration, stats.damage * prayerTickDamageMultiplier);

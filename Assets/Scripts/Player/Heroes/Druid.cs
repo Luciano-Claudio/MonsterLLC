@@ -64,6 +64,7 @@ public class Druid : HeroController
     private float elkFormElapsed;
     private float humanMaxHealth, humanDamage, humanMoveSpeed;
     private bool elkClawHitFired;
+    private readonly List<EnemyController> elkClawTargets = new();
 
     // ---------- Habilidade Secundária (Shift) — transformação em Coruja (GDD Seção 16/17.4) ----------
     [Header("Habilidade Secundária (Shift) — Coruja")]
@@ -273,12 +274,10 @@ public class Druid : HeroController
 
         var results = new Collider2D[16];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
+        // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(results, count, elkClawTargets);
+        foreach (var enemy in elkClawTargets)
         {
-            if (!results[i].CompareTag("Enemy")) continue;
-            var enemy = results[i].GetComponent<EnemyController>();
-            if (enemy == null) continue;
-
             enemy.TakeDamage(stats.damage); // já multiplicado (AnimationElkTransformInEndEvent)
             enemy.ApplyKnockback(AimDirection, elkKnockbackForce);
         }

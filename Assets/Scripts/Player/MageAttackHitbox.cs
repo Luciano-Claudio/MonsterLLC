@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // GameObject filho do Mage (girado pelo Mage.cs no Update(), não por si próprio) — trigger
@@ -11,6 +12,7 @@ public class MageAttackHitbox : MonoBehaviour
     private Animator animator;
     private float pendingDamage;
     private bool hitFired;
+    private readonly List<EnemyController> hitTargets = new();
 
     private void Awake()
     {
@@ -34,11 +36,10 @@ public class MageAttackHitbox : MonoBehaviour
 
         var results = new Collider2D[16];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Enemy")) continue;
-            var enemy = results[i].GetComponent<EnemyController>();
-            if (enemy != null) enemy.TakeDamage(pendingDamage);
-        }
+        // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
+        // trigger genérico), então Overlap() sem isso acertava o mesmo monstro 2x (bug real:
+        // dano dobrado no primário do Mage). Ver EnemyController.CollectDistinct().
+        EnemyController.CollectDistinct(results, count, hitTargets);
+        foreach (var enemy in hitTargets) enemy.TakeDamage(pendingDamage);
     }
 }

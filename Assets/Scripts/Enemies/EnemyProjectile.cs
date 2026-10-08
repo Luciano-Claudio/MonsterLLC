@@ -66,10 +66,23 @@ public class EnemyProjectile : MonoBehaviour
         animator = GetComponent<Animator>(); // pode não existir (ImpactMode.Simple não precisa de Animator)
     }
 
-    public void Launch(Vector2 dir, float dmg)
+    // minTravelDistance (opcional) — distância real até o player no instante do tiro
+    // (RangedEnemyController já mede isso pra decidir mirar). "lifetime" sozinho é um valor
+    // FIXO por prefab (🔢, pensado pra cobrir só stats.attackRadius) — mas o player pode ter
+    // se afastado durante o windup da animação (entre o InAttackRange() que autorizou o
+    // ataque e o Animation Event que chama Launch() de verdade, alguns frames depois), ficando
+    // mais longe do que o lifetime original cobre. Nesse caso o projétil "morria" (ReachedLimit)
+    // bem antes de alcançar o player, mesmo mirado certinho — bug real reportado: o projétil
+    // caía extremamente próximo do player, sem acertar. Aqui só ESTENDE o lifetime quando
+    // necessário (nunca encurta), então nenhum prefab já calibrado perde alcance.
+    public void Launch(Vector2 dir, float dmg, float minTravelDistance = 0f)
     {
         direction = dir.normalized;
         damage = dmg;
+
+        const float travelMargin = 1f; // 🔢 cobre o raio do próprio player + folga de movimento residual
+        float requiredLifetime = (minTravelDistance + travelMargin) / Mathf.Max(speed, 0.01f);
+        if (requiredLifetime > lifetime) lifetime = requiredLifetime;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — por isso o -90°: sem
         // ele, ângulo 0 (Leste) deixaria o sprite ainda apontando pra cima em vez de deitado

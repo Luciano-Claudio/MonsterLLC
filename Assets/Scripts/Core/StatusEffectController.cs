@@ -103,6 +103,19 @@ public class StatusEffectController : MonoBehaviour
         statusAnimator.Play(currentVisualState);
     }
 
+    // Chamado na morte do herói/monstro (HeroController.OnDeath() / EnemyController.Die()) —
+    // sem isso, um Efeito Nocivo ativo no instante da morte fica "congelado" (Update() já
+    // para de chamar Tick() quando isDead/morto, então o efeito nunca decrementa nem
+    // termina) e retoma sozinho depois do respawn, como se nada tivesse acontecido (bug
+    // real: herói respawnava ainda queimando). Reseta o visual pra "Empty" na hora, mesmo
+    // critério de "não faz sentido renascer com o status antigo ainda ativo".
+    public void ClearAllEffects()
+    {
+        activeEffects.Clear();
+        isFlashing = false;
+        UpdateVisual();
+    }
+
     // Chamado por quem aplica o efeito (ex.: MageFireball, no tick da área de fogo no chão).
     // Reaplicar o mesmo tipo só reseta a duração/dano da instância existente — não empilha
     // múltiplas instâncias do mesmo efeito na mesma entidade.

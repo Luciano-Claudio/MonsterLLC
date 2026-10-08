@@ -49,7 +49,10 @@ public class RangedEnemyController : EnemyController
         proj.speed = projectileSpeed;
         proj.ownerFloor = ownerFloor;
         // Sem telegraph — mira a posição atual do player no instante exato em que a
-        // animação de conjuração manda o Animation Event, não uma posição travada.
-        proj.Launch((player.position - transform.position).normalized, stats.attackDamage);
+        // animação de conjuração manda o Animation Event, não uma posição travada. Passa a
+        // distância real pro Launch() garantir alcance suficiente (ver comentário lá) — o
+        // player pode ter se afastado desde o InAttackRange() que autorizou este ataque.
+        Vector2 toPlayer = player.position - transform.position;
+        proj.Launch(toPlayer.normalized, stats.attackDamage, toPlayer.magnitude);
     }
 }
