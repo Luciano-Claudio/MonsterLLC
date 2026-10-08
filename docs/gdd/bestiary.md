@@ -1739,10 +1739,9 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 ### Andar 2
 
 #### Rat People Royalty — **Exceção pontual**
-- **Tipo:** Melee especial
-- **Movimentação:** Persegue diretamente o jogador
-- **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Dano por contato normal (cooldown próprio). Além disso, mantém uma habilidade especial: arremessa um Rat People na direção do jogador (animação própria, `throw_ratpeople`, com Animation Event no frame do arremesso) — causa dano na trajetória e, ao final, o Rat People arremessado nasce como unidade viva no ponto de chegada.
+- **Tipo:** Melee/Ranged híbrido
+- **Movimentação:** Persegue diretamente o jogador. Nunca foge — mesmo fora do alcance de ambos os ataques, continua tentando fechar distância pro corpo a corpo.
+- **Comportamento:** 2 raios de ataque independentes, igual a um Ranged comum já tem o próprio raio. Dentro do raio de melee, ataca corpo a corpo de verdade (golpe real via Animation Event, 4 direções diagonais) — substitui o dano de contato passivo de versões anteriores. Entre o raio de melee e o raio de ataque à distância (próprio, maior que o de melee), arremessa um Rat People na direção do jogador (animação própria, 4 direções cardeais N/S/E/W, Animation Event no frame do arremesso) — causa dano na trajetória e, ao final (hit ou alcance máximo), o Rat People arremessado nasce como unidade viva no ponto de chegada. Além do raio de ataque à distância, nenhum dos dois alcança.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 360-1.440 | Chance: 100%
@@ -1752,7 +1751,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Dark Crystal: 12 | Chance: 8%
   - Soul Fragment: 12 | Chance: 6,4%
   - *Observação: summons criados por este boss não geram loot.*
-- **Animações necessárias:** idle, walk, idle_combat, throw_ratpeople (com Animation Event), damage, die.
+- **Animações necessárias:** idle, walk, idle_combat, attack (corpo a corpo, 4 diagonais, com Animation Event), throw_rat (arremesso, 4 cardeais, com Animation Event), damage, die.
 - **Asset de origem:** Minifantasy_Monster_Creatures_v1.0
 - **🔢 Dano estimado:** 30 | **🔢 Vida estimada:** 250
 
@@ -1792,8 +1791,8 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 
 #### Spider Queen — **Exceção pontual**
 - **Tipo:** Melee/Ranged híbrido
-- **Movimentação:** Persegue diretamente o jogador.
-- **Comportamento:** Dano por contato normal quando corpo a corpo (cooldown próprio). Além disso, mantém a habilidade de lançar teia: se o jogador estiver fora de alcance de contato, ela **auto-lança uma teia por cooldown** — sem nenhuma animação dedicada (igual a um Ranged comum) — que gruda no jogador e o prende (não consegue andar por alguns segundos). Continua perseguindo normalmente enquanto essa habilidade estiver em cooldown.
+- **Movimentação:** Persegue diretamente o jogador. Nunca foge — mesmo fora do alcance de ambos os ataques, continua tentando fechar distância pro corpo a corpo.
+- **Comportamento:** 2 raios de ataque independentes, igual a um Ranged comum já tem o próprio raio. Dentro do raio de melee, morde de verdade (bite, golpe real via Animation Event, 4 direções diagonais) — substitui o dano de contato passivo de versões anteriores. Entre o raio de melee e o raio de ataque à distância (próprio, maior que o de melee), dispara a teia (animação própria, 8 direções, projétil nasce no Animation Event) — a teia gruda no jogador e aplica o Efeito Ice (incapacitação, não consegue andar por alguns segundos; sem dano). Além do raio de ataque à distância, nenhuma das duas alcança.
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 600-2.400 | Chance: 100%
@@ -1802,7 +1801,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
   - Arcane Shard: 20-40 | Chance: 12%
   - Dark Crystal: 20 | Chance: 8%
   - Soul Fragment: 20 | Chance: 6,4%
-- **Animações necessárias:** idle, walk, idle_combat, damage, die. *(Sem `attack`/`shotweb` — a teia é um efeito sem animação própria, igual ao dano de contato)*
+- **Animações necessárias:** idle, walk, idle_combat, bite (corpo a corpo, 4 diagonais, com Animation Event), attack (teia, 8 direções, com Animation Event), damage, die.
 - **Asset de origem:** All_Exclusives_20260612
 - **🔢 Dano estimado:** 35 | **🔢 Vida estimada:** 325
 

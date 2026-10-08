@@ -2,6 +2,9 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 26 — Bosses Floor 2 (Exceções): Rat People Royalty, Spider Queen](sprint-26-floor2-excecoes.md) — Melee/Ranged híbrido com 2 raios de ataque independentes, `CustomAnimationGeneratorWindow` — **Floor 1–2 100% fechado (7/7 bosses)**
+- [Sprint 25 — Bosses Floor 2 (Padrão): Werewolf, Centaur King](sprint-25-floor2-padrao.md) — `MeleeEnemyController` padrão, sem script novo
+- [Sprint 24 — Boss Framework + Boss Timer + Bosses Floor 1](sprint-24-boss-framework-floor1.md) — `BossSpawnManager`, `FloorSpawnUtility`, Goblin King, Mother Slime Green/Blue — **inicia os bosses da Deadline 6**
 - [Sprint 19b — Sistema de Efeitos Nocivos (Fire + Bleeding) + correções de base em Mira/Shift](sprint-19b-efeitos-nocivos.md) — Efeitos Nocivos genérico, `DiagonalAimX/Y`, bugs de mira corrigidos em todo herói
 - [Sprint 19 — Mage Completo (Primário + Ultimate + Secundária/Shift + Pet Phoenix)](sprint-19.md) — Mage 100% jogável, além do escopo original
 - [Sprint 18b — Habilidade Secundária (Shift) — Barbarian + Ranger](sprint-18b-habilidade-secundaria.md) — Shift genérico pra todo herói, Barbarian e Ranger completos
