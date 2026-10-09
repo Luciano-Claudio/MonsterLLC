@@ -8,9 +8,12 @@ using UnityEngine;
 // (conferido no código atual); contanto que este prefab NÃO tenha a tag "Player", já é
 // invisível pra detecção de monstro sem nenhuma flag extra.
 //
-// Só 3 estados de verdade (sem Idle/Walk separados): "fly" cobre parado e se movendo ao
-// mesmo tempo (Blend Tree 4 direções, sempre mostrando a última direção conhecida mesmo
-// parado), "attack" e "die"/disappear (tocado quando o herói morre, não Destroy() instantâneo).
+// Phoenix usa só 3 estados de verdade (sem Idle/Walk separados): "Fly" cobre parado e se
+// movendo ao mesmo tempo (Blend Tree 4 direções, sempre mostrando a última direção conhecida
+// mesmo parado), "Attack" e "Die"/disappear (tocado quando o herói morre, não Destroy()
+// instantâneo). O Elemental de Sangue (Sprint 30) já tem Idle e Move como Blend Trees
+// separados — o único nome de estado que este script depende diretamente é "Summon" (ver
+// MoveTowards), então qualquer Animator com Summon + o resto funciona aqui.
 public class PetController : MonoBehaviour
 {
     [SerializeField] private float chaseRadius = 6f; // 🔢 raio ao redor do DONO (não do pet) onde aceita perseguir
@@ -40,10 +43,10 @@ public class PetController : MonoBehaviour
     private bool isDead;
     private readonly List<EnemyController> hitTargets = new();
 
-    // sizeMultiplier/actionSpeedMultiplier vêm do Mage (ou futuramente do Blood Mage, que
-    // reaproveita esta mesma classe) — upgrades de tamanho/velocidade de ataque do pet,
-    // decididos pelo controlador do herói, não por este prefab (mesmo critério do resto do
-    // projeto — ver comentário no PaladinHammer.cs/HeroProjectile.cs, por exemplo).
+    // sizeMultiplier/actionSpeedMultiplier vêm do Mage ou do Blood Mage (os 2 reaproveitam
+    // esta mesma classe) — upgrades de tamanho/velocidade de ataque do pet, decididos pelo
+    // controlador do herói, não por este prefab (mesmo critério do resto do projeto — ver
+    // comentário no PaladinHammer.cs/HeroProjectile.cs, por exemplo).
     public void Initialize(Transform petOwner, Transform spawnPoint, float sizeMultiplier, float actionSpeedMultiplier)
     {
         owner = petOwner;
@@ -91,16 +94,31 @@ public class PetController : MonoBehaviour
         if (currentTarget != null)
         {
             float distToTarget = Vector2.Distance(transform.position, currentTarget.position);
-            if (distToTarget <= contactRange) TryAttack();
+            if (distToTarget <= contactRange)
+            {
+                SetMoving(false);
+                TryAttack();
+            }
             else MoveTowards(currentTarget.position);
         }
         else
         {
             float distToOwner = Vector2.Distance(transform.position, owner.position);
             if (distToOwner > leashDistance) MoveTowards(owner.position);
-            // Dentro do leash e sem alvo: fica parado, mantendo a última pose de "fly"
-            // (não existe pose de "parado" separada — o Blend Tree cobre os dois casos).
+            // Dentro do leash e sem alvo: fica parado, mantendo a última pose conhecida (Phoenix
+            // cobre parado+movendo num "Fly" só — o Elemental de Sangue usa IsMoving pra
+            // transicionar entre Idle e Move de verdade, ver SetMoving).
+            else SetMoving(false);
         }
+    }
+
+    // Phoenix não tem esse parâmetro no Animator — SetBool() num parâmetro inexistente é
+    // ignorado silenciosamente pela Unity, sem erro, então chamar isso sempre (pros 2 pets) é
+    // seguro. Só o Elemental de Sangue (Sprint 30) realmente usa IsMoving pra transicionar
+    // entre Idle e Move (mesmo critério do IsMoving do EnemyController/HeroController).
+    private void SetMoving(bool moving)
+    {
+        if (animator != null) animator.SetBool("IsMoving", moving);
     }
 
     // Raio de perseguição centrado no DONO, não no pet (GDD, explícito) — um pet que já esteja
@@ -131,16 +149,19 @@ public class PetController : MonoBehaviour
     {
         Vector2 dir = (destination - (Vector2)transform.position).normalized;
         facing = dir;
+        SetMoving(true);
         if (animator != null)
         {
             animator.SetFloat("DirX", dir.x);
             animator.SetFloat("DirY", dir.y);
         }
 
-        // Movimento real só durante "Fly" — mesmo critério do HeroController pro "Walk".
-        // Sem isso, o pet deslizava durante o clipe de Summon (antes do Animator
-        // transicionar de verdade pro Fly), feio demais visualmente.
-        if (!AnimatorStateCheck.IsInState(animator, "Fly")) return;
+        // Movimento real nunca durante "Summon" — mesmo critério do HeroController pro "Walk".
+        // Sem isso, o pet deslizava durante o clipe de Summon (antes do Animator sair dele de
+        // verdade), feio demais visualmente. Checagem negativa (em vez de "só durante Fly")
+        // de propósito: Phoenix cobre parado+movendo num "Fly" só, mas o Elemental de Sangue
+        // (Sprint 30) tem Idle e Move separados — os 2 formatos precisam funcionar aqui.
+        if (AnimatorStateCheck.IsInState(animator, "Summon")) return;
         transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
     }
 

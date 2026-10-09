@@ -43,7 +43,14 @@ public enum StatusEffectType
     // consulta IsEffectActive(WordOfPain) direto pra decidir se paralisa — sem flag própria,
     // a incapacitação dura exatamente o tempo que o efeito durar. Também é "superior" a
     // qualquer outro Efeito ativo na prioridade visual (ver UpdateVisual).
-    WordOfPain
+    WordOfPain,
+
+    // Sprint 30 (Blood Mage, Shift/Extract Blood) — primeiro uso de FlashStatus fora do Heal:
+    // toca 1x só quando o sangue do monstro é extraído, sem dano/duração própria (o dano real
+    // é aplicado direto por BloodMage, fora daqui). Prioridade visual abaixo só de WordOfPain
+    // (ver guarda em FlashStatus) — cancela Fire/Bleeding/etc. na tela, mas nunca escapa a
+    // paralisia da Oração.
+    Drain
 }
 
 public class StatusEffectController : MonoBehaviour
@@ -93,8 +100,12 @@ public class StatusEffectController : MonoBehaviour
     // fim, UpdateVisual() volta a rodar normalmente (WordOfPain > primeiro da lista > Empty).
     // Não usa ApplyStatusEffect/activeEffects de propósito: isso é só visual, instantâneo, sem
     // dano, sem duração acumulável — quem quiser dano real por cima ainda usa ApplyStatusEffect.
+    // Exceção: WordOfPain nunca é escondido por um flash (Sprint 30, Drain do Blood Mage) —
+    // é incapacitação, não só visual, então continua acima de qualquer flash de 1x só.
     public void FlashStatus(StatusEffectType type, float duration)
     {
+        if (IsEffectActive(StatusEffectType.WordOfPain)) return;
+
         isFlashing = true;
         flashRemaining = duration;
 
