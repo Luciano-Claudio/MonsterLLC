@@ -43,6 +43,17 @@ public static class GameEvents
     public static event Action<Vector3, float> OnDamageTaken;
     public static void DamageTaken(Vector3 position, float amount) => OnDamageTaken?.Invoke(position, amount);
 
+    // Mesma ideia do OnDamageTaken, mas pra dano que foi inteiramente ABSORVIDO antes de
+    // chegar na vida real (ex.: shield do Paladin) — a vida não muda, mas o jogador precisa
+    // ver que o hit aconteceu, só numa cor diferente (avisa "bloqueado", não "machucado").
+    public static event Action<Vector3, float, Color> OnDamageBlocked;
+    public static void DamageBlocked(Vector3 position, float amount, Color color) => OnDamageBlocked?.Invoke(position, amount, color);
+
+    // Mesma ideia, pra cura — qualquer herói que curar (Cleric, Ranger, etc.) passa por aqui.
+    // Verde claro com "+" na frente (ver FloatingCombatText/HeroController.Heal()).
+    public static event Action<Vector3, float> OnHealReceived;
+    public static void HealReceived(Vector3 position, float amount) => OnHealReceived?.Invoke(position, amount);
+
     // Início de um novo dia (inclusive o Dia 1) — dispara de dentro de
     // DayTimer.ResetForNewDay(), fonte única chamada tanto pelo fim de dia normal
     // (ShopHandler) quanto por novo jogo/continuar (MainMenuUI). Pets de início de dia

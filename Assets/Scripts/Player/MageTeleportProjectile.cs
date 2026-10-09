@@ -6,20 +6,22 @@ using UnityEngine;
 // primário) marcando o trajeto, e só quando termina de viajar a distância combinada é que o
 // Mage reaparece de fato (posição + "teleport_end") — não é um efeito visual solto, é quem
 // decide QUANDO e ONDE o Mage reaparece.
+// speed NÃO é serializado aqui de propósito — é valor de upgrade, decidido pelo Mage
+// (controlador) e recebido em Launch(). Upgrades futuros só editam o Mage.cs.
 public class MageTeleportProjectile : MonoBehaviour
 {
-    [SerializeField] private float speed = 12f; // 🔢 ajustável — velocidade do trajeto visual
-
     private Vector2 direction;
+    private float speed;
     private float maxDistance;
     private float distanceTraveled;
     private Action<Vector3> onArrived;
 
-    public void Launch(Vector2 dir, float distance, Action<Vector3> arrivedCallback)
+    public void Launch(Vector2 dir, float distance, Action<Vector3> arrivedCallback, float travelSpeed)
     {
         direction = dir.normalized;
         maxDistance = distance;
         onArrived = arrivedCallback;
+        speed = travelSpeed;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — mesma técnica da
         // RangerArrow/EnemyProjectile/MageFireball.

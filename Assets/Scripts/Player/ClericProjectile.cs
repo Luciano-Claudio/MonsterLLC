@@ -9,26 +9,32 @@ using UnityEngine;
 // voo). Ao esgotar a reserva num hit OU alcançar maxDistance sem acertar ninguém, toca a
 // animação de impacto (orientação fixa, mesmo padrão do RogueBomb/MageFireball) antes de
 // sumir de verdade.
+// speed/maxDistance/knockbackForce NÃO são serializados aqui de propósito — são valores de
+// upgrade, decididos pelo Cleric (controlador) e recebidos em Launch(). Upgrades futuros só
+// editam o Cleric.cs, nunca este prefab.
 public class ClericProjectile : MonoBehaviour
 {
-    [SerializeField] private float speed = 7f; // 🔢 ajustável — GDD: "upgrades da loja aumentam a velocidade"
-    [SerializeField] private float maxDistance = 12f; // 🔢 ajustável
-    [SerializeField] private float knockbackForce = 2f; // 🔢 ajustável — Cleric não é um herói de empurrão forte
     [SerializeField] private Animator animator; // opcional — só se houver clipe de impacto dedicado (ver Impact())
 
     private EnemyController homingTarget;
     private Vector2 direction;
     private float damageReserve;
+    private float speed;
+    private float maxDistance;
+    private float knockbackForce;
     private LayerMask enemyLayerMask;
     private float distanceTraveled;
     private bool isHoming = true;
     private bool impacted;
 
-    public void Launch(EnemyController target, float reserve, LayerMask layerMask)
+    public void Launch(EnemyController target, float reserve, LayerMask layerMask, float projectileSpeed, float projectileMaxDistance, float projectileKnockbackForce)
     {
         homingTarget = target;
         damageReserve = reserve;
         enemyLayerMask = layerMask;
+        speed = projectileSpeed;
+        maxDistance = projectileMaxDistance;
+        knockbackForce = projectileKnockbackForce;
         direction = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
         ApplyRotation();
     }

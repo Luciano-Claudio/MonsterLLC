@@ -19,6 +19,11 @@ public class Barbarian : HeroController
     [Header("Ultimate — salto + 8 projéteis retos")]
     [SerializeField] private GameObject ultimateProjectilePrefab; // precisa ter HeroProjectile
     [SerializeField] private float ultimateDamageMultiplier = 2f; // 🔢 GDD: "2x o dano atual da arma"
+    // Controlador decide TUDO sobre o projétil e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do HeroProjectile.cs.
+    [SerializeField] private float projectileSpeed = 10f; // 🔢 ajustável
+    [SerializeField] private float projectileMaxDistance = 8f; // 🔢 ajustável
+    [SerializeField] private float projectileKnockbackForce = 4f; // 🔢 ajustável
 
     // Habilidade Secundária (Shift) — buff temporário de dano e velocidade (GDD Seção 16/17.1,
     // Sprint 18→19). 1 animação só, sem direções, sem fases (igual "die") — não bloqueia
@@ -35,6 +40,10 @@ public class Barbarian : HeroController
     // padrão do EnemyController pro attack/die).
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
     private float actionElapsed;
+
+    // Upgrade futuro — Barbarian literalmente cresce (escala o Transform inteiro, sprite +
+    // colliders + hitboxes de ataque incluídos) até 3x o tamanho original. 1 = tamanho normal.
+    [SerializeField] private float sizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
 
     // Attack e Ultimate são Blend Tree 2D Freeform Directional — pra quase qualquer ângulo
     // de mira, 2 clipes diagonais tocam misturados ao mesmo tempo, e cada clipe carrega seu
@@ -58,10 +67,18 @@ public class Barbarian : HeroController
         new Vector2(-0.7071f, 0.7071f),                // NW
     };
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        sizeMultiplier = Mathf.Clamp(sizeMultiplier, 1f, 3f);
+    }
+#endif
+
     protected override void Awake()
     {
         base.Awake();
         baseMoveSpeed = stats.moveSpeed;
+        transform.localScale = Vector3.one * sizeMultiplier;
     }
 
     protected override void Update()
@@ -161,8 +178,10 @@ public class Barbarian : HeroController
         foreach (Vector2 dir in EightDirections)
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity);
+            // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
+            obj.transform.localScale = Vector3.one * sizeMultiplier;
             var projectile = obj.GetComponent<HeroProjectile>();
-            if (projectile != null) projectile.Launch(dir, reserve);
+            if (projectile != null) projectile.Launch(dir, reserve, projectileSpeed, projectileMaxDistance, projectileKnockbackForce);
         }
     }
 

@@ -1,11 +1,10 @@
 using UnityEngine;
 
+// speed/lifetime/knockbackForce NÃO são serializados aqui de propósito — são valores de
+// upgrade, decididos pelo Ranger (controlador) e recebidos em Launch(). Upgrades futuros só
+// editam o Ranger.cs, nunca este prefab.
 public class RangerArrow : MonoBehaviour
 {
-    [SerializeField] private float speed = 10f;
-    [SerializeField] private float lifetime = 2f; // 🔢 alcance efetivo da flecha — placeholder de balanceamento
-    [SerializeField] private float knockbackForce = 4f; // 🔢 ajustável — GDD Seção 17.2
-
     // 1 sprite só, rotacionado de verdade em vez de trocar de pose (Animator/Blend Tree
     // removido) — a flecha voa em direção livre (RawAimDirection, não travada nas 8
     // direções), então só rotação contínua acompanha o ângulo exato sem parecer estranho.
@@ -18,12 +17,18 @@ public class RangerArrow : MonoBehaviour
     // Barbarian: ao acertar, gasta só o mínimo entre a reserva e a vida do alvo, e continua
     // a mesma trajetória se sobrar, em vez de morrer no primeiro contato.
     private float damageReserve;
+    private float speed;
+    private float lifetime;
+    private float knockbackForce;
     private float timer;
 
-    public void Launch(Vector2 dir, float reserve)
+    public void Launch(Vector2 dir, float reserve, float arrowSpeed, float arrowLifetime, float arrowKnockbackForce)
     {
         direction = dir.normalized;
         damageReserve = reserve;
+        speed = arrowSpeed;
+        lifetime = arrowLifetime;
+        knockbackForce = arrowKnockbackForce;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — por isso o -90°: sem
         // ele, ângulo 0 (Leste) deixaria o sprite ainda apontando pra cima em vez de deitado

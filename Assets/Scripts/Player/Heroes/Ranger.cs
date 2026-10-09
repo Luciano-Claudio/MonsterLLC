@@ -11,6 +11,11 @@ public class Ranger : HeroController
     // mais afastadas lateralmente (mesma lógica de bando de pássaros voando).
     [SerializeField] private float arrowLateralStep = 0.5f; // 🔢 espaço entre flechas vizinhas — flecha tem 3px (~0.375u a 8 PPU), ajustável
     [SerializeField] private float arrowForwardStep = 0.3f; // 🔢 quanto cada rank nasce mais à frente, ajustável
+    // Controlador decide TUDO sobre a flecha e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do RangerArrow.cs.
+    [SerializeField] private float arrowSpeed = 10f; // 🔢 ajustável
+    [SerializeField] private float arrowLifetime = 2f; // 🔢 alcance efetivo da flecha — placeholder de balanceamento
+    [SerializeField] private float arrowKnockbackForce = 4f; // 🔢 ajustável — GDD Seção 17.2
 
     // Rede de segurança — mesmo padrão do Barbarian: se o Animation Event de fim nunca
     // disparar, força o fim da ação em vez de travar isAttacking pra sempre.
@@ -30,6 +35,16 @@ public class Ranger : HeroController
     // Efeito Nocivo Bleeding (Sprint 19) — tanto o hit em voo quanto o tick no chão aplicam,
     // além do dano normal: metade do dano do Ranger por segundo, por 5s (ver RangerKnife).
     [SerializeField] private float bleedDamageMultiplier = 0.5f; // 🔢 "metade do dano do Ranger por segundo" — passível de nerf
+    // Controlador decide TUDO sobre a faca e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do RangerKnife.cs.
+    [SerializeField] private float knifeFlightSpeed = 12f; // 🔢 ajustável
+    [SerializeField] private float knifeMaxDistance = 6f; // 🔢 alcance em voo
+    [SerializeField] private float knifeFlightKnockbackForce = 4f; // 🔢 ajustável
+    [SerializeField] private float knifeGroundedDuration = 30f; // GDD: 30s
+    [SerializeField] private float knifeGroundedTickInterval = 0.5f; // 🔢 cadência do "dano contínuo" — GDD não especifica
+    [SerializeField] private float knifeGroundedRadius = 0.6f; // 🔢 raio da área depois de pousar, maior que o collider de voo
+    [SerializeField] private float knifeGroundedKnockbackForce = 2f; // 🔢 ajustável
+    [SerializeField] private float knifeBleedDuration = 5f; // 🔢 passível de nerf/buff
 
     // A Ultimate também é Blend Tree 2D Freeform Directional (4 pontos diagonais, igual
     // Idle/Walk/Damage) — mesmo risco de evento duplicado do Attack, só que aqui cada uma
@@ -82,8 +97,7 @@ public class Ranger : HeroController
             secondaryAbilityHealTick.Tick(Time.deltaTime);
             if (secondaryAbilityHealTick.TryConsume())
             {
-                stats.health = Mathf.Min(stats.health + stats.maxHealth * secondaryAbilityHealPercentPerTick, stats.maxHealth);
-                GameEvents.HealthChanged(stats.health, stats.maxHealth);
+                Heal(stats.maxHealth * secondaryAbilityHealPercentPerTick);
             }
 
             camouflageElapsed += Time.deltaTime;
@@ -121,7 +135,7 @@ public class Ranger : HeroController
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
             var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
-            arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow);
+            arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow, arrowSpeed, arrowLifetime, arrowKnockbackForce);
         }
     }
 
@@ -167,7 +181,8 @@ public class Ranger : HeroController
         float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier;
 
         var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity);
-        knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond);
+        knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,
+            knifeFlightSpeed, knifeMaxDistance, knifeFlightKnockbackForce, knifeGroundedDuration, knifeGroundedTickInterval, knifeGroundedRadius, knifeGroundedKnockbackForce, knifeBleedDuration);
     }
 
     // Animation Event, no fim do clipe da Ultimate.

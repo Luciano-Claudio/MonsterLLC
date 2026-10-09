@@ -143249,11 +143249,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.12863
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.17988
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5328197747953678073, guid: bced5f500445d0b499055d344251684e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -154740,11 +154740,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7601718847054268010, guid: 482bc15dde4c22847b40a7ca162f7e0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.05218
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7601718847054268010, guid: 482bc15dde4c22847b40a7ca162f7e0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.08811
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7601718847054268010, guid: 482bc15dde4c22847b40a7ca162f7e0a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -158524,7 +158524,9 @@ MonoBehaviour:
     prefab: {fileID: 8504150220569845969, guid: 482bc15dde4c22847b40a7ca162f7e0a, type: 3}
   - name: Cleric
     prefab: {fileID: 6657694654762816894, guid: bced5f500445d0b499055d344251684e, type: 3}
-  heroToSpawn: Mage
+  - name: Paladin
+    prefab: {fileID: 7100000000000001, guid: 2e72309492994920ababaf314800764f, type: 3}
+  heroToSpawn: Paladin
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -158635,6 +158637,7 @@ Transform:
   - {fileID: 788142669}
   - {fileID: 1533177839}
   - {fileID: 700244429}
+  - {fileID: 1888680707}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1004331642
@@ -158790,6 +158793,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::FloatingCombatTextSpawner
   floatingCombatTextPrefab: {fileID: 8881336211041242449, guid: 4c03c0df37b36cd4c8bf72ffbb79073a, type: 3}
   canvasParent: {fileID: 1385680709}
+  healTextColor: {r: 0.6, g: 1, b: 0.6, a: 1}
 --- !u!1 &1019754990
 GameObject:
   m_ObjectHideFlags: 0
@@ -240736,6 +240740,11 @@ CapsuleCollider2D:
   m_Offset: {x: -1.1250095, y: 1.4954066}
   m_Size: {x: 1.1037025, y: 6.295661}
   m_Direction: 0
+--- !u!4 &1888680707 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+  m_PrefabInstance: {fileID: 1971939442}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1900799993
 GameObject:
   m_ObjectHideFlags: 0
@@ -267112,6 +267121,67 @@ CapsuleCollider2D:
   m_Offset: {x: 0.020292252, y: -0.26806024}
   m_Size: {x: 4.4130864, y: 3.465898}
   m_Direction: 1
+--- !u!1001 &1971939442
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 990000002}
+    m_Modifications:
+    - target: {fileID: 7100000000000001, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_Name
+      value: Paladin
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000001, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.91071
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.80929
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100000000000002, guid: 2e72309492994920ababaf314800764f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2e72309492994920ababaf314800764f, type: 3}
 --- !u!1 &2004637379
 GameObject:
   m_ObjectHideFlags: 0

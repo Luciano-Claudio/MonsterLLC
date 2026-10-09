@@ -618,8 +618,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.13805927, y: 0.11752236}
-  m_Size: {x: 1.060346, y: 0.25327092}
+  m_Offset: {x: 0, y: 0.1}
+  m_Size: {x: 0.7, y: 0.25}
   m_Direction: 1
 --- !u!95 &1281415004293993549
 Animator:
@@ -669,6 +669,7 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
+  actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 2
   secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
@@ -681,10 +682,14 @@ MonoBehaviour:
   knockbackForce: 0
   ultimateProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
   ultimateDamageMultiplier: 2
+  projectileSpeed: 10
+  projectileMaxDistance: 8
+  projectileKnockbackForce: 4
   secondaryAbilityDamageMultiplier: 2
   secondaryAbilitySpeedMultiplier: 1.5
   secondaryAbilityDuration: 5
   maxActionDuration: 3
+  sizeMultiplier: 2
 --- !u!114 &3565354531031999
 MonoBehaviour:
   m_ObjectHideFlags: 0

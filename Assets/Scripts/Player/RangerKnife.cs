@@ -8,28 +8,24 @@ using UnityEngine;
 // cada um com sua própria animação de 4 frames (mesmo padrão do HeroProjectile do
 // Barbarian: sem Blend Tree, a direção não muda depois do disparo, só Play() por nome uma
 // vez no lançamento). Chão é um 9º estado só (sem variação de direção, é área no chão).
+// Nenhum valor de voo/área/bleed é serializado aqui de propósito — todos são upgrade,
+// decididos pelo Ranger (controlador) e recebidos em Launch(). groundedStateName continua
+// aqui porque é wiring (nome do estado no Animator), não balanceamento.
 public class RangerKnife : MonoBehaviour
 {
     private enum Phase { Flying, Grounded }
     private Phase phase = Phase.Flying;
 
-    [Header("Voo — 2x o dano do Ranger (GDD Seção 17.2)")]
-    [SerializeField] private float flightSpeed = 12f;
-    [SerializeField] private float maxDistance = 6f; // 🔢 alcance em voo
-    [SerializeField] private float flightKnockbackForce = 4f; // 🔢
-
-    [Header("No chão — Persistent Area, 1x o dano do Ranger (GDD Seção 17.2)")]
-    [SerializeField] private float groundedDuration = 30f; // GDD: 30s
-    [SerializeField] private float groundedTickInterval = 0.5f; // 🔢 cadência do "dano contínuo" — GDD não especifica
-    [SerializeField] private float groundedRadius = 0.6f; // 🔢 raio da área depois de pousar, maior que o collider de voo
-    [SerializeField] private float groundedKnockbackForce = 2f; // 🔢
     [SerializeField] private string groundedStateName = "Grounded"; // nome do 9º estado no Animator
 
-    // Efeito Nocivo Bleeding (GDD, Sprint 19) — tanto o hit em voo quanto o tick no chão
-    // aplicam, além do dano normal: metade do dano do Ranger por segundo, por 5s (🔢
-    // passível de nerf/buff). Reaplicar (ex.: pisar em várias facas seguidas) só reseta a
-    // duração pros 5s cheios de novo, não empilha.
-    [SerializeField] private float bleedDuration = 5f; // 🔢 passível de nerf/buff
+    private float flightSpeed;
+    private float maxDistance;
+    private float flightKnockbackForce;
+    private float groundedDuration;
+    private float groundedTickInterval;
+    private float groundedRadius;
+    private float groundedKnockbackForce;
+    private float bleedDuration;
 
     private Animator animator;
     private CircleCollider2D circleCollider;
@@ -48,12 +44,21 @@ public class RangerKnife : MonoBehaviour
         circleCollider = GetComponent<CircleCollider2D>();
     }
 
-    public void Launch(Vector2 dir, float flightDamage, float groundedDamage, float bleedPerSecond)
+    public void Launch(Vector2 dir, float flightDamage, float groundedDamage, float bleedPerSecond,
+        float speed, float distance, float flightKnockback, float groundDuration, float groundTickInterval, float groundRadius, float groundKnockback, float bleedDur)
     {
         direction = dir.normalized;
         flightDamageReserve = flightDamage;
         groundedDamagePerTick = groundedDamage;
         bleedDamagePerSecond = bleedPerSecond;
+        flightSpeed = speed;
+        maxDistance = distance;
+        flightKnockbackForce = flightKnockback;
+        groundedDuration = groundDuration;
+        groundedTickInterval = groundTickInterval;
+        groundedRadius = groundRadius;
+        groundedKnockbackForce = groundKnockback;
+        bleedDuration = bleedDur;
 
         if (animator != null) animator.Play(DirectionUtility.GetDirectionName(direction));
     }

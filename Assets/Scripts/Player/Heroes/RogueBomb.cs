@@ -7,14 +7,11 @@ using UnityEngine;
 // (Animation Event dedicado aplica o dano de impacto, não Explode() direto — mesma separação
 // Hit/End do fireball). ÚNICA diferença em relação ao Mage: sem fase "Grounded" — não deixa
 // superfície persistente no chão depois da explosão, some no fim do clipe.
+// speed/defaultMaxDistance/explosionRadius NÃO são serializados aqui de propósito — são
+// valores de upgrade, decididos pelo Rogue (controlador) e recebidos em Launch(). Upgrades
+// futuros só editam o Rogue.cs, nunca este prefab.
 public class RogueBomb : MonoBehaviour
 {
-    [Header("Voo — ângulo livre, direção inicial do sprite é o Norte (+Y)")]
-    [SerializeField] private float speed = 8f; // 🔢 ajustável
-    [SerializeField] private float defaultMaxDistance = 10f; // 🔢 ajustável — não escala por Tier de Arma ainda (mesmo placeholder do vineCount/arrowCount)
-
-    [Header("Explosão — dano em área no final da trajetória")]
-    [SerializeField] private float explosionRadius = 2.5f; // 🔢 ajustável — maior que o Pulso, é a Ultimate
     [SerializeField] private Animator animator; // opcional — só se houver clipe de explosão dedicado (ver Explode())
 
     [Header("Debug — só pra visualização em Editor, não afeta gameplay")]
@@ -23,6 +20,9 @@ public class RogueBomb : MonoBehaviour
 
     private Vector2 direction;
     private float damage;
+    private float speed;
+    private float defaultMaxDistance;
+    private float explosionRadius;
     private LayerMask enemyLayerMask;
     private float distanceTraveled;
     private bool exploded;
@@ -31,11 +31,14 @@ public class RogueBomb : MonoBehaviour
 
     private Vector3 ExplosionCenter => transform.position + Vector3.up * explosionGizmoOffsetY;
 
-    public void Launch(Vector2 dir, float bombDamage, LayerMask layerMask)
+    public void Launch(Vector2 dir, float bombDamage, LayerMask layerMask, float bombSpeed, float maxDistance, float bombExplosionRadius)
     {
         direction = dir.normalized;
         damage = bombDamage;
         enemyLayerMask = layerMask;
+        speed = bombSpeed;
+        defaultMaxDistance = maxDistance;
+        explosionRadius = bombExplosionRadius;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — mesma técnica da
         // RangerArrow/EnemyProjectile/MageFireball.

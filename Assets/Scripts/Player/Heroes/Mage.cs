@@ -9,6 +9,9 @@ public class Mage : HeroController
     [SerializeField] private Transform attackHitboxPivot;
     [SerializeField] private MageAttackHitbox attackHitbox;
     [SerializeField] private float attackDamageMultiplier = 1f; // 🔢 ajustável
+    // Upgrade futuro — aumenta a ÁREA do fogo (escala o GameObject do próprio
+    // MageAttackHitbox, Collider2D incluso) até 2x o tamanho original. 1 = tamanho normal.
+    [SerializeField] private float attackHitboxSizeMultiplier = 1f; // 🔢 upgradable — até 2x (ver OnValidate)
 
     // Attack pode acabar sendo Blend Tree (igual Barbarian/Ranger) — cada clipe blendado
     // carrega seu próprio Animation Event, então a trava é obrigatória por precaução (mesmo
@@ -21,6 +24,20 @@ public class Mage : HeroController
     [SerializeField] private float ultimateDamageMultiplier = 4f; // 🔢 GDD: "4x o dano do Mage" de impacto
     [SerializeField] private float ultimateTrailDamageMultiplier = 0.5f; // 🔢 GDD: "0,5x o dano do Mage por segundo" no rastro
     [SerializeField] private float fireStatusDamageMultiplier = 0.5f; // 🔢 "metade do dano do Mage por segundo" no status Fire — passível de nerf
+    // Controlador decide TUDO sobre a bola de fogo e repassa pro prefab em cada Launch() —
+    // ver comentário no topo do MageFireball.cs.
+    [SerializeField] private float fireballFlightSpeed = 8f; // 🔢 ajustável
+    [SerializeField] private float fireballMaxTravelDistance = 4f; // 🔢 "distância curta" — ajustável
+    [SerializeField] private float fireballExplosionRadius = 1.2f; // 🔢 ajustável
+    [SerializeField] private float fireballGroundedDuration = 30f; // GDD: 30s
+    [SerializeField] private float fireballGroundedTickInterval = 1f; // 🔢 ajustável
+    [SerializeField] private float fireballGroundedRadius = 1.5f; // 🔢 raio da área depois da explosão, maior que o de impacto
+    [SerializeField] private float fireballFireStatusDuration = 3f; // 🔢 passível de nerf/buff
+    // Upgrade futuro — aumenta o tamanho da bola de fogo (escala o GameObject inteiro: sprite
+    // + collider de voo) E a área real de impacto/rastro no chão (fireballExplosionRadius/
+    // fireballGroundedRadius acima já escalam junto dentro do MageFireball, puxando pelo
+    // transform.localScale — ver comentário lá). 1 = tamanho normal, até 3x.
+    [SerializeField] private float ultimateSizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
 
     // Habilidade Secundária (Shift) — teleporte na direção da mira (GDD Seção 16/17.3).
     // Não cancelável (sem override de CancelSecondaryAbility). 2 estados no Animator
@@ -32,6 +49,7 @@ public class Mage : HeroController
     [Header("Habilidade Secundária (Shift) — teleporte")]
     [SerializeField] private GameObject teleportProjectilePrefab; // precisa ter MageTeleportProjectile
     [SerializeField] private float secondaryAbilityMaxRange = 5f; // 🔢 ajustável
+    [SerializeField] private float teleportProjectileSpeed = 12f; // 🔢 ajustável — velocidade do trajeto visual
     // Nome diferente do "spriteRenderer" privado do HeroController de propósito — Unity não
     // aceita 2 campos com o mesmo nome numa cadeia de herança, mesmo sendo private em
     // classes diferentes ("The same field name is serialized multiple times").
@@ -44,6 +62,10 @@ public class Mage : HeroController
     [Header("Pet — Phoenix")]
     [SerializeField] private GameObject petPrefab; // precisa ter PetController
     [SerializeField] private Transform petSpawnPoint;
+    // Upgrade futuro — tamanho e velocidade de ataque do pet, decididos aqui e repassados
+    // em Initialize() (mesmo critério do resto do herói: controlador decide, prefab só recebe).
+    [SerializeField] private float petSizeMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
+    [SerializeField] private float petActionSpeedMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
     private PetController currentPet;
 
     // Rede de segurança — mesmo padrão do Barbarian/Ranger: se o Animation Event de fim nunca
@@ -60,10 +82,21 @@ public class Mage : HeroController
     // único do Attack/Ultimate (mesmo motivo do "!isCamouflaged" do Ranger).
     private bool isTeleporting;
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        attackHitboxSizeMultiplier = Mathf.Clamp(attackHitboxSizeMultiplier, 1f, 3f);
+        ultimateSizeMultiplier = Mathf.Clamp(ultimateSizeMultiplier, 1f, 3f);
+        petSizeMultiplier = Mathf.Max(1f, petSizeMultiplier);
+        petActionSpeedMultiplier = Mathf.Max(1f, petActionSpeedMultiplier);
+    }
+#endif
+
     protected override void Awake()
     {
         base.Awake();
         mageSpriteRenderer = GetComponent<SpriteRenderer>();
+        if (attackHitbox != null) attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier;
     }
 
     protected override void OnEnable()
@@ -120,7 +153,7 @@ public class Mage : HeroController
         if (castFireFired) return;
         castFireFired = true;
 
-        if (attackHitbox != null) attackHitbox.Fire(stats.damage * attackDamageMultiplier);
+        if (attackHitbox != null) attackHitbox.Fire(stats.damage * attackDamageMultiplier, ActionSpeedMultiplier);
     }
 
     // Animation Event, no fim do clipe de cast.
@@ -158,9 +191,16 @@ public class Mage : HeroController
         float impactDamage = stats.damage * ultimateDamageMultiplier;
         float trailDamagePerTick = stats.damage * ultimateTrailDamageMultiplier;
         float fireStatusDamagePerSecond = stats.damage * fireStatusDamageMultiplier;
+        // Explosão e área no chão escalam junto com o tamanho da bola de fogo — valor FINAL
+        // (já multiplicado) calculado aqui, não dentro do MageFireball (ver comentário lá
+        // sobre circleCollider.radius precisar compensar a escala do GameObject).
+        float explosionRadius = fireballExplosionRadius * ultimateSizeMultiplier;
+        float groundedRadius = fireballGroundedRadius * ultimateSizeMultiplier;
         var obj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
+        obj.transform.localScale = Vector3.one * ultimateSizeMultiplier;
         var fireball = obj.GetComponent<MageFireball>();
-        if (fireball != null) fireball.Launch(RawAimDirection, impactDamage, trailDamagePerTick, fireStatusDamagePerSecond);
+        if (fireball != null) fireball.Launch(RawAimDirection, impactDamage, trailDamagePerTick, fireStatusDamagePerSecond,
+            fireballFlightSpeed, fireballMaxTravelDistance, explosionRadius, fireballGroundedDuration, fireballGroundedTickInterval, groundedRadius, fireballFireStatusDuration);
     }
 
     // Animation Event, no fim do clipe de ultimate.
@@ -215,7 +255,7 @@ public class Mage : HeroController
         float distance = Mathf.Min(RawAimDistance, secondaryAbilityMaxRange);
         var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
         var projectile = obj.GetComponent<MageTeleportProjectile>();
-        if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived);
+        if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived, teleportProjectileSpeed);
         else OnTeleportProjectileArrived(transform.position); // prefab sem o script — mesma rede de segurança
     }
 
@@ -261,7 +301,7 @@ public class Mage : HeroController
         Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
         var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity);
         currentPet = obj.GetComponent<PetController>();
-        if (currentPet != null) currentPet.Initialize(transform, petSpawnPoint);
+        if (currentPet != null) currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier);
     }
 
     // Animation Event, no fim do clipe de invocação.

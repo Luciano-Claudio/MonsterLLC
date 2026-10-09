@@ -432,8 +432,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.06672954, y: 0.11752235}
-  m_Size: {x: 0.6849936, y: 0.2532732}
+  m_Offset: {x: 0, y: 0.1}
+  m_Size: {x: 0.7, y: 0.25}
   m_Direction: 1
 --- !u!114 &4667160624128414624
 MonoBehaviour:
@@ -450,7 +450,7 @@ MonoBehaviour:
   stats:
     health: 28
     maxHealth: 28
-    damage: 2.5
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 1
@@ -461,10 +461,11 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
+  actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 3
-  secondaryAbilityCooldownDuration: 8
+  secondaryAbilityCooldownDuration: 2
   floatingTextHeightAdjust: -0.5
-  pulseRadius: 2.3
+  pulseRadius: 2.5
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
@@ -474,6 +475,9 @@ MonoBehaviour:
   maxActionDuration: 3
   bombPrefab: {fileID: 5688042726266711231, guid: 02789da4ceebbb745b610b6b08e58a45, type: 3}
   bombDamageMultiplier: 4
+  bombSpeed: 8
+  bombMaxDistance: 10
+  bombExplosionRadius: 2.5
   rollSpeed: 12
   rollKnockbackForce: 5
   rollHitRadius: 0.8

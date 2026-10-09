@@ -19,11 +19,19 @@ public class MageAttackHitbox : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void Fire(float damage)
+    // actionSpeedMultiplier vem do Mage (upgrade de velocidade de ação) — Animator próprio,
+    // separado do corpo do Mage, então o SetFloat do HeroController não chega aqui sozinho;
+    // repassado a cada Fire() pra sempre refletir o valor atual, sem depender de ordem de
+    // Awake() entre os dois GameObjects.
+    public void Fire(float damage, float actionSpeedMultiplier)
     {
         pendingDamage = damage;
         hitFired = false;
-        if (animator != null) animator.SetTrigger("FireTrigger");
+        if (animator != null)
+        {
+            animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
+            animator.SetTrigger("FireTrigger");
+        }
     }
 
     // Animation Event, no instante exato em que o fogo sai de verdade (dentro do clipe deste

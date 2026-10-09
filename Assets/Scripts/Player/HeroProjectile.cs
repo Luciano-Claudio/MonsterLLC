@@ -4,12 +4,12 @@ using UnityEngine;
 // dano cheio de uma vez: ao acertar um monstro, gasta da reserva só o mínimo entre ela e a
 // vida do alvo, e continua a mesma trajetória se sobrar. Diferente do projétil de monstro
 // comum (EnemyProjectile), que aplica dano cheio e é destruído no primeiro contato.
+//
+// speed/maxDistance/knockbackForce NÃO são serializados aqui de propósito — são valores de
+// upgrade, decididos pelo herói que instancia este prefab (hoje só o Barbarian) e recebidos
+// em Launch(). Assim, upgrades futuros só editam o controlador do herói, nunca este prefab.
 public class HeroProjectile : MonoBehaviour
 {
-    [SerializeField] private float speed = 10f;
-    [SerializeField] private float maxDistance = 8f; // 🔢 alcance — placeholder de balanceamento
-    [SerializeField] private float knockbackForce = 4f; // 🔢 ajustável
-
     // Opcional — 8 estados soltos (N/NE/E/SE/S/SW/W/NW), sem Blend Tree e sem parâmetro
     // nenhum: a direção não muda depois do disparo, então Launch() só dá Play() direto pelo
     // nome do estado uma vez, sem passar pelo grafo de transições.
@@ -17,6 +17,9 @@ public class HeroProjectile : MonoBehaviour
 
     private Vector2 direction;
     private float damageReserve;
+    private float speed;
+    private float maxDistance;
+    private float knockbackForce;
     private float distanceTraveled;
 
     private void Awake()
@@ -24,10 +27,13 @@ public class HeroProjectile : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void Launch(Vector2 dir, float reserve)
+    public void Launch(Vector2 dir, float reserve, float projectileSpeed, float projectileMaxDistance, float projectileKnockbackForce)
     {
         direction = dir.normalized;
         damageReserve = reserve;
+        speed = projectileSpeed;
+        maxDistance = projectileMaxDistance;
+        knockbackForce = projectileKnockbackForce;
         if (animator != null) animator.Play(DirectionUtility.GetDirectionName(direction));
     }
 

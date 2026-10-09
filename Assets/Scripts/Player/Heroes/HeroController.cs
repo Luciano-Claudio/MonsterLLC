@@ -59,6 +59,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     [SerializeField] private float damageReactionDuration = 0.5f; // 🔢 duração normal (1x) do clipe de dano
     private float damageReactionElapsed;
 
+    // Upgrade futuro — acelera a PLAYBACK de Attack/Ultimate (e, em alguns heróis, Shift que
+    // causa dano/cura — ex.: shield bash do Paladin, cura do Cleric, buff do Barbarian; NÃO
+    // Shift de sobrevivência/mobilidade como Cambalhota do Rogue, teleporte do Mage,
+    // camuflagem do Ranger, Coruja do Druid). Parâmetro do Animator ("ActionSpeedMultiplier"),
+    // ligado como Speed Parameter só nos estados certos no Animator Controller de cada herói
+    // — não afeta Walk/Idle/Damage/Die, mesmo critério do DamageSpeedMultiplier acima. 1 =
+    // velocidade normal.
+    [SerializeField] private float actionSpeedMultiplier = 1f; // 🔢 upgradable no futuro
+
     // Energia é recurso escasso de propósito — sem essa janela, matar vários monstros com
     // a própria ultimate (comum, já que ela costuma limpar a área) já reabasteceria a
     // próxima ultimate sozinha. 🔢 2s é chute inicial, ajustável em teste. Cobre só o
@@ -174,7 +183,22 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             if (isUsingSecondaryAbility) CancelSecondaryAbility();
             else TryUseSecondaryAbility();
         };
+
+        RefreshActionSpeedMultiplier();
     }
+
+    // Trocar o runtimeAnimatorController inteiro (ex.: Druid virando Alce) reseta os
+    // parâmetros pros defaults do controller NOVO — reaplica o valor de upgrade sempre que
+    // isso acontecer (cada herói que troca de controller em runtime chama isto de novo logo
+    // depois da troca).
+    protected void RefreshActionSpeedMultiplier()
+    {
+        if (animator != null) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
+    }
+
+    // Exposto só pra heróis com Animator FILHO independente do próprio (ex.: MageAttackHitbox)
+    // repassarem o mesmo multiplicador — SetFloat não propaga entre Animators diferentes.
+    protected float ActionSpeedMultiplier => actionSpeedMultiplier;
 
     protected virtual void Start()
     {
@@ -414,7 +438,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Topo do sprite, não o pivot bruto — mesmo critério do EnemyController, pra não
     // precisar configurar um offset por herói. floatingTextHeightAdjust corrige o bounds
     // do sprite (pixel art costuma ter espaço transparente, topo "cru" fica alto demais).
-    private Vector3 GetFloatingTextSpawnPosition() =>
+    protected Vector3 GetFloatingTextSpawnPosition() =>
         spriteRenderer != null
             ? new Vector3(transform.position.x, spriteRenderer.bounds.max.y + floatingTextHeightAdjust, transform.position.z)
             : transform.position;
@@ -446,6 +470,20 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         else if (isAttacking || isTrapped) TriggerDamageFlash();
         else if (isReactingToDamage) AccelerateDamageReaction();
         else StartDamageReaction();
+    }
+
+    // Centraliza toda cura de qualquer herói (Cleric.ApplyHealWave, regeneração do Ranger,
+    // etc.) — clamp em maxHealth, GameEvents.HealthChanged e o Floating Combat Text de cura
+    // (verde, com "+") num só lugar, em vez de cada herói duplicar essa lógica.
+    protected void Heal(float amount)
+    {
+        float healthBefore = stats.health;
+        stats.health = Mathf.Min(stats.maxHealth, stats.health + amount);
+        GameEvents.HealthChanged(stats.health, stats.maxHealth);
+
+        // Mostra só o que realmente curou — evita "+50" quando faltava 3 de vida.
+        float actualHealed = stats.health - healthBefore;
+        if (actualHealed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), actualHealed);
     }
 
     private void StartDamageReaction()

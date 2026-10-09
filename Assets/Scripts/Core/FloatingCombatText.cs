@@ -22,7 +22,10 @@ public class FloatingCombatText : MonoBehaviour
     private float elapsed;
     private Color baseColor;
 
-    public void Setup(Vector3 spawnWorldPosition, float amount)
+    // overrideColor == null usa a cor já configurada no TextMeshProUGUI (dano normal). Passar
+    // uma cor (ex.: dano bloqueado pelo shield do Paladin, cura) sobrescreve só essa instância.
+    // isHeal só controla o "+" na frente do número (GameEvents.OnHealReceived).
+    public void Setup(Vector3 spawnWorldPosition, float amount, Color? overrideColor = null, bool isHeal = false)
     {
         rectTransform = (RectTransform)transform;
         cam = Camera.main;
@@ -35,8 +38,8 @@ public class FloatingCombatText : MonoBehaviour
 
         if (label != null)
         {
-            label.text = LargeNumberFormatter.Format(amount);
-            baseColor = label.color;
+            label.text = (isHeal ? "+" : "") + LargeNumberFormatter.Format(amount);
+            baseColor = overrideColor ?? label.color;
         }
 
         rectTransform.localScale = Vector3.one;

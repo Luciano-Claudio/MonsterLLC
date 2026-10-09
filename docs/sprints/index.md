@@ -2,6 +2,8 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 27b — Infraestrutura de Upgrades (todos os heróis) + correções de base no Mage](sprint-27b-upgrade-infrastructure.md) — Valores de upgrade centralizados no controlador em todos os 7 heróis, `ActionSpeedMultiplier`, multiplicadores de tamanho, fix da explosão do Mage e do pet deslizando no Summon
+- [Sprint 27 — Paladin Completo (Primário + Ultimate + Shift + Passiva)](sprint-27.md) — Martelo com leque de upgrade (1–5), espadas orbitando escaláveis (2/4/8), shield bash, shield periódico com vida própria
 - [Sprint 26 — Bosses Floor 2 (Exceções): Rat People Royalty, Spider Queen](sprint-26-floor2-excecoes.md) — Melee/Ranged híbrido com 2 raios de ataque independentes, `CustomAnimationGeneratorWindow` — **Floor 1–2 100% fechado (7/7 bosses)**
 - [Sprint 25 — Bosses Floor 2 (Padrão): Werewolf, Centaur King](sprint-25-floor2-padrao.md) — `MeleeEnemyController` padrão, sem script novo
 - [Sprint 24 — Boss Framework + Boss Timer + Bosses Floor 1](sprint-24-boss-framework-floor1.md) — `BossSpawnManager`, `FloorSpawnUtility`, Goblin King, Mother Slime Green/Blue — **inicia os bosses da Deadline 6**

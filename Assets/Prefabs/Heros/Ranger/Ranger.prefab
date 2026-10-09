@@ -265,8 +265,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.13805927, y: 0.11752236}
-  m_Size: {x: 1.060346, y: 0.25327092}
+  m_Offset: {x: 0, y: 0.1}
+  m_Size: {x: 0.7, y: 0.25}
   m_Direction: 1
 --- !u!114 &444590616563185323
 MonoBehaviour:
@@ -294,6 +294,7 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
+  actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 5
   secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
@@ -302,10 +303,21 @@ MonoBehaviour:
   attackDamageMultiplier: 2
   arrowLateralStep: 0.5
   arrowForwardStep: 0.3
+  arrowSpeed: 10
+  arrowLifetime: 2
+  arrowKnockbackForce: 4
   maxActionDuration: 3
   knifePrefab: {fileID: 8418045878962532076, guid: 736bb58838368264d957839686df32b3, type: 3}
   ultimateDamageMultiplier: 2
   bleedDamageMultiplier: 0.5
+  knifeFlightSpeed: 12
+  knifeMaxDistance: 6
+  knifeFlightKnockbackForce: 4
+  knifeGroundedDuration: 30
+  knifeGroundedTickInterval: 0.5
+  knifeGroundedRadius: 0.6
+  knifeGroundedKnockbackForce: 2
+  knifeBleedDuration: 5
   secondaryAbilityHealPercentPerTick: 0.1
   secondaryAbilityHealTickInterval: 1
   secondaryAbilityMaxDuration: 5

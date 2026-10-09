@@ -1,15 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// lifetime/hitRadius NÃO são serializados aqui de propósito — são valores de upgrade,
+// decididos pelo Druid (controlador) e recebidos em Launch(). Upgrades futuros só editam o
+// Druid.cs, nunca este prefab.
 public class Vine : MonoBehaviour
 {
-    // Rede de segurança — mesmo padrão do maxDieDuration/maxActionDuration usado em todo
-    // herói/monstro do projeto: se o Animation Event de fim (AnimationVineEndEvent) nunca
-    // disparar (clipe sem o evento configurado), a vinha some sozinha depois desse tempo em
-    // vez de ficar presa na cena pra sempre. Fonte de verdade continua sendo a animação.
-    [SerializeField] private float lifetime = 1.5f; // 🔢 ajustável
-    [SerializeField] private float hitRadius = 0.5f; // 🔢 ajustável — o "circle trigger pequeno" da GDD Seção 17.4
-
     // Gizmo de debug (só para testes) — mesmo padrão do showAttackRadiusGizmo do
     // EnemyController: booleano serializado pra ligar/desligar, e um Y pra mover o centro do
     // círculo pra cima sem depender do pivot exato do sprite.
@@ -17,6 +13,8 @@ public class Vine : MonoBehaviour
     [SerializeField] private float hitRadiusGizmoOffsetY = 0f;
 
     private float damage;
+    private float lifetime;
+    private float hitRadius;
     private LayerMask enemyLayerMask;
     private HashSet<EnemyController> hitThisActivation;
 
@@ -27,11 +25,13 @@ public class Vine : MonoBehaviour
     // ao stats do Druid. sharedHitSet é a MESMA referência em todas as vinhas nascidas na
     // mesma ativação — garante que um monstro não tome dano de 2 vinhas diferentes mesmo se
     // os raios delas se sobrepuserem (monstros agrupados), sem depender de timing/cooldown.
-    public void Launch(float damageAmount, LayerMask targetLayerMask, HashSet<EnemyController> sharedHitSet)
+    public void Launch(float damageAmount, LayerMask targetLayerMask, HashSet<EnemyController> sharedHitSet, float vineLifetime, float vineHitRadius)
     {
         damage = damageAmount;
         enemyLayerMask = targetLayerMask;
         hitThisActivation = sharedHitSet;
+        lifetime = vineLifetime;
+        hitRadius = vineHitRadius;
     }
 
     private void Start()

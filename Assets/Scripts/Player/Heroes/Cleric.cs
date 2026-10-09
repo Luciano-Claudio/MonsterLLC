@@ -14,6 +14,11 @@ public class Cleric : HeroController
     // upgrades futuros da loja podem subir esse número — é só pra validar se vale a pena antes
     // de desenhar a carta de verdade.
     [SerializeField] private int projectileCount = 1; // 🔢 teste
+    // Controlador decide TUDO sobre o projétil e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do ClericProjectile.cs.
+    [SerializeField] private float projectileSpeed = 7f; // 🔢 ajustável — GDD: "upgrades da loja aumentam a velocidade"
+    [SerializeField] private float projectileMaxDistance = 12f; // 🔢 ajustável
+    [SerializeField] private float projectileKnockbackForce = 2f; // 🔢 ajustável — Cleric não é um herói de empurrão forte
     private readonly List<EnemyController> pendingTargets = new List<EnemyController>();
     private readonly List<EnemyController> prayerTargets = new List<EnemyController>();
 
@@ -147,7 +152,7 @@ public class Cleric : HeroController
 
             var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
             var proj = projObj.GetComponent<ClericProjectile>();
-            if (proj != null) proj.Launch(target, stats.damage * ClericDamageMultiplier, enemyLayerMask);
+            if (proj != null) proj.Launch(target, stats.damage * ClericDamageMultiplier, enemyLayerMask, projectileSpeed, projectileMaxDistance, projectileKnockbackForce);
         }
         pendingTargets.Clear();
     }
@@ -234,8 +239,7 @@ public class Cleric : HeroController
     public void ApplyHealWave()
     {
         float healAmount = stats.maxHealth * healPercentOfMaxHealth * 0.25f;
-        stats.health = Mathf.Min(stats.maxHealth, stats.health + healAmount);
-        GameEvents.HealthChanged(stats.health, stats.maxHealth);
+        Heal(healAmount);
 
         var statusEffects = GetComponent<StatusEffectController>();
         if (statusEffects != null) statusEffects.FlashStatus(StatusEffectType.Heal, healFlashDuration);

@@ -7,29 +7,21 @@ using UnityEngine;
 // projéteis retos travam nas 8 direções) -> Explosion (Animation Event aplica o dano de
 // impacto, alto, numa área circular) -> GroundedFire (fica no chão causando dano em tick,
 // igual as facas do Ranger, até acabar o tempo).
+// Nenhum valor de voo/área/status é serializado aqui de propósito — todos são upgrade,
+// decididos pelo Mage (controlador) e recebidos em Launch(). Upgrades futuros só editam o
+// Mage.cs, nunca este prefab.
 public class MageFireball : MonoBehaviour
 {
     private enum Phase { Flying, Exploding, Grounded, Disappearing }
     private Phase phase = Phase.Flying;
 
-    [Header("Voo — ângulo livre (GDD: exceção do MVP)")]
-    [SerializeField] private float flightSpeed = 8f;
-    [SerializeField] private float maxTravelDistance = 4f; // 🔢 "distância curta" — ajustável
-
-    [Header("Explosão — impacto alto, GDD: 4x o dano do Mage")]
-    [SerializeField] private float explosionRadius = 1.2f; // 🔢 ajustável
-
-    [Header("No chão — Persistent Area, GDD: 0,5x o dano do Mage por segundo, 30s")]
-    [SerializeField] private float groundedDuration = 30f; // GDD: 30s
-    [SerializeField] private float groundedTickInterval = 1f; // 🔢 ajustável
-    [SerializeField] private float groundedRadius = 1.5f; // 🔢 raio da área depois da explosão, maior que o de impacto
-
-    // Efeito Nocivo de queimadura (GDD, Sprint 19) — além do dano da área em si, quem está
-    // dentro no tick ganha o status Fire (StatusEffectController.ApplyStatusEffect, componente
-    // genérico compartilhado com o herói), que continua causando dano por conta própria mesmo
-    // depois de sair da área. Passível de nerf/buff (nota explícita do usuário).
-    [Header("Efeito Nocivo — Fire (status, além do dano da área)")]
-    [SerializeField] private float fireStatusDuration = 3f; // 🔢 passível de nerf/buff
+    private float flightSpeed;
+    private float maxTravelDistance;
+    private float explosionRadius;
+    private float groundedDuration;
+    private float groundedTickInterval;
+    private float groundedRadius;
+    private float fireStatusDuration;
 
     private Animator animator;
     private CircleCollider2D circleCollider;
@@ -57,12 +49,20 @@ public class MageFireball : MonoBehaviour
     // duração real do tick (groundedTickInterval), pra não depender dele ser exatamente 1s;
     // o status Fire já recebe a taxa pronta, porque quem tica ele é o StatusEffectController
     // do próprio monstro, não este script (ver ApplyStatusEffect).
-    public void Launch(Vector2 dir, float impact, float damagePerSecond, float fireDamagePerSecond)
+    public void Launch(Vector2 dir, float impact, float damagePerSecond, float fireDamagePerSecond,
+        float speed, float travelDistance, float impactRadius, float groundDuration, float groundTickInterval, float groundRadius, float burnDuration)
     {
         direction = dir.normalized;
         impactDamage = impact;
         groundedDamagePerSecond = damagePerSecond;
         fireStatusDamagePerSecond = fireDamagePerSecond;
+        flightSpeed = speed;
+        maxTravelDistance = travelDistance;
+        explosionRadius = impactRadius;
+        groundedDuration = groundDuration;
+        groundedTickInterval = groundTickInterval;
+        groundedRadius = groundRadius;
+        fireStatusDuration = burnDuration;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — mesma técnica da
         // RangerArrow/EnemyProjectile.
@@ -121,6 +121,12 @@ public class MageFireball : MonoBehaviour
         // e depois GroundedFire/Disappearing) o sprite fica na orientação normal, sem torcer
         // conforme a direção em que a bola veio voando.
         transform.rotation = Quaternion.identity;
+        // Collider passa a representar a área de explosão de verdade (em vez de um
+        // OverlapCircle com um raio calculado à parte, que podia dessincronizar do visual e
+        // "às vezes pegava, às vezes não" — relatado pelo usuário). /scale.x pelo mesmo
+        // motivo do groundedRadius abaixo: explosionRadius já é o valor FINAL, mas
+        // circleCollider.radius é local e a escala do GameObject multiplica de novo.
+        if (circleCollider != null) circleCollider.radius = explosionRadius / transform.localScale.x;
         if (animator != null) animator.SetTrigger("ExplodeTrigger");
     }
 
@@ -131,8 +137,13 @@ public class MageFireball : MonoBehaviour
         if (explosionHitFired) return;
         explosionHitFired = true;
 
+        if (circleCollider == null) return;
+
+        // Overlap() do próprio collider (já redimensionado em Explode()) — mesmo padrão
+        // confiável usado no golpe do Barbarian/shield bash do Paladin/fire do Mage, em vez
+        // de um OverlapCircle com raio calculado à parte.
         var results = new Collider2D[16];
-        int count = Physics2D.OverlapCircle(transform.position, explosionRadius, ContactFilter2D.noFilter, results);
+        int count = circleCollider.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
         // O dano no chão (UpdateGrounded) já é seguro — usa enemiesInRange, um HashSet.
         EnemyController.CollectDistinct(results, count, explosionTargets);
@@ -147,17 +158,26 @@ public class MageFireball : MonoBehaviour
         groundedElapsed = 0f;
         groundedTick = new AttackCooldown(groundedTickInterval);
         groundedDamagePerTick = groundedDamagePerSecond * groundedTickInterval;
-        if (circleCollider != null) circleCollider.radius = groundedRadius;
+        // groundedRadius já vem FINAL (ver Launch()), mas circleCollider.radius é um valor
+        // LOCAL — Unity multiplica pela escala do GameObject de novo na hora de calcular a
+        // forma real no mundo. Sem dividir aqui, a área ficaria ao quadrado (ex.: upgrade 2x
+        // virando 4x de raio de verdade).
+        if (circleCollider != null) circleCollider.radius = groundedRadius / transform.localScale.x;
         if (animator != null) animator.Play("GroundedFire");
 
         // Pega de graça quem já estava exatamente em cima do ponto de pouso — mudar o raio
-        // do collider não reemite OnTriggerEnter2D pra quem já estava sobreposto.
-        var hits = Physics2D.OverlapCircleAll(transform.position, groundedRadius);
-        foreach (var hit in hits)
+        // do collider não reemite OnTriggerEnter2D pra quem já estava sobreposto. Overlap()
+        // do próprio collider (já redimensionado acima) — mesmo motivo do fix da explosão.
+        if (circleCollider != null)
         {
-            if (!hit.CompareTag("Enemy")) continue;
-            var enemy = hit.GetComponent<EnemyController>();
-            if (enemy != null) enemiesInRange.Add(enemy);
+            var results = new Collider2D[16];
+            int count = circleCollider.Overlap(ContactFilter2D.noFilter, results);
+            for (int i = 0; i < count; i++)
+            {
+                if (!results[i].CompareTag("Enemy")) continue;
+                var enemy = results[i].GetComponent<EnemyController>();
+                if (enemy != null) enemiesInRange.Add(enemy);
+            }
         }
     }
 

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6006921564189516423}
   - component: {fileID: 4603881260930512254}
   - component: {fileID: 6375903834917578240}
+  - component: {fileID: 1137751000451965340}
   m_Layer: 8
   m_Name: Mage
   m_TagString: Player
@@ -183,8 +184,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.13805927, y: 0.11752236}
-  m_Size: {x: 1.060346, y: 0.25327092}
+  m_Offset: {x: 0, y: 0.1}
+  m_Size: {x: 0.7, y: 0.25}
   m_Direction: 1
 --- !u!114 &4603881260930512254
 MonoBehaviour:
@@ -212,20 +213,33 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
+  actionSpeedMultiplier: 2
   ultimateEnergyLockoutDuration: 5
   secondaryAbilityCooldownDuration: 1
   floatingTextHeightAdjust: -0.5
   attackHitboxPivot: {fileID: 8735852519746919689}
   attackHitbox: {fileID: 6828866472260034055}
   attackDamageMultiplier: 1
+  attackHitboxSizeMultiplier: 3
   fireballPrefab: {fileID: 1123546062510649833, guid: 80ff04dec6497a94e90a8f1158d923ab, type: 3}
-  ultimateDamageMultiplier: 4
+  ultimateDamageMultiplier: 1
   ultimateTrailDamageMultiplier: 0.5
   fireStatusDamageMultiplier: 0.5
+  fireballFlightSpeed: 8
+  fireballMaxTravelDistance: 12
+  fireballExplosionRadius: 1.2
+  fireballGroundedDuration: 10
+  fireballGroundedTickInterval: 1
+  fireballGroundedRadius: 2.4
+  fireballFireStatusDuration: 3
+  ultimateSizeMultiplier: 3
   teleportProjectilePrefab: {fileID: 1651467629525891566, guid: 229b3d194b1b40f47972b54e0b373498, type: 3}
   secondaryAbilityMaxRange: 10
+  teleportProjectileSpeed: 12
   petPrefab: {fileID: 5842852507566284858, guid: 16b39e6cf87c874409815f8f615320f1, type: 3}
   petSpawnPoint: {fileID: 8631336237625606155}
+  petSizeMultiplier: 2
+  petActionSpeedMultiplier: 2
   maxActionDuration: 3
 --- !u!114 &6375903834917578240
 MonoBehaviour:
@@ -242,6 +256,42 @@ MonoBehaviour:
   statusAnimator: {fileID: 5027192718664090439}
   tickInterval: 1
   immunities: 
+--- !u!114 &1137751000451965340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385074858891067883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69beb381e244f92449b8c4cf954630e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.PropertyVariants.GameObjectLocalizer
+  m_TrackedObjects:
+  - rid: 6837606827014488210
+  references:
+    version: 2
+    RefIds:
+    - rid: 6837606827014488210
+      type: {class: TrackedMonoBehaviourObject, ns: UnityEngine.Localization.PropertyVariants.TrackedObjects, asm: Unity.Localization}
+      data:
+        m_Target: {fileID: 4603881260930512254}
+        m_TrackedProperties:
+          items:
+          - rid: 6837606827014488211
+        m_UpdateType: 0
+        m_Changed:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 6837606827014488211
+      type: {class: FloatTrackedProperty, ns: UnityEngine.Localization.PropertyVariants.TrackedProperties, asm: Unity.Localization}
+      data:
+        m_PropertyPath: attackHitboxSizeMultiplier
+        m_VariantData:
+        - localeIdentifier:
+            m_Code: en
+          value: 2
 --- !u!1 &5909618122711402853
 GameObject:
   m_ObjectHideFlags: 0

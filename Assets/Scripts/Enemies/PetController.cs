@@ -40,10 +40,16 @@ public class PetController : MonoBehaviour
     private bool isDead;
     private readonly List<EnemyController> hitTargets = new();
 
-    public void Initialize(Transform petOwner, Transform spawnPoint)
+    // sizeMultiplier/actionSpeedMultiplier vêm do Mage (ou futuramente do Blood Mage, que
+    // reaproveita esta mesma classe) — upgrades de tamanho/velocidade de ataque do pet,
+    // decididos pelo controlador do herói, não por este prefab (mesmo critério do resto do
+    // projeto — ver comentário no PaladinHammer.cs/HeroProjectile.cs, por exemplo).
+    public void Initialize(Transform petOwner, Transform spawnPoint, float sizeMultiplier, float actionSpeedMultiplier)
     {
         owner = petOwner;
         teleportPoint = spawnPoint;
+        transform.localScale = Vector3.one * sizeMultiplier;
+        if (animator != null) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
     }
 
     private void Awake()
@@ -125,12 +131,17 @@ public class PetController : MonoBehaviour
     {
         Vector2 dir = (destination - (Vector2)transform.position).normalized;
         facing = dir;
-        transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
         if (animator != null)
         {
             animator.SetFloat("DirX", dir.x);
             animator.SetFloat("DirY", dir.y);
         }
+
+        // Movimento real só durante "Fly" — mesmo critério do HeroController pro "Walk".
+        // Sem isso, o pet deslizava durante o clipe de Summon (antes do Animator
+        // transicionar de verdade pro Fly), feio demais visualmente.
+        if (!AnimatorStateCheck.IsInState(animator, "Fly")) return;
+        transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
     }
 
     private void TryAttack()

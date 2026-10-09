@@ -185,8 +185,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.11752236}
-  m_Size: {x: 1.060346, y: 0.25327092}
+  m_Offset: {x: 0, y: 0.1}
+  m_Size: {x: 0.7, y: 0.25}
   m_Direction: 1
 --- !u!114 &5041678116504528419
 MonoBehaviour:
@@ -214,6 +214,7 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
+  actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 2
   secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
@@ -223,6 +224,8 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
+  vineLifetime: 1.5
+  vineHitRadius: 1
   maxActionDuration: 3
   elkAnimatorController: {fileID: 9100000, guid: 4417318626b6f9348aed7c8e543b48ee, type: 2}
   elkMaxHealthMultiplier: 2

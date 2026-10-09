@@ -31,6 +31,11 @@ public class Rogue : HeroController
     [Header("Ultimate — Bomba")]
     [SerializeField] private GameObject bombPrefab; // precisa ter RogueBomb
     [SerializeField] private float bombDamageMultiplier = 4f; // GDD: "4× o dano"
+    // Controlador decide TUDO sobre a bomba e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do RogueBomb.cs.
+    [SerializeField] private float bombSpeed = 8f; // 🔢 ajustável
+    [SerializeField] private float bombMaxDistance = 10f; // 🔢 ajustável — não escala por Tier de Arma ainda (mesmo placeholder do vineCount/arrowCount)
+    [SerializeField] private float bombExplosionRadius = 2.5f; // 🔢 ajustável — maior que o Pulso, é a Ultimate
 
     // ---------- Habilidade Secundária (Shift) — Cambalhota (GDD Seção 16/17.5) ----------
     // Movimento livre (segue a mira de verdade, RawAimDirection) — decisão explícita do
@@ -133,7 +138,7 @@ public class Rogue : HeroController
 
         var bombObj = Instantiate(bombPrefab, transform.position, Quaternion.identity);
         var bomb = bombObj.GetComponent<RogueBomb>();
-        if (bomb != null) bomb.Launch(RawAimDirection, stats.damage * bombDamageMultiplier, enemyLayerMask);
+        if (bomb != null) bomb.Launch(RawAimDirection, stats.damage * bombDamageMultiplier, enemyLayerMask, bombSpeed, bombMaxDistance, bombExplosionRadius);
     }
 
     // Animation Event, no fim do clipe de lançar a bomba — a bomba já está viajando sozinha

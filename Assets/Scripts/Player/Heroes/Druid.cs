@@ -9,6 +9,10 @@ public class Druid : HeroController
     [SerializeField] private int vineCount = 1; // 🔢 teto 15, +1 por tier de arma — mesmo padrão placeholder do arrowCount do Ranger (Sprint 17/18), hook de Tier real ainda não existe
     [SerializeField] private float vineSearchRadius = 15f; // 🔢 ajustável
     [SerializeField] private LayerMask enemyLayerMask; // configurar no Inspector = layer dos monstros
+    // Controlador decide TUDO sobre a vinha e repassa pro prefab em cada Launch() — ver
+    // comentário no topo do Vine.cs.
+    [SerializeField] private float vineLifetime = 1.5f; // 🔢 ajustável
+    [SerializeField] private float vineHitRadius = 0.5f; // 🔢 ajustável — o "circle trigger pequeno" da GDD Seção 17.4
     private bool vineHitFired;
 
     // Rede de segurança genérica — mesmo padrão do Barbarian/Ranger. Só vale pras janelas
@@ -198,7 +202,7 @@ public class Druid : HeroController
             var vineObj = Instantiate(vinePrefab, enemies[i].transform.position, Quaternion.identity);
             var vine = vineObj.GetComponent<Vine>();
             // SUPOSIÇÃO (Seção 0, item 4) — dano direto = stats.damage, um hit cheio por vinha.
-            if (vine != null) vine.Launch(stats.damage, enemyLayerMask, hitThisActivation);
+            if (vine != null) vine.Launch(stats.damage, enemyLayerMask, hitThisActivation, vineLifetime, vineHitRadius);
         }
     }
 
@@ -229,6 +233,7 @@ public class Druid : HeroController
         // Troca o controller inteiro — a animação de transformar-em já é o estado padrão do
         // controller do Alce (configurar no Editor, ver Seção 5), não precisa de Trigger extra.
         if (animator != null) animator.runtimeAnimatorController = elkAnimatorController;
+        RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
     }
 
     protected override bool IsUltimateActive => isElkForm;
@@ -246,11 +251,19 @@ public class Druid : HeroController
         isElkForm = true;
         isAttacking = false; // libera o ataque — agora vira a garra do Alce, não mais vinha
 
+        // healthBefore ANTES de tocar em maxHealth — o Floating Combat Text de cura precisa do
+        // quanto a vida subiu de verdade (ex.: 12/32 -> 76/76 mostra "+64"), não um valor
+        // calculado a partir do novo teto. Não usa o Heal() genérico da base porque aqui
+        // maxHealth muda no mesmo instante (vira o teto do Alce), não um alvo fixo.
+        float healthBefore = stats.health;
         stats.maxHealth = humanMaxHealth * elkMaxHealthMultiplier;
         stats.health = stats.maxHealth; // GDD: cura pra 100% do HP máximo do Alce
         stats.damage = humanDamage * elkDamageMultiplier;
         stats.moveSpeed = humanMoveSpeed * elkMoveSpeedMultiplier;
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
+
+        float healedAmount = stats.health - healthBefore;
+        if (healedAmount > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), healedAmount);
 
         ApplyColliderShape(elkColliderOffset, elkColliderSize);
     }
@@ -329,6 +342,7 @@ public class Druid : HeroController
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
 
         if (animator != null) animator.runtimeAnimatorController = humanController;
+        RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
         isTransformImmune = false;
         isAttacking = false;
@@ -365,7 +379,10 @@ public class Druid : HeroController
     public override void AnimationDieEndEvent()
     {
         if (animator != null && animator.runtimeAnimatorController != humanController)
+        {
             animator.runtimeAnimatorController = humanController;
+            RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
+        }
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
         base.AnimationDieEndEvent();
     }
