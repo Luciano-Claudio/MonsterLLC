@@ -158528,7 +158528,9 @@ MonoBehaviour:
     prefab: {fileID: 7100000000000001, guid: 2e72309492994920ababaf314800764f, type: 3}
   - name: Gunslinger
     prefab: {fileID: 7200000000000001, guid: 98ee816945d94f56a77e41ddda66c26c, type: 3}
-  heroToSpawn: Gunslinger
+  - name: Assassin
+    prefab: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+  heroToSpawn: Assassin
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -158641,6 +158643,7 @@ Transform:
   - {fileID: 700244429}
   - {fileID: 1888680707}
   - {fileID: 1037770757}
+  - {fileID: 1265418854}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1004331642
@@ -167440,6 +167443,11 @@ Transform:
   - {fileID: 1491139985}
   m_Father: {fileID: 638894995}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1265418854 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+  m_PrefabInstance: {fileID: 1300271891}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1283092569
 GameObject:
   m_ObjectHideFlags: 0
@@ -167569,6 +167577,71 @@ CapsuleCollider2D:
   m_Offset: {x: 0.026129352, y: 0.8707188}
   m_Size: {x: 2.1944788, y: 1.7415112}
   m_Direction: 1
+--- !u!1001 &1300271891
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 990000002}
+    m_Modifications:
+    - target: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_Name
+      value: Assassin
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.4587
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.30152
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000002, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7400000000000004, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 048e9658542a4a6c9d0a3973a2af6db4, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
 --- !u!1 &1308493350
 GameObject:
   m_ObjectHideFlags: 0

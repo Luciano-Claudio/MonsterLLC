@@ -316,7 +316,13 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
-        if (staysDormantUntilDetected)
+        // !IsPlayerUntargetable aqui também — sem isso, um monstro de emboscada volta pra pose
+        // dormente SEMPRE que isInCombat vira false, mesmo quando o motivo é só
+        // camuflagem/stealth (Ranger/Assassin), não falta de detecção real. Sprint 29 (Assassin):
+        // durante stealth, ele deve continuar andando/parado normalmente (patrolAI.Tick logo
+        // abaixo), nunca travar na pose estática — mesmo bug já existia pra camuflagem do
+        // Ranger, só nunca tinha sido flagrado.
+        if (staysDormantUntilDetected && !HeroController.IsPlayerUntargetable)
         {
             // Nunca vaga sozinho — só a pose parada (idle estático) até detectar.
             SetMoving(false);

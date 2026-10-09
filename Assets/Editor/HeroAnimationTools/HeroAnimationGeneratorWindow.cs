@@ -17,8 +17,18 @@ public class HeroAnimationGeneratorWindow : EditorWindow
 {
     private enum SheetLayout
     {
-        Diagonal,  // 2 ou 4 linhas — SE/SW/NE/NW
-        Orthogonal // 2 ou 4 linhas — E/W/S/N
+        Diagonal,   // 2 ou 4 linhas — SE/SW/NE/NW
+        Orthogonal, // 2 ou 4 linhas — E/W/S/N
+        SingleClip  // 1 linha — clipe único, não-direcional (igual Die)
+    }
+
+    [System.Serializable]
+    private class CustomClipEntry
+    {
+        public string name = "";
+        public Texture2D spriteSheet;
+        public SheetLayout layout = SheetLayout.Diagonal;
+        public bool loop = false;
     }
 
     private static readonly string[] DiagonalDirections = { "se", "sw", "ne", "nw" };
@@ -45,6 +55,12 @@ public class HeroAnimationGeneratorWindow : EditorWindow
     [SerializeField] private Texture2D shiftOrthogonalSpriteSheet;
     [SerializeField] private Texture2D ultimateDiagonalSpriteSheet;
     [SerializeField] private Texture2D ultimateOrthogonalSpriteSheet;
+
+    // Clipes extras, fora dos slots fixos acima — qualquer nome, qualquer mecânica própria
+    // (ex.: Start/End do dash do Assassin, o conjunto inteiro "sombrio" da forma de Ultimate
+    // dele — idle/walk/dmg/die/attack próprios, que não cabem no slot único "Ultimate" feito
+    // pra 1 animação só). Mesmo padrão do CustomAnimationGeneratorWindow.
+    [SerializeField] private List<CustomClipEntry> customClips = new List<CustomClipEntry>();
 
     private Vector2 scrollPosition;
 
@@ -122,6 +138,9 @@ public class HeroAnimationGeneratorWindow : EditorWindow
         );
 
         GUILayout.Space(15);
+        DrawCustomClipsSection();
+
+        GUILayout.Space(15);
         targetController = (AnimatorController)EditorGUILayout.ObjectField(
             "Target Controller (opcional)", targetController, typeof(AnimatorController), false
         );
@@ -140,6 +159,43 @@ public class HeroAnimationGeneratorWindow : EditorWindow
 
     private Texture2D DrawTextureField(string label, Texture2D texture) =>
         (Texture2D)EditorGUILayout.ObjectField(label, texture, typeof(Texture2D), false);
+
+    private void DrawCustomClipsSection()
+    {
+        EditorGUILayout.LabelField("Clipes extras (mecânica própria)", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(
+            "Pra qualquer animação que não cabe nos slots fixos acima — ex.: Start/End de um " +
+            "dash, ou o conjunto INTEIRO de uma forma alternativa (idle/walk/dmg/die/attack " +
+            "próprios, tipo a forma sombria do Assassin). Cada entrada gera 1 clipe por " +
+            "direção (Diagonal/Orthogonal) ou 1 clipe único (SingleClip), com o nome que você " +
+            "escolher — rode a ferramenta de novo com um Hero Name/Destination diferente (ou " +
+            "nomes diferentes aqui) se precisar separar um segundo conjunto inteiro de pose.",
+            MessageType.None
+        );
+
+        int removeIndex = -1;
+        for (int i = 0; i < customClips.Count; i++)
+        {
+            var entry = customClips[i];
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            EditorGUILayout.BeginHorizontal();
+            entry.name = EditorGUILayout.TextField("Nome", entry.name);
+            if (GUILayout.Button("X", GUILayout.Width(22))) removeIndex = i;
+            EditorGUILayout.EndHorizontal();
+
+            entry.spriteSheet = DrawTextureField("Sprite Sheet", entry.spriteSheet);
+            entry.layout = (SheetLayout)EditorGUILayout.EnumPopup("Layout", entry.layout);
+            entry.loop = EditorGUILayout.Toggle("Loop", entry.loop);
+
+            EditorGUILayout.EndVertical();
+            GUILayout.Space(4);
+        }
+
+        if (removeIndex >= 0) customClips.RemoveAt(removeIndex);
+
+        if (GUILayout.Button("+ Adicionar clipe extra")) customClips.Add(new CustomClipEntry());
+    }
 
     // =========================================================
     // GENERATE
@@ -183,6 +239,23 @@ public class HeroAnimationGeneratorWindow : EditorWindow
 
         if (ultimateOrthogonalSpriteSheet != null)
             GenerateDirectionalSet("ultimate", ultimateOrthogonalSpriteSheet, OrthogonalDirections, false, generatedClips, outputDirectory);
+
+        foreach (var entry in customClips)
+        {
+            if (entry.spriteSheet == null || string.IsNullOrWhiteSpace(entry.name)) continue; // entrada vazia/incompleta — ignorada, não é erro
+
+            if (entry.layout == SheetLayout.SingleClip)
+                GenerateSingleClip(entry.name, entry.spriteSheet, entry.loop, generatedClips, outputDirectory);
+            else
+                GenerateDirectionalSet(
+                    entry.name,
+                    entry.spriteSheet,
+                    entry.layout == SheetLayout.Diagonal ? DiagonalDirections : OrthogonalDirections,
+                    entry.loop,
+                    generatedClips,
+                    outputDirectory
+                );
+        }
 
         AssetDatabase.SaveAssets();
 
@@ -355,6 +428,23 @@ public class HeroAnimationGeneratorWindow : EditorWindow
         if (shiftOrthogonalSpriteSheet != null && !ValidateDirectional(shiftOrthogonalSpriteSheet, "Shift Orthogonal")) return false;
         if (ultimateDiagonalSpriteSheet != null && !ValidateDirectional(ultimateDiagonalSpriteSheet, "Ultimate Diagonal")) return false;
         if (ultimateOrthogonalSpriteSheet != null && !ValidateDirectional(ultimateOrthogonalSpriteSheet, "Ultimate Orthogonal")) return false;
+
+        foreach (var entry in customClips)
+        {
+            if (entry.spriteSheet == null) continue; // linha vazia na lista — ignorada
+
+            if (string.IsNullOrWhiteSpace(entry.name))
+            {
+                ShowError("Um clipe extra tem Sprite Sheet mas está sem nome.");
+                return false;
+            }
+
+            bool valid = entry.layout == SheetLayout.SingleClip
+                ? ValidateSingleRow(entry.spriteSheet, entry.name)
+                : ValidateDirectional(entry.spriteSheet, entry.name);
+
+            if (!valid) return false;
+        }
 
         return true;
     }

@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 29 — Assassin Completo (Primário + Ultimate + Shift + Passiva)](sprint-29.md) — Deadly Dash/Thousand Blades redesenhados em sprint pra "teleporte de ida-e-volta" com projétil próprio, forma sombria troca o Animator Controller inteiro, fix de monstros de emboscada re-dormindo durante stealth, trava de segurança contra a Ultimate acabar no meio de outra ação
 - [Sprint 28 — Gunslinger Completo (Primário + Ultimate + Shift + Passiva)](sprint-28.md) — Primeiro hitscan do projeto (raycast + ContactFilter2D, filtrado por tag "Enemy"), rajada de 1-15 tiros com desvio aleatório calibrado por Gizmo, Ultimate com N tiros instantâneos por direção fixa, loot em dobro
 - [Sprint 27b — Infraestrutura de Upgrades (todos os heróis) + correções de base no Mage](sprint-27b-upgrade-infrastructure.md) — Valores de upgrade centralizados no controlador em todos os 7 heróis, `ActionSpeedMultiplier`, multiplicadores de tamanho, fix da explosão do Mage e do pet deslizando no Summon
 - [Sprint 27 — Paladin Completo (Primário + Ultimate + Shift + Passiva)](sprint-27.md) — Martelo com leque de upgrade (1–5), espadas orbitando escaláveis (2/4/8), shield bash, shield periódico com vida própria

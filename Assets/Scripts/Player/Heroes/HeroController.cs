@@ -304,7 +304,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // ShouldConsumeCooldownOnAttack() vem ANTES do TryConsume() de propósito — sem isso,
         // o Cleric (primeiro herói cujo clique pode "não fazer nada" por falta de alvo no
         // raio) gastava o cooldown inteiro num clique que nem chegou a lançar o projétil.
-        if (attackHeld && !isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && attackCooldown.TryConsume())
+        if (attackHeld && !isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.TryConsume()))
             PrimaryAttack();
 
         bool wantsToMove = moveInput.sqrMagnitude > 0.0001f;
@@ -658,6 +658,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // e sem esse hook o cooldown seria gasto à toa, deixando o Cleric "travado" por até 1
     // cooldown inteiro assim que um monstro aparecesse no raio logo depois do clique.
     protected virtual bool ShouldConsumeCooldownOnAttack() => true;
+
+    // Default false — Sprint 29 (Assassin): permite pular o cooldown do primário INTEIRO
+    // durante a forma sombria (Thousand Blades encadeia sem espera nenhuma), não só "não
+    // consome num clique que não fez nada" (isso já é ShouldConsumeCooldownOnAttack). Sem
+    // efeito em nenhum outro herói — !isAttacking no Update() já impede 2 ações ao mesmo tempo,
+    // então isto só remove a ESPERA entre uma ação e a próxima, nunca a sobreposição.
+    protected virtual bool IsAttackCooldownBypassed() => false;
 
     // Default false — só heróis cuja Habilidade Secundária esconde/transforma o jogador de
     // verdade (camuflagem do Ranger, teleporte do Mage, Coruja do Druid) sobrescrevem isso.
