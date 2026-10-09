@@ -2,6 +2,7 @@
 
 Relatório de cada sprint concluída: o que foi entregue, decisões técnicas tomadas, dívida técnica deixada para trás e próximos passos. Veja o [template](_template.md) usado para escrevê-los.
 
+- [Sprint 28 — Gunslinger Completo (Primário + Ultimate + Shift + Passiva)](sprint-28.md) — Primeiro hitscan do projeto (raycast + ContactFilter2D, filtrado por tag "Enemy"), rajada de 1-15 tiros com desvio aleatório calibrado por Gizmo, Ultimate com N tiros instantâneos por direção fixa, loot em dobro
 - [Sprint 27b — Infraestrutura de Upgrades (todos os heróis) + correções de base no Mage](sprint-27b-upgrade-infrastructure.md) — Valores de upgrade centralizados no controlador em todos os 7 heróis, `ActionSpeedMultiplier`, multiplicadores de tamanho, fix da explosão do Mage e do pet deslizando no Summon
 - [Sprint 27 — Paladin Completo (Primário + Ultimate + Shift + Passiva)](sprint-27.md) — Martelo com leque de upgrade (1–5), espadas orbitando escaláveis (2/4/8), shield bash, shield periódico com vida própria
 - [Sprint 26 — Bosses Floor 2 (Exceções): Rat People Royalty, Spider Queen](sprint-26-floor2-excecoes.md) — Melee/Ranged híbrido com 2 raios de ataque independentes, `CustomAnimationGeneratorWindow` — **Floor 1–2 100% fechado (7/7 bosses)**

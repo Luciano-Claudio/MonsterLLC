@@ -103,6 +103,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
     public static bool IsPlayerUntargetable;
 
+    // Sprint 28 (Gunslinger) — passiva de sorte/loot (GDD Seção 17.8): multiplica a
+    // quantidade de Monster Essence dropada por qualquer abate, não só os do próprio
+    // Gunslinger. Static pelo mesmo motivo de IsPlayerUntargetable (só existe 1 herói
+    // jogável por vez); lido em EnemyController.AnimationDieEndEvent(). Default 1 = sem
+    // efeito em nenhum herói existente.
+    public static float LootMultiplier = 1f;
+
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 

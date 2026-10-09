@@ -717,7 +717,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             var lootObj = new GameObject("Loot_MonsterEssence");
             lootObj.transform.position = transform.position;
             var drop = lootObj.AddComponent<LootDrop>();
-            drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = monsterEssenceDropAmount };
+            // HeroController.LootMultiplier — passiva de sorte do Gunslinger (Sprint 28,
+            // GDD Seção 17.8), default 1 = sem efeito em nenhum outro herói.
+            int quantity = Mathf.RoundToInt(monsterEssenceDropAmount * HeroController.LootMultiplier);
+            drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = quantity };
         }
 
         Destroy(gameObject);
