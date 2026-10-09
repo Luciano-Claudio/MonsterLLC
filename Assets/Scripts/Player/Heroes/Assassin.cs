@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Assassin : HeroController
@@ -15,11 +16,31 @@ public class Assassin : HeroController
     [SerializeField] private float dashProjectileSpeed = 14f; // 🔢 ajustável — compartilhada com o Thousand Blades
     [SerializeField] private float dashHitRadius = 0.8f; // 🔢 ajustável — raio do trigger do projétil (Effect)
     [SerializeField] private float dashKnockbackForce = 5f; // 🔢 ajustável — compartilhado com o Thousand Blades
+    // Upgrade futuro — mesmo critério do hammerCount do Paladin: a partir de 2, os projéteis
+    // extras abrem em leque (±15°, ±30°...) ao redor da MESMA direção de mira, cada um fazendo
+    // a viagem de ida-e-volta inteira e independente (Start/Effect/End próprios). É sempre o
+    // mesmo Assassin único, invisível — vira só uma "saraivada" de golpes simultâneos em vários
+    // ângulos, não vários Assassins de verdade (pedido explícito do usuário).
+    [SerializeField] private int dashProjectileCount = 1; // 🔢 upgradable — 1 a 5 (ver OnValidate)
+    // Separado em graus do martelo do Paladin/leque do Blood Mage (ambos fixos em 15°) —
+    // pedido do usuário: o dash do Assassin é mais "delicado" (projétil fino, precisa de mais
+    // distância entre os ângulos pra não ficar tudo empilhado em cima do mesmo alvo).
+    // Ajustável aqui pra calibrar em teste, sem precisar mexer em nenhum outro herói.
+    [SerializeField] private float dashFanAngleStep = 15f; // 🔢 ajustável
+    private readonly List<float> dashAngles = new();
     private bool isThousandBladesVariant;
-    private bool isDashInvisible; // true do fim do Start ao fim do projétil — ver IsDamageImmune
+    private bool isDashInvisible; // true do fim do Start ao fim do ÚLTIMO projétil voltar — ver IsDamageImmune
     private Vector2 dashDirection;
     private SpriteRenderer bodySpriteRenderer;
-    private AssassinDashProjectile activeDashProjectile;
+    // Lista, não 1 referência só — com dashProjectileCount > 1, vários projéteis viajam ao
+    // mesmo tempo; o Assassin só reaparece quando TODOS tiverem voltado (ver
+    // OnDashProjectileReturned).
+    private readonly List<AssassinDashProjectile> activeDashProjectiles = new();
+    // Dedup COMPARTILHADO entre os projéteis da MESMA leva (dashProjectileCount > 1) — cada
+    // projétil só dedupa dentro do próprio raio (ver AssassinDashProjectile), mas 2 raios
+    // vizinhos podem se interceptar e bater no mesmo monstro 2x. TryClaimDashHit() garante que
+    // só o PRIMEIRO projétil a alcançar um monstro na leva aplica dano nele.
+    private readonly HashSet<EnemyController> dashVolleyHitTargets = new();
 
     // Guarda contra o disparo duplo do Blend Tree 2D — DashStart/DashEnd (humano) só têm 4
     // poses ORTOGONAIS (N/E/S/W), mas a mira pode ser qualquer uma das 8 direções; mirando
@@ -65,6 +86,13 @@ public class Assassin : HeroController
     [Header("Habilidade Secundária (Shift) — Teleporte")]
     [SerializeField] private float teleportMaxRange = 5f; // 🔢 ajustável — teto, não "sempre pula o máximo"
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        dashProjectileCount = Mathf.Clamp(dashProjectileCount, 1, 5);
+    }
+#endif
+
     protected override void Awake()
     {
         base.Awake();
@@ -107,11 +135,11 @@ public class Assassin : HeroController
     // parte, já que não há projétil nem invisibilidade nele).
     private void ForceEndAction()
     {
-        if (activeDashProjectile != null)
+        foreach (var projectile in activeDashProjectiles)
         {
-            Destroy(activeDashProjectile.gameObject);
-            activeDashProjectile = null;
+            if (projectile != null) Destroy(projectile.gameObject);
         }
+        activeDashProjectiles.Clear();
         if (bodySpriteRenderer != null) bodySpriteRenderer.enabled = true;
         isDashInvisible = false;
         isThousandBladesVariant = false;
@@ -129,13 +157,18 @@ public class Assassin : HeroController
         isAttacking = true;
         actionElapsed = 0f;
         isThousandBladesVariant = isStealthActive;
-        dashDirection = AimDirection; // 1 de 8 direções fixas, já travada pela base
+        // Ângulo livre exato do mouse, não mais travado nas 8 direções — o projétil já
+        // rotaciona o próprio sprite pra acompanhar qualquer ângulo (mesmo critério do
+        // MageFireball/RangerArrow/PaladinHammer/Blood Mage). A pose do CORPO continua
+        // travada nas 8 direções via Blend Tree (AimX/AimY) — só a trajetória real segue o mouse.
+        dashDirection = RawAimDirection;
         AnimatorTrigger("AttackTrigger"); // Animator decide Deadly_Dash x Thousand_Blades via IsStealthActive
     }
 
     // Animation Event, no último frame do clipe "Start" (Deadly_Dash_Start ou
-    // ITS_Thousand_Blades_Start) — o Assassin vira invisível aqui e nasce o projétil que faz a
-    // viagem de ida-e-volta de verdade. A posição do Assassin NUNCA muda — só o projétil anda.
+    // ITS_Thousand_Blades_Start) — o Assassin vira invisível aqui e nascem o(s) projétil(eis)
+    // que fazem a viagem de ida-e-volta de verdade, 1 por ângulo do leque (dashProjectileCount).
+    // A posição do Assassin NUNCA muda — só os projéteis andam.
     public void AnimationDashStartEndEvent()
     {
         if (Time.frameCount == lastDashStartFrame) return;
@@ -150,18 +183,64 @@ public class Assassin : HeroController
         float damage = isThousandBladesVariant ? stats.damage * thousandBladesDamageMultiplier : stats.damage;
         float radius = isThousandBladesVariant ? thousandBladesHitRadius : dashHitRadius;
 
-        var obj = Instantiate(prefab, transform.position, Quaternion.identity);
-        activeDashProjectile = obj.GetComponent<AssassinDashProjectile>();
-        if (activeDashProjectile != null)
-            activeDashProjectile.Launch(this, dashDirection, damage, dashProjectileSpeed, dashKnockbackForce, radius, enemyLayerMask);
+        activeDashProjectiles.Clear();
+        dashVolleyHitTargets.Clear(); // nova leva — dedup compartilhado zera aqui
+        GetFanAngles(dashProjectileCount, dashFanAngleStep, dashAngles);
+        foreach (float angle in dashAngles)
+        {
+            Vector2 dir = RotateDegrees(dashDirection, angle);
+            var obj = Instantiate(prefab, transform.position, Quaternion.identity);
+            var projectile = obj.GetComponent<AssassinDashProjectile>();
+            // Dano CHEIO por projétil, sem dividir entre eles — mesmo critério do martelo do
+            // Paladin/leque do Blood Mage.
+            if (projectile != null)
+            {
+                projectile.Launch(this, dir, damage, dashProjectileSpeed, dashKnockbackForce, radius, enemyLayerMask);
+                activeDashProjectiles.Add(projectile);
+            }
+        }
     }
 
-    // Chamado pelo próprio projétil (AssassinDashProjectile.AnimationProjectileReturnedEvent)
-    // quando ele termina a viagem de volta — reaparece o Assassin exatamente onde ele sempre
-    // esteve e toca o clipe de "volta".
-    public void OnDashProjectileReturned()
+    // Leque SIMÉTRICO centrado no mouse — DIFERENTE de propósito do GetHammerAngles do
+    // Paladin/GetFanAngles do Blood Mage (que sempre mantêm 1 projétil exatamente na direção
+    // do mouse, com a contagem par sobrando "pro lado"). Aqui o mouse controla o MEIO do leque
+    // inteiro, não a posição de 1 projétil fixo (pedido explícito do usuário): com N ÍMPAR, o
+    // projétil central cai exatamente em 0° (igual ao Paladin nesse caso específico); com N
+    // PAR, não existe "projétil do meio" sozinho — os 2 centrais ficam a ±angleStep/2 um do
+    // outro, e é o PONTO MÉDIO entre eles (0°) que aponta pro mouse, sempre simétrico.
+    private static void GetFanAngles(int count, float angleStep, List<float> results)
     {
-        activeDashProjectile = null;
+        results.Clear();
+        float centerOffset = (count - 1) / 2f;
+        for (int i = 0; i < count; i++)
+        {
+            results.Add((i - centerOffset) * angleStep);
+        }
+    }
+
+    private static Vector2 RotateDegrees(Vector2 v, float degrees)
+    {
+        float rad = degrees * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(rad);
+        float sin = Mathf.Sin(rad);
+        return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
+    }
+
+    // Chamado por CADA projétil (AssassinDashProjectile.AnimationProjectileEffectHitEvent)
+    // antes de aplicar dano num monstro — HashSet.Add() já faz a checagem+reserva atômica:
+    // retorna true (e marca) só na PRIMEIRA vez que esse monstro é reivindicado nesta leva;
+    // qualquer projétil seguinte cujo raio também alcance o mesmo monstro recebe false e pula
+    // o dano. Sem isso, raios vizinhos que se interceptam batiam 2x (ou mais) no mesmo alvo.
+    public bool TryClaimDashHit(EnemyController enemy) => dashVolleyHitTargets.Add(enemy);
+
+    // Chamado por CADA projétil (AssassinDashProjectile.AnimationProjectileReturnedEvent)
+    // quando termina a própria viagem de volta — só reaparece o Assassin de verdade quando o
+    // ÚLTIMO da leva voltar (dashProjectileCount > 1 pode ter vários viajando juntos).
+    public void OnDashProjectileReturned(AssassinDashProjectile projectile)
+    {
+        activeDashProjectiles.Remove(projectile);
+        if (activeDashProjectiles.Count > 0) return;
+
         isDashInvisible = false;
         if (bodySpriteRenderer != null) bodySpriteRenderer.enabled = true;
         AnimatorTrigger("AttackReturnTrigger");

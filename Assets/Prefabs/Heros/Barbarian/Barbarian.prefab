@@ -661,7 +661,7 @@ MonoBehaviour:
     damage: 200
     critChance: 0.1
     moveSpeed: 5
-    attackSpeed: 0.5
+    attackSpeed: 3
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
@@ -669,7 +669,7 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
-  actionSpeedMultiplier: 1
+  actionSpeedMultiplier: 2
   ultimateEnergyLockoutDuration: 2
   secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
@@ -689,7 +689,7 @@ MonoBehaviour:
   secondaryAbilitySpeedMultiplier: 1.5
   secondaryAbilityDuration: 5
   maxActionDuration: 3
-  sizeMultiplier: 2
+  sizeMultiplier: 1
 --- !u!114 &3565354531031999
 MonoBehaviour:
   m_ObjectHideFlags: 0

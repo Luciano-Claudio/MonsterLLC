@@ -29,6 +29,11 @@ public class Druid : HeroController
     [SerializeField] private float elkMoveSpeedMultiplier = 1.3f; // 🔢 GDD: "mais velocidade", sem número — ajustável
     [SerializeField] private float elkFormMaxDuration = 30f; // 🔢 GDD: 30s
     [SerializeField] private float elkKnockbackForce = 4f; // 🔢 ajustável, mesmo padrão do Barbarian
+    // Upgrade futuro — escala o transform.localScale INTEIRO durante a forma Alce (visual +
+    // CapsuleCollider2D, que é definido em espaço LOCAL e já escala junto automaticamente, +
+    // as 4 hitboxes de garra, que são filhas e também seguem a escala do pai). Só vale durante
+    // o Alce: volta pra 1 (humano) em AnimationElkTransformOutEndEvent/AnimationDieEndEvent.
+    [SerializeField] private float elkSizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
     [SerializeField] private Collider2D elkClawHitboxNE;
     [SerializeField] private Collider2D elkClawHitboxNW;
     [SerializeField] private Collider2D elkClawHitboxSE;
@@ -75,6 +80,13 @@ public class Druid : HeroController
     [SerializeField] private float owlDuration = 10f; // 🔢 GDD não dá teto — ajustável, mesma ideia do teto de camuflagem do Ranger
     private bool isOwlForm; // só true na fase "during"
     private float owlElapsed;
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        elkSizeMultiplier = Mathf.Clamp(elkSizeMultiplier, 1f, 3f);
+    }
+#endif
 
     protected override void Awake()
     {
@@ -266,6 +278,7 @@ public class Druid : HeroController
         if (healedAmount > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), healedAmount);
 
         ApplyColliderShape(elkColliderOffset, elkColliderSize);
+        transform.localScale = Vector3.one * elkSizeMultiplier;
     }
 
     private void StartElkClawAttack()
@@ -344,6 +357,7 @@ public class Druid : HeroController
         if (animator != null) animator.runtimeAnimatorController = humanController;
         RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
+        transform.localScale = Vector3.one; // volta ao tamanho humano normal — size do Alce só vale durante ele
         isTransformImmune = false;
         isAttacking = false;
     }
@@ -384,6 +398,7 @@ public class Druid : HeroController
             RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
         }
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
+        transform.localScale = Vector3.one; // mesmo critério — se morreu em forma Alce, volta ao tamanho humano aqui
         base.AnimationDieEndEvent();
     }
 

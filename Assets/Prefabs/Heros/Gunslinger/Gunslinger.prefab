@@ -214,7 +214,7 @@ MonoBehaviour:
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
-  actionSpeedMultiplier: 2
+  actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 2
   secondaryAbilityCooldownDuration: 8
   floatingTextHeightAdjust: -0.5
@@ -224,7 +224,7 @@ MonoBehaviour:
   hitscanMaxRange: 10
   impactVfxPrefab: {fileID: 7300000000000001, guid: 1e2dd23190894addbf461bc2d57419ea, type: 3}
   impactVfxDuration: 0.5
-  shotCount: 15
+  shotCount: 1
   shotMaxDeviationAngle: 10
   showShotLinesGizmo: 1
   maxActionDuration: 3

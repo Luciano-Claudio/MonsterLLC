@@ -130,8 +130,12 @@ public class BloodMage : HeroController
     }
 
     // Animation Event, no frame exato em que o(s) projétil(eis) são lançados — direção base =
-    // AimDirection (1 de 8 direções fixas, "Straight Projectile"), com leque angular se
-    // projectileCount > 1 (mesma lógica do martelo do Paladin — GetFanAngles/RotateDegrees).
+    // RawAimDirection (ângulo livre exato do mouse, não mais travado nas 8 direções: o
+    // projétil já rotaciona o próprio sprite pra acompanhar qualquer ângulo — mesmo critério
+    // do MageFireball/RangerArrow/PaladinHammer), com leque angular se projectileCount > 1
+    // (mesma lógica do martelo do Paladin — GetFanAngles/RotateDegrees). A pose do CORPO
+    // continua travada nas 8 direções via Blend Tree (AimX/AimY) — só a trajetória real do
+    // projétil segue o mouse.
     public void AnimationProjectileLaunchEvent()
     {
         if (projectileLaunchFired) return;
@@ -140,10 +144,10 @@ public class BloodMage : HeroController
         if (projectilePrefab == null) return;
 
         float reserve = stats.damage * damageReserveMultiplier;
-        GetFanAngles(projectileCount, AimDirection, projectileAngles);
+        GetFanAngles(projectileCount, RawAimDirection, projectileAngles);
         foreach (float angle in projectileAngles)
         {
-            Vector2 dir = RotateDegrees(AimDirection, angle);
+            Vector2 dir = RotateDegrees(RawAimDirection, angle);
             var obj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
             var projectile = obj.GetComponent<BloodMageProjectile>();
             // Reserva CHEIA por projétil, sem dividir entre eles — mesmo critério do martelo

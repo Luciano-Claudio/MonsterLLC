@@ -69,16 +69,23 @@ public class AssassinDashProjectile : MonoBehaviour
         EnemyController.CollectDistinct(OverlapBuffer, count, hitTargets);
         foreach (var enemy in hitTargets)
         {
+            // Com dashProjectileCount > 1, os raios de 2 projéteis vizinhos podem se
+            // interceptar — TryClaimDashHit() garante que um monstro na intersecção só leva
+            // dano do PRIMEIRO projétil que o alcançar nesta leva, nunca de 2+.
+            if (owner != null && !owner.TryClaimDashHit(enemy)) continue;
+
             enemy.TakeDamage(damage);
             enemy.ApplyKnockback(direction, knockbackForce);
         }
     }
 
     // Animation Event, no último frame do clipe "End" — o projétil já voltou pro ponto de
-    // origem (via Update() acima); avisa o Assassin pra reaparecer ali e se destrói.
+    // origem (via Update() acima); avisa o Assassin (passando a própria referência — com
+    // dashProjectileCount > 1, o Assassin só reaparece quando TODOS os projéteis da leva
+    // tiverem avisado) e se destrói.
     public void AnimationProjectileReturnedEvent()
     {
-        if (owner != null) owner.OnDashProjectileReturned();
+        if (owner != null) owner.OnDashProjectileReturned(this);
         Destroy(gameObject);
     }
 }

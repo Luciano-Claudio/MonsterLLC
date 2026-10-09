@@ -4,25 +4,37 @@ using UnityEngine;
 public class Rogue : HeroController
 {
     // ---------- Ataque primário — Self Area Pulse (GDD Seção 17.5) ----------
-    [Header("Ataque primário — Self Area Pulse")]
-    [SerializeField] private float pulseRadius = 2f; // 🔢 GDD não dá número — ajustável
-    [SerializeField] private LayerMask enemyLayerMask; // configurar no Inspector = layer dos monstros (mesmo padrão do Druid)
-    [SerializeField] private float pulseKnockbackForce = 4f; // 🔢 mesmo valor/padrão do knockbackForce do Barbarian — mesma categoria "Self Area Pulse"
-    private bool pulseHitFired;
-    private readonly List<EnemyController> pulseTargets = new();
+    // Redesenho a pedido do usuário: 3 estágios. 1) attack_start (corpo do Rogue, 4 diagonais)
+    // — no fim dele, ativa 2) RoguePulseArea (filho FIXO, nunca instanciado — ver comentário no
+    // topo do próprio script): fica tocando "Cycle" em loop (igual à Ultimate do Paladin) e
+    // dando dano por segundo via o próprio CircleCollider2D (trigger, não mais OverlapCircleAll
+    // no próprio Rogue). O Rogue fica LIVRE pra se mover durante essa fase (isAttacking já volta
+    // a false no fim do attack_start — decisão explícita do usuário) — como a área é filha dele,
+    // ela segue onde ele for. 3) Quando pulseDuration esgota (ver Update()), desativa a área e o
+    // Rogue toca attack_end (corpo, 4 diagonais) — só aí trava de novo brevemente.
+    [Header("Ataque primário — Self Area Pulse (filho RoguePulseArea cuida do dano/raio real)")]
+    [SerializeField] private LayerMask enemyLayerMask; // configurar no Inspector = layer dos monstros (mesmo padrão do Druid) — usado pela Ultimate (bomba), não mais pelo pulso (RoguePulseArea filtra por tag "Enemy")
+    [SerializeField] private RoguePulseArea pulseArea; // filho fixo, já no prefab — raio/forma do trigger configurados nele
+    [SerializeField] private float pulseDuration = 3f; // 🔢 ajustável — quanto tempo o Cycle do filho fica ativo
+    [SerializeField] private float pulseTickInterval = 1f; // 🔢 ajustável — cadência do dano por segundo
+    // Upgrade futuro — RoguePulseArea tem um CircleCollider2D DE VERDADE (não um OverlapCircleAll
+    // manual, como o anel do Blood Mage), então a própria Unity já escala o trigger real E o
+    // visual (SpriteRenderer) sozinha a partir de transform.localScale — não precisa de nenhuma
+    // lógica extra dentro do RoguePulseArea.cs, só aplicar o multiplicador aqui antes de ativar.
+    [SerializeField] private float pulseSizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
+    private bool isPulseActive;
+    private float pulseElapsed;
+    // AttackEndTrigger é AnyState no controller — se o pulso esgotar durante a Cambalhota
+    // (isAttacking fica true a viagem INTEIRA dela), disparar na hora arrancaria o Animator do
+    // meio do Roll. Mesma trava de segurança do stealthEndPending do Assassin: só marca a
+    // intenção aqui; Update() só dispara de verdade quando isAttacking voltar a false sozinho.
+    private bool attackEndPending;
 
-    // Debug — mesmo padrão da Vine/RogueBomb/EnemyController: NÃO é um trigger de verdade, é
-    // só pra visualizar/posicionar o raio do OverlapCircleAll no Editor sem precisar rodar em
-    // Play Mode. O dano continua filtrado por enemyLayerMask acima (só a layer de monstro
-    // entra no cálculo, nunca "qualquer collider").
-    [Header("Debug — só pra visualização em Editor, não afeta gameplay")]
-    [SerializeField] private bool showPulseGizmo = false;
-    [SerializeField] private float pulseGizmoOffsetY = 0f;
-
-    private Vector3 PulseCenter => transform.position + Vector3.up * pulseGizmoOffsetY;
-
-    // Rede de segurança genérica — mesmo padrão do Barbarian/Ranger/Druid. Cobre Primário e
-    // Ultimate (ações curtas, sem fase "during"); a Cambalhota tem teto próprio (ver
+    // Rede de segurança genérica — mesmo padrão do Barbarian/Ranger/Druid. Cobre as 2 fases
+    // travadas do Primário (attack_start/attack_end) e a Ultimate (ações curtas, sem fase
+    // "during" nelas mesmas — a fase "during" real, o pulso em si, não trava isAttacking, por
+    // isso não precisa de rede de segurança própria: Update() já controla pulseElapsed por
+    // código, não por Animation Event). A Cambalhota tem teto próprio (ver
     // rollMaxSafetyDuration), suprimido daqui.
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
     private float actionElapsed;
@@ -54,6 +66,13 @@ public class Rogue : HeroController
     private Vector2 rollDirection;
     private readonly HashSet<EnemyController> rolledEnemiesThisActivation = new HashSet<EnemyController>();
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        pulseSizeMultiplier = Mathf.Clamp(pulseSizeMultiplier, 1f, 3f);
+    }
+#endif
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
@@ -72,6 +91,22 @@ public class Rogue : HeroController
             }
         }
 
+        // Fase "during" do pulso — NÃO trava isAttacking (Rogue fica livre, pedido do usuário),
+        // por isso controlada aqui por tempo puro, não por Animation Event/rede de segurança.
+        if (isPulseActive)
+        {
+            pulseElapsed += Time.deltaTime;
+            if (pulseElapsed >= pulseDuration) EndPulse();
+        }
+
+        // Só dispara o AttackEndTrigger de verdade quando a ação atual (ex.: Cambalhota) já
+        // tiver terminado sozinha — nunca no meio dela.
+        if (attackEndPending && !isAttacking)
+        {
+            attackEndPending = false;
+            BeginAttackEnd();
+        }
+
         if (isRolling) UpdateRoll();
     }
 
@@ -83,34 +118,51 @@ public class Rogue : HeroController
 
         isAttacking = true;
         actionElapsed = 0f;
-        pulseHitFired = false;
-        AnimatorTrigger("AttackTrigger");
+        AnimatorTrigger("AttackTrigger"); // Animator decide AttackStart via AnyState
     }
 
-    // Animation Event, no frame exato em que o pulso se expande — dispara 1x (GDD: "1x por
-    // Animation Event"), independente de quantos clipes diagonais estejam misturados no Blend
-    // Tree (mesma proteção attackHitFired que Barbarian/Druid/EnemyController já usam: o
-    // Animator dispara o evento de todo clipe com peso > 0 na mistura, não só o dominante).
-    public void AnimationPulseHitEvent()
+    // Animation Event, no fim do clipe "attack_start" (4 diagonais) — libera o Rogue pra se
+    // mover livremente (decisão do usuário) e ativa a área de dano (filho RoguePulseArea, que
+    // segue o Rogue por ser filho de verdade). O dano em si não acontece mais aqui — é tudo
+    // dano-por-segundo do próprio filho, enquanto isPulseActive durar.
+    public void AnimationAttackStartEndEvent()
     {
-        if (pulseHitFired) return;
-        pulseHitFired = true;
+        isAttacking = false;
 
-        var hits = Physics2D.OverlapCircleAll(PulseCenter, pulseRadius, enemyLayerMask);
-        // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
-        // trigger genérico), então OverlapCircleAll sem isso acertava o mesmo monstro 2x
-        // (mesmo bug real já corrigido no primário do Mage — ver EnemyController.CollectDistinct()).
-        // TakeDamage() já é seguro contra corpo já morto, sem checagem extra aqui.
-        EnemyController.CollectDistinct(hits, hits.Length, pulseTargets);
-        foreach (var enemy in pulseTargets)
+        if (pulseArea != null)
         {
-            enemy.TakeDamage(stats.damage);
-            enemy.ApplyKnockback(AimDirection, pulseKnockbackForce);
+            // Escala o GameObject — RoguePulseArea já lê transform.localScale sozinho (via
+            // CircleCollider2D/SpriteRenderer nativos da Unity), então só o multiplicador
+            // precisa ser aplicado aqui, 1 único lugar.
+            pulseArea.transform.localScale = Vector3.one * pulseSizeMultiplier;
+            pulseArea.Activate(stats.damage, pulseTickInterval);
         }
+        isPulseActive = true;
+        pulseElapsed = 0f;
     }
 
-    // Animation Event, no fim do clipe do pulso.
-    public void AnimationPulseEndEvent()
+    // Chamado só por Update() (pulseElapsed >= pulseDuration) — desativa a área na hora (o
+    // dano por segundo para imediatamente, não tem motivo pra esperar) e pede o attack_end; se
+    // o Rogue estiver ocupado com outra coisa (ex.: Cambalhota), só marca a intenção, ver
+    // attackEndPending.
+    private void EndPulse()
+    {
+        isPulseActive = false;
+        if (pulseArea != null) pulseArea.Deactivate();
+
+        if (isAttacking) attackEndPending = true;
+        else BeginAttackEnd();
+    }
+
+    private void BeginAttackEnd()
+    {
+        isAttacking = true;
+        actionElapsed = 0f;
+        AnimatorTrigger("AttackEndTrigger"); // Animator decide AttackEnd via AnyState
+    }
+
+    // Animation Event, no fim do clipe "attack_end" (4 diagonais) — fecha o primário de verdade.
+    public void AnimationAttackEndEvent()
     {
         isAttacking = false;
     }
@@ -254,15 +306,18 @@ public class Rogue : HeroController
     protected override void OnHeroDeath()
     {
         EndRoll();
+
+        // Sem isso, morrer com o pulso ativo deixava o filho RoguePulseArea tocando dano por
+        // segundo pra sempre (órfão, sem ninguém pra chamar Deactivate() depois) — mesmo
+        // critério de limpeza do EndRoll acima.
+        if (isPulseActive)
+        {
+            isPulseActive = false;
+            if (pulseArea != null) pulseArea.Deactivate();
+        }
+        attackEndPending = false; // sem isso, o respawn (isAttacking volta a false) dispararia um AttackEndTrigger póstumo
     }
 
     // Passiva (GDD Seção 17.5) — "4× mais Energia de Ultimate por kill".
     protected override float UltimateEnergyMultiplier => 4f;
-
-    private void OnDrawGizmosSelected()
-    {
-        if (!showPulseGizmo) return;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(PulseCenter, pulseRadius);
-    }
 }
