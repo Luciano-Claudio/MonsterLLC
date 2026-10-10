@@ -13,11 +13,13 @@
 
 ## 1. Visão Geral
 
-Roguelite de ação, exploração e economia. O jogador sobe uma torre de 10 andares fixos, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
+Roguelite de ação, exploração e economia. O jogador explora um único mundo contínuo, finito e gerado proceduralmente, afastando-se cada vez mais de uma Zona Segura central pra enfrentar ameaças (Threat Tiers) cada vez maiores, cumprindo demandas diárias crescentes de Monster Essence ao longo de 15 dias por run, com pós-game opcional até o Dia 30. Combate ativo (mira e ataque pelo mouse), sem XP e sem level-up tradicional — o poder vem de progressão de arma persistente na run, economia, logística e automação via employees.
+
+**Mudança estrutural (documento de trabalho) — versão anterior usava uma torre de 10 andares fixos (50 Floor Variants artesanais) em vez do mundo único abaixo; ver `docs/new/` para os documentos de origem desta revisão.**
 
 ## 2. Pitch
 
-*Você entra fraco, com uma bag minúscula e uma arma qualquer. A torre está infestada — e o reino quer sua cota diária de Essência. Cada subida é uma aposta: você consegue matar mais rápido do que consegue carregar?*
+*Você entra fraco, com uma bag minúscula e uma arma qualquer. O mundo ao redor está infestado — e o reino quer sua cota diária de Essência. Cada passo pra longe do centro é uma aposta: você consegue matar mais rápido do que consegue carregar, antes que a ameaça fique maior do que você consegue aguentar?*
 
 ## 3. Gêneros e Referências
 
@@ -41,17 +43,13 @@ Fantasia central: *"Eu comecei contando Monster Essence de 1 em 1 e agora estou 
 ## 5. Escopo — MVP vs. Visão Expandida
 
 ### MVP ✅
-Torre de 10 andares (50 Floor Variants artesanais, 5 por andar — Seção 25) · 15 dias + pós-game até Dia 30 · 10 heróis (Seção 17) · sistema de demanda/venda/morte/save · inventário de loot · employees (ajudante + coletor) com árvore de promoção · 3 linhas de quest · baús com mimic + cartas · 2 traps (Falling Rock, Floor Spikes) · loja com 3 abas · Modo Padrão e Modo Free · agregação visual de drops e suporte a números grandes · Menu Principal com New Game / Continue Game / Settings / Exit · Map Selection (MVP: só a Torre).
+Mundo único, finito e gerado proceduralmente, com Zona Segura central e evolução visual/ambiental por dia (Seção 25) · 15 dias + pós-game até Dia 30 · 10 heróis (Seção 17) · sistema de demanda/venda/morte/save · inventário de loot · employees (ajudante + coletor) com árvore de promoção · 3 linhas de quest · baús com mimic + cartas · 2 traps (Falling Rock, Floor Spikes) · loja com 3 abas · Modo Padrão e Modo Free · agregação visual de drops e suporte a números grandes · Menu Principal com New Game / Continue Game / Settings / Exit · Map Selection (MVP: só o mundo único).
 
 ### Visão Expandida 🔭
-Heróis futuros (Demonologist, Necromancer, The Gambler, Plague Doctor — Seção 18) · modos futuros além de Padrão/Free · novos mapas além da Torre (Cripta, Oceano) · novas traps.
+Heróis futuros (Demonologist, Necromancer, The Gambler, Plague Doctor — Seção 18) · modos futuros além de Padrão/Free · novos mapas além do mundo principal (Cripta, Oceano) · novas traps.
 
-**Conceito registrado — "mapa contínuo" como um dos mapas futuros (não aplicado à Torre) 🔭**
-Ideia debatida e descartada *para a Torre* (a Torre continua sendo andares fixos com escada — Seção 25/26): um mapa alternativo em terreno único, circular, contínuo — sem transição/teleporte entre andares — onde o centro é a "base" e cada "andar" vira um anel concêntrico (bioma próprio) ao redor dela, e o jogador anda fisicamente de um anel pro outro. Peças da ideia, registradas pra quando um mapa futuro (Cripta/Oceano ou outro) for desenhado do zero:
-- **Ciclo dia/noite por bioma:** 2 Global Light 2D por anel/bioma (uma de dia, uma de noite), alternadas por timer.
-- **Ímã reformulado:** em vez do pickup atual, uma corda/mangueira visual ligando a "cabeça" do ímã até o local de depósito — efeito de sugador puxando o loot.
-- **Ressalva técnica já discutida:** um anel mais externo tem perímetro maior que um interno (circunferência escala com o raio) — um anel pintado à mão pra um raio específico não reaproveita em outro raio sem esticar/distorcer a arte. Isso só é resolvido desenhando módulos de anel pensados pra repetição (gomos/faixas), não com anéis fechados de tamanho fixo — custo de pipeline de arte relevante, avaliar caso esse mapa entre em produção de verdade.
-- Motivo de não ir pra Torre: a Torre já depende de "Floor Variants" artesanais fixos por andar (Seção 25) e do Remove Tower Layer (Seção 27 — corte sequencial de até 5 compras, sempre pelo Active Floor Position 1) — trocar pra terreno contínuo quebraria o Floor Sleep (Seção 24) e exigiria redesenhar as 6 combinações resultantes (0 a 5 cortes) já como mapas completos por corte, sem ganho real sobre o modelo atual.
+**Nota histórica — a ideia de mapa único nasceu aqui, nesta mesma seção 🔭**
+Antes desta revisão estrutural (ver `docs/new/` e nota no topo da Seção 1), esta seção registrava um "conceito de mapa contínuo" debatido e **descartado para a Torre** na época — a Torre era andares fixos com escada, e o motivo documentado era que o terreno contínuo quebraria o Floor Sleep e exigiria redesenhar manualmente até 6 combinações de corte como mapas completos, sem ganho aparente sobre o modelo antigo. A ideia nunca foi abandonada de verdade — o designer continuou desenvolvendo-a fora do roadmap, e a geração procedural por dados (Seção 25) resolve exatamente o problema que a tinha descartado antes (não é mais preciso desenhar manualmente cada combinação). Registrado aqui só para o histórico não parecer uma contradição não-intencional pra quem ler o GDD depois — a decisão atual (Seção 24/25) substitui esta nota por completo.
 
 ---
 
@@ -70,7 +68,7 @@ Sistema formal com 4 opções: ✅
 
 Etapa formal do fluxo de **New Game**, que **não** aparece em Continue Game (a run salva já carrega o mapa escolhido anteriormente). ✅
 
-- **MVP:** apenas 1 mapa jogável — **a Torre**.
+- **MVP:** apenas 1 mapa jogável — **o mundo único** (Seção 24/25).
 - A arquitetura já suporta a etapa mesmo com um único mapa, para permitir expansão futura sem retrabalho estrutural.
 - Mapas futuros (Cripta, Oceano) usariam a mesma estrutura geral de run, economia, heróis e progressão — sem regra própria definida agora. 🔭
 
@@ -87,9 +85,9 @@ MENU PRINCIPAL
 │      ↓
 │   Escolha do herói (entre os desbloqueados)
 │      ↓
-│   Map Selection (MVP: só Torre)
+│   Map Selection (MVP: só o mundo único)
 │      ↓
-│   Cria nova run — sorteia 1 Floor Variant por andar (Seção 25)
+│   Cria nova run — gera o mundo a partir do WorldSeed (Seção 25)
 │      ↓
 │   DIA 1 — Gameplay
 │
@@ -109,7 +107,7 @@ MENU PRINCIPAL
 ```
 
 ### Regra importante — Continue Game ✅
-Ao escolher Continue Game, o jogador **não** passa novamente por escolha de modo, herói, mapa, ou pelo sorteio de Floor Variants — tudo já pertence à run salva e é carregado diretamente. O fluxo vai direto para a Loja do checkpoint salvo.
+Ao escolher Continue Game, o jogador **não** passa novamente por escolha de modo, herói, mapa, ou pela geração do mundo — o `WorldSeed` já pertence à run salva e é carregado diretamente (o mundo é regenerado deterministicamente a partir dele, mais os deltas salvos — Seção 25). O fluxo vai direto para a Loja do checkpoint salvo.
 
 ### Fluxo completo do Modo Padrão, dia a dia ✅
 
@@ -167,8 +165,8 @@ Free usa exatamente a mesma estrutura de dia acima (gameplay → tempo zera/port
 
 ### O que salva, o que reseta (ver também Seção 15 e Seção 43) ✅
 - Save é um **checkpoint da última Loja alcançada** — nunca um registro "por dia" que se apaga; ver semântica completa na Seção 43.
-- **Run-Persistent:** gold, tier de arma por herói, bonuses comprados, employees possuídos, progresso de quests, cartas de pergaminho ativas, dia atual, modo, herói e mapa da run, e os 10 Floor Variants sorteados no início da run (Seção 25).
-- **Daily:** tempo restante, demanda/progresso de venda (quando aplicável — Seção 42), inventário do jogador, monstros/bosses no mundo, loot no chão, Boss Timer de cada Floor (Seção 22), Energia da Ultimate (Seção 11).
+- **Run-Persistent:** gold, tier de arma por herói, bonuses comprados, employees possuídos, progresso de quests, cartas de pergaminho ativas, dia atual, modo, herói e mapa da run, e o `WorldSeed` usado para gerar o mundo único dessa run (Seção 25).
+- **Daily:** tempo restante, demanda/progresso de venda (quando aplicável — Seção 42), inventário do jogador, monstros/bosses no mundo, loot no chão, Boss Timer global (Seção 22), Energia da Ultimate (Seção 11).
 - **Reseta ao iniciar uma nova run** (inclusive trocar de modo): tudo Run-Persistent e Daily, exceto Permanent Account State (heróis, achievements, estatísticas de conta — Seção 15).
 - **Existe um único slot de save de run, compartilhado entre os modos** — não há save separado por modo. Um novo autosave sempre sobrescreve o anterior, independentemente de qual modo pertencia o save anterior ou o novo (Seção 43).
 
@@ -184,7 +182,7 @@ Abrir o Inventário (TAB), abrir o Controle Remoto (Q), a seleção de cartas de
 ### O que a pausa interrompe
 > **Regra: PAUSA = NENHUM TEMPO DE GAMEPLAY AVANÇA.**
 
-Relógio do dia, monstros (movimento e IA), ataques, projéteis, employees, pets/summons dependentes de simulação, cooldown de ataque, cooldown do Controle Remoto, cooldown/ausência de Employees, duração de buffs temporários, duração da Ultimate, duração de transformações, Boss Timer de qualquer Floor (Seção 22), qualquer outro timer dependente da gameplay.
+Relógio do dia, monstros (movimento e IA), ataques, projéteis, employees, pets/summons dependentes de simulação, cooldown de ataque, cooldown do Controle Remoto, cooldown/ausência de Employees, duração de buffs temporários, duração da Ultimate, duração de transformações, Boss Timer global (Seção 22), qualquer outro timer dependente da gameplay.
 
 **Energia da Ultimate:** pausa não reduz nem zera a Energia — ela só avança por kills, nunca por tempo (Seção 11).
 
@@ -236,9 +234,8 @@ Vida, Vida Máxima, Dano (via fórmula abaixo), Chance de Crítico, Velocidade d
 
 ### Energia da Ultimate — persistência diária (Daily) ✅
 - A Ultimate carrega por **kills**, nunca por tempo — monstros mais fortes concedem mais carga por kill. O total necessário varia por herói.
-- **A Energia é estado Daily do herói.** Permanece acumulada ao longo do dia inteiro, independentemente de o jogador trocar de Floor, retornar ao térreo, ou abrir menus:
-  - Trocar de Floor: **não reseta.**
-  - Voltar ao térreo: **não reseta.**
+- **A Energia é estado Daily do herói.** Permanece acumulada ao longo do dia inteiro, independentemente de para onde o jogador se mova no mundo único, ou de abrir menus:
+  - Mover-se para qualquer distância do centro, voltar ao centro, ou usar o Controle Remoto (Seção 26): **não reseta.**
   - Abrir inventário/Controle Remoto (pausa): **não reseta nem reduz.**
 - **A Energia zera em exatamente 3 situações, e apenas nelas:**
   1. O jogador **usa** a Ultimate (RMB com Energia cheia → Energia volta a 0).
@@ -254,10 +251,10 @@ Nem toda kill próxima ao herói concede Energia. A regra: **fontes de combate p
 2. Kills causadas por **pets do kit** (Phoenix, Blood Elemental, equivalentes futuros).
 3. Kills causadas por **summons pertencentes ao kit** (summons do Necromancer, criaturas temporárias de habilidades, outras entidades ofensivas do próprio herói).
 
-Isso inclui explicitamente kills por DoT/área persistente mesmo que o herói já tenha se afastado fisicamente do local — **desde que o efeito continue ativo dentro do Current Combat Floor** (Seção 24): ex.: um monstro que morre no rastro de fogo do Mage ou nas facas persistentes do Ranger depois que o herói já se afastou para outro canto do **mesmo Floor** ainda conta, pois a fonte de dano pertence ao kit do herói e continua participando do Combat Scope corrente. Isso é diferente de **trocar de Floor**: um efeito deixado para trás ao mudar de Floor deixa de poder causar dano enquanto aquele Floor não for o Current Combat Floor (Seção 24) — o comportamento temporal exato do efeito nesse caso continua pendente (Seção 53), mas ele não gera kills nem Energia enquanto estiver fora do Combat Scope corrente.
+Isso inclui explicitamente kills por DoT/área persistente mesmo que o herói já tenha se afastado fisicamente do local — ex.: um monstro que morre no rastro de fogo do Mage ou nas facas persistentes do Ranger depois que o herói já se afastou ainda conta, pois a fonte de dano pertence ao kit do herói. **Mundo único, sem Combat Scope por Floor** (revisão estrutural — ver `docs/new/` e Seção 24/25): não existe mais um domínio de busca/aplicação separado por andar; a única coisa que pode impedir uma kill de contar é o próprio monstro ter sido removido por **Distance Despawn** (Seção 23) antes de morrer — e `Distance Despawn ≠ Enemy Death` por definição (Seção 23), então um monstro reciclado por distância nunca gera kill nem Energia pra ninguém, não precisa de regra extra aqui.
 
 **Não contam:**
-- Kills causadas por **Ajudantes/Employees**, independentemente do tier, quantidade, dano, Strong/Fast, Floor, ou de quem iniciou o combate. Exemplo: monstro com 100 HP, jogador causa 90, Ajudante causa os 10 finais → a kill pertence ao Ajudante → **não concede Energia da Ultimate**.
+- Kills causadas por **Ajudantes/Employees**, independentemente do tier, quantidade, dano, Strong/Fast, ou de quem iniciou o combate. Exemplo: monstro com 100 HP, jogador causa 90, Ajudante causa os 10 finais → a kill pertence ao Ajudante → **não concede Energia da Ultimate**.
 
 Esta regra define apenas **quais kills contam** — não altera quanto de Energia cada monstro concede, o threshold de cada herói, ou a velocidade de carregamento (tudo isso continua 🔢 balanceamento, conforme já estabelecido: monstros mais fortes concedem mais Energia por kill).
 
@@ -280,7 +277,7 @@ TimeRemaining -= 30 segundos
    ↓
 TimeRemaining <= 0 ?
    │
-   ├─ NÃO → fade de tela → respawn no térreo com vida cheia → dia continua
+   ├─ NÃO → fade de tela → respawn no centro (0,0,0) com vida cheia → dia continua
    │
    └─ SIM → resolve encerramento do dia
               ↓
@@ -294,7 +291,7 @@ TimeRemaining <= 0 ?
 
 - **Cancela imediatamente qualquer estado temporário ativo** (diferente de pausa, que apenas congela — Seção 9): Ultimate em andamento é interrompida, transformações (ex.: forma de urso do Druid — Seção 17.4) terminam **sem conversão proporcional de HP**, áreas/efeitos temporários no chão desaparecem, uma interação em curso é cancelada, summons **temporários** são destruídos.
 - **Pets permanentes de kit** retornam junto com o personagem na transição. 🟡 Se a animação de summon/bloqueio inicial se repete nesse retorno ainda não está fechado.
-- **Sem multiplicador de penalidade por profundidade do andar.**
+- **Sem multiplicador de penalidade por distância do centro.**
 - **Necromancer é exceção explícita a esta seção inteira quando implementado** — ver Seção 18 e Seção 33.
 
 ---
@@ -355,7 +352,7 @@ Diferente do projétil de monstro comum (que aplica seu dano cheio de uma vez e 
 ### Movimentação Ortogonal/Diagonal — 8 direções, sprites próprias (Sprint 17+) ✅
 Todo projétil de herói e de monstro tem 8 sprites de trajetória (N/NE/E/SE/S/SW/W/NW) escolhidas no instante do disparo — precisa de um Animator próprio no projétil (blend tree ou 8 estados diretos) pra tocar a sprite certa durante o voo, igual ao herói/monstro que o disparou. Alguns projéteis (tipicamente os que não são flecha/faca — ex.: bola de fogo) também têm uma **animação de impacto/desaparecimento** ao invés de simplesmente sumir quando a reserva de dano zera ou a distância máxima é alcançada.
 
-**Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Andar 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. **A parte de "efeito visual de status na frente do sprite" já foi desenhada** (Seção 33, "Efeitos Nocivos") — o que fica pendente aqui é só se os três *gatilhos* (projétil, golpe direto, área de herói) acabam compartilhando o mesmo código de aplicação de Efeito ou continuam isolados por conteúdo.
+**Observação registrada pro futuro, não é trabalho agora:** "chão com condição negativa" não é exclusividade de projétil — o Spectre (Bestiário, Threat Tier 5) cria uma superfície de gelo direto no golpe de contato (sem projétil nenhum), e o mesmo padrão volta a aparecer no Dragon/Undead Dragon/Dragon Hatchling (fogo) e na Ultimate do Mage (Seção 17, também sem projétil). Ainda não existe um sistema genérico único cobrindo os três casos (projétil, golpe direto, área de herói) — cada um nasce isolado quando o conteúdo correspondente for implementado; vale considerar unificar quando houver 2-3 exemplos reais construídos pra comparar. **A parte de "efeito visual de status na frente do sprite" já foi desenhada** (Seção 33, "Efeitos Nocivos") — o que fica pendente aqui é só se os três *gatilhos* (projétil, golpe direto, área de herói) acabam compartilhando o mesmo código de aplicação de Efeito ou continuam isolados por conteúdo.
 
 ---
 
@@ -363,7 +360,7 @@ Todo projétil de herói e de monstro tem 8 sprites de trajetória (N/NE/E/SE/S/
 
 Este sistema existia pra evitar que muitos monstros entrassem em "estado de ataque" ao mesmo tempo — fazia sentido no modelo de combate com Telegraph/Hitbox/Recovery (Seção 22, versão anterior). Esse modelo foi testado na prática na Sprint 16 e substituído, por padrão, por dano de contato (Melee) e auto-disparo em alcance (Ranged), cada um limitado só pelo próprio cooldown do monstro — não existe mais um "estado de ataque" discreto pra limitar entre vários monstros ao mesmo tempo.
 
-**O que substitui isso:** nada substitui o Attack Budget em si — não existe mais um "estado de ataque" discreto pra limitar. O Population System (Seção 23) continua sendo o único controle de **quantos monstros existem** no Floor. Mas surgiu, separadamente, um limitador de um eixo diferente — **quantos Melee ficam em contato simultâneo com o jogador** (não é sobre atacar, é sobre lotação física perto dele): o `MeleeAttackSlotManager` (Seção 22, "Lotação perto do jogador — flanco"), teto configurável por Floor (padrão 12), quem não cabe fica flanqueando num anel em vez de amontoar. Não é o Attack Budget ressuscitado — não limita ataques nem existe por AttackType, só por Melee, e resolve um problema de legibilidade visual de horda, não de timing de combate. Bosses e as exceções documentadas no Bestiário (Seção 51) que ainda usam Animation Event real (Goblin Sapper, Orc Shaman, Serpent) não participam do flanco nem precisam de budget — cada um só tem sua própria instância de ação especial (bomba, totem, exposição) rodando por vez.
+**O que substitui isso:** nada substitui o Attack Budget em si — não existe mais um "estado de ataque" discreto pra limitar. O Population System (Seção 23) continua sendo o único controle de **quantos monstros existem** ao redor do jogador. Mas surgiu, separadamente, um limitador de um eixo diferente — **quantos Melee ficam em contato simultâneo com o jogador** (não é sobre atacar, é sobre lotação física perto dele): o `MeleeAttackSlotManager` (Seção 22, "Lotação perto do jogador — flanco"), teto configurável único (mundo único, sem mais pool por Floor — padrão 12), quem não cabe fica flanqueando num anel em vez de amontoar. Não é o Attack Budget ressuscitado — não limita ataques nem existe por AttackType, só por Melee, e resolve um problema de legibilidade visual de horda, não de timing de combate. Bosses e as exceções documentadas no Bestiário (Seção 51) que ainda usam Animation Event real (Goblin Sapper, Orc Shaman, Serpent) não participam do flanco nem precisam de budget — cada um só tem sua própria instância de ação especial (bomba, totem, exposição) rodando por vez.
 
 ---
 
@@ -374,10 +371,10 @@ Três categorias de dado, usadas de forma consistente em todo o documento: ✅
 - **Permanent Account State** — nunca reseta, independente de run. Divide-se em duas categorias distintas (Seção 49):
   - **Account Progression** — heróis desbloqueados, achievements, e demais recompensas/critérios permanentes de unlock.
   - **Lifetime Statistics** — dados puramente informativos de perfil (total histórico de kills, gold vendido, dias jogados, bosses mortos, etc.). Uma estatística registrada **não** é, por si só, progressão.
-- **Run-Persistent** — persiste entre os dias de uma run, reseta ao iniciar nova run: tier de arma (Seção 19), **buffs persistentes da run** obtidos por cartas de pergaminho (Seção 31), bonuses comprados (Seção 41) incluindo upgrades de Pickup Radius (Seção 37), employees (Seção 34), progresso de quests (Seção 29), gold, modo/herói/mapa da run, os 10 Floor Variants sorteados no início da run (Seção 25), Remove Tower Layers aplicados (Seção 27).
-- **Daily** — reseta todo dia: tempo restante, vendas realizadas no dia, progresso da demanda quando aplicável ao Modo Padrão (Seção 42), inventário do jogador, monstros/bosses no mundo, loot no chão, Boss Timer de cada Floor (Seção 22), Energia da Ultimate (Seção 11).
+- **Run-Persistent** — persiste entre os dias de uma run, reseta ao iniciar nova run: tier de arma (Seção 19), **buffs persistentes da run** obtidos por cartas de pergaminho (Seção 31), bonuses comprados (Seção 41) incluindo upgrades de Pickup Radius (Seção 37), employees (Seção 34), progresso de quests (Seção 29), gold, modo/herói/mapa da run, o `WorldSeed` do mundo único gerado pra essa run (Seção 25), Tiers suprimidos pela Supressão de Ameaça (Seção 27).
+- **Daily** — reseta todo dia: tempo restante, vendas realizadas no dia, progresso da demanda quando aplicável ao Modo Padrão (Seção 42), inventário do jogador, monstros/bosses no mundo, loot no chão, Boss Timer global (Seção 22), Energia da Ultimate (Seção 11).
 
-**Escadas não fazem parte de nenhuma lista de reset** — são geografia fixa de cada Floor Variant (Seção 26), não são um dado de estado do jogador.
+**Não existe mais lista de reset de escadas** — revisão estrutural (mundo único, Seção 24): escadas eram geografia fixa de cada Floor Variant e deixaram de existir junto com o Floor System.
 
 O termo "permanente" isolado é evitado — cada sistema Run-Persistent é descrito como tal. Cartas de baú são descritas como **"buffs persistentes da run"**, nunca "buffs temporários".
 
@@ -481,7 +478,7 @@ Cada ficha (Seção 17) especifica qual desses 3 comportamentos vale pra aquele 
 
      Exemplo ilustrativo (valores de HP apenas para explicar a regra, não confirmados como balanceamento): forma humana com 20/100 → ativa a Ultimate → cura para 200/200 (Alce) → recebe dano, fica em 180/200 (90%) → Ultimate termina → retorna como 90/100 na forma humana.
 
-  6. **Morte durante a transformação é a única exceção — NÃO exige a conversão proporcional acima.** Se o HP do Alce chega a 0, o Druid morre e segue diretamente o fluxo universal de morte (Seção 11): a transformação é cancelada, a Energia zera, o loot é perdido, os 30s de penalidade se aplicam, e ele reaparece no térreo **em forma humana normal, sem a ultimate ativa, com vida cheia** — igual a qualquer outro herói.
+  6. **Morte durante a transformação é a única exceção — NÃO exige a conversão proporcional acima.** Se o HP do Alce chega a 0, o Druid morre e segue diretamente o fluxo universal de morte (Seção 11): a transformação é cancelada, a Energia zera, o loot é perdido, os 30s de penalidade se aplicam, e ele reaparece no centro do mundo (revisão estrutural — antes "no térreo", Seção 11/24) **em forma humana normal, sem a ultimate ativa, com vida cheia** — igual a qualquer outro herói.
 - **Habilidade Secundária (Shift) — transformação em coruja, separada da ultimate (Sprint 18→19):** transformação **diferente** da Ultimate (Alce) — vira uma coruja. 3 fases: `start` (1 estado só, sem direção, igual `die`) → `during` (`walk` com **4 direções**) → `end` (1 estado só, sem direção). Ganha **velocidade de movimento maior**, e **monstros o ignoram** durante a transformação (mesmo princípio do stealth do Assassin, Seção 17.9). **Não pode atacar** enquanto transformado (bloqueia só o ataque — movimento continua liberado, diferente do Ranger que bloqueia tudo). **Cancelável** — Shift de novo adianta pra animação `end`. **Correção (Sprint 21):** esta seção previa as 4 direções como cardeais (N/E/S/W); a arte entregue pra fase `during` é diagonal, igual ao resto do Bestiário/heróis — o código foi adaptado pra arte real em vez do contrário (decisão do usuário), reaproveitando o mesmo snap de 4 diagonais (`DirectionUtility.SnapTo4Diagonals`) que todo herói já usa pra Idle/Walk/Damage.
 - **Passiva:** nenhuma — a progressão de vinhas por Tier de Arma é quem faz esse papel, mesma lógica das flechas do Ranger.
 - **Cartas específicas:** nenhuma — mesma mudança do Ranger, a quantidade de vinhas não vem mais de carta de baú.
@@ -537,7 +534,7 @@ Cada ficha (Seção 17) especifica qual desses 3 comportamentos vale pra aquele 
 - **Habilidade Secundária (Shift) — teleporte, Sprint 18→19:** teleporta na direção da mira, com **alcance máximo** (mesmo princípio do teleporte do Mage, Seção 17.3, mas mais simples — **sem** a fase de projétil visual). Só 2 animações, `disappear` (Animation Event dispara o teleporte) e `appear`, cada uma com **4 direções** (NE/NW/SE/SW, não as 8 completas). **Não cancelável.**
 - **Passiva:** **maior velocidade de movimento base** do elenco — característica intrínseca do kit, não um efeito periódico (traço reatribuído do Rogue nesta revisão, ver Seção 17.5).
 - **Cartas específicas:** nenhuma.
-- **Desbloqueio:** alcançar o Andar 6. 🟡 Ainda precisa ser definido se esse critério utiliza Original Floor Identity 6 ou Active Floor Position 6 após remoções de Tower Layers (Seção 24, Seção 53).
+- **Desbloqueio:** 🟡 **Pendência nova (revisão estrutural, mundo único)** — o critério antigo ("alcançar o Andar 6") não existe mais, já que não há mais andares. Precisa de um critério equivalente definido no mundo único — candidato natural: alcançar a distância do centro onde `EffectiveSpawnDay` chega a 6 (Seção 23) pela primeira vez numa run, mas isso ainda não foi decidido pelo designer — ver Seção 53.
 
 ### 17.10 Blood Mage ✅
 - **Dano Base / Vida Base:** 2,1 / 34.
@@ -555,7 +552,7 @@ Phoenix (Mage) e Elemental de Sangue (Blood Mage) usam exatamente o mesmo compor
 - **Raio de perseguição/ataque tem centro no herói, não no pet** — o pet persegue e ataca qualquer monstro dentro desse raio ao redor do herói; fora dele, o pet ignora monstros e tenta ficar a uma distância curta do herói (🔢 ajustável), nunca sai da tela/visão do herói.
 - **Trava no alvo até ele morrer** — uma vez escolhido, o pet não reavalia por distância a cada frame (senão troca de alvo toda vez que o jogador se move e um monstro diferente vira "o mais próximo"); só solta o alvo quando ele é destruído de verdade, aí sim escolhe o novo mais próximo.
 - **Ataque do pet:** igual a um Melee comum do Bestiário — 4 triggers fixos direcionais, Animation Event decide o dano de quem estiver dentro no instante certo. Persegue até ficar em alcance de contato, então ataca.
-- **Muda de Floor teleportando, não andando** — quando o jogador muda de andar, o pet salta direto pro ponto de spawn ao lado do herói (e descarta o alvo atual, já que um monstro do andar anterior não faz mais sentido como perseguição — Combat Scope, Seção 11), em vez de "andar" visualmente de um Floor pro outro.
+- **Teleporta junto quando o herói teleporta, não anda** — revisão estrutural (mundo único, sem mais troca de andar): o gatilho antigo ("mudar de Floor") deixa de existir, mas a regra sobrevive igual nos 2 casos que ainda causam teleporte descontínuo do próprio herói — **respawn por morte** (Seção 11, volta ao centro) e **uso do Controle Remoto** (Seção 26, também volta ao centro) — o pet salta direto pro ponto de spawn ao lado do herói nesses 2 momentos (e descarta o alvo atual, já que um monstro muito distante não faz mais sentido como perseguição), em vez de "andar" visualmente a distância toda. Durante exploração normal (sem teleporte do herói), o pet nunca precisa desse salto — já persegue/segue normalmente.
 - **Animações do pet:** `summon`, `fly`, `attack`, `die` (tocada quando o herói morre — GDD: "o pet retorna junto na transição" — o pet só é destruído de verdade no fim dessa animação, não instantaneamente).
 - **Bloqueio de movimento do herói durante o summon:** ver a regra geral de "só anda durante `walk`" (Seção 16) — aqui é só uma aplicação concreta dela, ainda sujeita à mesma validação em playtest.
 
@@ -566,7 +563,7 @@ Phoenix (Mage) e Elemental de Sangue (Blood Mage) usam exatamente o mesmo compor
 **Não fazem parte dos 10 do MVP.**
 
 - **Demonologist** — ataque primário: raio frontal retangular na direção da mira (Rectangular Beam). Ultimate: pentagrama que sumona uma criatura com dano alto. Passiva: pet não-alvejado, mesma família de Mage/Blood Mage. Cartas previstas: dano/velocidade/atk speed do pet; quantidade de pentagramas. Condição de desbloqueio: não definida.
-- **Necromancer** — ataque primário: osso-boomerang (vai e volta, explode ao atingir o limite de alvos). Ultimate: 3 ossos orbitando o personagem (Orbiting Hitbox). Passiva dupla: *(1)* sumona esqueletos periodicamente, alvejáveis por monstros (diferente dos pets de Mage/Blood Mage/Demonologist), tempo de vida próprio ampliável, podem stackar múltiplas instâncias; *(2)* **2 vidas fixas por dia**. Ao perder a primeira vida: os summons ativos **são destruídos** (regra padrão, sem exceção), ele vira uma alma sem ataque/interação/uso de escada, imune a monstros, só podendo se mover; após alguns segundos, retorna com vida cheia (ajustável para ~50% em balanceamento futuro). **A exceção do Necromancer está apenas no comportamento de morte do herói em si** (não retorna imediatamente ao térreo, entra em estado de alma), **não na destruição dos summons**. Cartas previstas: dano/velocidade/atk speed/vida dos summons. Condição de desbloqueio: não definida.
+- **Necromancer** — ataque primário: osso-boomerang (vai e volta, explode ao atingir o limite de alvos). Ultimate: 3 ossos orbitando o personagem (Orbiting Hitbox). Passiva dupla: *(1)* sumona esqueletos periodicamente, alvejáveis por monstros (diferente dos pets de Mage/Blood Mage/Demonologist), tempo de vida próprio ampliável, podem stackar múltiplas instâncias; *(2)* **2 vidas fixas por dia**. Ao perder a primeira vida: os summons ativos **são destruídos** (regra padrão, sem exceção), ele vira uma alma sem ataque/interação, imune a monstros, só podendo se mover; após alguns segundos, retorna com vida cheia (ajustável para ~50% em balanceamento futuro). **A exceção do Necromancer está apenas no comportamento de morte do herói em si** (não retorna imediatamente ao centro do mundo — Seção 11/24 —, entra em estado de alma no lugar onde morreu), **não na destruição dos summons**. Cartas previstas: dano/velocidade/atk speed/vida dos summons. Condição de desbloqueio: não definida.
 - **The Gambler** — ataque primário: projétil de carta na direção da mira. Ultimate: 6 cartas aparecem ao redor do personagem e caem, explodindo em 6 círculos de dano. Passiva dupla, ativada periodicamente conforme a vida atual: carta de coração cura quando vida <100%; carta de diamante cria shield quando vida >100%. 🟡 **Pendência de design:** o material original não explica como o personagem chegaria acima de 100% de vida — não inventar overheal ou buff de HP temporário até revisão. Cartas previstas: cura da passiva e capacidade de bloqueio do shield, em %. Condição de desbloqueio: não definida.
 - **Plague Doctor** — ataque primário: onda de ratos avançando (trigger retangular que caminha para frente e desaparece, dano em quem tocar). Ultimate: dano em área circular centrada no personagem, girando o cajado, sumonando fogos-fátuos ao redor. Passiva: 2 orbs orbitando infinitamente ao redor do personagem, dano ao colidir com monstros, mesmo bloqueio inicial de movimento dos outros summons de início de dia. Cartas específicas: nenhuma. Condição de desbloqueio: não definida.
 
@@ -584,25 +581,27 @@ Phoenix (Mage) e Elemental de Sangue (Blood Mage) usam exatamente o mesmo compor
 - **Reseta por completo em nova run** — volta ao tier 0. Progressão **Run-Persistent** (Seção 15), nunca chamada de "permanente".
 
 ### Filosofia de progressão ✅
-Regra prática: uma arma ideal domina o andar anterior, é adequada para o andar-alvo, e ainda sofre no andar seguinte — essa relação de 3 andares orienta o ritmo de progressão, não apenas os multiplicadores em si. Tabela completa dos 15 tiers fica no documento de balanceamento (Seção 51).
+Regra prática: uma arma ideal domina a ameaça do Dia/Tier anterior, é adequada para o Dia/Tier atual, e ainda sofre no Dia/Tier seguinte — essa relação de 3 níveis orienta o ritmo de progressão, não apenas os multiplicadores em si. **Revisão estrutural (mundo único):** o eixo de dificuldade deixou de ser "qual andar da Torre" e passou a ser o `EffectiveSpawnDay` (Seção 23) — a mesma régua de 3 níveis vale tanto avançando por `ActualDay` (tempo) quanto se afastando do centro (distância), já que os dois alimentam o mesmo cálculo. Tabela completa dos 15 tiers fica no documento de balanceamento (Seção 51).
 
 ---
 
 ## 20. Economia dos Primeiros Dias — Filosofia de Ritmo
 
+**Revisão estrutural (mundo único):** os exemplos abaixo usavam "andar"/"subir" como eixo de risco, da época da Torre. O eixo equivalente no mundo único é a **distância do centro** (zona segura → anéis de spawn progressivamente mais difíceis, Seção 23/24) — "subir" virou "se afastar", e "voltar ao térreo" virou "voltar pra perto do centro"/usar o Controle Remoto (Seção 26). A lógica de ritmo em si (cada upgrade de arma reabre a decisão de arriscar mais um pouco) não muda.
+
 ### Padrão de sensação esperado ✅
-- **Dia 1:** Arma Básica, bag minúscula (5 slots/stack 16) já cria decisões de risco mesmo no andar mais fácil. Renda esperada ao fim do dia: suficiente para o primeiro upgrade de arma (Copper).
-- **Dia 2:** com o primeiro upgrade, o Andar 1 fica sensivelmente mais fácil — mas subir ao Andar 2 devolve a fragilidade, introduzindo ameaças novas (ranged, explosivos). Escolha entre caminho seguro e caminho arriscado.
+- **Dia 1:** Arma Básica, bag minúscula (5 slots/stack 16) já cria decisões de risco mesmo perto do centro, na área mais fácil. Renda esperada ao fim do dia: suficiente para o primeiro upgrade de arma (Copper).
+- **Dia 2:** com o primeiro upgrade, a área inicial fica sensivelmente mais fácil — mas se afastar mais do centro devolve a fragilidade, introduzindo ameaças novas (ranged, explosivos). Escolha entre caminho seguro (perto) e caminho arriscado (longe).
 - **Dia 3 em diante:** o gargalo passa a ser "carregar tudo que consigo matar" — a bag pequena cria desejo genuíno pelos upgrades de slots, stack, employees e filtros.
 
 ### Ciclo emocional esperado ✅
-Pressão ("preciso cumprir a demanda") → Eficiência ("se eu agrupar esses inimigos consigo matar vários") → Limitação ("minha bag está cheia") → Decisão ("desço agora ou arrisco mais?") → Alívio ("cumpri a demanda") → Recompensa ("tenho dinheiro para um upgrade") → Power Fantasy ("esse andar ficou fácil") → Curiosidade ("será que consigo subir?") → Choque ("esses monstros não morrem") → repete. **Este ciclo emocional descreve principalmente o Modo Padrão, que é a experiência principal de progressão da campanha; o Free preserva combate/economia/logística sem a camada de pressão da quota** (Seção 42). Esse ciclo é o critério para validar calibração de qualquer novo sistema, arma ou andar — não os preços em si. Valores de referência ficam no documento de balanceamento (Seção 51).
+Pressão ("preciso cumprir a demanda") → Eficiência ("se eu agrupar esses inimigos consigo matar vários") → Limitação ("minha bag está cheia") → Decisão ("volto agora ou arrisco mais e me afasto?") → Alívio ("cumpri a demanda") → Recompensa ("tenho dinheiro para um upgrade") → Power Fantasy ("essa área ficou fácil") → Curiosidade ("será que consigo ir mais longe?") → Choque ("esses monstros não morrem") → repete. **Este ciclo emocional descreve principalmente o Modo Padrão, que é a experiência principal de progressão da campanha; o Free preserva combate/economia/logística sem a camada de pressão da quota** (Seção 42). Esse ciclo é o critério para validar calibração de qualquer novo sistema, arma ou distância — não os preços em si. Valores de referência ficam no documento de balanceamento (Seção 51).
 
 ---
 
 ## 21. Habilidade × Eficiência
 
-Dois jogadores com exatamente os mesmos upgrades podem terminar um dia com resultados bem diferentes — isso é desejado, não falha de balanceamento. ✅ Diferenciais de jogador habilidoso: agrupar inimigos para aproveitar ataques em área (ex.: Barbarian), alinhar arcos de ataque, desviar de telegraphs, escolher rotas de coleta eficientes, retornar ao térreo só quando necessário.
+Dois jogadores com exatamente os mesmos upgrades podem terminar um dia com resultados bem diferentes — isso é desejado, não falha de balanceamento. ✅ Diferenciais de jogador habilidoso: agrupar inimigos para aproveitar ataques em área (ex.: Barbarian), alinhar arcos de ataque, desviar de telegraphs, escolher rotas de coleta eficientes, usar o Controle Remoto pra voltar ao centro só quando necessário (revisão estrutural — antes "retornar ao térreo", Seção 26).
 
 ---
 
@@ -621,10 +620,10 @@ Melee, Ranged, Boss. Variações Suporte/híbrido (ex.: Orc Shaman com totens) t
 - **Animações padrão de todo monstro comum:** `idle`, `walk`, `idle_combat`, `attack` (com Animation Event), `damage`, `die`. **Única exceção permanente: Slimes** (comuns e Mother Slime Green/Blue) — ficam só no dano de contato, sem `attack`, para sempre.
 
 ### Movimentação — pathfinding real (A* Pathfinding Project + RVO Local Avoidance, Sprint 20) ✅
-"Movimentação aleatória por padrão, evitando obstáculos" (acima) deixou de ser `transform.Translate` cru na direção do alvo — desde a Sprint 20, todo monstro comum usa o asset de terceiros **A* Pathfinding Project Pro** (Aron Granberg) pra navegação real em volta de parede/obstáculo estático, mais **RVO Local Avoidance** pra desviar de outro monstro em tempo real (o pathfinding em si não sabe que outro monstro existe — GridGraph só marca parede, não agente). Cada Floor tem o próprio `GridGraph` (nomeado, restrito por `Seeker.graphMask` — um monstro do Floor 2 nunca encontra nó do Floor 1); a decisão de **pra onde** ir continua 100% código do jogo (`Move()` de cada `EnemyController`, perseguir/fugir/flanquear), só a execução de **como chegar lá** passou a ser da lib. `RVOController.priority` (quem cede espaço pra quem, numa negociação de desvio) é calculado por dano do monstro — quem causa mais dano tem prioridade maior, cede menos. Ver relatório completo em `docs/sprints/sprint-20.md` (decisões técnicas, bugs corrigidos, dívida técnica).
+"Movimentação aleatória por padrão, evitando obstáculos" (acima) deixou de ser `transform.Translate` cru na direção do alvo — desde a Sprint 20, todo monstro comum usa o asset de terceiros **A* Pathfinding Project Pro** (Aron Granberg) pra navegação real em volta de parede/obstáculo estático, mais **RVO Local Avoidance** pra desviar de outro monstro em tempo real (o pathfinding em si não sabe que outro monstro existe — GridGraph só marca parede, não agente). **Revisão estrutural (mundo único — ver `docs/new/` e Seção 24):** o `GridGraph` por Floor (nomeado, restrito por `Seeker.graphMask`, um monstro de um Floor nunca encontrava nó de outro) deixa de existir como conceito — não há mais "Floors" para segmentar; a grade de navegação passa a cobrir o mundo único contínuo. Como manter isso performático num mundo grande (um `GridGraph` só, grades parciais atualizadas por distância, ou outra estratégia) é decisão técnica, não de design — ver Technical Architecture Document (Seção 51). A decisão de **pra onde** ir continua 100% código do jogo (`Move()` de cada `EnemyController`, perseguir/fugir/flanquear), só a execução de **como chegar lá** é da lib. `RVOController.priority` (quem cede espaço pra quem, numa negociação de desvio) é calculado por dano do monstro — quem causa mais dano tem prioridade maior, cede menos. Ver relatório completo em `docs/sprints/sprint-20.md` (decisões técnicas, bugs corrigidos, dívida técnica).
 
 ### Lotação perto do jogador — flanco (só Melee) ✅
-Com hordas grandes, todo Melee tentando ficar dentro do `attackRadius` ao mesmo tempo lota o corpo a corpo e fica ilegível. Existe um teto (`MeleeAttackSlotManager`, padrão **8**, ajustável no Inspector — número único, não por Floor) de quantos Melee podem estar em alcance de contato do jogador ao mesmo tempo — **cada Floor tem o próprio pool aplicando esse mesmo teto, não um pool global pra Scene inteira**, mesmo padrão já usado pelo Attack Budget original (Seção 14, Sprint 15): um pool único de verdade teria o mesmo bug que aquele sistema teve antes do fix — um Melee com vaga reservada cujo Floor dorme (Floor Sleep) nunca mais roda `Update()`, nunca libera a vaga, e ela ficaria presa roubando capacidade do Floor onde o jogador está agora. Um Melee que chega no `flankRadius` (Sprint 20: raio geral, configurado direto no `MeleeAttackSlotManager` junto do teto acima — deixou de ser um campo por monstro em `EnemyStats`) sem conseguir uma vaga fica **flanqueando**: alterna entre andar na borda desse anel ao redor do jogador e parar em `idle_combat`, tentando de novo a cada frame até uma vaga liberar. A vaga libera de duas formas: no instante em que o HP zera (`Die()`, não quando o clipe `die` termina de tocar — senão um Melee morrendo continuaria "ocupando" espaço de horda pela duração inteira da animação de morte), **ou quando o próprio dono da vaga cai fora do `flankRadius`** (o player se afasta correndo) — sem isso, quem pegasse vaga primeiro ficaria com ela pra sempre perseguindo o player pelo Floor inteiro, enquanto outros monstros de verdade perto agora não conseguiriam nenhuma; a vaga sempre reflete quem está perto **agora**, não quem chegou primeiro. Ranged não participa disso — já mantém distância própria, não lota o corpo a corpo.
+Com hordas grandes, todo Melee tentando ficar dentro do `attackRadius` ao mesmo tempo lota o corpo a corpo e fica ilegível. Existe um teto (`MeleeAttackSlotManager`, padrão **12**, ajustável no Inspector) de quantos Melee podem estar em alcance de contato do jogador ao mesmo tempo. **Revisão estrutural (mundo único):** o teto deixa de ser "por Floor" e passa a ser **um único pool pra run inteira** — a justificativa antiga pro pool por Floor (um Melee com vaga reservada cujo Floor dormia via Floor Sleep nunca liberava a vaga, roubando capacidade do Floor onde o jogador estava agora) não existe mais, porque não há mais Floor Sleep nem Floors — a vaga libera pelas mesmas 2 regras de sempre (abaixo), então não há mais risco de vaga presa num Floor "fora de alcance". Um Melee que chega no `flankRadius` (Sprint 20: raio geral, configurado direto no `MeleeAttackSlotManager` junto do teto acima — deixou de ser um campo por monstro em `EnemyStats`) sem conseguir uma vaga fica **flanqueando**: alterna entre andar na borda desse anel ao redor do jogador e parar em `idle_combat`, tentando de novo a cada frame até uma vaga liberar. A vaga libera de duas formas: no instante em que o HP zera (`Die()`, não quando o clipe `die` termina de tocar — senão um Melee morrendo continuaria "ocupando" espaço de horda pela duração inteira da animação de morte), **ou quando o próprio dono da vaga cai fora do `flankRadius`** (o player se afasta correndo) — sem isso, quem pegasse vaga primeiro ficaria com ela pra sempre perseguindo o player pelo mundo inteiro, enquanto outros monstros de verdade perto agora não conseguiriam nenhuma; a vaga sempre reflete quem está perto **agora**, não quem chegou primeiro. Ranged não participa disso — já mantém distância própria, não lota o corpo a corpo.
 
 ### Idle de patrulha vs. `idle_combat` — duas animações "paradas" distintas ✅
 Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunca uma só, porque servem a dois momentos diferentes:
@@ -632,8 +631,8 @@ Todo monstro (comum, exceção ou boss) tem **duas animações de parado**, nunc
 - **`idle_combat`** — toca **depois que o jogador foi detectado**, sempre que o monstro está parado em combate: colado no jogador (Melee, entre um contato e outro do cooldown), segurando distância em alcance (Ranged, entre um disparo e outro), ou esperando o cooldown liberar o próximo ataque real (exceções/Bosses com animação `attack` de verdade). Sem essa animação, o monstro pareceria "andar parado no lugar" enquanto solta magia, flecha, ou fica grudado no jogador — o que nunca deve acontecer. É uma animação simples, sem Animation Event, sem duração fixa pra tocar até o fim (fica em loop enquanto o monstro estiver parado em combate) — geralmente um blend tree de só 4 direções (não precisa da mesma fidelidade direcional do `walk`).
 - As duas coexistem com `walk`: fora de combate, o monstro está em `walk` ou `idle`; em combate, está em `walk` (perseguindo/reposicionando) ou `idle_combat` (parado). Nunca usa `idle` de patrulha depois de detectar o jogador, e nunca usa `idle_combat` antes de detectar — **exceto a variante "emboscada" abaixo**, que é a única do jogo em que se volta pro `idle` de patrulha depois de já ter detectado o jogador.
 
-### Variante de idle "emboscada" — Gargoyle, Skeletons do Andar 5 (Sprint 16) ✅
-Alguns monstros (Gargoyle, Skeleton, Headless Skeleton, Skeletal Horse, Skeleton Mage, Skeleton Minotaur, Skeleton Rider e Skeleton Warrior — todos Andar 5, ver Bestiário) não vagam sozinhos: ficam parados numa única pose até detectar o jogador, e não têm arte de `idle` direcional (NE/NW/SE/SW) — só 1 sprite estático, sem direção. Diferenças em relação ao `idle` de patrulha padrão:
+### Variante de idle "emboscada" — Gargoyle, Skeletons do Threat Tier 5 (Sprint 16) ✅
+Alguns monstros (Gargoyle, Skeleton, Headless Skeleton, Skeletal Horse, Skeleton Mage, Skeleton Minotaur, Skeleton Rider e Skeleton Warrior — todos Threat Tier 5, ver Bestiário) não vagam sozinhos: ficam parados numa única pose até detectar o jogador, e não têm arte de `idle` direcional (NE/NW/SE/SW) — só 1 sprite estático, sem direção. Diferenças em relação ao `idle` de patrulha padrão:
 - **`idle` não é mais um Blend Tree direcional** — é um único clipe de 1 frame (o próprio 1º frame do `activate`, sem arte própria). Usa um Animator base à parte (`Base_Melee_Ambush`/`Base_Ranged_Ambush`), incompatível com o `Base_Melee`/`Base_Ranged` comum (cujo `Idle` é Blend Tree).
 - Ao detectar o jogador, toca **`activate`** — um clipe não-direcional próprio, 1 vez, antes de entrar em `walk`/`idle_combat` normalmente (via Exit Time, mesmo mecanismo do `Idle -> Walk`/`Idle -> IdleCombat` comum).
 - **É a única exceção do jogo em que a detecção pode reverter.** Em todo o resto do Bestiário, uma vez detectado o jogador o monstro persegue para sempre (nunca existe transição de volta a `idle`/patrulha). Nas emboscadas, se o jogador sair do raio de observação, o monstro volta pro `idle` estático **instantaneamente, sem nenhuma animação de transição** — o jogador não estaria nem olhando pra ele nesse instante, então não existe (nem faz sentido existir) um clipe de "voltar a dormir". Na prática, as transições `Walk -> Idle` e `IdleCombat -> Idle` desses Animators não têm Exit Time nem duração — são um snap direto, condicionadas só a `InCombat == false`.
@@ -651,7 +650,7 @@ Três coisas independentes, nunca uma só: **receber dano ≠ reagir visualmente
 ### Exceções — monstros com arquitetura própria, orientada por Animation Event ✅
 Alguns monstros quebram a regra padrão acima porque têm uma mecânica genuinamente distinta (um objeto próprio no mundo, uma janela de vulnerabilidade, etc.). Para esses, o momento exato em que algo acontece (dano, cura, stun, explosão) é decidido por um **Animation Event dentro do próprio clipe** — a animação é a fonte de verdade do timing, não um timer independente. Documentados individualmente no Bestiário (Seção 51): Goblin Sapper (bomba), Orc Shaman (o totem que ele planta — prefab separado, o Shaman em si usa animações padrão), Burning Skull (explosão suicida), Serpent (janela de exposição), e o projétil do Bicephalous (vira o próprio monstro). Bosses (abaixo) também usam esse modelo, por terem mais de um ataque.
 
-**Skeleton Mage / Zombie Mage (Andar 5) — área de conjuração no chão, não projétil.** Remudança registrada aqui: chegaram a ter dano só por contato direto do projétil (revisão anterior desta mesma sprint); voltou a ser uma área no chão. Ao entrar em alcance, toca uma animação de conjuração (`cast`, no lugar do `attack`/projétil comum) com um **Animation Event** que instancia um prefab de área na posição atual do jogador naquele instante exato — não é mirado, e não segue o jogador depois de nascer. Esse prefab (`GroundTargetHazard`) tem sua própria animação de aviso e seu próprio **Animation Event**: só causa dano se o jogador ainda estiver dentro do trigger dele naquele frame — dando uma janela real pra fugir do círculo antes do estouro, diferente do golpe/disparo comum (que não tem telegraph). Implementado como `GroundCasterEnemyController` (herda de `RangedEnemyController`, reaproveita 100% do Move()/InAttackRange() — mantém distância normalmente —, só troca o que acontece no `ExecuteAttackHit()`).
+**Skeleton Mage / Zombie Mage (Threat Tier 5) — área de conjuração no chão, não projétil.** Remudança registrada aqui: chegaram a ter dano só por contato direto do projétil (revisão anterior desta mesma sprint); voltou a ser uma área no chão. Ao entrar em alcance, toca uma animação de conjuração (`cast`, no lugar do `attack`/projétil comum) com um **Animation Event** que instancia um prefab de área na posição atual do jogador naquele instante exato — não é mirado, e não segue o jogador depois de nascer. Esse prefab (`GroundTargetHazard`) tem sua própria animação de aviso e seu próprio **Animation Event**: só causa dano se o jogador ainda estiver dentro do trigger dele naquele frame — dando uma janela real pra fugir do círculo antes do estouro, diferente do golpe/disparo comum (que não tem telegraph). Implementado como `GroundCasterEnemyController` (herda de `RangedEnemyController`, reaproveita 100% do Move()/InAttackRange() — mantém distância normalmente —, só troca o que acontece no `ExecuteAttackHit()`).
 
 ### Riders / geração de unidades ao morrer ✅
 Alguns monstros, ao morrer, geram outras unidades (ex.: Orc Rider gera 1 Warg + 1 Orc Blade). Unidades geradas podem dropar loot próprio. **Nem todo monstro com nome "Rider" usa isso** — o Skeleton Rider deixou de ter essa mecânica (Sprint 16) e hoje é um Melee comum.
@@ -667,223 +666,201 @@ Havia uma contingência aberta aqui (🟡, "simplificação de monstros comuns")
 - Bosses com mais de um ataque real (os da lista acima) usam cooldowns próprios por ataque — diferente de monstro comum, que tem só 1 tipo de ataque.
 - Matar um boss de topo (ex.: Divine God) **não encerra a run** — é conquista, não condição de vitória.
 
-### Boss Timer — regra final ✅
-- **Individual por Floor**, e é estado **Daily**.
-- Acumula **apenas o tempo que o jogador passou naquele Floor durante o dia** — não é um timer contínuo que exige o jogador sem sair.
-  ```text
-  Floor 2: jogador fica 20s → BossTimer[Floor2] = 20s
-  Sobe para o Floor 3 → BossTimer[Floor2] permanece guardado em 20s
-  Retorna ao Floor 2 → volta a acumular a partir de 20s
-  A cada 🔢 10s acumulados → nasce 1 boss
-  ```
-- Trocar de Floor **não reseta**. Morte (de boss ou do jogador) **não reseta**. Voltar ao térreo **não reseta**. Pausa **não avança** (Seção 9).
-- **Reseta apenas quando o dia termina.**
-- **Correção (Sprint 24) — periodicidade e rotação, decisão do usuário:** o Boss Timer deixou de ser um threshold único por dia — é um intervalo fixo que se repete indefinidamente (até o reset do fim do dia), de 🔢 10s em 10s. Isso resolve a pendência antiga de "o que acontece após o primeiro Boss Spawn":
-  - Com N bosses disponíveis no Floor, a 1ª vez que o ciclo roda, a ordem é sorteada aleatoriamente entre os N (sem repetir dentro do próprio ciclo) — ex.: com 3 bosses, 1 aleatório nasce aos 10s, outro (excluindo o já sorteado) aos 20s, o último aos 30s.
-  - A aleatoriedade só acontece 1x: depois que os N já nasceram cada um 1x (ciclo completo), o ciclo reseta e **repete a mesma ordem já sorteada da primeira vez** — não sorteia de novo a cada ciclo.
-  - Caso degenerado com 1 boss só no Floor: nasce o mesmo boss repetidamente a cada 10s — sem exceção de código, é só N=1 na mesma lógica de rotação.
-  - **Bosses empilham:** se o boss anterior ainda estiver vivo quando o timer completar de novo, nasce um segundo em cima dele — os dois ficam vivos ao mesmo tempo. Não existe fila nem espera pelo boss anterior morrer.
-  - O timer **não reseta com a morte de um boss** — é um relógio fixo e contínuo enquanto o Floor acumula tempo, independente de quantos bosses nasceram ou morreram nesse meio tempo.
-  - **Local de nascimento:** mesma regra de posição de monstro comum (Seção 23, "Onde monstros nascem") — qualquer posição válida do mapa, não um ponto fixo de arena.
-  - **Agressão imediata:** diferente de monstro comum (que só entra em combate ao detectar o jogador por `observationRadius`), todo boss nasce já com o jogador como alvo e vai direto até ele, mesmo nascendo longe — sem fase de patrulha/idle.
-  - **Agressão imediata também vale na volta da Camuflagem (decisão do usuário):** enquanto o jogador está camuflado (Ranger, Seção 17/`IsPlayerUntargetable`), o boss perde o alvo igual a um monstro comum — mas no instante exato em que a camuflagem termina, ele recupera o alvo automaticamente, sem precisar que o jogador volte a entrar no `observationRadius`. Monstro comum continua exigindo essa redetecção normalmente; só o boss tem esse atalho.
-  - Todo Floor com elenco de boss definido usa esse sistema (não é uma feature opt-in por Floor) — Floors cujo elenco de boss ainda não foi produzido (ex.: Floor 3+ antes da Deadline 8) simplesmente não têm boss nenhum ainda por estarem incompletos na produção, não por uma exceção de design.
+### Boss Timer — revisão estrutural (mundo único, ver `docs/new/`) ✅
+**Substitui por completo a regra "Individual por Floor" desta seção (histórico abaixo).** Sem Floors, não existe mais "qual Floor acumulou quanto tempo" — o Boss Timer passa a ser **único e global pra run inteira**, e o que decide **qual Tier de boss nasce** passa a ser a posição atual do jogador no mundo, não mais um elenco fixo por andar.
+
+- **Boss Timer é único, estado Daily, intervalo fixo que se repete indefinidamente** (🔢 referência: 20–30s, igual ao antigo 10s mas pendente de novo playtest — a cadência muda porque agora qualquer posição do mundo pode gerar boss, não só Floors com elenco produzido). Pausa **não avança** (Seção 9). Morte de boss **não reseta**. **Reseta apenas quando o dia termina.**
+- **Boss Timer decide QUANDO; Tier Predominance decide QUAL.** No instante em que o timer completa, o jogo recalcula a mesma distribuição final de Tiers usada pelos monstros comuns (Seção 23 — `EffectiveSpawnDay`/`CurrentPhase`/Supressão de Ameaça, na posição atual do jogador) e usa o **Tier com maior peso** como prioridade de boss. A antiga tabela própria de bosses (BT1–BT10) é removida — não existem duas curvas de balanceamento paralelas.
+- **Nenhum boss específico repete no mesmo `ActualDay`.** Dentro do Tier prioritário, os bosses daquele Tier funcionam como uma bag sem repetição durante o dia — uma vez usado, aquele `BossDefinition` fica indisponível até o próximo `ActualDay` (zera com ele). Se todos os bosses do Tier prioritário já apareceram hoje, o sistema cai pro próximo Tier por ordem de predominância atual, e assim por diante.
+- **Mudar de Tier predominante (dia/noite, ou o jogador se mover pra uma região de `EffectiveSpawnDay` diferente) não troca bosses já vivos** — só afeta o próximo Boss Event.
+- **Bosses empilham:** se o boss anterior ainda estiver vivo quando o timer completar de novo, nasce um segundo — os dois ficam vivos ao mesmo tempo. Não existe fila nem espera pelo boss anterior morrer.
+- **Local de nascimento:** mesma regra de posição de monstro comum (Seção 23) — num anel ao redor do jogador, fora da Zona Segura, preferencialmente fora da câmera. Bosses nunca nascem na Zona Segura, mas podem entrar nela, perseguir e atacar normalmente depois de nascer (mesma regra de Spawn vs. Navegação da Seção 23/24).
+- **Despawn por distância, com reposição imediata:** se o boss ficar longe demais do jogador (🔢 `BossDespawnDistance`, maior que o de monstro comum pra não desaparecer no meio de uma luta normal — Seção 23), ele é removido (não é morte — sem loot, sem contar como derrotado, sem liberar o `BossDefinition` do dia) e **sua vaga é reposta imediatamente**, recalculando o Tier pela posição atual do jogador — isso não reseta nem adianta o Boss Timer normal, é reposição de vaga, não um Boss Event novo. Boss **derrotado de verdade** não gera reposição automática — a próxima entrada depende só do Boss Timer normal. Proteção contra abuso (correr alguns passos pra forçar troca): `BossDespawnDistance` generoso + histerese/cooldown de reposição, mesmo critério de qualquer sistema de distância desta revisão.
+- **Agressão imediata:** diferente de monstro comum (que só entra em combate ao detectar o jogador por `observationRadius`), todo boss nasce já com o jogador como alvo e vai direto até ele, mesmo nascendo longe — sem fase de patrulha/idle.
+- **Agressão imediata também vale na volta da Camuflagem (decisão do usuário, preservada):** enquanto o jogador está camuflado (Ranger, Seção 17/`IsPlayerUntargetable`), o boss perde o alvo igual a um monstro comum — mas no instante exato em que a camuflagem termina, ele recupera o alvo automaticamente, sem precisar que o jogador volte a entrar no `observationRadius`. Monstro comum continua exigindo essa redetecção normalmente; só o boss tem esse atalho.
+
+**Histórico (pré-revisão, preservado só como registro):** antes desta revisão, o Boss Timer era individual por Floor, acumulava só o tempo que o jogador passava em cada andar, e o Tier de boss vinha de uma tabela própria BT1–BT10 fixa por andar — esse modelo deixou de existir junto com o Floor System (Seção 24).
 
 ---
 
 ## 23. Sistema de População (Spawn/Respawn)
 
-Regra principal: **um andar nunca deve parecer vazio.** ✅
+**Revisão estrutural completa (mundo único — ver `docs/new/`).** Regra principal, preservada: **o mundo ao redor do jogador nunca deve parecer vazio.** ✅ Tudo abaixo substitui o modelo antigo "três valores por andar" por um sistema orientado à posição do jogador no mundo único, à distância do centro e ao `ActualDay`/`CurrentPhase` (Seção 40).
 
 ### Population System — o único controle de quantos monstros existem ✅
-Population System determina **quantos monstros existem** no Floor. Desde a remoção do Attack Budget (Seção 14, Sprint 16), não existe mais um sistema limitando quantos monstros comuns podem *atacar* simultaneamente — cada um respeita só o próprio cooldown individual. Existe, separadamente, um limitador de um eixo diferente: quantos **Melee** podem ficar em **contato simultâneo** com o jogador (Seção 22, "Lotação perto do jogador — flanco", `MeleeAttackSlotManager`) — não é sobre atacar, é sobre lotação visual de horda; quem não cabe flanqueia em vez de amontoar. Ranged não é afetado por isso.
+Population System determina **quantos monstros existem** ao redor do jogador. Desde a remoção do Attack Budget (Seção 14, Sprint 16), não existe mais um sistema limitando quantos monstros comuns podem *atacar* simultaneamente — cada um respeita só o próprio cooldown individual. Existe, separadamente, um limitador de um eixo diferente: quantos **Melee** podem ficar em **contato simultâneo** com o jogador (Seção 22, "Lotação perto do jogador — flanco", `MeleeAttackSlotManager`, agora um pool único de mundo, não mais por Floor) — não é sobre atacar, é sobre lotação visual de horda; quem não cabe flanqueia em vez de amontoar. Ranged não é afetado por isso.
 
-### Três valores por andar 🟡
-Minimum Population, Target Population, Maximum Population. Reposição gradual abaixo do Target.
+### Zona Segura (Safe Zone) — proibição de nascimento, não de invulnerabilidade ✅
+Ao redor do centro do mapa (0,0,0 — Seção 24) existe uma região circular, raio configurável (`SafeZoneRadius`), onde **nenhum monstro comum e nenhum boss pode nascer**. Essa é a única exceção espacial absoluta do sistema: dentro da Zona Segura, chance de spawn = 0, independentemente de dia, noite, Tier ou boss.
+
+- **Não bloqueia movimentação nem pathfinding.** Um monstro que nasceu fora da Zona Segura e detectou o jogador pode entrar nela, perseguir, atacar e continuar usando A* normalmente — a restrição é só sobre **onde um spawn pode nascer**, nunca sobre onde um monstro já ativo pode ir. Conceitualmente: `Walkable ≠ Valid Spawn Position`. A Zona Segura **não deve** tornar nós do A* não-caminháveis.
+- **Não significa invulnerabilidade.** Ela não limpa alvo/aggro/projéteis/bosses, não mata nem remove monstro nenhum. Se o jogador correr pra dentro dela sendo perseguido, a perseguição continua.
+- **`SpawnSafetyPadding` (🔢 opcional):** evita monstro nascendo visualmente colado na borda. `MinimumSpawnDistanceFromCenter = SafeZoneRadius + SpawnSafetyPadding`.
+- **Vale igualmente para bosses** (Seção 22) — nascem fora dela, podem entrar livremente depois.
+- Implementação eficiente é decisão técnica (cache de nós válidos/Spawnable separado do Walkable, invalidação só quando necessário — centro e raio são estáticos durante a run) — não fixada aqui.
+
+### EffectiveSpawnDay — a distância escolhe qual dia da tabela é usado, não um bônus de Tier ✅
+A dificuldade dos próximos spawns (e respawns/replacements) não soma mais Tiers diretamente por distância (antiga lógica probabilística de +1/+2 Tier, removida). Em vez disso, a distância escolhe **qual linha da tabela de 30 dias** (abaixo) é consultada:
+
+```text
+DistanceBeyondSafeZone = max(0, DistanceFromCenter - SafeZoneRadius - SpawnSafetyPadding)
+DistanceDayOffset = floor(DistanceBeyondSafeZone / DistancePerSpawnDay)
+EffectiveSpawnDay = clamp(ActualDay + DistanceDayOffset, 1, 30)
+```
+
+- `DistancePerSpawnDay` (🔢) é configurável — quantas unidades de mundo o jogador precisa se afastar pra que os próximos spawns passem a usar a tabela do dia seguinte. A distância é contada a partir da **borda efetiva** da Zona Segura (já descontando o Padding), usando a posição **atual do jogador**, nunca a posição sorteada pro monstro.
+- `ActualDay` é o dia real da run (o mesmo "Dia N" de sempre — Seção 40); `EffectiveSpawnDay` é só o dia **consultado pela tabela de spawn** naquela posição — não avança Demanda, Loja, Save, Vitória do Dia 15, nem nenhuma outra progressão diária.
+- **Mapa finito ⇒ teto natural, sem Hard Lock de Tier.** O `DistanceDayOffset` máximo emerge da maior distância caminhável entre a Zona Segura e os limites do mapa (Seção 25) — não existe um "if" proibindo Tier 10 cedo; ele simplesmente não tem peso nas linhas de dia baixo da tabela (abaixo). Se o tamanho real do mapa permitir alcançar uma linha alta demais cedo, o ajuste correto é mudar `DistancePerSpawnDay`/o tamanho do mapa, nunca criar uma trava especial de Tier.
+- **Monstros já existentes não são transformados retroativamente** — mudar de faixa só afeta novos spawns, respawns e replacements a partir daquele momento.
+- **Fim do mapa / distância além do que qualquer `EffectiveSpawnDay` (até 30) consultaria:** se o jogador se afastar além do ponto onde a tabela já está no Dia 30, não existe Dia 31 pra consultar — nesse caso, em vez de extrapolar a tabela, a % de **Threat Tier 10** continua subindo diretamente com a distância (🔢 curva própria, pendente de playtest), redistribuindo os Tiers restantes pela mesma normalização da Supressão de Ameaça (Seção 27). Decisão do designer.
+
+### Tabela Base de Spawn — Dia × Período × Tier ✅
+Tabela de 30 dias × 2 períodos (Dia/Noite — Seção 40) × 10 Threat Tiers, cada linha somando exatamente 100%, é a fonte de verdade da composição. Vive em um documento especializado (Seção 51 — `docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md` traz a proposta inicial completa de todas as 60 linhas; migra pra `docs/gdd/balance-values.md` ou doc próprio quando formalizado). Nunca hardcoded — cada combinação Dia+Período é um registro de dados editável (`DaySpawnDefinition`), validado automaticamente (soma = 100%). Não existe `Dia X = Tier X`: cada Tier tem janela de introdução, crescimento, domínio e permanência residual (ex.: Tier 10 tem 0% nas linhas 1–19, ganha peso a partir da linha do Dia 20, mas é alcançável antes do `ActualDay` 20 se o `EffectiveSpawnDay` da posição do jogador já chegar lá).
+
+### Threat Tier contém vários monstros — sorteio em 2 etapas ✅
+O sorteio nunca escolhe 1 monstro entre todos os monstros do jogo direto. Primeiro `Roll Tier` (pela tabela acima, já suprimida/normalizada — Seção 27), depois `Roll Monster Definition` dentro daquele Tier (pesos individuais por monstro dentro do Tier são upgrade futuro, não obrigatório fechar agora).
 
 ### Onde monstros nascem ✅
-Posições válidas do mapa (da Floor Variant ativa — Seção 25), fora da câmera quando possível, distância mínima do jogador, nunca em paredes/escadas/interações.
+Num anel (`Spawn Annulus`) ao redor do jogador — nunca "no mapa inteiro" — fora da Zona Segura, preferencialmente fora da câmera, distância mínima/máxima do jogador configuráveis, nunca em obstáculo/estrutura/interação. Posições válidas vêm da geração procedural do mundo (Seção 25), não mais de uma Floor Variant artesanal.
 
 ### Reação a jogador matando rápido ✅
-Aumenta a **frequência de reposição** (até o teto do Maximum), não Vida/Dano dinamicamente.
+Aumenta a **frequência de reposição** (até o teto do Maximum), não Vida/Dano dinamicamente. Na primeira implementação, a distância do centro muda a **composição** (via `EffectiveSpawnDay`), mas não aumenta automaticamente Minimum/Target/Maximum nem a cadência de spawn — população e distância são variáveis separadas (revisável depois de playtest).
+
+### Distance Despawn e Replacement — a população acompanha a exploração ✅
+Monstro muito distante do jogador (🔢 `EnemyDespawnDistance`, maior que a área visível, pra não desaparecer perceptivelmente em combate normal) é removido da simulação — **isso não é morte**: sem loot, gold, kill, Energia da Ultimate, ou qualquer efeito de morte (`Enemy Death ≠ Distance Despawn`). Cada remoção por distância abre 1 vaga de população, que é reposta imediatamente dentro de um `Spawn Annulus` ao redor da posição **atual** do jogador, sorteada pela composição do `EffectiveSpawnDay`/`CurrentPhase` daquele momento — não precisa ser do mesmo Tier nem da mesma definição do monstro removido. Se o jogador estiver dentro da Zona Segura, a reposição procura posição válida fora dela no próprio anel; se não encontrar nenhuma, o replacement fica pendente (nunca em loop infinito). Pooling/histerese recomendados pra não gerar Instantiate/Destroy excessivo em sequência.
 
 ### Interações ✅
-- **Boss:** timer independente da população comum (Seção 22).
-- **Troca de Floor:** a população de cada Floor evolui de forma independente — não reseta ao sair e voltar dentro do mesmo dia.
-- **Remoção de andar (Seção 27):** população do Floor removido deixa de ser relevante.
+- **Boss:** timer independente da população comum, mas agora também usa a Tier Predominance calculada na posição do jogador (Seção 22).
 - **Employees:** não interferem na população.
 
 ### Population State persiste — simulação completa não é obrigatória ✅
-O **estado** da população precisa persistir enquanto o jogador está em outro Floor, mas isso não exige que toda a simulação (pathfinding, Animator, targeting, AI Update, ataques, colisões, movimentação) continue rodando em tempo real fora da região ativa — pode ser suspensa, virtualizada, atualizada logicamente, ou reconstruída ao retornar (decisão técnica, Seção 51). A única regra fixa de gameplay: **sair e voltar para um Floor não pode parecer um reset artificial/explorável da população** (ver também Seção 24).
+O **estado** da população (quantos monstros existem, crise/escalação se existir) precisa persistir enquanto o jogador está em outra região do mundo, mas isso não exige que toda a simulação (pathfinding, Animator, targeting, AI Update, ataques, colisões, movimentação) continue rodando em tempo real fora da vizinhança do jogador — pode ser suspensa, virtualizada, atualizada logicamente, ou reconstruída (decisão técnica, Seção 51; "Simulation Rings" — próximo ao jogador simula completo, longe simplifica, muito longe vira Distance Despawn/Replacement acima). A regra fixa de gameplay: **afastar-se e voltar não pode parecer um reset artificial/explorável da população.**
 
-🔢 Valores exatos e curva de reposição pendentes de playtest.
+### Pipeline de Spawn — ordem formal ✅
+```text
+Player Position → ActualDay → CurrentPhase (Seção 40) → Distance From Center →
+DistanceDayOffset → EffectiveSpawnDay → Base Spawn Weights (tabela acima) →
+Supressão de Ameaça (Seção 27) → Normalize → Roll Tier → Roll Monster Definition →
+Spawn Annulus ao redor do Player → Safe Zone Check → Câmera/Distância/A*/Obstáculo →
+Spawn
+```
+A validação espacial (Zona Segura, câmera, A*, obstáculo) é sempre a etapa final, separada da escolha de ameaça (Tier) — as duas responsabilidades nunca se misturam.
+
+🔢 Valores exatos (Minimum/Target/Maximum, `DistancePerSpawnDay`, `EnemyDespawnDistance`, raios do Spawn Annulus) pendentes de playtest.
 
 ---
 
-## 24. Floor System — Estrutura Técnica de Andares
+## 24. Mundo Único — Estrutura Técnica e Zona Segura
+
+**Revisão estrutural completa — substitui por inteiro o antigo "Floor System" (ver `docs/new/` pra origem completa desta mudança).** O jogo deixa de ter 10 andares separados. Existe **um único mundo contínuo, grande e finito**, explorável durante cada dia.
 
 ### Uma única Unity Scene de gameplay ✅
-Todos os Floors utilizados durante a run existem dentro de **uma única Scene de gameplay**. Mudar de andar **não carrega outra Scene** — a escada apenas teleporta o jogador entre regiões fisicamente diferentes da mesma Scene (regra completa de teleporte na Seção 26).
+O mundo inteiro existe dentro de **uma única Scene de gameplay**. Não existe carregamento de outra Scene durante a exploração normal — o jogador anda livremente, sem transição/teleporte entre regiões (exceção: Controle Remoto, Seção 26, e respawn por morte, Seção 11 — os 2 únicos teleportes discretos que sobrevivem, ambos levando ao centro).
 
-### Identidade visual por Floor ✅
-Cada Floor pode ter configuração própria de **Global Light**: ao mudar de Floor, o Current Floor muda, a Global Light muda, e o ambiente aparenta ser completamente diferente, mesmo dentro da mesma Scene. Detalhes de arte pertencem aos documentos de Art/UI/Level Design (Seção 51).
+### Centro fixo, mundo finito e aproximadamente circular ✅
+O mundo tem centro fixo em **(0, 0, 0)** e limites definidos/configuráveis (`WorldRadius`/`WorldMask`). É grande, mas finito — a quantidade de faixas radiais úteis pra progressão (Seção 23) depende do raio real caminhável, medido em protótipo, não fixado a priori. Limites visualmente justificáveis (montanhas, abismos, oceano, ruínas), nunca uma borda artificial abrupta.
 
-### Persistência do mundo entre Floors ✅
-Loot deixado num Floor **não desaparece** ao trocar de andar — permanece no mesmo lugar até ser coletado, vendido pelo Coletor, ou destruído ao fim do dia junto com o resto do estado Daily (Seção 15).
+### Zona Segura (Safe Zone) ✅
+Ver regra completa na Seção 23 — é especificamente sobre proibição de **spawn**, não sobre o mapa em si. Fica registrado aqui só que ela é uma região fixa centrada em (0,0,0), parte da estrutura do mundo.
 
-### Floor existir ≠ Floor precisar simular tudo — Floor State ≠ Floor Simulation ✅
-O Floor onde o jogador está pode ter simulação completa; Floors fora da região ativa podem estar **Sleeping** — sistemas caros suspensos, reduzidos, virtualizados ou simplificados — **desde que o estado do mundo seja preservado**: Floor Variant, Original Floor Identity, Active Floor Position, Boss Timer, loot existente, Population State e demais dados Daily continuam existindo mesmo dormindo. Implementação exata é decisão técnica (Seção 51).
+### Vendor — estrutura permanente e imutável ✅
+Existe um prefab de Vendor, fixo e **imutável independente de qualquer evolução/regeneração do terreno** (Seção 25) — a loja/vendedor (Seção 39) sempre existe, sempre acessível, nunca é substituída por lava, obstáculo ou qualquer transformação ambiental. Vive dentro ou ao lado da Zona Segura.
 
-### Coletores e Floors fora da tela ✅
-Coletores podem localizar/coletar loot de Floors ativos fora do Floor atual do jogador (Seção 36), sem exigir busca física por todos os GameObjects da Scene nem simulação individual de cada Employee — implementação livre.
+### Identidade visual evolui por dia, não mais por Floor ✅
+O ambiente ao redor do jogador muda com a passagem dos dias (`ActualDay`) e com a distância do centro, usando geração procedural orientada a dados (Seção 25) — substitui a antiga "Global Light própria por Floor". Dia 1 e Dia 2 podem ser parecidos; Dia 1 e Dia 10 devem parecer etapas nitidamente diferentes do mesmo lugar físico.
 
-### Combat Scope — combate opera no Floor atual ✅
-A existência física de monstros de outros Floors dentro da mesma Scene **não os torna alvos válidos** para o jogador. Por padrão, qualquer sistema de combate do herói considera apenas o **Floor atual do jogador** (conceitualmente, `CurrentFloor`/`CurrentActiveFloor` — nome técnico não obrigatório) como domínio de busca e aplicação. Isso se aplica de forma geral, sem precisar repetir a regra em cada ficha de herói:
+### Persistência do mundo ✅
+Loot deixado no mundo **não desaparece** com a passagem do tempo dentro do mesmo dia — permanece no mesmo lugar até ser coletado, vendido pelo Coletor, ou destruído ao fim do dia junto com o resto do estado Daily (Seção 15). Edições do jogador sobre o terreno gerado (ex.: um baú já aberto) são salvas como delta sobre a geração base — ver Seção 25.
 
-- **"Inimigo mais próximo"** (ex.: Homing do Cleric, Summoned Target Hit das vinhas do Druid) significa o mais próximo **dentro do Floor atual**, nunca da Scene inteira.
-- **"Todos os monstros em campo"** (ex.: ultimate global do Cleric — Seção 17.6) significa todos os monstros **do Floor atual**, não de Floors acima, abaixo, Sleeping, ou fisicamente distantes na mesma Scene.
-- Vale igualmente para qualquer projétil, área, hitbox orbital, homing, summoned target hit, dash damage, rotating line, beam, pet ou summon do kit do herói (Seção 13, Seção 33) — nenhum desses sistemas deve atingir acidentalmente uma entidade de outro Floor só porque tudo existe na mesma Scene.
-- **Pets e summons do kit do herói** (Phoenix, Blood Elemental, summons do Necromancer, e equivalentes futuros) combatem somente no Floor atual do jogador, salvo exceção futura explicitamente documentada.
-- **Ajudantes de combate (Employees)** também operam apenas no Floor atual do jogador (Seção 34) — um Ajudante nunca escolhe como alvo um monstro de outro Floor.
-- A implementação técnica (layers, FloorId, registries, filtros, ou outra estratégia) não é definida aqui — o GDD define apenas o comportamento esperado.
+### Simulação seletiva por distância, não mais por Floor ✅
+O que antes era "Floor Sleep" (Floor fora da região ativa suspende sistemas caros) passa a ser **Simulation Rings por distância do jogador**: perto simula completo, mais longe simplifica, muito longe vira Distance Despawn/Replacement (Seção 23). O estado (população, loot, Boss Timer) continua existindo mesmo fora do raio de simulação completa — só a simulação em si (pathfinding, Animator, AI Update) pode ser suspensa/virtualizada. Implementação exata é decisão técnica (Seção 51).
 
-**Exceção documentada — Collectors:** a única exceção cross-Floor confirmada continua sendo o Coletor Employee (Seção 34/36), que pode buscar loot em outros Floors ativos por regra logística própria. Isso não transforma ataques, pets, ultimates, homing ou Ajudantes em sistemas cross-Floor — logística de loot (cross-Floor) e escopo de combate (Floor atual) permanecem conceitos separados.
+### Coletores — sem mais "fora do Floor atual", agora é só alcance ✅
+Coletores (Seção 34/36) continuam podendo localizar/coletar loot espalhado pelo mundo sem exigir que todos os Employees sejam simulados individualmente em tempo real — a antiga formulação "cross-Floor" deixa de fazer sentido (não existe mais "Floor do jogador" vs. "outro Floor"), mas o resultado esperado é o mesmo: loot longe do jogador continua coletável pelo Coletor sem simulação completa.
 
-### Efeitos de combate persistentes ao trocar de Floor — sem dano off-Floor, comportamento pendente 🟡
-O Combat Scope acima define o domínio de busca/aplicação, mas não resolve sozinho o que acontece com um efeito de combate **já existente** quando o jogador muda de Floor. Exemplos: uma área de fogo do Mage ou facas persistentes do Ranger (Seção 13) ainda ativas no Floor que o jogador acabou de deixar; um summon temporário; qualquer outro efeito com duração restante.
+### Combat Scope — removido, não tem mais o que restringir ✅
+**O antigo "Combate opera no Floor atual" deixa de existir como regra.** Não existe mais "Floor do jogador" vs. "Floor de outro monstro" pra restringir — é tudo o mesmo mundo contínuo. "Inimigo mais próximo" (Homing do Cleric, vinhas do Druid), "todos os monstros em campo" (ultimate do Cleric) e qualquer projétil/área/pet/summon/Ajudante do kit de herói continuam usando os próprios raios de busca já definidos em cada habilidade (Seção 13/17/33/34) — sem precisar de uma restrição adicional por Floor, porque a separação espacial que o Combat Scope resolvia (times por Floor literalmente empilhados em posições diferentes da Scene) não existe mais nesse formato.
 
-**Já decorre do Combat Scope, e está confirmado:** um efeito de combate deixado no Floor anterior **não pode continuar causando dano ativamente** enquanto aquele Floor não for o Current Combat Floor do jogador — isso evita, por exemplo, um efeito abandonado continuar matando monstros e gerando loot/Ultimate/progressão sozinho fora do Floor atual (a regra de Hero-Owned Kill Ownership, Seção 11, pressupõe que a fonte esteja participando ativamente do Combat Scope corrente).
+**Achado da auditoria de código desta revisão, registrado aqui por transparência:** mesmo antes desta mudança, o Combat Scope nunca foi implementado como um filtro real de identidade de Floor no caminho de dano (`TakeDamage` nunca checou Floor) — a separação sempre foi **incidental**, decorrente de Floors ficarem fisicamente distantes na mesma Scene mais o Floor Sleep desligando a IA de quem estava "fora". Ou seja: a regra comportamental sempre foi garantida por geometria + simulação seletiva, nunca por uma regra de negócio explícita — e é exatamente esse padrão (geometria + simulação seletiva por distância) que continua valendo no mundo único, só que agora de forma intencional e documentada, não mais incidental.
 
-**Ainda pendente, não decidir agora:** o que acontece internamente com o efeito enquanto o Floor não é o atual — se ele é cancelado imediatamente, se fica congelado com a duração restante preservada até o jogador voltar, ou outro comportamento. Isso depende de como o Floor Sleep (mesma seção, acima) trata timers/efeitos, e pertence ao Combat System Document e ao Technical Architecture Document (Seção 51) — o GDD registra apenas: *(1)* o escopo de combate é o Floor atual; *(2)* efeitos antigos não causam dano off-Floor; *(3)* o comportamento temporal exato ao trocar de Floor permanece pendente (ver Seção 53). Esta é uma pendência localizada do Combat System, não uma pendência crítica da máquina de estados.
-
-### Três identidades do Floor ✅
-- **Original Floor Identity** — dificuldade, pool de monstros, bosses, drops, estética base. `Original Floor = 5` continua sendo conteúdo do Floor 5 mesmo que sua posição na torre mude.
-- **Active Floor Position** — posição atual daquele Floor dentro da torre naquela run; muda através de Remove Tower Layer (Seção 27).
-- **Floor Variant** — qual das 5 versões de layout artesanal foi sorteada para aquele Floor naquela run (Seção 25).
-
-Exemplo: `OriginalFloor = 5, ActiveFloorPosition = 3, Variant = B` — conteúdo original do Floor 5; duas camadas inferiores já removidas; atualmente o 3º Floor ativo; usando a Variant B.
+**Pendência nova, registrada em vez de decidida aqui (ver Seção 53):** efeitos de combate persistentes do próprio herói (rastro de fogo do Mage, facas do Ranger) que o jogador deixa atrás ao se afastar — eles seguem a mesma regra de Simulation Rings dos monstros (podem ser pausados/recolhidos por distância), ou continuam ativos indefinidamente até a duração acabar, independente da distância do jogador? Não decidir agora — comportamento análogo ao que já era pendente antes desta revisão (Combat System Document, Seção 51).
 
 ---
 
-## 25. Floor Variants
+## 25. Geração Procedural do Mundo
 
-### Estrutura ✅
-Cada um dos **10 Floors originais** terá **5 variações de layout feitas manualmente** — total de **50 variações artesanais**. **Não é geração procedural** — o algoritmo apenas escolhe qual mapa artesanal usar.
+**Substitui por inteiro o antigo "Floor Variants" (50 mapas artesanais, 5 por andar).** Motivo da mudança: 50 mapas manuais é inviável pra produção solo — a solução não é reduzir o escopo, é eliminar a necessidade de desenhar manualmente, gerando o mundo por dados a partir de assets (sprites/autotiles/prefabs) já existentes, de forma determinística e orientada a seed. Fonte completa: `docs/new/Mudanca_Estrutural_Geracao_Procedural_Evolucao_Mapa_30_Dias_V2_ILUSTRADO.md`.
 
-### Sorteio ✅
-Ao começar uma nova run, sorteia-se **exatamente 1 variante para cada Floor**, fixa durante toda a run: trocar de dia não sorteia de novo; morrer não sorteia de novo; remover Floor não sorteia de novo; Continue Game carrega as variantes já sorteadas (Run-Persistent — Seção 15); nova run sorteia de novo.
+### Princípio ✅
+*"Eu reconheço que estive aqui, mas o mundo não é mais o mesmo."* O mundo é gerado por `WorldSeed` + posição global + `ActualDay` — determinístico (mesma seed, posição, dia e versão das regras sempre geram o mesmo resultado antes dos deltas salvos). Orientado a dados (ScriptableObjects cadastrando Tiles/RuleTiles/AnimatedTiles/prefabs já prontos no projeto), nunca geração de sprites do zero.
 
-### Escala técnica ✅
-A run usa apenas as 10 variantes selecionadas — as demais 40 não precisam estar simultaneamente simuladas. Implementação (Prefabs ou equivalente) é decisão técnica, não fixada aqui.
+### Geografia estável vs. materialização ambiental ✅
+Cada posição do mundo tem uma identidade geográfica de referência (contorno de lago, corredor de passagem — preferencialmente estável por seed) separada do **material/estado** que a representa visualmente num dado dia (ex.: um lago pode virar lava sem perder a própria identidade/forma). Rios e estradas são uma exceção explícita — podem mudar de **traçado**, não só de material, entre dias (decisão do designer).
 
-### Conteúdo vs. layout ✅
-Cada Floor Variant tem suas próprias posições válidas de entrada, saída, escada de subida, buraco/retorno, baús, traps e demais posições de level design — podendo ter layout, paredes e caminhos completamente diferentes de outra variante do mesmo Floor. **O conteúdo de gameplay do Original Floor continua o mesmo** entre variantes: dificuldade, monster pool, bosses, drops e progressão.
+### Evolução por dia, não por Floor ✅
+Ao avançar `ActualDay`, a MESMA região física pode receber substituição de terreno/ambiente (grama viva → solo escuro, água → lava). Não é incremental/cumulativo — o visual de um dia é calculado a partir da seed + posição + dia atual, nunca de 30 operações acumuladas (o Dia 10 fica certo mesmo que os Dias 2–9 nunca tenham sido carregados ali). Dia 1 e Dia 2 podem ser parecidos; Dia 1 e Dia 10 devem parecer etapas nitidamente diferentes do mesmo lugar.
 
-### Nota de produção — não é regra de gameplay ✅
-O escopo final continua sendo 5 variantes por Floor (50 no total); a arquitetura deve suportar isso desde o início. **Não é necessário produzir as 50 antes de validar o jogo** — estratégia aprovada: primeiro criar apenas a Variant A dos 10 Floors, suficiente para testar run completa, progressão, economia, combate, bosses, employees, Remove Tower Layer, save e floor transitions; depois, produzir progressivamente B, C, D e E. Registrado também no Production Roadmap (Seção 51).
+### Água e lava — sempre bloqueio físico (decisão do designer, simplificação confirmada) ✅
+Diferente da proposta original (que previa água/lava com comportamento configurável por tipo — bloqueio, dano, atravessável), a decisão final é mais simples: **água e lava sempre bloqueiam a passagem, como paredes.** Não existe variante de água/lava atravessável ou que só cause dano sem bloquear.
+
+### Estruturas permanentes e imunes à evolução ✅
+O Vendor (Seção 24) é imutável independente de qualquer regeneração de terreno. Baús (Seção 30) são gerados **depois** do mundo gerado, nas posições válidas resultantes — não fazem parte da geração de terreno em si.
+
+### Sem mineração nem destruição de ambiente ✅
+Árvores, rochas e demais props ambientais são **decoração pura** — não existe coleta de recursos, destruição ou regeneração de ambiente no MVP. As únicas interações persistentes sobre o mundo gerado são baús já abertos e o estado do Vendor — nada além disso precisa de delta salvo por objeto ambiental.
+
+### Chunks, biomas e detalhes técnicos — documento especializado ✅
+Geração por chunks determinísticos (streaming conforme o jogador se move), autotiles/RuleTiles pra manchas conectadas (grama alta, água, etc.), perfis de bioma por família visual (T1–T10, sem zona fixa de 1 Tier por região — Seção 23 continua controlando a distribuição de monstros, independente do visual do terreno), e a arquitetura de ScriptableObjects/pipeline completo pertencem a um documento especializado próprio (Seção 51), não ao GDD Mestre — aqui ficam só as regras estruturais de comportamento acima.
+
+### Seed ✅
+Fixa por run, mas pode ser compartilhada/reutilizada manualmente entre runs — principalmente pra debug. Um sistema futuro de "comparar mundos com amigos" usando a mesma seed é só uma ideia registrada, fora de escopo agora.
+
+### Save ✅
+`WorldSeed` + versão do gerador + `ActualDay` + deltas de edição do jogador (baús abertos) são o suficiente pra reconstruir o mundo exatamente — não salva o mundo tile a tile.
 
 ---
 
-## 26. Travessia entre Andares
+## 26. Controle Remoto
 
-### Escadas e buracos — regra estrutural final ✅
-Escadas e buracos de descida são **parte física fixa do layout de cada Floor Variant** (Seção 25), definidos no level design. Funcionam como **teleportadores entre Active Floor Positions adjacentes**, dentro da mesma Scene única (Seção 24) — nunca carregam outra Scene, nunca são itens, nunca são comprados, nunca são criados/destruídos/movidos/reposicionados pelo jogador.
-
-### Interação — travessia com E, não automática ✅
-Diferente de uma versão anterior deste documento, a travessia **não é automática ao encostar** na escada/buraco: o jogador se aproxima, um ícone de interação aparece sobre o objeto (Seção 47 — feedback de "interação disponível"), e pressionar **E** (Seção 46) efetiva a troca de Floor. Mesmo padrão de interação contextual usado por baús (Seção 30) — escadas e baús compartilham o mesmo sistema de interação, cada um com sua própria ação ao ser ativado.
-```text
-Player se aproxima da escada → ícone de interação aparece → pressiona E → teleporta para o Active Floor de destino (Seção 26, regra de destino abaixo)
-```
+**Revisão estrutural — sem Floors, não existe mais "travessia entre andares"** (escadas, buracos, Active Floor Position e toda a regra de destino relativo desta seção deixam de existir). O único conteúdo que sobrevive é o Controle Remoto, com função nova.
 
 ### Prioridade entre interações simultâneas ✅
-**Todo interagível (baú, escada, vendedor, NPC, e qualquer outro que venha a existir) sempre tem prioridade sobre largar o Magnet.** Se mais de um interagível "de verdade" estiver no alcance ao mesmo tempo entre si (ex.: escada perto de um baú), a prioridade entre eles continua não definida — mas isso não é o caso comum: a regra que precisava ser fechada era especificamente **Magnet vs. qualquer outro interagível**, e essa está resolvida: o Magnet nunca "rouba" o E de uma interação real. Implementação: `InteractionManager` deve tratar qualquer `Interactable` "de verdade" (baú, escada, vendedor, NPC) como prioritário sobre a ação de largar o Magnet — o Magnet só é largado se nenhum outro interagível estiver no alcance no momento do E.
+**Todo interagível (baú, vendedor, NPC, e qualquer outro que venha a existir) sempre tem prioridade sobre largar o Magnet.** A regra que precisava ser fechada era especificamente **Magnet vs. qualquer outro interagível**, e essa está resolvida: o Magnet nunca "rouba" o E de uma interação real — só é largado se nenhum outro interagível estiver no alcance no momento do E. Implementação: `InteractionManager` trata qualquer `Interactable` "de verdade" como prioritário sobre a ação de largar o Magnet.
 
-### Exemplo normal de conexão ✅
-```text
-Térreo
-   ↓ escada
-Active Floor 1
-   ↓ escada
-Active Floor 2
-   ↓ escada
-Active Floor 3
-   ...
-```
-E os retornos:
-```text
-Active Floor 1 → (buraco/descida) → Térreo
-Active Floor 2 → (buraco/descida) → Active Floor 1
-Active Floor 3 → (buraco/descida) → Active Floor 2
-```
-Cada transição teleporta o jogador para outra posição da mesma Unity Scene.
-
-### Regra de destino — baseada em Active Floor Position, não em identidade fixa ✅
-As escadas **não** são ligadas rigidamente por `OriginalFloorId + 1` como regra de gameplay. Conceitualmente:
-- **Subida** leva ao **próximo Active Floor**.
-- **Descida** leva ao **Active Floor anterior**; se não existir Floor anterior (ou seja, a partir do Active Floor Position 1), leva ao **Térreo**.
-
-Essa regra baseada em posição ativa — e não em identidade original fixa — é o que permite Remove Tower Layer funcionar corretamente sem precisar mover fisicamente o conteúdo de nenhum Floor (Seção 27). A implementação concreta pertence ao Technical Architecture Document (Seção 51).
-
-### Disponibilidade, não destruição individual ✅
-Escadas e buracos nunca são individualmente criados, destruídos, movidos ou reposicionados pelo jogador. Sua disponibilidade depende de o Floor ao qual pertencem estar ativo; seus destinos de teleporte são recalculados/remapeados conforme a ordem atual de Active Floor Positions — não porque a escada em si "se move", mas porque o alvo dela é sempre relativo, não fixo.
-
-### Controle Remoto 🟡
+### Controle Remoto — nova função: retorno ao centro ✅
 - **Comprado na aba Bonuses** (Seção 41). **Não é item físico** — não ocupa a Bag, ao contrário de qualquer material de loot (Seção 37).
 - Acessado através da tecla **Q** (Seção 46).
 - Abrir a interface **pausa completamente o jogo**, seguindo a regra central de pausa (Seção 9).
 - Possui **cooldown entre usos**. 🔢 valor exato pendente de balanceamento (referência anterior: 10s).
-- **Função:** permite selecionar um Floor válido dentre os disponíveis e se deslocar diretamente para ele, sem precisar percorrer fisicamente as escadas intermediárias.
-- **Utiliza Active Floor Position, não Original Floor Identity** — a lista de Floors mostrados/disponíveis é sempre calculada pela posição ativa atual da torre, do mesmo jeito que a Seção 24 define para o restante do Floor System.
-- **Remove Tower Layer recalcula naturalmente** os Floors mostrados/disponíveis no Controle — ao remover um Floor, a lista se ajusta à nova torre ativa sem exigir nenhuma lógica adicional (Seção 27).
+- **Função (revisão estrutural):** sem Floors pra listar, deixa de ser um seletor de andares — vira um teleporte de retorno: abre um popup, o jogador confirma, e é teleportado direto pro **centro do mundo (0,0,0 — Seção 24)**, de qualquer distância que esteja.
 
 **Fluxo conceitual:**
 ```text
-Q → jogo pausa → abre interface do Controle Remoto →
-mostra Floors atualmente permitidos → player escolhe um Floor →
-teleporta → interface fecha → cooldown começa
+Q → jogo pausa → abre popup do Controle Remoto →
+jogador escolhe voltar pro centro → confirma →
+teleporta pro centro (0,0,0) → popup fecha → cooldown começa
 ```
 Layout visual da interface não é definido aqui — pertence ao documento de UI/UX (Seção 51).
 
-**Alcance do Controle — duas variantes, decisão de playtest:** a arquitetura suporta duas variantes através de um único bool/configuração, sem uma terceira opção e sem escolha definitiva nesta versão:
-- **Variante A:** acesso ao térreo + todos os Active Floors já visitados naquele dia.
-- **Variante B:** acesso ao térreo + todos os Active Floors atualmente existentes, independentemente de visita prévia.
-
-A decisão final entre A e B **continua sendo de playtest** (Seção 53) — a arquitetura deve permitir trocar a regra facilmente, sem que isso seja uma pendência bloqueante para o início do desenvolvimento.
-
 ---
 
-## 27. Remove Tower Layer
+## 27. Supressão de Ameaça
+
+**Substitui por inteiro o antigo "Remove Tower Layer".** Nome provisório, pode mudar depois sem impacto estrutural (confirmado pelo designer). Mesma regra sequencial de sempre, só troca "remover andar" por "suprimir o Tier mais fraco ainda ativo".
 
 ### Regra final confirmada ✅
-- Comprado na aba Bonuses. **O jogador não escolhe qual Floor remover** — não existe seleção de alvo.
-- **Cada compra remove automaticamente o primeiro Floor da posição ativa atual (Active Floor Position 1).**
-- Máximo de **5 compras por run** → no limite, remove sequencialmente **Original Floors 1, 2, 3, 4 e 5**. **Original Floors 6–10 nunca podem ser removidos.**
-- NPCs nunca residem em Floors removíveis (vivem no térreo).
+- Comprado na aba Bonuses. **O jogador não escolhe qual Tier suprimir** — não existe seleção de alvo.
+- **Cada compra suprime automaticamente o Threat Tier mais baixo ainda ativo.** Compra 1 suprime Tier 1; compra 2 suprime Tier 2; e assim por diante.
+- **Máximo de 5 compras por run** → no limite, suprime sequencialmente os **Threat Tiers 1, 2, 3, 4 e 5**. **Threat Tiers 6–10 nunca podem ser suprimidos.**
+- Um Tier suprimido deixa de poder ser sorteado como monstro comum **e** como boss (Seção 22) — se o Tier predominante numa posição estiver suprimido, o sistema de boss procura a maior predominância entre os Tiers ainda disponíveis.
 
-### Exemplo completo de remapeamento ✅
-Antes:
-```text
-Térreo → Original Floor 1 → Original Floor 2 → Original Floor 3
-```
-Remove Tower Layer remove o Active Floor 1 atual (= Original Floor 1). Depois:
-```text
-Térreo → Original Floor 2 → Original Floor 3
-```
-- **Escada do Térreo:** antes levava a Original Floor 1; agora leva a Original Floor 2.
-- **Buraco/descida do Original Floor 2:** antes levava a Original Floor 1; agora leva ao Térreo (pois Original Floor 2 passou a ser o Active Floor Position 1, sem Floor anterior).
-- **Escada de subida do Original Floor 2:** continua levando ao próximo Active Floor (agora Original Floor 3), sem mudança.
-- **Original Floor Identity não muda:** mesmo com a escada do térreo agora levando a "Original Floor 2", esse Floor continua sendo Original Floor 2 para todos os efeitos de monster pool, bosses, loot e dificuldade — apenas sua Active Floor Position passou a ser 1.
+### Redistribuição — normalização, nunca tabela especial ✅
+A porcentagem do Tier suprimido **não desaparece** — é redistribuída proporcionalmente entre os Tiers restantes daquela linha (Seção 23), sempre por normalização matemática, nunca por uma tabela escrita à mão pra cada combinação possível de supressão.
 
-### Remove Tower Layer na Scene ✅
-Como todos os Floors estão na mesma Scene (Seção 24), o Floor removido simplesmente deixa de fazer parte da **lista de Floors ativos**. A implementação técnica não é determinada aqui.
+**Exemplo:** linha com T1=5%, T2=15%, T3=20%, T4=35%, T5=25%. Suprime T2. Soma restante = 5+20+35+25 = 85. Nova distribuição: T1 = 5/85 ≈ 5,88%; T3 = 20/85 ≈ 23,53%; T4 = 35/85 ≈ 41,18%; T5 = 25/85 ≈ 29,41%. Soma = 100%. Essa normalização funciona pra qualquer combinação de Dia, Período (Seção 40) e Tiers suprimidos.
 
-### Consequências sobre outros sistemas ✅
-- **Floor Variant:** a variante do Floor removido também deixa de ser acessível; os Floors restantes mantêm suas variantes já sorteadas, sem novo sorteio.
-- **Escadas:** remapeadas conforme a nova adjacência ativa (exemplo acima).
-- **Magnet/Controle Remoto:** recalculam pela Active Floor Position, não pela identidade original (Seções 26 e 29).
-- **UI:** qualquer indicador de "Andar N" reflete a posição ativa, não a identidade original.
-- **População:** cada nova posição ativa usa a população própria daquele Original Floor.
-- **Conteúdo (baús, loot pool, boss pool):** permanece vinculado à identidade original do Floor.
+### NPCs ✅
+NPCs nunca residem numa área cuja ameaça predominante seja um Tier suprimível (vivem efetivamente perto do centro/Vendor — Seção 24).
 
 ---
 
@@ -893,7 +870,7 @@ Como todos os Floors estão na mesma Scene (Seção 24), o Floor removido simple
 - Precisam de telegraph antes do dano.
 - **Não são monstros:** não dropam loot, não contam como kill, não carregam Ultimate, não contam para demanda.
 - Ameaça ambiental independente — não são afetadas por cooldown de monstro nem por nada do combate comum.
-- Fazem parte do layout de cada Floor Variant (Seção 25), assim como baús e escadas.
+- **Revisão estrutural (mundo único):** fazem parte do layout gerado proceduralmente do mundo único (Seção 25), assim como baús — sem mais escadas (deixaram de existir junto com o Floor System).
 
 ### MVP ✅
 **Falling Rock** (sombra no chão → pedra cai, dano em área) e **Floor Spikes** (indicação de furos → espinhos surgem, dano em área). Novas traps ficam em Visão Expandida. 🔭
@@ -904,22 +881,23 @@ Como todos os Floors estão na mesma Scene (Seção 24), o Floor removido simple
 
 Todas Run-Persistent — recompensas se perdem ao iniciar nova run. ✅
 
-### Magnet (3 etapas) — regra completa restaurada ✅
-| Etapa | Entrega | Recompensa |
-|---|---|---|
-| 1 | 5 Arcane Shard | Magnet Tier 1 — acompanha até o 1º andar ativo disponível |
-| 2 | 20 Dark Crystal | Magnet Tier 2 — até o 2º andar ativo disponível |
-| 3 | 40 Soul Fragment | Magnet Tier 3 — limite aumenta novamente |
+### Magnet (3 etapas) — revisão estrutural, alcance por distância do centro ✅
+**Substitui por inteiro o antigo "até qual Active Floor Position" (Seção 24 não existe mais).** O Magnet passa a ter um **raio máximo de distância do centro** (0,0,0 — Seção 24) dentro do qual ele acompanha/funciona — além desse raio, ele não acompanha o jogador. Os 3 Tiers usam exatamente as mesmas referências de distância já definidas pelo sistema de spawn (Seção 23), amarrando a progressão do Magnet à mesma régua de dificuldade do mundo, não a um número arbitrário:
 
-- Começa **todo dia** no térreo.
-- **E** pega/larga o Magnet. **Qualquer outro interagível no alcance (baú, escada, vendedor, NPC) sempre tem prioridade sobre largar o Magnet** (regra completa e resolvida na Seção 26) — só larga com E se não houver nenhum outro interagível no alcance no momento.
-- Alcance é baseado na **Active Floor Position** (Seção 24), não na identidade original — Remove Tower Layer (Seção 27) pode beneficiar indiretamente seu alcance efetivo.
+| Etapa | Entrega | Recompensa — alcance máximo do centro |
+|---|---|---|
+| 1 | 5 Arcane Shard | Magnet Tier 1 — até a **metade** da área de dificuldade inicial (`SafeZoneRadius + SpawnSafetyPadding + 0,5 × DistancePerSpawnDay` — Seção 23) |
+| 2 | 20 Dark Crystal | Magnet Tier 2 — até o **começo** da área onde já aparecem monstros do próximo dia (`SafeZoneRadius + SpawnSafetyPadding + 1 × DistancePerSpawnDay`) |
+| 3 | 40 Soul Fragment | Magnet Tier 3 — até o **começo** da área onde aparecem monstros de 2 dias adiante (`SafeZoneRadius + SpawnSafetyPadding + 2 × DistancePerSpawnDay`) |
+
+- Começa **todo dia** no centro (0,0,0 — mesmo ponto de respawn, Seção 11/24).
+- **E** pega/larga o Magnet. **Qualquer outro interagível no alcance (baú, vendedor, NPC) sempre tem prioridade sobre largar o Magnet** (regra completa e resolvida na Seção 26) — só larga com E se não houver nenhum outro interagível no alcance no momento.
 - **Dentro da área/limite permitido pelo tier atual, o Magnet coleta e vende loot automaticamente** — esta é uma regra estrutural central da recompensa, não implícita.
 - **Dois conceitos distintos, não confundir:**
-  - **Magnet Floor Range** (os tiers acima) define **até quais Active Floor Positions** o Magnet consegue acompanhar/funcionar — preservado exatamente como já definido, sem alteração.
+  - **Magnet Range** (os tiers acima) define **até qual distância do centro** o Magnet consegue acompanhar/funcionar — mesmo papel de antes, só a régua de medida mudou de "Floor" pra "distância".
   - **Pickup Radius** (Seção 37) define **quão perto fisicamente do jogador** o loot precisa estar para ser processado. **O Magnet utiliza o Pickup Radius atual do jogador** como sua área de captura ao redor do jogador — ele não possui um segundo sistema independente de raio horizontal próprio. Consequentemente, comprar **Increase Pickup Radius** (Bonuses — Seção 41) também aumenta naturalmente a área efetiva de atuação do Magnet.
-- **Comportamento de venda:** sem Magnet, loot que entra no Pickup Radius vai para a Bag normalmente (Seção 37). **Com o Magnet ativo/acompanhando o jogador**, o loot que entra no Pickup Radius é processado pelo Magnet e **vendido automaticamente** — não precisa entrar na Bag primeiro. Fantasia resultante: com o Magnet, atravessar uma pilha de loot dentro do Floor Range permitido vende tudo que entra no raio, sem gerenciar a Bag.
-- **O Magnet só processa loot vendável** — o mesmo conjunto de materiais econômicos que o Pickup Radius já reconhece como "loot válido" (Seção 37). Ele **não** pode vender pergaminhos, outro Magnet, baús, escadas, quest objects não destinados à venda, ou qualquer elemento estrutural do mapa — esses continuam usando suas próprias regras de interação, sem interferência do Magnet.
+- **Comportamento de venda:** sem Magnet, loot que entra no Pickup Radius vai para a Bag normalmente (Seção 37). **Com o Magnet ativo/acompanhando o jogador**, o loot que entra no Pickup Radius é processado pelo Magnet e **vendido automaticamente** — não precisa entrar na Bag primeiro. Fantasia resultante: com o Magnet, atravessar uma pilha de loot dentro do Magnet Range permitido vende tudo que entra no raio, sem gerenciar a Bag.
+- **O Magnet só processa loot vendável** — o mesmo conjunto de materiais econômicos que o Pickup Radius já reconhece como "loot válido" (Seção 37). Ele **não** pode vender pergaminhos, outro Magnet, baús, quest objects não destinados à venda, ou qualquer elemento estrutural do mapa — esses continuam usando suas próprias regras de interação, sem interferência do Magnet.
 - **No Modo Padrão, Monster Essence vendida pelo Magnet conta normalmente para a demanda do dia** (Seção 39), e o Gold correspondente é adicionado normalmente, do mesmo jeito que uma venda pelo NPC vendedor ou pelo Coletor Employee — não existe categoria especial de venda para o Magnet. **No Modo Free**, a mesma venda de Monster Essence pelo Magnet ocorre normalmente e o Gold é recebido normalmente, mas não existe quota para incrementar (Seção 42).
 - **Vendas do Magnet aparecem normalmente na Tela de Resultados** (Seção 40), que resume todas as vendas do dia independentemente da origem (NPC, Magnet, Coletor) — a estrutura da Tela de Resultados não muda.
 - **O Magnet não aumenta slots, stack ou capacidade da Bag** — ele desvia o fluxo do loot capturado para venda automática, evitando o gargalo da Bag enquanto estiver em funcionamento dentro de suas regras.
@@ -936,14 +914,14 @@ Entregar 1 Chaos Crystal → **Royal Contract** (+100% valor de venda pelo resto
 ## 30. Baús
 
 ### Spawn ✅
-Gerados aleatoriamente dentro das posições válidas de cada **Floor Variant** (Seção 25). Quantidade por andar, distância mínima entre baús e eventual aumento de frequência por andar não estão definidos — configuráveis por playtest/balanceamento.
+**Revisão estrutural (mundo único — ver `docs/new/`):** gerados aleatoriamente dentro das posições válidas do mundo único, calculadas **depois** da geração procedural do terreno (Seção 25) — substitui por completo a antiga geração dentro de cada Floor Variant artesanal. Quantidade por região, distância mínima entre baús e eventual aumento de frequência conforme a distância do centro não estão definidos — configuráveis por playtest/balanceamento.
 
 ### Chest Mimic — ciclo de disfarce (Sprint 16) ✅
-- Uma pequena % (🔢 configurável) de baús em qualquer andar pode ser um **Mimic**.
+- Uma pequena % (🔢 configurável) de baús em qualquer ponto do mundo pode ser um **Mimic**.
 - **Desativado:** enquanto disfarçado, é um baú comum igual a qualquer outro — interagível com E, sem perseguir nem atacar.
 - **Ativação:** ao pressionar E pra abrir, toca a animação `activation` (em vez de liberar a recompensa direto). Só depois que ela termina por completo é que o Mimic se revela e passa a se comportar como um Melee comum — persegue o jogador e causa dano por contato normal, com cooldown próprio (GDD Seção 22, mesma regra de qualquer Melee comum).
 - **Desativação:** se o jogador escapar do raio de observação dele, o Mimic toca `desactivation` e volta ao estado de baú disfarçado, interagível com E de novo — o ciclo pode se repetir várias vezes até o jogador efetivamente derrotá-lo.
-- **Único monstro do jogo com Dano/Vida por porcentagem em vez de tabela fixa por andar:** em vez de valores travados ficha a ficha (como todo o resto do Bestiário), o Chest Mimic calcula Dano/Vida como uma fórmula percentual sobre uma base, crescendo conforme o andar em que nasceu. 🔢 fórmula exata (base e % por andar) pendente de balanceamento — ver Bestiário (Seção 51) pra ficha completa.
+- **Único monstro do jogo com Dano/Vida por porcentagem em vez de tabela fixa por Tier:** em vez de valores travados ficha a ficha (como todo o resto do Bestiário), o Chest Mimic calcula Dano/Vida como uma fórmula percentual sobre uma base, crescendo conforme o `EffectiveSpawnDay` (Seção 23) no instante/posição em que nasceu. 🔢 fórmula exata (base e % por nível) pendente de balanceamento — ver Bestiário (Seção 51) pra ficha completa.
 - **Ao morrer, o Mimic libera a mesma recompensa que o baú normal teria fornecido e abre a mesma UI de 3 opções** (Seção 30) — o jogador **não perde a recompensa** apenas por ter encontrado um Mimic; ele só precisa vencer o combate primeiro para recebê-la.
 
 ### Interação — abertura com E, escolha com mouse ✅
@@ -967,7 +945,7 @@ Preservado sem alteração: 3 opções sem duplicar tipo no mesmo sorteio, escol
 ## 31. Cartas (Pergaminho)
 
 ### Regras de sorteio ✅
-3 cartas aleatórias por pergaminho, nunca repetindo tipo entre si no mesmo sorteio. Escolhe exatamente 1. Bônus aumentam por nível do andar. 🔢 curva exata. Buffs escolhidos são **Run-Persistent** (Seção 15). Buffs repetidos entre pergaminhos diferentes acumulam. **1 reroll gratuito por dia de run**, confirmado. Rerolls adicionais compráveis na aba Bonuses. 🔢 preço. Cartas com teto (ex.: cura periódica do Cleric, absorção do shield do Paladin) param de aparecer ao atingir o limite. **Correção (pós-detalhamento de heróis):** a quantidade de flechas do Ranger, de vinhas do Druid e de balas do Gunslinger **não vêm mais de carta nenhuma** — passaram a escalar com o Tier de Arma (Seção 19, Seção 17.2/17.4/17.8), a mesma progressão que já multiplica Dano/Vida Base de todo herói.
+3 cartas aleatórias por pergaminho, nunca repetindo tipo entre si no mesmo sorteio. Escolhe exatamente 1. Bônus aumentam por `ActualDay` (revisão estrutural — antes "por nível do andar", Seção 23). 🔢 curva exata. Buffs escolhidos são **Run-Persistent** (Seção 15). Buffs repetidos entre pergaminhos diferentes acumulam. **1 reroll gratuito por dia de run**, confirmado. Rerolls adicionais compráveis na aba Bonuses. 🔢 preço. Cartas com teto (ex.: cura periódica do Cleric, absorção do shield do Paladin) param de aparecer ao atingir o limite. **Correção (pós-detalhamento de heróis):** a quantidade de flechas do Ranger, de vinhas do Druid e de balas do Gunslinger **não vêm mais de carta nenhuma** — passaram a escalar com o Tier de Arma (Seção 19, Seção 17.2/17.4/17.8), a mesma progressão que já multiplica Dano/Vida Base de todo herói.
 
 ### Pools ✅
 **Universal:** Velocidade de Ataque, Dano de Ataque, Velocidade de Movimento, Vida — em %. **Específica por herói:** listadas em cada ficha da Seção 17. **De Employee:** só entra no sorteio se houver employees possuídos naquele dia.
@@ -1012,7 +990,7 @@ Sistema à parte, sem relação com passiva de herói (ver acima). **Revisão Sp
   - **Prisão** (ex.: Freeze) — prioridade mais alta.
   - **DoT** (ex.: Burn) — prioridade mais baixa.
 - 🟡 **Dívida técnica (Sprint 19):** o `StatusEffectController` ainda não implementa essa prioridade por categoria — hoje ele só mostra o **primeiro Efeito que foi aplicado** (ordem de aplicação, não prioridade de categoria). Sem problema por enquanto porque Fire/Bleeding (os únicos com mecânica real hoje) são os 2 da mesma categoria (DoT), sem conflito possível. Precisa ser implementado antes de qualquer Efeito de Prisão (Ice/Sleep/Stun/Petrification) ganhar mecânica de verdade, senão o exemplo do Shaman abaixo não funciona.
-- **Exemplo de referência (Shaman, Andar 3):** um totem de fogo aplica Fire (DoT, 3s) e outro totem aplica Freeze (Prisão, 1s). Se o herói pegar os dois ao mesmo tempo: o dano do Fire continua contando normalmente em segundo plano, mas a sprite exibida é a do Freeze (Prisão > DoT). Quando o Freeze (1s, menor duração) termina, a sprite volta pra Burn — que ainda está ativo, e agora é o único Efeito restante.
+- **Exemplo de referência (Shaman, Threat Tier 3):** um totem de fogo aplica Fire (DoT, 3s) e outro totem aplica Freeze (Prisão, 1s). Se o herói pegar os dois ao mesmo tempo: o dano do Fire continua contando normalmente em segundo plano, mas a sprite exibida é a do Freeze (Prisão > DoT). Quando o Freeze (1s, menor duração) termina, a sprite volta pra Burn — que ainda está ativo, e agora é o único Efeito restante.
 - **Efeito Nocivo já funciona nos dois sentidos** (herói→monstro e monstro→herói, ver revisão Sprint 19 no topo desta seção) — não existe ainda efeito de monstro sobre si mesmo/outro monstro documentado aqui (se surgir, é uma variação futura, não presumir agora).
 - **Ordem de renderização entre as duas camadas (Sprint 17):** passiva sempre desenha **na frente** de Efeito Nocivo — o Sorting Layer/Order in Layer da camada de passiva (Seção acima) tem que ficar numericamente acima do que a camada de Efeito Nocivo vier a usar, sempre, sem exceção por herói.
 
@@ -1021,7 +999,7 @@ Sistema à parte, sem relação com passiva de herói (ver acima). **Revisão Sp
 ## 34. Employees — Sistema Completo
 
 ### Estrutura geral ✅
-Ajudante (combate) e Coletor. Nenhum é alvejado. Spawnam no pé do jogador ao entrar em um andar diferente do térreo.
+Ajudante (combate) e Coletor. Nenhum é alvejado. **Revisão estrutural (mundo único):** o antigo gatilho "ao entrar em um andar diferente do térreo" deixa de existir — Employees possuídos acompanham o jogador continuamente desde o início do dia, sem precisar de um evento de spawn próprio ligado a troca de andar.
 
 ### Compra — fluxo completo ✅
 Na aba Employees, lado esquerdo: o jogador seleciona o tipo/tier que deseja comprar. Ao clicar, abre um popup de compra contendo **scroll/slider de quantidade**, **input numérico manual**, e **confirmação da compra**.
@@ -1042,7 +1020,7 @@ No lado direito da aba Employees: employees possuídos são exibidos por imagem,
 Dano, atk speed, velocidade de movimento, delay. Intern→Senior melhora tudo gradualmente. **Fast:** dano/atk speed = Senior; velocidade muito maior; delay quase inexistente. **Strong:** velocidade/delay = Senior; dano/atk speed muito maiores.
 
 ### Coletor ✅
-Vai até itens de qualquer Floor ativo com loot disponível (Seção 24/36), coleta instantaneamente ao entrar no raio. Ao atingir capacidade/tempo definido, some por um tempo, vende automaticamente, depois retorna. Intern→Senior melhora capacidade/velocidade e reduz tempo de ausência. **Fast:** capacidade ≈ Senior; velocidade muito maior; ausência extremamente reduzida — ciclos rápidos. **Strong:** velocidade ≈ Senior; capacidade muito maior; ausência também melhora em relação ao Senior — grandes quantidades por ciclo.
+Vai até itens com loot disponível em qualquer parte do mundo (Seção 24/36), coleta instantaneamente ao entrar no raio. Ao atingir capacidade/tempo definido, some por um tempo, vende automaticamente, depois retorna. Intern→Senior melhora capacidade/velocidade e reduz tempo de ausência. **Fast:** capacidade ≈ Senior; velocidade muito maior; ausência extremamente reduzida — ciclos rápidos. **Strong:** velocidade ≈ Senior; capacidade muito maior; ausência também melhora em relação ao Senior — grandes quantidades por ciclo.
 
 ### Filtro ✅
 Comprado em Bonuses, impede o Coletor de pegar tipos de item específicos.
@@ -1051,13 +1029,13 @@ Comprado em Bonuses, impede o Coletor de pegar tipos de item específicos.
 
 ## 35. Virtualização de Employees
 
-Contagem lógica (quanto o jogador possui) é diferente de quantidade fisicamente simulada em cena. O jogo pode representar posse de milhões simulando um número muito menor de unidades mais fortes/eficientes, mantendo a leitura visual de "está muito cheio" sem travar performance. Mesma filosofia vale para loot no chão (Seção 38) e para a existência de Floors fora da região ativa (Seção 24). Parâmetros exatos são decisão técnica/de balanceamento.
+Contagem lógica (quanto o jogador possui) é diferente de quantidade fisicamente simulada em cena. O jogo pode representar posse de milhões simulando um número muito menor de unidades mais fortes/eficientes, mantendo a leitura visual de "está muito cheio" sem travar performance. Mesma filosofia vale para loot no chão (Seção 38) e para monstros/população fora do raio de simulação completa, nos Simulation Rings mais distantes (revisão estrutural — antes "Floors fora da região ativa", Seção 24). Parâmetros exatos são decisão técnica/de balanceamento.
 
 ---
 
-## 36. Coleta Distribuída entre Floors
+## 36. Coleta Distribuída pelo Mundo
 
-Resultado esperado, sem determinar implementação: **Coletores podem localizar/coletar loot de Floors ativos mesmo fora do Floor atual do jogador, sem exigir que todos os Employees sejam simulados individualmente em tempo real.** A forma exata pertence ao Technical Architecture Document (Seção 51).
+**Revisão estrutural — substitui "entre Floors" por "pelo mundo único".** Resultado esperado, sem determinar implementação: **Coletores podem localizar/coletar loot em qualquer parte do mundo, mesmo longe do jogador, sem exigir que todos os Employees sejam simulados individualmente em tempo real** (mesma filosofia de Virtualização — Seção 35 — e Simulation Rings — Seção 24). A forma exata pertence ao Technical Architecture Document (Seção 51).
 
 ---
 
@@ -1095,7 +1073,7 @@ O jogador não precisa encostar exatamente no sprite do loot. Ele possui uma **�
 Loot entra no Pickup Radius → Player tenta coletar
 ```
 
-- **O que é "loot válido":** o Pickup Radius atua **somente sobre materiais coletáveis/vendáveis destinados à Bag ou à venda** — os 15 materiais econômicos (Monster Essence, Monster Fragment, Spirit Dust, Arcane Shard, Dark Crystal, e demais da lista — Seção 39). **Interactables especiais não são loot do Pickup Radius** e continuam usando sua própria regra de interação existente, nunca sendo coletados automaticamente só por entrar no raio: baús, o próprio Magnet, escadas, buracos/descidas, NPCs, interações de quest, o Controle Remoto, e qualquer outro interactable especial futuro. **Pergaminhos/recompensas de baú não são materiais econômicos válidos para o Pickup Radius e não são aspirados automaticamente** — a interação de abertura ocorre no baú através de E (Seção 30), e a escolha entre as três opções de recompensa é feita com o mouse na UI, não pelo Pickup Radius. O Pickup Radius não substitui a tecla **E** como sistema de interação contextual — ele é exclusivamente um sistema automático de coleta de loot econômico.
+- **O que é "loot válido":** o Pickup Radius atua **somente sobre materiais coletáveis/vendáveis destinados à Bag ou à venda** — os 15 materiais econômicos (Monster Essence, Monster Fragment, Spirit Dust, Arcane Shard, Dark Crystal, e demais da lista — Seção 39). **Interactables especiais não são loot do Pickup Radius** e continuam usando sua própria regra de interação existente, nunca sendo coletados automaticamente só por entrar no raio: baús, o próprio Magnet, NPCs, interações de quest, o Controle Remoto, e qualquer outro interactable especial futuro. **Pergaminhos/recompensas de baú não são materiais econômicos válidos para o Pickup Radius e não são aspirados automaticamente** — a interação de abertura ocorre no baú através de E (Seção 30), e a escolha entre as três opções de recompensa é feita com o mouse na UI, não pelo Pickup Radius. O Pickup Radius não substitui a tecla **E** como sistema de interação contextual — ele é exclusivamente um sistema automático de coleta de loot econômico.
 - **Se houver espaço na Bag:** o loot é coletado automaticamente, seguindo as regras já existentes de slots, stacks e filtro de bag.
 - **Coleta parcial continua valendo:** se a pilha exceder o espaço disponível, entra o máximo que couber e o restante permanece no chão como entidade separada (mesma regra da subseção acima) — o Pickup Radius não ignora os limites da Bag.
 - **Filtro de bag continua valendo:** um tipo de loot bloqueado pelo filtro não é coletado automaticamente mesmo entrando no raio.
@@ -1103,7 +1081,7 @@ Loot entra no Pickup Radius → Player tenta coletar
 - **Upgrade "Increase Pickup Radius"** (aba Bonuses — Seção 41): aumenta o raio do jogador. **Run-Persistent** — persiste entre dias da run, reseta para o raio base em nova run (mesma categoria de qualquer bonus comprado, Seção 15). 🔢 quantidade de compras, curva de aumento e preços pendentes — não presumir tiers, percentuais ou incrementos específicos.
 - **Aggregação de drops não muda:** pilhas seguem a mesma lógica de representação visual (1–9 individual, 10–49/50–99 stacks, 100+ quantidade interna — Seção 38); ao entrar no Pickup Radius, a lógica de coleta/venda se aplica sobre a quantidade interna real, não exige que cada unidade visual entre individualmente na área.
 - **Feedback visual do raio é decisão de UI/UX** — pode ser invisível normalmente, mostrado ao comprar o upgrade, mostrado em debug, ou outra solução; não definido aqui.
-- **Não é o raio do Coletor Employee.** O Pickup Radius é um sistema do jogador; o Coletor continua com sua própria lógica, capacidade, movimento e ciclo (Seção 34), incluindo a coleta Cross-Floor (Seção 36) — os dois sistemas não se conectam.
+- **Não é o raio do Coletor Employee.** O Pickup Radius é um sistema do jogador; o Coletor continua com sua própria lógica, capacidade, movimento e ciclo (Seção 34), incluindo a Coleta Distribuída pelo Mundo (Seção 36, antigo "Cross-Floor") — os dois sistemas não se conectam.
 
 ### Filtro de bag ✅
 Toggles por tipo de item.
@@ -1121,8 +1099,8 @@ Todo loot ainda no inventário é destruído (Daily — Seção 15).
 ### Rolagens independentes — regra restaurada ✅
 **Cada tipo de loot realiza sua própria rolagem de chance de drop, independentemente das demais.** Um único abate pode dropar múltiplos materiais diferentes simultaneamente se as rolagens correspondentes forem bem-sucedidas — por exemplo, um mesmo monstro pode dropar Monster Essence **+** Monster Fragment **+** Spirit Dust **+** Arcane Shard no mesmo abate. **Não se trata de "escolher apenas um item da tabela"** — é um conjunto de rolagens independentes, uma por material possível daquele monstro.
 
-### Materiais de Floors anteriores continuam no pool ✅
-Desbloquear os materiais associados a um Floor superior **não remove** os materiais dos Floors anteriores da tabela de drop. Floors superiores continuam podendo dropar materiais "antigos" normalmente, conforme a tabela de drop de cada monstro (documento de balanceamento — Seção 51).
+### Materiais de Tiers anteriores continuam no pool ✅
+**Revisão estrutural (mundo único — antes "Floors", Seção 24):** desbloquear os materiais associados a um Threat Tier superior **não remove** os materiais dos Tiers anteriores da tabela de drop. Monstros de Tier superior continuam podendo dropar materiais "antigos" normalmente, conforme a tabela de drop de cada monstro (documento de balanceamento — Seção 51).
 
 ---
 
@@ -1138,7 +1116,7 @@ Monster Essence, Monster Fragment, Spirit Dust, Arcane Shard, Dark Crystal, Soul
 Só Monster Essence conta. `Demanda do Dia = 40 × 2^(Dia - 1)`. Contabilizada pela venda acumulada no dia. Esta subseção não se aplica ao Modo Free; nesse modo, Monster Essence continua sendo loot econômico vendável normalmente, apenas sem função de quota obrigatória (Seção 42).
 
 ### Venda ✅
-NPC vendedor no térreo, durante o gameplay do dia (relógio correndo).
+NPC vendedor fixo, na/perto da Zona Segura (revisão estrutural — antes "no térreo", Seção 24), durante o gameplay do dia (relógio correndo).
 
 ---
 
@@ -1146,6 +1124,14 @@ NPC vendedor no térreo, durante o gameplay do dia (relógio correndo).
 
 ### Duração ✅
 Inicial: 100s. Upgrade "Add Time": +100s por compra, até 2 compras (teto 300s). 🔢 preços.
+
+### CurrentPhase — Dia/Noite dentro do próprio Ciclo de Dia (mecânica nova, não preservação) ✅
+**Proposta nova desta revisão estrutural, não uma formalização de algo já existente** — antes desta mudança, o GDD não tinha nenhum conceito de fase diurna/noturna dentro da contagem do dia (a única menção prévia a "dia/noite" era uma ideia de iluminação por bioma, em Visão Expandida, nunca implementada e sem relação com a tabela de spawn).
+
+- Cada Ciclo de Dia se divide em exatamente **50% `CurrentPhase = Day` / 50% `CurrentPhase = Night`**, qualquer que seja a duração total (inicial ou com Add Time): 100s → 50/50; 200s → 100/100; 300s → 150/150. **Nenhum bônus de tempo pode quebrar essa proporção.**
+- A transição precisa ser visualmente perceptível (iluminação/atmosfera — Seção 25 cobre a materialização ambiental; a implementação exata de luz/shader é decisão técnica, Seção 51).
+- **Não é buff de HP/Dano.** A noite nunca dá bônus artificial de atributo a monstro nenhum — o efeito inteiro é indireto, através da composição da Tabela Base de Spawn (Seção 23): cada combinação `Dia N` + `CurrentPhase` tem a própria linha de pesos por Tier, e a noite tipicamente favorece Tiers mais altos que o dia do mesmo número. `CurrentPhase` é um dos 3 insumos de `EffectiveSpawnDay` (junto de `ActualDay` e `DistanceDayOffset` — Seção 23).
+- **Pausa não avança `CurrentPhase`** (mesmo critério de qualquer timer — Seção 9). Trocar de `CurrentPhase` no meio de um Boss Event não troca bosses já vivos (Seção 22).
 
 ### Encerramento — compartilhado, com validação de demanda apenas no Padrão ✅
 Tempo zera **ou** jogador usa a porta — igual nos dois modos.
@@ -1161,7 +1147,7 @@ Tempo zera **ou** jogador usa a porta — igual nos dois modos.
 - Pressionar **Enter** revela todos imediatamente, pulando a animação.
 - Ao final: `TOTAL DO DIA: Xg`.
 - Botão **Continuar** → Loja.
-- **A Tela de Resultados não vende nada** — ela apenas resume vendas que já aconteceram durante o dia (pelo vendedor do térreo, Seção 39, ou pelo Coletor/Magnet). Loot que ainda estiver no inventário do jogador ao final do dia é **destruído**, não vendido (Seção 37).
+- **A Tela de Resultados não vende nada** — ela apenas resume vendas que já aconteceram durante o dia (pelo vendedor fixo, Seção 39, ou pelo Coletor/Magnet). Loot que ainda estiver no inventário do jogador ao final do dia é **destruído**, não vendido (Seção 37).
 
 ### Loja entre dias ✅
 3 abas: Upgrades / Bonuses / Employees. Botão **Start Day N**. **Save automático ao entrar na loja** (Seção 43). Idêntica nos dois modos.
@@ -1170,7 +1156,7 @@ Tempo zera **ou** jogador usa a porta — igual nos dois modos.
 
 ## 41. Bonuses (aba da loja)
 
-Controle Remoto (Seção 26), Filtro de bag (Seção 37), Filtro de Employee coletor (Seção 34), **Add Time** (+100s por compra, até 2 compras), **Increase Inventory Slots** (+5 por compra, **3 compras** até o máximo de 20 — Seção 37), **Increase Inventory Stack Size** (16→32→128→1.024→8.192→131.072→1.048.576), **Increase Pickup Radius** (aumenta o Pickup Radius do jogador — Seção 37; também beneficia a área efetiva do Magnet, Seção 29; quantidade de compras, curva e preços 🔢), **Remove Tower Layer** (Seção 27), **Reroll de pergaminho** (Seção 31). 🔢 todos os preços.
+Controle Remoto (Seção 26), Filtro de bag (Seção 37), Filtro de Employee coletor (Seção 34), **Add Time** (+100s por compra, até 2 compras), **Increase Inventory Slots** (+5 por compra, **3 compras** até o máximo de 20 — Seção 37), **Increase Inventory Stack Size** (16→32→128→1.024→8.192→131.072→1.048.576), **Increase Pickup Radius** (aumenta o Pickup Radius do jogador — Seção 37; também beneficia a área efetiva do Magnet, Seção 29; quantidade de compras, curva e preços 🔢), **Supressão de Ameaça** (Seção 27, antigo "Remove Tower Layer"), **Reroll de pergaminho** (Seção 31). 🔢 todos os preços.
 
 ---
 
@@ -1182,11 +1168,11 @@ Demanda diária obrigatória de Monster Essence (Seção 8, Seção 39). Único 
 ### Modo Free — regra final ✅
 **O Modo Free é o mesmo jogo do Modo Padrão, apenas sem a demanda obrigatória de Monster Essence.** Não é uma máquina de estados própria, não é sandbox infinito, e nenhum dos sistemas abaixo é removido:
 
-- **Dias, timer, Loja, Resultados, Save, Floors, progressão de arma, Bonuses, Employees, Quests, baús, cards e bosses funcionam normalmente**, exatamente como no Modo Padrão.
+- **Dias, timer, Loja, Resultados, Save, o mundo único, progressão de arma, Bonuses, Employees, Quests, baús, cards e bosses funcionam normalmente**, exatamente como no Modo Padrão.
 - **Timer:** o mesmo do Padrão — começa em 100s, "Add Time" funciona normalmente, pode chegar a 300s pelos upgrades já definidos (Seção 40). Não existe timer infinito.
 - **Porta de saída:** funciona normalmente — usá-la encerra o dia voluntariamente.
 - **Fim de dia:** tempo acaba ou jogador usa a porta → **não existe validação de demanda** (porque não há demanda no Free) → segue direto para a Tela de Resultados → Loja → Save → Start Day N+1. **O Free não tem Game Over por falha de demanda**, já que não existe demanda a falhar.
-- **Morte continua existindo normalmente:** -30s de penalidade, perda de loot, respawn no térreo — a única coisa removida é a possibilidade de falhar o dia por não vender Essência suficiente.
+- **Morte continua existindo normalmente:** -30s de penalidade, perda de loot, respawn no centro do mundo (revisão estrutural — antes "no térreo", Seção 11/24) — a única coisa removida é a possibilidade de falhar o dia por não vender Essência suficiente.
 - **Resultados:** exatamente a mesma tela do Padrão (Seção 40) — item por item vendido, imagem, nome, quantidade, valor unitário, total, `TOTAL DO DIA: Xg`, Enter revela tudo, botão Continuar → Loja. Monster Essence vendida no Free continua aparecendo normalmente como item vendido, mesmo sem função de quota.
 - **Loja:** as mesmas 3 abas (Upgrades, Bonuses, Employees), mesmos sistemas, mesmo botão "Start Day N".
 - **Dia 15:** o marco é atingido pela **conclusão normal do dia** (tempo esgotado ou porta usada, sem demanda a cumprir) em vez de pela demanda cumprida do Padrão — mas apresenta a mesma Tela de Vitória e as mesmas escolhas Menu/Continuar, seguindo a mesma estrutura de fluxo e de save da Seção 43.
@@ -1281,7 +1267,7 @@ O save precisa distinguir inequivocamente **qual dia acabou** e **qual é o pró
 Existe save? → SIM → carrega o RunState salvo (que já contém o Mode) →
 abre a Loja do checkpoint → Start Day N
 ```
-O `RunState` salvo já contém o **Mode** da run (além de herói, mapa, dia, gold, weapon tier, bonuses, employees, quests, cards, Floor Variants sorteados, Remove Tower Layers aplicados). Continue Game **lê o Mode salvo** e carrega a experiência correspondente automaticamente — nunca pergunta modo, herói ou mapa de novo, seja o save de uma run Padrão ou Free. Esses valores são **carregados**, nunca escolhidos de novo.
+O `RunState` salvo já contém o **Mode** da run (além de herói, mapa, dia, gold, weapon tier, bonuses, employees, quests, cards, `WorldSeed` do mundo único gerado, Tiers suprimidos pela Supressão de Ameaça — revisão estrutural, antes "Floor Variants sorteados, Remove Tower Layers aplicados"). Continue Game **lê o Mode salvo** e carrega a experiência correspondente automaticamente — nunca pergunta modo, herói ou mapa de novo, seja o save de uma run Padrão ou Free. Esses valores são **carregados**, nunca escolhidos de novo.
 
 ---
 
@@ -1302,7 +1288,7 @@ Tempo restante, bag (slots/stacks).
 Demanda do dia (`Monster Essence: X/Y` → `DEMANDA CUMPRIDA`, Seção 39). **O Modo Free não exibe esse indicador** — sem demanda, não há progresso de quota para mostrar; Monster Essence continua existindo normalmente como loot vendável.
 
 ### Necessário por decorrência dos sistemas definidos, sem layout fechado 🟡
-Vida/Vida Máxima, Energia/carga da Ultimate, cooldown do ataque primário, cooldown do Controle Remoto, indicador de Employees ativos, indicador de pets/summons ativos, buffs de carta ativos, indicador de Continue Game disponível/indisponível (Seção 52), Floor atual (Active Floor Position), Mapa selecionado na criação da run.
+Vida/Vida Máxima, Energia/carga da Ultimate, cooldown do ataque primário, cooldown do Controle Remoto, indicador de Employees ativos, indicador de pets/summons ativos, buffs de carta ativos, indicador de Continue Game disponível/indisponível (Seção 52), **indicador de distância do centro/Zona Segura** (revisão estrutural — antes "Floor atual/Active Floor Position", Seção 24), Mapa selecionado na criação da run.
 
 ### Outras telas ✅
 Tela de Resultados (Seção 40), tela de Loja, tela de Vitória (Dia 15), tela de Encerramento Definitivo (Dia 30), tela de Game Over — todas com texto próprio.
@@ -1318,7 +1304,7 @@ Tela de Resultados (Seção 40), tela de Loja, tela de Vitória (Dia 15), tela d
 | LMB | Ataque primário |
 | RMB | Ultimate |
 | Shift | Habilidade Secundária (Seção 16, todo herói — Sprint 18→19) |
-| E | Interação contextual (ex.: abrir baús — Seção 30; subir/descer escadas — Seção 26) |
+| E | Interação contextual (ex.: abrir baús — Seção 30) |
 | TAB | Inventário (pausa) |
 | Q | Controle Remoto (pausa) |
 | ESC | Pausa (Sprint 18→19) — mesmo `TogglePause` do Q; o menu clássico (sair/configurações) em si ainda não existe, é peça de UI própria sem escopo definido |
@@ -1330,7 +1316,7 @@ A escolha entre as 3 opções de recompensa de baú/pergaminho (Seção 30–31)
 
 ## 47. Feedback Visual e Sonoro — Necessidades Funcionais
 
-Dano causado, crítico, Ultimate pronta, Ultimate sem energia suficiente, dano recebido, morte, coleta, venda, **demanda cumprida (Modo Padrão apenas — Seção 42)**, aparição de boss, Mimic revelado, baú abrindo, upgrade de arma comprado, promoção de employee, inventário cheio, item descartado, dinheiro aumentando, grandes quantidades, Controle em cooldown, interação disponível, telegraph de trap, Floor atual (troca de Global Light — Seção 24), Continue Game indisponível quando não há save (Seção 52), mapa selecionado na criação da run. 🟡 Estética exata não definida — só a necessidade funcional.
+Dano causado, crítico, Ultimate pronta, Ultimate sem energia suficiente, dano recebido, morte, coleta, venda, **demanda cumprida (Modo Padrão apenas — Seção 42)**, aparição de boss, Mimic revelado, baú abrindo, upgrade de arma comprado, promoção de employee, inventário cheio, item descartado, dinheiro aumentando, grandes quantidades, Controle em cooldown, interação disponível, telegraph de trap, evolução visual/ambiental por dia e distância (revisão estrutural — antes "Floor atual/troca de Global Light", Seção 24/25), Continue Game indisponível quando não há save (Seção 52), mapa selecionado na criação da run. 🟡 Estética exata não definida — só a necessidade funcional.
 
 **Transições de tela (decisão técnica, Sprint 8):** implementadas via o asset Easy Transitions (`Assets/EasyTransitions/`). O estilo padrão adotado é **Fade** (`Assets/EasyTransitions/Transitions/Fade/Fade.asset`) — usar Fade por padrão em qualquer transição nova, salvo decisão explícita em contrário. Primeiro uso: respawn do herói após a morte (teleporte ocorre escondido, no `onTransitionCutPointReached`, nunca visível ao jogador).
 
@@ -1350,10 +1336,10 @@ Quatro escopos formais: três de contagem (Daily/Run/Lifetime, por necessidade d
 Resetam no começo de outro dia. Exemplos: monstros mortos hoje, monstro específico morto hoje, Essência vendida hoje, gold ganho hoje, baús abertos hoje. Necessários para desbloqueios como Mage e Blood Mage (Seção 17) — no Modo Padrão.
 
 ### Run Counters
-Resetam em nova run. Exemplos: dias concluídos nesta run, maior Floor desta run, bosses mortos nesta run, total de monstros nesta run, quantidade máxima de Employees nesta run.
+Resetam em nova run. Exemplos: dias concluídos nesta run, maior distância do centro alcançada nesta run (revisão estrutural — antes "maior Floor desta run"), bosses mortos nesta run, total de monstros nesta run, quantidade máxima de Employees nesta run.
 
 ### Lifetime Statistics (Permanent Account State — Seção 15)
-Nunca resetam. Exemplos: total histórico de kills, total de runs vencidas, runs vencidas por herói, maior Floor histórico, bosses específicos mortos historicamente, gold vendido, dias jogados. Pode existir naturalmente um contador de dias jogados/completados para fins estatísticos, mas isso **não** deve ser presumido como o contador usado para o desbloqueio do Rogue — o escopo exato desse critério (run única vs. acumulado) ainda está pendente (Seção 17.5, Seção 53). **Lifetime Statistics são puramente informativas e existem independentemente do modo** — inclusive Daily/Run Counters gerados numa run Free podem alimentar Lifetime Statistics normalmente (Seção 42).
+Nunca resetam. Exemplos: total histórico de kills, total de runs vencidas, runs vencidas por herói, maior distância do centro alcançada historicamente (revisão estrutural — antes "maior Floor histórico"), bosses específicos mortos historicamente, gold vendido, dias jogados. Pode existir naturalmente um contador de dias jogados/completados para fins estatísticos, mas isso **não** deve ser presumido como o contador usado para o desbloqueio do Rogue — o escopo exato desse critério (run única vs. acumulado) ainda está pendente (Seção 17.5, Seção 53). **Lifetime Statistics são puramente informativas e existem independentemente do modo** — inclusive Daily/Run Counters gerados numa run Free podem alimentar Lifetime Statistics normalmente (Seção 42).
 
 ### Account Progression × Mode — regra de avaliação ✅
 Daily e Run Counters podem existir e ser registrados normalmente em **qualquer** run, de qualquer modo, por necessidade de gameplay/estatística. Porém a **avaliação de critérios de desbloqueio/achievement** (o que transforma um contador em uma recompensa de Account Progression — Seção 15) depende do modo:
@@ -1374,32 +1360,31 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Hero Definition** — Dano Base, Vida Base, referências de habilidade, condição de desbloqueio.
 - **Ability Definition** — timing (Seção 12), tipo de hitbox/projétil, coeficiente de dano.
 - **Projectile Definition** — categoria (Seção 13).
-- **Enemy Definition** — categoria, atributos, timing de ataque (Seção 22), drops, andar(es). ✅ **Decisão de formato (ainda não implementada):** com 99 criaturas + 30 bosses, configurar cada uma manualmente no Inspector de um prefab não escala — o formato final vai ser um arquivo de dados externo (JSON ou XML, a decidir qual na hora de implementar), um por criatura ou uma tabela única, cobrindo vida, dano, velocidade de ataque, energia dropada e a tabela de loot (itens/faixas/chance). Pensado especificamente pra permitir gerar esses valores em lote (com ajuda de IA) em vez de digitar campo por campo. Construir isso é trabalho da fase de produção de conteúdo do Bestiary (Deadline 5 em diante, Sprint 20+ no plano de produção), não antes — implementar cedo demais, sem nenhum dado real de referência ainda, arriscaria desenhar o formato errado.
-- **Boss Definition** — múltiplos ataques, Boss Timer por Floor (Seção 22).
-- **Floor Definition** — Original Floor Identity, independente da Active Floor Position (Seção 24).
-- **Floor Variant Definition** — as 5 variantes artesanais por Floor (Seção 25), com posições de entrada/saída/escada/baú/trap.
+- **Enemy Definition** — categoria, atributos, timing de ataque (Seção 22), drops, Threat Tier(s). ✅ **Decisão de formato (ainda não implementada):** com 99 criaturas + 30 bosses, configurar cada uma manualmente no Inspector de um prefab não escala — o formato final vai ser um arquivo de dados externo (JSON ou XML, a decidir qual na hora de implementar), um por criatura ou uma tabela única, cobrindo vida, dano, velocidade de ataque, energia dropada e a tabela de loot (itens/faixas/chance). Pensado especificamente pra permitir gerar esses valores em lote (com ajuda de IA) em vez de digitar campo por campo. Construir isso é trabalho da fase de produção de conteúdo do Bestiary (Deadline 5 em diante, Sprint 20+ no plano de produção), não antes — implementar cedo demais, sem nenhum dado real de referência ainda, arriscaria desenhar o formato errado.
+- **Boss Definition** — múltiplos ataques, elegível por Threat Tier (Seção 22), sem mais Boss Timer por Floor.
+- **DaySpawnDefinition** — pesos de Tier por `ActualDay` × `CurrentPhase` (Seção 23/40), substitui Floor Definition/Floor Variant Definition.
+- **WorldGenerationSettingsSO/BiomeProfileSO/WorldEvolutionProfileSO** (e afins) — geração procedural do mundo único por seed (Seção 25); arquitetura detalhada pertence ao documento especializado (Seção 51), não ao GDD Mestre.
 - **Loot Definition** — 15 materiais, valor de venda, regras de drop independentes (Seção 38).
 - **Employee Definition** — tier, atributos, custo de promoção.
 - **Card Definition** — pool, efeito, teto quando aplicável.
 - **Quest Definition** — etapas, requisitos, recompensa.
-- **Run State** — modo, herói, mapa, dia do checkpoint, gold, weapon tier, bonuses, employees, quests, cards, Floor Variants sorteados, Remove Tower Layers aplicados.
-- **Day State** — tudo Daily (Seção 15), incluindo Boss Timer por Floor e Energia da Ultimate.
+- **Run State** — modo, herói, mapa, dia do checkpoint, gold, weapon tier, bonuses, employees, quests, cards, `WorldSeed`, Threat Tiers suprimidos (Seção 27), deltas de edição do mundo (Seção 25).
+- **Day State** — tudo Daily (Seção 15), incluindo Boss Timer global (não mais por Floor), `UsedBossIdsToday` (Seção 22) e Energia da Ultimate.
 - **Permanent Account State** — dividido em *(1)* Account Progression: heróis desbloqueados, achievements, recompensas/critérios permanentes de unlock; *(2)* Lifetime Statistics: contadores informativos de perfil (Seção 15/49).
 - **Save Manager** — mantém um único slot de save de run; realiza autosave ao entrar na Loja após o encerramento normal de um dia; cada novo save sobrescreve o anterior, independentemente do modo; Continue carrega o último RunState salvo, que já contém o Mode (Seção 43).
 - **Pause Manager** — sistema central de pausa (Seção 9).
-- **Population Manager** — Minimum/Target/Maximum por Floor (Seção 23).
+- **Population Manager** — Minimum/Target/Maximum ao redor do jogador, Distance Despawn/Replacement (Seção 23) — não mais por Floor.
 - **Loot Aggregation** — agregação visual, rolagens independentes (Seção 38).
 - **Employee Virtualization** — contagem lógica vs. simulada (Seção 35).
-- **Floor Sleep/Activation Manager** — suspensão/virtualização de Floors fora da região ativa (Seção 24).
-- **Cross-Floor Loot Access** — Coletores acessando loot de Floors não-ativos (Seção 36).
-- **Stair/Hole Routing** — cálculo de destino de teleporte por Active Floor Position, não por identidade fixa (Seção 26).
+- **Simulation Rings Manager** — suspensão/virtualização por distância do jogador (Seção 24), substitui Floor Sleep/Activation Manager.
+- **Distributed Loot Access** — Coletores acessando loot em qualquer ponto do mundo (Seção 36), substitui Cross-Floor Loot Access.
+- **Safe Zone / Spawn Validator** — filtra posições candidatas de spawn (comum e boss) excluindo a Zona Segura, cache de nós válidos (Seção 23), substitui Stair/Hole Routing.
 - **Progress Tracker** — Daily/Run Counters e Lifetime Statistics (Seção 49); precisa saber qual Mode gerou o evento, para que o Progression/Unlock Evaluator só conceda Account Progression quando `Mode = Padrão` (Seção 42).
 - **Large Number Abstraction** — suporte a valores grandes (Seção 48).
 - **Shop Manager** — 3 abas, popups de compra/promoção/venda.
-- **Chest System** — spawn em posições válidas da Floor Variant ativa, chance de Mimic, interação com E e abertura da UI de seleção de 3 cartas/recompensas; o Mimic adia essa UI até ser derrotado. Não exige um objeto de pergaminho físico coletável como requisito técnico (Seção 30).
-- **Remote Controller System** — abertura por Q, pausa (Seção 9), lista de Floors válidos por Active Floor Position, teleporte, cooldown, toggle de alcance A/B (Seção 26).
+- **Chest System** — spawn em posições válidas geradas pelo mundo procedural (Seção 25), chance de Mimic, interação com E e abertura da UI de seleção de 3 cartas/recompensas; o Mimic adia essa UI até ser derrotado. Não exige um objeto de pergaminho físico coletável como requisito técnico (Seção 30).
+- **Remote Controller System** — abertura por Q, pausa (Seção 9), teleporte de retorno ao centro (0,0,0), cooldown (Seção 26) — não mais lista de Floors/toggle de alcance A/B.
 - **Pickup System** — detecta loot válido (materiais econômicos coletáveis/vendáveis — Seção 37) dentro do Pickup Radius do jogador. Na coleta normal, respeita o Bag Filter, a capacidade da Bag e as regras de coleta parcial. Quando o Magnet está ativo, encaminha o loot para o fluxo de venda automática do Magnet, cuja regra de filtro ainda permanece pendente (Seção 29/53). Nome técnico não obrigatório.
-- **Combat Scope Resolver** — restringe a seleção de alvos de habilidades, pets, summons e Ajudantes ao Floor atual do jogador (Seção 24), sem afetar a lógica Cross-Floor do Coletor (Seção 36).
 
 ---
 
@@ -1410,16 +1395,16 @@ Responsabilidades conceituais (nomes ilustrativos):
 | **GDD Mestre** (este documento) | Fonte de verdade estrutural |
 | **Hero Design Document** | Kits completos, frames de animação, coeficientes finais |
 | **Combat System Document** | Timing de ataque (todo Melee/Ranged, Bosses e exceções), projéteis |
-| **Tower/Floor Document** | As 50 Floor Variants, posições de spawn, população por andar |
+| **World Generation Document** *(substitui o antigo "Tower/Floor Document")* | Geração procedural do mundo único por seed — chunks, autotiles, biomas, evolução por dia, ScriptableObjects (Seção 25). Fonte inicial: `docs/new/Mudanca_Estrutural_Geracao_Procedural_Evolucao_Mapa_30_Dias_V2_ILUSTRADO.md` e `docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md` |
 | **Employee System Document** | IA detalhada, virtualização técnica |
-| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Andares. Atualizado na Sprint 16 (correção) pro modelo híbrido de combate (Seção 22 — `attack` real com Animation Event, sem contato passivo), com exceções documentadas por ficha |
+| **Bestiary** ✅ *(existe — `docs/gdd/bestiary.md`)* | Fichas completas de monstros e bosses, drop rates exatos — 99 criaturas, 10 Threat Tiers (antigos "Andares" — revisão estrutural só renomeia o agrupamento, não as fichas). Atualizado na Sprint 16 (correção) pro modelo híbrido de combate (Seção 22 — `attack` real com Animation Event, sem contato passivo), com exceções documentadas por ficha |
 | **Economy & Balance Document** ✅ *(parcial — `docs/gdd/economy-balance.md`)* | Tabela dos 15 tiers e valores dos 15 materiais migrados nesta revisão; curva de demanda, multiplicador de vida da forma de urso e demais valores 🔢 continuam pendentes |
 | **Valores de Calibragem — Habilidades** ✅ *(existe — `docs/gdd/balance-values.md`, Sprint 17)* | Índice de todo campo `🔢` de habilidade de herói/monstro (cooldowns, aceleração de animação, knockback, etc.) e onde ele mora no código — nasce junto com o Hero Design Document, serve de guia de migração pro XML/JSON futuro |
 | **Chest & Card Document** | Pools de carta, curva de bônus, chance de Mimic |
 | **Quest Document** | Progresso das 3 linhas |
 | **UI/UX Document** | Layout final de HUD, loja, telas, Settings |
-| **Technical Architecture Document** | Implementação de Floor Sleep, Stair Routing, Cross-Floor Loot Access, LastCompletedDay/NextDay |
-| **Production Roadmap** | Sprints, milestones, estratégia de produção das Floor Variants (Variant A primeiro — Seção 25) |
+| **Technical Architecture Document** | Implementação de Simulation Rings/Distance Despawn, Safe Zone Validator, Distributed Loot Access, LastCompletedDay/NextDay |
+| **Production Roadmap** | Sprints, milestones, estratégia de produção do mundo procedural (vertical slice primeiro — Seção 25) |
 
 ---
 
@@ -1436,7 +1421,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 | Vitória no Dia 15 → Menu Principal | Save continua sendo a Loja que precede o Dia 15 — o Dia 15 pode ser jogado de novo via Continue Game (Seção 43) |
 | Vitória no Dia 15 → Continuar | Resultados → Loja → novo autosave → checkpoint passa a ser a Loja que precede o Dia 16 |
 | Dia 30 concluído | Save continua sendo a última Loja salva antes do Dia 30; sem autosave adicional após o encerramento |
-| Continue Game | Nunca pede modo/herói/mapa/Floor Variants novamente — lê o Mode salvo no RunState |
+| Continue Game | Nunca pede modo/herói/mapa/`WorldSeed` novamente (revisão estrutural — antes "Floor Variants") — lê o Mode salvo no RunState |
 | Save corrompido | Pendência técnica |
 | Fechar o jogo na Loja antes de "Start Day N" | Já salvo |
 | Fechar o jogo durante o dia | Progresso desde a última Loja é perdido — ao reabrir, volta ao checkpoint |
@@ -1452,19 +1437,22 @@ Responsabilidades conceituais (nomes ilustrativos):
 | Tempo zera exatamente durante a resolução da penalidade de morte | Segue a ordem estrita da Seção 11: subtrai os 30s, só então verifica se o tempo acabou |
 | Jogo pausado durante habilidade em andamento | Congela, não cancela; retoma ao despausar |
 
-### Floors / Escadas / Boss Timer / Floor Variants
+### Mundo Único / Safe Zone / Boss Timer / Supressão de Ameaça
+*(substitui a antiga tabela "Floors / Escadas / Boss Timer / Floor Variants" — revisão estrutural)*
 | Caso | Resultado esperado |
 |---|---|
-| Remover andar 6–10 | Bloqueado — nunca removíveis |
-| Tentar uma 6ª remoção na mesma run | Bloqueado — máximo 5 |
-| Tentar escolher manualmente qual Floor remover | Não existe essa opção — sempre remove o Active Floor 1 atual |
-| Remove Tower Layer remove o primeiro Active Floor | Escada do térreo é remapeada para o novo Active Floor 1; o buraco/descida do novo Active Floor 1 passa a levar ao térreo (Seção 27) |
-| Floor intermediário (nem primeiro nem último ativo) | Descida leva ao Active Floor anterior; subida leva ao próximo Active Floor (Seção 26) |
-| Último Active Floor da run | Não existe subida além dele — sem comportamento visual extra além de não haver escada de subida disponível |
+| Suprimir Threat Tier 6–10 | Bloqueado — nunca suprimíveis (Seção 27) |
+| Tentar uma 6ª compra de Supressão de Ameaça na mesma run | Bloqueado — máximo 5 |
+| Tentar escolher manualmente qual Tier suprimir | Não existe essa opção — sempre suprime o Tier mais baixo ainda ativo |
+| Jogador tenta nascer monstro/boss dentro da Zona Segura | Bloqueado na validação espacial — nunca nasce ali, mas pode entrar/perseguir normalmente se já existia fora (Seção 23) |
+| Jogador se afasta além do que qualquer `EffectiveSpawnDay` (até 30) alcançaria | Sem Dia 31 pra consultar — a % de Threat Tier 10 continua subindo direto com a distância (Seção 23) |
 | Controle Remoto em cooldown | Ação bloqueada |
-| Boss Timer ao trocar de Floor / morrer / voltar ao térreo | Continua acumulado, não reseta |
-| Boss anterior ainda vivo quando o timer completa de novo | Nasce um segundo boss em cima dele — empilham, sem fila nem espera (Seção 22, correção Sprint 24) |
-| Floor Variant ao trocar de dia/morrer/remover Floor | Nunca sorteia de novo dentro da mesma run |
+| Boss Timer ao se mover pelo mundo / morrer / voltar ao centro | Continua acumulado, não reseta (Seção 22) |
+| Boss anterior ainda vivo quando o timer completa de novo | Nasce um segundo boss em cima dele — empilham, sem fila nem espera (Seção 22) |
+| Boss removido por Distance Despawn | Repõe a vaga imediatamente, recalculando o Tier pela posição atual do jogador — não é morte, não reseta o Boss Timer (Seção 22) |
+| Boss derrotado de verdade | Sem reposição automática — a próxima entrada depende só do Boss Timer normal (Seção 22) |
+| Mesmo `BossDefinition` já usado hoje | Não pode nascer de novo até o próximo `ActualDay` (`UsedBossIdsToday`, Seção 22) |
+| Monstro removido por Distance Despawn | Não é morte — sem loot/kill/Energia; abre 1 vaga reposta no Spawn Annulus ao redor do jogador atual (Seção 23) |
 
 ### Inventário / Loot / Employees
 | Caso | Resultado esperado |
@@ -1474,7 +1462,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 | Um abate droppa múltiplos materiais diferentes | Esperado — cada material rola independentemente (Seção 38) |
 | Ajudante sem monstro no alcance | 🟡 não definido |
 | Alvo do ajudante morre antes do ataque concluir | 🟡 não definido |
-| Coletor buscando loot em Floor fora da tela | Funciona normalmente (Seção 36), sem exigir simulação individual completa |
+| Coletor buscando loot longe do jogador/fora da tela | Funciona normalmente (Seção 36), sem exigir simulação individual completa |
 | Baú é um Chest Mimic | Ataca ao ser aberto; ao morrer, libera a mesma recompensa que o baú normal daria e abre a mesma UI de 3 opções (Seção 30) |
 
 ### Gambler (Visão Expandida)
@@ -1487,28 +1475,29 @@ Responsabilidades conceituais (nomes ilustrativos):
 ## 53. Pendências Abertas
 
 🟡 **Pendências localizadas de design/implementação — não reabrem sistemas já definidos e não impedem o início do desenvolvimento:**
-- **Controle Remoto (Seção 26):** decisão final entre Variante A (andares visitados) e Variante B (todos os Active Floors) — configurável por playtest, não uma lacuna estrutural.
 - Reanimação da animação de summon de pets permanentes ao retornar de uma morte.
 - Ajudante sem alvo no alcance / alvo morre antes do ataque concluir.
 - Tecla de pause/menu geral.
 - Condição exata que ativaria a Carta de Diamante do Gambler acima de 100% de vida.
 - Condição de desbloqueio de Demonologist, Necromancer, The Gambler, Plague Doctor.
 - **Rogue (Seção 17.5):** definir se "completar 30 dias" exige uma única run ou pode ser acumulado entre runs.
-- **Assassin (Seção 17.9):** definir se "alcançar Andar 6" utiliza Original Floor Identity 6 ou Active Floor Position 6.
+- **Assassin (Seção 17.9) — pendência nova desta revisão estrutural:** o critério antigo ("alcançar o Andar 6") não existe mais; precisa de um critério equivalente no mundo único (candidato: distância do centro onde `EffectiveSpawnDay` chega a 6 — Seção 23).
 - **Inventário (Seção 37):** drag entre stacks iguais — comportamento de merge ainda não definido.
 - **Inventário (Seção 37):** merge parcial quando o destino não comporta a stack inteira ainda não definido.
 - **Inventário (Seção 37):** drag para slot ocupado por item diferente — swap/bloqueio ainda não definido.
 - **Inventário (Seção 37):** clique direito — quantidade efetivamente descartada ainda não definida.
 - **Magnet (Seção 29):** utiliza o Filtro de Bag do jogador para decidir quais tipos de loot vender automaticamente, ignora esse filtro, ou terá uma regra própria de filtro?
-- **Combat / Floor Transition (Seção 24):** definir o comportamento de Persistent Areas, projéteis, summons e outros efeitos temporários deixados no Floor anterior ao trocar de Floor. Independentemente da solução futura, eles não podem continuar causando dano enquanto aquele Floor não for o Current Combat Floor — pendência localizada do Combat System, não crítica da máquina de estados.
+- **Efeitos persistentes do herói e Simulation Rings (Seção 24) — pendência nova desta revisão:** rastro de fogo do Mage, facas do Ranger e equivalentes, deixados atrás ao se afastar — seguem a mesma regra de simulação seletiva por distância dos monstros (pausam/são recolhidos), ou continuam ativos indefinidamente até a duração acabar, independente da distância? Substitui a antiga pendência "Combat / Floor Transition".
 
 🔢 **Balanceamento:**
-Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por andar, desbloqueio numérico do Mage e do Blood Mage, intervalo do Boss Timer (10s referência, Sprint 24), curvas de Attack Speed por família de fonte, quantidade/distância de baús por Floor Variant, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37).
+Preços de Bonuses (incluindo as 3 compras de slots corrigidas e o novo Increase Pickup Radius), preço dos rerolls extras, cooldown do Controle Remoto, Population (Minimum/Target/Maximum e frequência), curva de bônus de carta por Threat Tier, desbloqueio numérico do Mage e do Blood Mage, intervalo do Boss Timer (referência anterior 10s, agora global — Seção 22), curvas de Attack Speed por família de fonte, % de chance de Mimic, proporções de orçamento ofensivo de pets/summons, multiplicador de Vida Máxima da forma de urso do Druid, valor base do Pickup Radius e curva/preços de seus upgrades (Seção 37). **Novos desta revisão (Seção 23/25):** `SafeZoneRadius`/`SpawnSafetyPadding`, `DistancePerSpawnDay`, `EnemyDespawnDistance`/`BossDespawnDistance`, raios do Spawn Annulus, curva de crescimento de Threat Tier 10 além do que a tabela de 30 dias alcançaria por distância, e todos os parâmetros de geração procedural do mundo (`ChunkSize`, `BiomeBlendWidth`, `NoiseScale`, etc. — pertencem ao World Generation Document, Seção 51, não a este índice).
 
 ---
 
 ### GDD Mestre — Structural Freeze ✅
 
-**A máquina de estados dos modos, Save, Core Loop, Floor System, Combat Scope, progressão de run, Inventory, Employees, Quests, Chest/Card flow e principais regras de herói estão estruturalmente fechados.** As pendências restantes listadas acima são localizadas e devem ser resolvidas nos documentos especializados (Seção 51) ou em playtest, sem exigir nova auditoria geral deste GDD.
+**A máquina de estados dos modos, Save, Core Loop, Mundo Único (Seção 24/25), Sistema de População/Spawn (Seção 23), Boss Timer (Seção 22), progressão de run, Inventory, Employees, Quests, Chest/Card flow e principais regras de herói estão estruturalmente fechados.** As pendências restantes listadas acima são localizadas e devem ser resolvidas nos documentos especializados (Seção 51) ou em playtest, sem exigir nova auditoria geral deste GDD.
 
-Este documento só deve receber nova versão se: *(1)* o designer mudar uma regra estrutural; *(2)* uma pendência estrutural existente for decidida e precisar refletir no GDD Mestre; *(3)* surgir durante a implementação uma contradição real de gameplay. Não versionar novamente por wording, detalhe técnico, balanceamento, UI fina ou implementação — essas informações vão aos documentos especializados (Hero Design, Combat System, Tower/Floor, Employee System, Bestiary, Economy & Balance, Chest & Card, Quest, UI/UX, Technical Architecture, Production Roadmap).
+Este documento só deve receber nova versão se: *(1)* o designer mudar uma regra estrutural; *(2)* uma pendência estrutural existente for decidida e precisar refletir no GDD Mestre; *(3)* surgir durante a implementação uma contradição real de gameplay. Não versionar novamente por wording, detalhe técnico, balanceamento, UI fina ou implementação — essas informações vão aos documentos especializados (Hero Design, Combat System, World Generation, Employee System, Bestiary, Economy & Balance, Chest & Card, Quest, UI/UX, Technical Architecture, Production Roadmap).
+
+**Nota de versão — revisão estrutural (mundo único, ver `docs/new/`):** esta é exatamente a situação prevista no gatilho *(1)* acima — o designer mudou uma regra estrutural central (Floor System → Mundo Único, Seção 24/25; Boss Timer e População, Seção 22/23; Remove Tower Layer → Supressão de Ameaça, Seção 27; `CurrentPhase`/Dia-Noite como mecânica nova, Seção 40). Todas as seções tocadas mantiveram o próprio número (só o conteúdo mudou), então toda referência cruzada ("Seção 24", "Seção 27" etc.) no resto do documento continua válida sem precisar de correção individual.
