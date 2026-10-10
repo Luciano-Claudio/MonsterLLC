@@ -472,7 +472,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &40895280
 Transform:
   m_ObjectHideFlags: 0
@@ -587,7 +587,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &45302345
 Transform:
   m_ObjectHideFlags: 0
@@ -1708,7 +1708,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &124173964
 Transform:
   m_ObjectHideFlags: 0
@@ -112126,7 +112126,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &522879924
 Transform:
   m_ObjectHideFlags: 0
@@ -146135,7 +146135,7 @@ MonoBehaviour:
   m_LightType: 4
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
-  m_Color: {r: 0.11764706, g: 0.11764706, b: 0.11764706, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
@@ -150282,6 +150282,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 268514587420522925, guid: a78e42f334e04074fb9f700096cbe072, type: 3}
   m_PrefabInstance: {fileID: 1319295006}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &796154891
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 796154892}
+  m_Layer: 0
+  m_Name: Chunk Streamer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &796154892
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 796154891}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1780411685}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &817204703
 GameObject:
   m_ObjectHideFlags: 0
@@ -158471,7 +158502,7 @@ MonoBehaviour:
     prefab: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
   - name: BloodMage
     prefab: {fileID: 7800000000000001, guid: e33d74b439ec4f15abb66dd4cad881af, type: 3}
-  heroToSpawn: Assassin
+  heroToSpawn: Cleric
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -158757,7 +158788,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1019754991
 Transform:
   m_ObjectHideFlags: 0
@@ -167349,7 +167380,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1251938365
 Transform:
   m_ObjectHideFlags: 0
@@ -239957,6 +239988,7 @@ Transform:
   - {fileID: 1367357865}
   - {fileID: 650467888}
   - {fileID: 999999999995002}
+  - {fileID: 796154892}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1784264658

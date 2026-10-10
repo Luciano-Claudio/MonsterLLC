@@ -412,7 +412,7 @@ Stabilization & Release Candidate
 
 | Sprint | Deadline | Nome | Objetivo principal | Entrega demonstrável | Dependência principal |
 |---|---|---|---|---|---|
-| P1 | Pré | Geração Procedural — Fundação (Chunks + Seed) | Mundo determinístico por seed, sem costura entre chunks | `WorldGenerationSettingsSO` configurado; mesma seed/coordenada produz o mesmo chunk em qualquer ordem de carregamento | Sprint 30b |
+| P1 | Pré | ✅ Geração Procedural — Fundação (Chunks + Seed) | Mundo determinístico por seed, sem costura entre chunks | `WorldGenerationSettingsSO` configurado; mesma seed/coordenada produz o mesmo chunk em qualquer ordem de carregamento — ver `docs/sprints/sprint-p1-geracao-procedural-fundacao.md` | Sprint 30b |
 | P2 | Pré | Geração Procedural — Terreno Natural | Primeiro terreno real jogável, reaproveitando arte existente | Grama/água/autotile de grama alta funcionando como BiomeProfile "Natural" a partir da arte já pronta de Floor 1A/2A; árvores/rochas posicionadas via `EnvironmentPropSO` sem bloquear corredores | P1 |
 | P3 | Pré | Geração Procedural — Evolução por Dia + Editor Preview | Mesma região muda de estado ao avançar `ActualDay` | `WorldEvolutionManager` troca grama viva por solo escuro na mesma coordenada entre dias; janela de Editor compara a mesma seed/posição em dias diferentes | P2 |
 | P4 | Pré | Fundação Espacial — Safe Zone + EffectiveSpawnDay | Mundo único navegável com zona de spawn proibido | 1 `GridGraph` cobrindo o terreno real gerado em P1–P3; Safe Zone filtra candidatos a spawn sem bloquear pathfinding; `DistanceDayOffset`/`EffectiveSpawnDay` calculados pela posição do jogador | P3 |
