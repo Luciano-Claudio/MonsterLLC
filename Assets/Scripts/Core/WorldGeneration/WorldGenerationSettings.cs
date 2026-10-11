@@ -19,4 +19,7 @@ public class WorldGenerationSettings : ScriptableObject
 
     [Tooltip("Margem extra de chunks consultados (mas não necessariamente ativados) pra resolver vizinhança/bordas sem depender de quem carregou primeiro (halo).")]
     public int haloInChunks = 1;
+
+    [Tooltip("Raio (em células) ao redor da origem do mundo (0,0) — onde o herói nasce — sem terreno perigoso (BiomeTerrainEntry.blockedInSafeZone, ex.: água/lava) nem props. Pensado pra NPCs de posição fixa e pro herói nunca nascer em cima de água. 0 = desativado.")]
+    public float safeZoneRadius = 12f;
 }

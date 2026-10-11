@@ -61,6 +61,14 @@ public static class GameEvents
     public static event Action OnDayStart;
     public static void DayStarted() => OnDayStart?.Invoke();
 
+    // Disparado quando o herói é instanciado de verdade (MainMenuUI.SpawnHero) — não existe
+    // herói nenhum na cena antes disso (Sprint P2, Pré-Deadline Mundo Único). ChunkStreamer
+    // escuta isso pra saber quem seguir (streamingTarget); qualquer outro sistema que precise
+    // do Transform do herói assim que ele nasce pode escutar aqui também, em vez de GameObject
+    // .Find/tag polling.
+    public static event Action<Transform> OnHeroSpawned;
+    public static void HeroSpawned(Transform hero) => OnHeroSpawned?.Invoke(hero);
+
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.
 }

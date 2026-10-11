@@ -20,6 +20,14 @@ public class ChunkStreamer : MonoBehaviour
 
     private void Awake() => Instance = this;
 
+    // Não existe herói nenhum na cena até o jogo começar de verdade (MainMenuUI.SpawnHero) —
+    // por isso `streamingTarget` nunca é atribuído no Inspector, só em runtime, assim que o
+    // herói nasce (GameEvents.OnHeroSpawned).
+    private void OnEnable() => GameEvents.OnHeroSpawned += HandleHeroSpawned;
+    private void OnDisable() => GameEvents.OnHeroSpawned -= HandleHeroSpawned;
+
+    private void HandleHeroSpawned(Transform hero) => streamingTarget = hero;
+
     private void Update()
     {
         if (streamingTarget == null || settings == null) return;

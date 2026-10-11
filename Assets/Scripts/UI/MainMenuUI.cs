@@ -85,6 +85,8 @@ public class MainMenuUI : MonoBehaviour
 
         if (cinemachineCamera != null) cinemachineCamera.Target.TrackingTarget = heroObj.transform;
         else Debug.LogWarning("[MainMenu] CinemachineCamera não atribuída no Inspector — câmera não vai seguir o herói.");
+
+        GameEvents.HeroSpawned(heroObj.transform);
     }
 
     [ContextMenu("Continue Game")]
@@ -106,5 +108,10 @@ public class MainMenuUI : MonoBehaviour
         // GDD Seção 8/43: o checkpoint é a Loja que precede o próximo dia — Continue Game
         // abre essa Loja, não o Gameplay direto. Não chama SaveManager.Save() — só carrega.
         GameStateManager.Instance.SetState(GameState.Shop);
+
+        // 🟡 PENDÊNCIA (Sprint P2, Pré-Deadline Mundo Único): diferente de NewGame(), este
+        // fluxo não chama SpawnHero — hoje o herói pode não ser reinstanciado ao voltar de um
+        // save. Registrado aqui de propósito pra resolver junto da UI final do Menu
+        // (Deadline 8), não agora — decisão do usuário, fora de escopo da Pré-Deadline.
     }
 }
