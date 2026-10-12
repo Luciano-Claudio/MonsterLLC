@@ -335,65 +335,69 @@ public class TerrainSelectorTests
         Assert.IsNull(variant);
     }
 
-    // ---- Variante de grama só nasce formando bloco — nunca 1 célula isolada sozinha ----
-    // (regra só pra baseVariants; patchTerrains/água/dirt/pedra aceitam qualquer disposição —
-    // confirmado pelo usuário com fotos reais do bug, 2 rodadas: "vizinho" só conta se for reto
-    // (não diagonal), estiver numa célula pura, E for a MESMA entrada que vence lá — no
-    // RuleTile, `This` compara identidade do asset (`other == this`), não "tem alguma variante
-    // ali"; HighGrass do lado de ThickGrass não conecta visualmente nenhum pouco).
+    // ---- Variante de grama só nasce formando bloco 2×2 de verdade — nunca linha fina ----
+    // (regra só pra baseVariants; patchTerrains/água/dirt/pedra aceitam qualquer disposição).
+    // Histórico: 2 tentativas anteriores exigiam só "1 vizinho reto igual" — pareciam certas no
+    // raciocínio e nos testes sintéticos, mas o usuário continuou vendo o bug depois de
+    // recompilar/reiniciar o Editor inteiro. Um log real (coordenadas + seed de verdade, não
+    // offset 0,0) provou que a geração já estava correta (zero isoladas, menor bloco = 2
+    // células) — o problema real era os RuleTiles das variantes só terem 15 das ~47 posições de
+    // vizinhança configuradas (confirmado contando `m_Sprites:` nos `.asset`), faltando
+    // cobertura pra formas finas como um par de 2 células. Decisão do usuário: restringir a
+    // geração pra só criar blocos 2×2+ reais (`HasFilledQuad`), em vez de desenhar as regras que
+    // faltam agora.
 
     [Test]
-    public void HasMatchingOrthogonalNeighbor_NeighborPureAndSameEntryMatches_ReturnsTrue()
+    public void HasFilledQuad_AllNeighborsMatchSameEntry_ReturnsTrue()
     {
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
         biome.baseVariants.Add(entry);
 
-        Assert.IsTrue(TerrainSelector.HasMatchingOrthogonalNeighbor(entry, 5, 5, 0f, 0f, biome));
+        Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
     }
 
     [Test]
-    public void HasMatchingOrthogonalNeighbor_EntryNotInBiome_ReturnsFalse()
+    public void HasFilledQuad_EntryNotInBiome_ReturnsFalse()
     {
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
-        // entry não foi adicionada a biome.baseVariants — nenhum vizinho pode "vencer" com ela.
+        // entry não foi adicionada a biome.baseVariants — nenhuma célula pode "vencer" com ela.
 
-        Assert.IsFalse(TerrainSelector.HasMatchingOrthogonalNeighbor(entry, 5, 5, 0f, 0f, biome));
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
     }
 
     [Test]
-    public void HasMatchingOrthogonalNeighbor_NeighborClaimedByPatchTerrain_IsNotPure_ReturnsFalse()
+    public void HasFilledQuad_QuadCellsClaimedByPatchTerrain_AreNotPure_ReturnsFalse()
     {
-        // Mesmo a entrada "querendo" nascer no vizinho, se o vizinho tem Dirt/Pedra/Água por
-        // cima (não é célula pura), nenhuma variante nasce ali de verdade — não conta.
+        // Mesmo a entrada "querendo" nascer nos vizinhos, se eles têm Dirt/Pedra/Água por cima
+        // (não são células puras), nenhuma variante nasce ali de verdade — não conta.
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
         biome.baseVariants.Add(entry);
         biome.patchTerrains.Add(new BiomeTerrainEntry { terrain = dryDirt, coverageTarget = 2f, noiseScale = 0.08f });
 
-        Assert.IsFalse(TerrainSelector.HasMatchingOrthogonalNeighbor(entry, 5, 5, 0f, 0f, biome));
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
     }
 
     [Test]
-    public void HasMatchingOrthogonalNeighbor_NeighborWonByDifferentEntry_ReturnsFalse()
+    public void HasFilledQuad_QuadCellsWonByDifferentEntry_ReturnsFalse()
     {
-        // Regressão do bug real (2ª rodada de fotos do usuário): uma variante DIFERENTE vence
-        // a célula vizinha (primeira da lista, cobertura sempre bate) — no RuleTile isso NÃO
-        // conecta com a entrada atual, mesmo ambas sendo "variante de grama" conceitualmente.
-        // `water` aqui só representa "qualquer outra entrada", sem relação com o terreno real.
+        // Uma variante DIFERENTE vence todas as células vizinhas (primeira da lista, cobertura
+        // sempre bate) — no RuleTile isso NÃO conecta com a entrada atual, mesmo ambas sendo
+        // "variante de grama" conceitualmente. `water` aqui só representa "qualquer outra
+        // entrada", sem relação com o terreno real.
         var otherEntry = new BiomeTerrainEntry { terrain = water, coverageTarget = 2f, noiseScale = 0.08f };
         var highGrassEntry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
-        biome.baseVariants.Add(otherEntry); // primeiro na lista = sempre vence o vizinho
+        biome.baseVariants.Add(otherEntry); // primeiro na lista = sempre vence
         biome.baseVariants.Add(highGrassEntry);
 
-        Assert.IsFalse(TerrainSelector.HasMatchingOrthogonalNeighbor(highGrassEntry, 5, 5, 0f, 0f, biome));
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(highGrassEntry, 5, 5, 0f, 0f, biome));
     }
 
     [Test]
-    public void ChooseBaseVariant_NeverReturnsAnIsolatedCell()
+    public void ChooseBaseVariant_NeverReturnsACellOutsideAFilledQuad()
     {
         // Varre uma faixa real de células com uma máscara moderada (nem tudo bate, nem nada
         // bate — então existem bordas/pontas de verdade) e confirma que, sempre que
-        // ChooseBaseVariant devolver uma variante, a célula tinha pelo menos 1 vizinho reto
-        // pintado com A MESMA entrada.
+        // ChooseBaseVariant devolver uma variante, a célula fazia parte de um bloco 2×2 real.
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 0.3f, noiseScale = 0.08f };
         biome.baseVariants.Add(entry);
 
@@ -405,8 +409,8 @@ public class TerrainSelectorTests
 
                 if (variant != null)
                 {
-                    Assert.IsTrue(TerrainSelector.HasMatchingOrthogonalNeighbor(entry, x, y, 0f, 0f, biome),
-                        $"Variante apareceu isolada em ({x},{y}) — nenhum vizinho reto está pintado com a mesma entrada.");
+                    Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, x, y, 0f, 0f, biome),
+                        $"Variante apareceu fora de um bloco 2×2 em ({x},{y}).");
                 }
             }
         }

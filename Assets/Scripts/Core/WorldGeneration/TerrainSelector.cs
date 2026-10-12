@@ -77,42 +77,62 @@ public static class TerrainSelector
         if (matched == null) return null;
 
         // Diferente do resto do terreno (que aceita qualquer disposição), variante de grama só
-        // pode nascer formando bloco com pelo menos 1 vizinho reto (cima/baixo/esquerda/
-        // direita) pintado com A MESMA variante — nunca 1 célula isolada, nem uma "ponta"
-        // encostando só na diagonal, nem "encostando" numa variante DIFERENTE.
+        // pode nascer onde formar um bloco 2×2 de verdade com a MESMA variante em algum lugar
+        // ao redor — nunca 1 célula isolada, nunca uma "ponta" fina de 1 célula de largura
+        // (par/domino, linha de 1 célula), só massa real.
         //
-        // IMPORTANTE (verificado direto no código-fonte do pacote, RuleTile.cs: `RuleMatch`
-        // pro valor `This` faz `other == this` — comparação de IDENTIDADE do asset, não "tem
-        // algum tile ali"). Ou seja, o RuleTile do HighGrass só enxerga outro HighGrass do lado
-        // como vizinho "This" — ThickGrass do lado é "NotThis" pra ele, mesmo os dois estando
-        // pintados na mesma Tilemap. A 1ª versão desta regra ("qualquer variante no vizinho já
-        // conta") estava errada por causa disso — corrigido com fotos reais do bug do usuário
-        // mostrando que o problema persistia mesmo depois do primeiro fix.
-        if (!HasMatchingOrthogonalNeighbor(matched, cellX, cellY, seedOffsetX, seedOffsetY, biome)) return null;
+        // Histórico: a 1ª e 2ª tentativas (exigir só "1 vizinho reto igual") pareciam corretas
+        // no raciocínio E nos testes sintéticos, mas o usuário continuou vendo o bug depois de
+        // recompilar/reiniciar o Editor. Log real (coordenadas + seed de verdade, não offset
+        // 0,0) provou que a GERAÇÃO já estava 100% correta — zero células isoladas nos dados, o
+        // menor bloco gerado tinha 2 células. O problema real: os RuleTiles das 7 variantes de
+        // grama só têm 15 das ~47 posições de vizinhança configuradas (confirmado contando
+        // `m_Sprites:` nos `.asset` — Dirt/Stone/Água têm 47, as variantes têm 15), faltando
+        // justamente os casos de bloco fino (ex.: um par de 2 células lado a lado) — sem regra
+        // configurada pra essa forma, o RuleTile cai pro sprite padrão, parecendo uma "ilha"
+        // mesmo com um vizinho de verdade do lado. Decisão do usuário: em vez de desenhar as 32
+        // regras que faltam agora, restringir a geração pra só criar formas que as 15 regras já
+        // cobrem (blocos reais, não linhas finas).
+        if (!HasFilledQuad(matched, cellX, cellY, seedOffsetX, seedOffsetY, biome)) return null;
 
         return matched.terrain;
     }
 
-    private static readonly (int dx, int dy)[] OrthogonalOffsets = { (1, 0), (-1, 0), (0, 1), (0, -1) };
+    // Os 4 quadrados 2×2 possíveis que contêm (cellX,cellY) em cada um dos 4 cantos possíveis.
+    private static readonly (int dx, int dy)[][] Quads =
+    {
+        new[] { (1, 0), (0, 1), (1, 1) },     // (cellX,cellY) = canto inferior-esquerdo
+        new[] { (-1, 0), (0, 1), (-1, 1) },   // canto inferior-direito
+        new[] { (1, 0), (0, -1), (1, -1) },   // canto superior-esquerdo
+        new[] { (-1, 0), (0, -1), (-1, -1) }, // canto superior-direito
+    };
 
-    // Pública pra ser testável isoladamente. Confirma que pelo menos 1 dos 4 vizinhos RETOS vai
-    // nascer com a MESMA entrada — célula pura (sem Dirt/Pedra/Água por cima) E essa entrada
-    // específica é a que realmente VENCE ali (não basta bater pelo ruído dela: se outra entrada
-    // antes dela na lista também bate naquela célula, é ESSA outra que ganha a pintura — então
-    // comparamos o resultado de FindMatch inteiro, não só o teste de ruído isolado).
-    public static bool HasMatchingOrthogonalNeighbor(
+    // Pública pra ser testável isoladamente. Confirma que (cellX,cellY) faz parte de pelo menos
+    // 1 quadrado 2×2 totalmente preenchido pela MESMA entrada — célula pura (sem Dirt/Pedra/
+    // Água por cima) E essa entrada específica é a que realmente VENCE em cada uma das outras 3
+    // células do quadrado (não basta bater pelo ruído: se outra entrada antes dela na lista
+    // também bate ali, é essa outra que ganha a pintura — por isso comparamos o resultado de
+    // FindMatch inteiro, não só o teste de ruído isolado).
+    public static bool HasFilledQuad(
         BiomeTerrainEntry entry, int cellX, int cellY, float seedOffsetX, float seedOffsetY, BiomeProfileSO biome)
     {
-        foreach (var (dx, dy) in OrthogonalOffsets)
+        foreach (var quad in Quads)
         {
-            int nx = cellX + dx;
-            int ny = cellY + dy;
+            bool quadFilled = true;
 
-            bool neighborIsPure = FindMatch(biome.patchTerrains, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f) == null;
-            if (!neighborIsPure) continue; // Dirt/Pedra/Água por cima — nenhuma variante nasce ali mesmo
+            foreach (var (dx, dy) in quad)
+            {
+                int nx = cellX + dx;
+                int ny = cellY + dy;
 
-            var neighborMatch = FindMatch(biome.baseVariants, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f);
-            if (neighborMatch == entry) return true;
+                bool neighborIsPure = FindMatch(biome.patchTerrains, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f) == null;
+                if (!neighborIsPure) { quadFilled = false; break; }
+
+                var neighborMatch = FindMatch(biome.baseVariants, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f);
+                if (neighborMatch != entry) { quadFilled = false; break; }
+            }
+
+            if (quadFilled) return true;
         }
 
         return false;
