@@ -99,6 +99,15 @@ Histórico completo (2026-10-11 → 2026-10-12), 4 tentativas até a causa raiz 
 
 **Dívida registrada (não endereçada):** as 7 variantes de grama continuam com só 15/47 regras — se um dia quiser formas mais finas/variadas (não só blocos 2×2+), vai precisar completar as 32 regras que faltam nos RuleTiles, seguindo o mesmo padrão já usado no Dirt.
 
+### Generalização (2026-10-14): `requiresFilledQuad` virou campo genérico, não só grama
+
+Pedido do usuário: outros tiers vão ter tipos de água (e possivelmente outros terrenos) sem arte pra célula única/linha fina, do mesmo jeito que as variantes de grama — em vez de resolver caso a caso, a regra virou um campo reutilizável.
+
+- **`BiomeTerrainEntry.requiresFilledQuad`** (bool, default `false`) — qualquer entrada, em QUALQUER lista (`patchTerrains`, `nestedPatches` de qualquer profundidade, ou `baseVariants`), pode marcar isso pra só nascer onde formar um quadrado 2×2 real.
+- A regra saiu de `ChooseBaseVariant` e entrou direto no `FindMatch` central (usado por `ChooseTerrainStack`/`ChooseTerrainStackNonAlloc`/`ChooseBaseVariant`): se uma entrada bate pelo ruído mas tem `requiresFilledQuad = true` e não forma quadrado, ela é tratada como "não bateu" e a busca continua pra próxima entrada da lista — funciona em qualquer profundidade da árvore automaticamente, sem precisar duplicar lógica.
+- `HasFilledQuad` ganhou um parâmetro opcional `purityReferenceLevel` — necessário só pro caso de `baseVariants` (que depende de `patchTerrains` NÃO reivindicar a célula pra ser sequer consultado); listas normais da árvore de `patchTerrains` não precisam disso (`null`, padrão).
+- **Migração do `.asset` existente:** como a regra virou opt-in (antes era automática só pra `baseVariants`), as 7 entradas de variante de grama no `BiomeProfile_Tier1.asset` precisaram ganhar `requiresFilledQuad: 1` explicitamente — sem isso, a correção de ontem teria regredido silenciosamente (o bool novo nasce `false` por padrão em qualquer entrada que o Unity ainda não tinha serializado).
+
 ## Dívida técnica
 
 - **Espaçamento de props não cruza a borda de chunks** — a rejeição por `minSpacing` só olha props já colocados no mesmo chunk.

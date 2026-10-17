@@ -41,4 +41,22 @@ public static class WorldHash
     {
         return Hash2D(x, y, channel, seed) / (float)uint.MaxValue;
     }
+
+    // Hash determinístico de string (FNV-1a) — NUNCA usar string.GetHashCode() aqui: o .NET
+    // randomiza esse hash entre execuções por segurança (hash flooding), quebrando a promessa
+    // central desta classe ("mesma entrada sempre produz a mesma saída"). Usado como "salt" pra
+    // diferenciar canais de aleatoriedade por IDENTIDADE (ex.: cada EnvironmentPropSO.id), não
+    // só por posição/propósito — ver PropPlacement.GenerateCandidatePositions.
+    public static int HashString(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0;
+
+        uint hash = 2166136261; // FNV offset basis
+        foreach (char c in s)
+        {
+            hash ^= c;
+            hash *= 16777619; // FNV prime
+        }
+        return unchecked((int)hash);
+    }
 }

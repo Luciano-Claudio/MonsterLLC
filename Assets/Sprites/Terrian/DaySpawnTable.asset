@@ -1,0 +1,705 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 298d23ad42e044e46809584273199c11, type: 3}
+  m_Name: DaySpawnTable
+  m_EditorClassIdentifier: Core::DaySpawnTableSO
+  days:
+  - dayNumber: 1
+    dayWeights:
+    - 100
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 70
+    - 30
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 2
+    dayWeights:
+    - 70
+    - 30
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 50
+    - 50
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 3
+    dayWeights:
+    - 35
+    - 50
+    - 15
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 10
+    - 60
+    - 30
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 4
+    dayWeights:
+    - 10
+    - 25
+    - 50
+    - 15
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 10
+    - 15
+    - 50
+    - 25
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 5
+    dayWeights:
+    - 10
+    - 25
+    - 30
+    - 35
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 15
+    - 20
+    - 45
+    - 15
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 6
+    dayWeights:
+    - 5
+    - 20
+    - 25
+    - 35
+    - 15
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 15
+    - 20
+    - 35
+    - 25
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 7
+    dayWeights:
+    - 5
+    - 15
+    - 20
+    - 30
+    - 30
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 10
+    - 15
+    - 30
+    - 40
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 8
+    dayWeights:
+    - 5
+    - 10
+    - 15
+    - 30
+    - 40
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 10
+    - 15
+    - 25
+    - 35
+    - 10
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 9
+    dayWeights:
+    - 5
+    - 10
+    - 15
+    - 25
+    - 35
+    - 10
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+    - 25
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 10
+    dayWeights:
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+    - 25
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 10
+    - 15
+    - 30
+    - 35
+    - 0
+    - 0
+    - 0
+    - 0
+  - dayNumber: 11
+    dayWeights:
+    - 5
+    - 5
+    - 10
+    - 15
+    - 30
+    - 35
+    - 0
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 25
+    - 40
+    - 10
+    - 0
+    - 0
+    - 0
+  - dayNumber: 12
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 25
+    - 40
+    - 10
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+    - 20
+    - 0
+    - 0
+    - 0
+  - dayNumber: 13
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+    - 20
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 30
+    - 30
+    - 0
+    - 0
+    - 0
+  - dayNumber: 14
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 30
+    - 30
+    - 0
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 25
+    - 30
+    - 10
+    - 0
+    - 0
+  - dayNumber: 15
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 25
+    - 30
+    - 10
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 30
+    - 20
+    - 0
+    - 0
+  - dayNumber: 16
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 30
+    - 20
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 25
+    - 30
+    - 0
+    - 0
+  - dayNumber: 17
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 25
+    - 30
+    - 0
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 20
+    - 30
+    - 10
+    - 0
+  - dayNumber: 18
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 20
+    - 30
+    - 10
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 25
+    - 20
+    - 0
+  - dayNumber: 19
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 25
+    - 20
+    - 0
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 25
+    - 25
+    - 0
+  - dayNumber: 20
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 20
+    - 25
+    - 5
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 25
+    - 15
+  - dayNumber: 21
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 25
+    - 15
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 25
+    - 20
+  - dayNumber: 22
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 25
+    - 20
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 20
+    - 25
+  - dayNumber: 23
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 20
+    - 25
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 20
+    - 30
+  - dayNumber: 24
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 15
+    - 20
+    - 30
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+  - dayNumber: 25
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 20
+    - 35
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 40
+  - dayNumber: 26
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 15
+    - 40
+    nightWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 10
+    - 45
+  - dayNumber: 27
+    dayWeights:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+    - 10
+    - 10
+    - 45
+    nightWeights:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 4
+    - 5
+    - 5
+    - 10
+    - 10
+    - 50
+  - dayNumber: 28
+    dayWeights:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 4
+    - 5
+    - 5
+    - 10
+    - 10
+    - 50
+    nightWeights:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 4
+    - 5
+    - 5
+    - 5
+    - 10
+    - 55
+  - dayNumber: 29
+    dayWeights:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 4
+    - 5
+    - 5
+    - 5
+    - 10
+    - 55
+    nightWeights:
+    - 3
+    - 3
+    - 3
+    - 3
+    - 3
+    - 5
+    - 5
+    - 5
+    - 10
+    - 60
+  - dayNumber: 30
+    dayWeights:
+    - 3
+    - 3
+    - 3
+    - 3
+    - 3
+    - 5
+    - 5
+    - 5
+    - 10
+    - 60
+    nightWeights:
+    - 2
+    - 2
+    - 2
+    - 2
+    - 2
+    - 5
+    - 5
+    - 5
+    - 10
+    - 65

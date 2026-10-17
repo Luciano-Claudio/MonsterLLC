@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b918dc75bbb0bc34a9d7c7696cc6a06a, type: 3}
+  m_Name: EnvironmentProp_Bubble
+  m_EditorClassIdentifier: Core::EnvironmentPropSO
+  id: Bubble
+  prefab: {fileID: 7399876198590878574, guid: ab045eb885fc45748b7c3f28d32a515b, type: 3}
+  minSpacing: 3
+  density: 0.3
+  jitter: 0.6
+  forbiddenTerrains:
+  - {fileID: 11400000, guid: bf2025c710294eb5bf1c160fcd859242, type: 2}
+  - {fileID: 11400000, guid: f90ef8bcdcee419dadf0aede5b18ce28, type: 2}
+  - {fileID: 11400000, guid: 9fc76e134369458890391fda9ebbdf45, type: 2}
+  - {fileID: 11400000, guid: 9e25532a815d49bba050d6cdaa9a1bb3, type: 2}
+  - {fileID: 11400000, guid: db675602066f4fc3bde9b3e4bfc788c4, type: 2}
+  - {fileID: 11400000, guid: 89d023d2a80f4b3480a97665c722d9e3, type: 2}
+  - {fileID: 11400000, guid: 821a1251504b406098b06ddbac410fe6, type: 2}
+  footprintSize: {x: 1, y: 1}
+  canSpawnInSafeZone: 1
+  avoidTerrainEdges: 1

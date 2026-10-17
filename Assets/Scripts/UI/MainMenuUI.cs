@@ -50,7 +50,7 @@ public class MainMenuUI : MonoBehaviour
         // inscrevesse, e o pet nunca nasceria no Dia 1 (bug real, encontrado em playtest).
         SpawnHero(heroToSpawn);
 
-        DayTimer.Instance.ResetForNewDay(100f);
+        DayTimer.Instance.ResetForNewDay();
         DemandTracker.Instance.StartDay(CurrentRun.day);
 
         GameStateManager.Instance.SetState(GameState.Gameplay);

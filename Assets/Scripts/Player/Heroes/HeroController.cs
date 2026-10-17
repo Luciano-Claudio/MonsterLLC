@@ -148,6 +148,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private CapsuleCollider2D bodyCollider;
     private float bodyColliderOffsetXFacingEast;
 
+    // [Sprint P3] Movimento deliberado passou de transform.Translate pra rb.linearVelocity —
+    // Translate ignora Collider2D sólido (o herói atravessava props sólidos, ex.: pedra/
+    // árvore, achado do usuário criando os prefabs de props); rb.linearVelocity é resolvido
+    // pelo motor de física de verdade, então colisão sólida passa a bloquear o herói de
+    // graça. O Rigidbody2D já existe no prefab (Dynamic, Interpolate ligado pro fix de
+    // jitter do Pixel Perfect/Cinemachine) só pra absorver o empurrão do RVO dos monstros
+    // (Linear Damping) — reaproveitado aqui, não é um componente novo. Fallback pra Translate
+    // só existe pra não quebrar um prefab placeholder antigo sem Rigidbody2D configurado.
+    // Protected (não private) — Rogue.UpdateRoll() (Cambalhota) reaproveita o mesmo campo,
+    // mesmo motivo (atravessava props sólidos rolando por cima).
+    protected Rigidbody2D rb;
+
     // Druid sobrescreve pra false — ele já cuida do próprio collider físico (tem 2 formas,
     // humana e Alce, cada uma com offset/size próprios) e reaplica esse mesmo espelhamento
     // por conta própria em cima disso. Deixar os dois mecanismos ativos ao mesmo tempo faria
@@ -162,6 +174,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         bodyCollider = GetComponent<CapsuleCollider2D>();
         if (bodyCollider != null) bodyColliderOffsetXFacingEast = bodyCollider.offset.x;
+        rb = GetComponent<Rigidbody2D>();
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
@@ -314,8 +327,20 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // está no estado "Walk" — qualquer outra animação (attack, ultimate, summon etc.)
         // bloqueia o movimento até terminar. Sem Animator ainda wireado (heróis não
         // migrados), AnimatorStateCheck libera sempre, então nada muda pra eles.
-        if (wantsToMove && AnimatorStateCheck.IsInState(animator, "Walk"))
+        bool canMove = wantsToMove && AnimatorStateCheck.IsInState(animator, "Walk");
+        if (rb != null)
+        {
+            // rb.linearVelocity (não Translate) — resolvido pelo motor de física de verdade,
+            // então Collider2D sólido (ex.: props, Sprint P3) bloqueia o herói de verdade em
+            // vez de ser atravessado. Precisa zerar explicitamente quando canMove é falso —
+            // diferente de Translate (que simplesmente não faz nada), velocity persiste entre
+            // frames até ser trocada.
+            rb.linearVelocity = canMove ? moveInput * stats.moveSpeed : Vector2.zero;
+        }
+        else if (canMove)
+        {
             transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
+        }
     }
 
     private void UpdateAimDirection(Vector2 screenPosition)

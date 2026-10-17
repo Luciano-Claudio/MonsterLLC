@@ -8,13 +8,22 @@ using UnityEngine;
 // decide o que fazer com as posições (Instantiate, teste, preview no Editor).
 public static class PropPlacement
 {
+    // `propSalt` (WorldHash.HashString(prop.id)) é OBRIGATÓRIO diferenciar aqui — sem ele, 2
+    // EnvironmentPropSO com o mesmo `minSpacing` (mesmo `step`) caem exatamente na mesma grade
+    // de células e, pelos canais fixos (500/501/502) + mesma seed do mundo, sorteiam o MESMO
+    // densityRoll e o MESMO jitter na mesma célula — ou seja, nascem empilhados no mesmo ponto
+    // exato (bug real encontrado pelo usuário em teste: várias árvores/cacto-em-cima-de-pedra
+    // na mesma posição). Salgar a seed por identidade do prop decorrelaciona os fluxos de
+    // aleatoriedade entre props diferentes, mantendo cada um determinístico (mesmo id, mesmo
+    // resultado sempre).
     public static List<Vector2> GenerateCandidatePositions(
         int chunkOriginX, int chunkOriginY, int chunkSize,
-        float minSpacing, float density, float jitter, int worldSeed)
+        float minSpacing, float density, float jitter, int worldSeed, int propSalt = 0)
     {
         var positions = new List<Vector2>();
         if (minSpacing <= 0f) return positions;
 
+        int saltedSeed = worldSeed ^ propSalt;
         int step = Mathf.Max(1, Mathf.RoundToInt(minSpacing));
 
         for (int gx = 0; gx < chunkSize; gx += step)
@@ -24,11 +33,11 @@ public static class PropPlacement
                 int cellX = chunkOriginX + gx;
                 int cellY = chunkOriginY + gy;
 
-                float densityRoll = WorldHash.Hash2DFloat(cellX, cellY, channel: 500, seed: worldSeed);
+                float densityRoll = WorldHash.Hash2DFloat(cellX, cellY, channel: 500, seed: saltedSeed);
                 if (densityRoll > density) continue;
 
-                float jitterX = (WorldHash.Hash2DFloat(cellX, cellY, channel: 501, seed: worldSeed) - 0.5f) * jitter * step;
-                float jitterY = (WorldHash.Hash2DFloat(cellX, cellY, channel: 502, seed: worldSeed) - 0.5f) * jitter * step;
+                float jitterX = (WorldHash.Hash2DFloat(cellX, cellY, channel: 501, seed: saltedSeed) - 0.5f) * jitter * step;
+                float jitterY = (WorldHash.Hash2DFloat(cellX, cellY, channel: 502, seed: saltedSeed) - 0.5f) * jitter * step;
                 var candidate = new Vector2(cellX + 0.5f + jitterX, cellY + 0.5f + jitterY);
 
                 // Rejeita se ficar mais perto do que minSpacing de outro já aceito nesta

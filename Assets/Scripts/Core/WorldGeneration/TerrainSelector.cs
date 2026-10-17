@@ -72,30 +72,15 @@ public static class TerrainSelector
         int cellX, int cellY, float seedOffsetX, float seedOffsetY, BiomeProfileSO biome)
     {
         // Variantes de grama nunca são perigosas — safeZoneRadius 0 (desligado) de propósito,
-        // elas sempre podem aparecer na safe zone.
-        var matched = FindMatch(biome.baseVariants, cellX, cellY, seedOffsetX, seedOffsetY, safeZoneRadius: 0f);
-        if (matched == null) return null;
-
-        // Diferente do resto do terreno (que aceita qualquer disposição), variante de grama só
-        // pode nascer onde formar um bloco 2×2 de verdade com a MESMA variante em algum lugar
-        // ao redor — nunca 1 célula isolada, nunca uma "ponta" fina de 1 célula de largura
-        // (par/domino, linha de 1 célula), só massa real.
-        //
-        // Histórico: a 1ª e 2ª tentativas (exigir só "1 vizinho reto igual") pareciam corretas
-        // no raciocínio E nos testes sintéticos, mas o usuário continuou vendo o bug depois de
-        // recompilar/reiniciar o Editor. Log real (coordenadas + seed de verdade, não offset
-        // 0,0) provou que a GERAÇÃO já estava 100% correta — zero células isoladas nos dados, o
-        // menor bloco gerado tinha 2 células. O problema real: os RuleTiles das 7 variantes de
-        // grama só têm 15 das ~47 posições de vizinhança configuradas (confirmado contando
-        // `m_Sprites:` nos `.asset` — Dirt/Stone/Água têm 47, as variantes têm 15), faltando
-        // justamente os casos de bloco fino (ex.: um par de 2 células lado a lado) — sem regra
-        // configurada pra essa forma, o RuleTile cai pro sprite padrão, parecendo uma "ilha"
-        // mesmo com um vizinho de verdade do lado. Decisão do usuário: em vez de desenhar as 32
-        // regras que faltam agora, restringir a geração pra só criar formas que as 15 regras já
-        // cobrem (blocos reais, não linhas finas).
-        if (!HasFilledQuad(matched, cellX, cellY, seedOffsetX, seedOffsetY, biome)) return null;
-
-        return matched.terrain;
+        // elas sempre podem aparecer na safe zone. A regra de "só em bloco 2x2" (pra quem tiver
+        // BiomeTerrainEntry.requiresFilledQuad = true, ex.: as 7 variantes de grama) já é
+        // aplicada dentro do próprio FindMatch — passamos patchTerrains como
+        // `purityReferenceLevel` pra isso: um vizinho só conta pro quadrado se NINGUÉM em
+        // patchTerrains reivindicar aquela célula (senão o ChunkTerrainGenerator nunca chamaria
+        // ChooseBaseVariant ali de verdade, e o "quadrado" seria só nos dados, não na tela).
+        var matched = FindMatch(biome.baseVariants, cellX, cellY, seedOffsetX, seedOffsetY, safeZoneRadius: 0f,
+            purityReferenceLevel: biome.patchTerrains);
+        return matched?.terrain;
     }
 
     // Os 4 quadrados 2×2 possíveis que contêm (cellX,cellY) em cada um dos 4 cantos possíveis.
@@ -107,14 +92,39 @@ public static class TerrainSelector
         new[] { (-1, 0), (0, -1), (-1, -1) }, // canto superior-direito
     };
 
+    // Generalizado pra qualquer BiomeTerrainEntry.requiresFilledQuad = true, em qualquer lista
+    // (patchTerrains, nestedPatches de qualquer profundidade, ou baseVariants) — não só
+    // variantes de grama. Nasceu da pendência da grama (ver histórico abaixo), mas serve pra
+    // qualquer terreno futuro cujo RuleTile não tenha arte pra célula única/linha fina (ex.:
+    // tipos de água de tiers futuros sem conexão pra formas finas, pedido do usuário).
+    //
+    // Histórico: a 1ª e 2ª tentativas de corrigir a grama (exigir só "1 vizinho reto igual")
+    // pareciam corretas no raciocínio E nos testes sintéticos, mas o usuário continuou vendo o
+    // bug depois de recompilar/reiniciar o Editor. Log real (coordenadas + seed de verdade, não
+    // offset 0,0) provou que a GERAÇÃO já estava 100% correta — zero células isoladas nos
+    // dados, o menor bloco gerado tinha 2 células. O problema real: os RuleTiles das 7
+    // variantes de grama só têm 15 das ~47 posições de vizinhança configuradas (confirmado
+    // contando `m_Sprites:` nos `.asset`), faltando justamente os casos de bloco fino (ex.: um
+    // par de 2 células lado a lado) — sem regra configurada pra essa forma, o RuleTile cai pro
+    // sprite padrão, parecendo uma "ilha" mesmo com um vizinho de verdade do lado.
+    //
     // Pública pra ser testável isoladamente. Confirma que (cellX,cellY) faz parte de pelo menos
-    // 1 quadrado 2×2 totalmente preenchido pela MESMA entrada — célula pura (sem Dirt/Pedra/
-    // Água por cima) E essa entrada específica é a que realmente VENCE em cada uma das outras 3
-    // células do quadrado (não basta bater pelo ruído: se outra entrada antes dela na lista
-    // também bate ali, é essa outra que ganha a pintura — por isso comparamos o resultado de
-    // FindMatch inteiro, não só o teste de ruído isolado).
+    // 1 quadrado 2×2 totalmente preenchido pela MESMA entrada, dentro do mesmo "level" (lista)
+    // que ela pertence — cada uma das outras 3 células do quadrado precisa ser a que realmente
+    // VENCE ali (não basta bater pelo ruído: se outra entrada antes dela na lista também bate
+    // ali, é essa outra que ganha). Os vizinhos são resolvidos por `RawMatch` (sem reaplicar a
+    // própria regra de quadrado neles, de propósito — evita recursão sem necessidade: se as 4
+    // células de um quadrado realmente formado batem todas na mesma entrada, cada uma delas já
+    // teria um quadrado válido de qualquer jeito, então reverificar de novo é redundante).
+    //
+    // `purityReferenceLevel` é opcional — só existe pro caso de `level` ser uma lista que
+    // depende de OUTRA lista pra decidir se a célula realmente vai ser pintada (caso de
+    // `baseVariants`, que só é consultada quando `patchTerrains` NÃO reivindica a célula). Pra
+    // listas "normais" da árvore de `patchTerrains`/`nestedPatches`, que são auto-suficientes,
+    // deixe `null` (padrão) — não existe nenhum sistema externo que possa "roubar" a célula.
     public static bool HasFilledQuad(
-        BiomeTerrainEntry entry, int cellX, int cellY, float seedOffsetX, float seedOffsetY, BiomeProfileSO biome)
+        BiomeTerrainEntry entry, List<BiomeTerrainEntry> level, int cellX, int cellY, float seedOffsetX, float seedOffsetY,
+        float safeZoneRadius = 0f, List<BiomeTerrainEntry> purityReferenceLevel = null)
     {
         foreach (var quad in Quads)
         {
@@ -125,11 +135,18 @@ public static class TerrainSelector
                 int nx = cellX + dx;
                 int ny = cellY + dy;
 
-                bool neighborIsPure = FindMatch(biome.patchTerrains, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f) == null;
-                if (!neighborIsPure) { quadFilled = false; break; }
+                if (purityReferenceLevel != null
+                    && RawMatch(purityReferenceLevel, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius) != null)
+                {
+                    quadFilled = false; // vizinho reivindicado por outro sistema — não vai nascer ali de verdade
+                    break;
+                }
 
-                var neighborMatch = FindMatch(biome.baseVariants, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius: 0f);
-                if (neighborMatch != entry) { quadFilled = false; break; }
+                if (RawMatch(level, nx, ny, seedOffsetX, seedOffsetY, safeZoneRadius) != entry)
+                {
+                    quadFilled = false;
+                    break;
+                }
             }
 
             if (quadFilled) return true;
@@ -143,8 +160,14 @@ public static class TerrainSelector
     // (MainMenuUI.SpawnHero usa Vector3.zero) e onde NPCs de posição fixa vão ficar. Sem isso,
     // o herói podia nascer em cima de água (perderia a run inteira, sem colisor ainda) ou um
     // NPC fixo podia cair dentro de um lago gerado por acaso.
+    //
+    // Entradas com `requiresFilledQuad = true` que baterem pelo ruído mas não formarem um
+    // quadrado 2×2 real (`HasFilledQuad`) são tratadas como "não bateu" — passa pra próxima da
+    // lista, exatamente como se o ruído não tivesse batido ali. `purityReferenceLevel` só é
+    // usado nesse caso, repassado direto pra `HasFilledQuad` (ver comentário lá).
     private static BiomeTerrainEntry FindMatch(
-        List<BiomeTerrainEntry> level, int cellX, int cellY, float seedOffsetX, float seedOffsetY, float safeZoneRadius)
+        List<BiomeTerrainEntry> level, int cellX, int cellY, float seedOffsetX, float seedOffsetY, float safeZoneRadius,
+        List<BiomeTerrainEntry> purityReferenceLevel = null)
     {
         bool inSafeZone = safeZoneRadius > 0f
             && (float)cellX * cellX + (float)cellY * cellY <= safeZoneRadius * safeZoneRadius;
@@ -156,8 +179,38 @@ public static class TerrainSelector
 
             bool claimed = TerrainMask.ShouldPaintOverlay(
                 cellX, cellY, seedOffsetX, seedOffsetY, entry.noiseScale, entry.coverageTarget);
+            if (!claimed) continue;
 
-            if (claimed) return entry;
+            if (entry.requiresFilledQuad
+                && !HasFilledQuad(entry, level, cellX, cellY, seedOffsetX, seedOffsetY, safeZoneRadius, purityReferenceLevel))
+            {
+                continue;
+            }
+
+            return entry;
+        }
+
+        return null;
+    }
+
+    // Versão "crua" de FindMatch — mesma coisa, mas sem checar requiresFilledQuad. Existe só
+    // pra HasFilledQuad resolver os vizinhos do quadrado sem recursar nela mesma (ver
+    // comentário de HasFilledQuad acima).
+    private static BiomeTerrainEntry RawMatch(
+        List<BiomeTerrainEntry> level, int cellX, int cellY, float seedOffsetX, float seedOffsetY, float safeZoneRadius)
+    {
+        bool inSafeZone = safeZoneRadius > 0f
+            && (float)cellX * cellX + (float)cellY * cellY <= safeZoneRadius * safeZoneRadius;
+
+        foreach (var entry in level)
+        {
+            if (entry == null || entry.terrain == null) continue;
+            if (inSafeZone && entry.blockedInSafeZone) continue;
+
+            if (TerrainMask.ShouldPaintOverlay(cellX, cellY, seedOffsetX, seedOffsetY, entry.noiseScale, entry.coverageTarget))
+            {
+                return entry;
+            }
         }
 
         return null;

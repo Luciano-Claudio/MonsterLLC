@@ -25,4 +25,7 @@ public class BiomeTerrainEntry
 
     [Tooltip("Marca este terreno como perigoso (água, lava, futuros hazards) — nunca nasce dentro do raio de safe zone (WorldGenerationSettings.safeZoneRadius), nem no topo da árvore nem aninhado. Deixe desmarcado pra Grama/Dirt/Pedra e variações delas.")]
     public bool blockedInSafeZone = false;
+
+    [Tooltip("Marque se o RuleTile deste terreno NÃO tem arte pra célula única/linha fina de 1 célula de largura (ex.: as 7 variantes de grama, que só têm 15 das 47 posições de vizinhança). Restringe a geração a só criar blocos 2x2 reais (TerrainSelector.HasFilledQuad) — funciona em patchTerrains, nestedPatches ou baseVariants, qualquer profundidade. Deixe desmarcado pra terrenos com arte completa (ex.: Dirt/Stone/Água atuais).")]
+    public bool requiresFilledQuad = false;
 }

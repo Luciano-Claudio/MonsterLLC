@@ -4,6 +4,10 @@ public class DayTimer : MonoBehaviour
 {
     public static DayTimer Instance { get; private set; }
     public float timeRemaining = 100f;
+
+    [Tooltip("Duração padrão (em segundos) de 1 ciclo dia/noite, usada tanto no Dia 1 (MainMenuUI) quanto em todo dia seguinte (ShopHandler) quando eles chamam ResetForNewDay() sem argumento. Único lugar pra configurar isso — hoje é só pra teste (explorar mais tempo), no futuro vira a base de compras que aumentam a duração do dia.")]
+    public float defaultDayDuration = 100f;
+
     private bool dayEnded;
 
     private void Awake() => Instance = this;
@@ -34,6 +38,11 @@ public class DayTimer : MonoBehaviour
         GameEvents.TimeChanged(timeRemaining);
         if (timeRemaining <= 0f) EndDay();
     }
+
+    // Sem argumento = usa defaultDayDuration (o campo configurável no Inspector) — é o que
+    // MainMenuUI/ShopHandler devem chamar normalmente. O overload com argumento continua
+    // existindo pra quem precisar de uma duração pontual diferente da padrão.
+    public void ResetForNewDay() => ResetForNewDay(defaultDayDuration);
 
     public void ResetForNewDay(float duration)
     {

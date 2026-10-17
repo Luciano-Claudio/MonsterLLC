@@ -247,7 +247,12 @@ public class Rogue : HeroController
         bool canRoll = AnimatorStateCheck.IsInState(animator, "Roll");
         if (canRoll)
         {
-            transform.Translate(rollDirection * rollSpeed * Time.deltaTime);
+            // rb.linearVelocity (não Translate, Sprint P3) — base.Update() já zerou a
+            // velocidade neste mesmo frame (não está em "Walk"); aqui sobrescreve com a
+            // velocidade do roll, agora bloqueada de verdade por Collider2D sólido (ex.:
+            // props) em vez de atravessar.
+            if (rb != null) rb.linearVelocity = rollDirection * rollSpeed;
+            else transform.Translate(rollDirection * rollSpeed * Time.deltaTime);
 
             // Empurra (sem dano) cada monstro no caminho 1x só por ativação; sem o HashSet, um
             // monstro parado no trajeto levaria um knockback por frame.

@@ -335,17 +335,18 @@ public class TerrainSelectorTests
         Assert.IsNull(variant);
     }
 
-    // ---- Variante de grama só nasce formando bloco 2×2 de verdade — nunca linha fina ----
-    // (regra só pra baseVariants; patchTerrains/água/dirt/pedra aceitam qualquer disposição).
-    // Histórico: 2 tentativas anteriores exigiam só "1 vizinho reto igual" — pareciam certas no
+    // ---- BiomeTerrainEntry.requiresFilledQuad — só nasce formando bloco 2×2, nunca linha fina ----
+    // Nasceu da pendência da grama (`baseVariants`), mas é um campo genérico — funciona em
+    // QUALQUER lista (patchTerrains, nestedPatches, baseVariants), pra qualquer terreno futuro
+    // cujo RuleTile não tenha arte pra célula única/linha fina (pedido do usuário: ex. tipos de
+    // água de tiers futuros sem conexão pra formas finas).
+    // Histórico: 2 tentativas anteriores (exigir só "1 vizinho reto igual") pareciam certas no
     // raciocínio e nos testes sintéticos, mas o usuário continuou vendo o bug depois de
     // recompilar/reiniciar o Editor inteiro. Um log real (coordenadas + seed de verdade, não
     // offset 0,0) provou que a geração já estava correta (zero isoladas, menor bloco = 2
     // células) — o problema real era os RuleTiles das variantes só terem 15 das ~47 posições de
     // vizinhança configuradas (confirmado contando `m_Sprites:` nos `.asset`), faltando
-    // cobertura pra formas finas como um par de 2 células. Decisão do usuário: restringir a
-    // geração pra só criar blocos 2×2+ reais (`HasFilledQuad`), em vez de desenhar as regras que
-    // faltam agora.
+    // cobertura pra formas finas como um par de 2 células.
 
     [Test]
     public void HasFilledQuad_AllNeighborsMatchSameEntry_ReturnsTrue()
@@ -353,34 +354,22 @@ public class TerrainSelectorTests
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
         biome.baseVariants.Add(entry);
 
-        Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
+        Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, biome.baseVariants, 5, 5, 0f, 0f));
     }
 
     [Test]
-    public void HasFilledQuad_EntryNotInBiome_ReturnsFalse()
+    public void HasFilledQuad_EntryNotInList_ReturnsFalse()
     {
         var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
         // entry não foi adicionada a biome.baseVariants — nenhuma célula pode "vencer" com ela.
 
-        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
-    }
-
-    [Test]
-    public void HasFilledQuad_QuadCellsClaimedByPatchTerrain_AreNotPure_ReturnsFalse()
-    {
-        // Mesmo a entrada "querendo" nascer nos vizinhos, se eles têm Dirt/Pedra/Água por cima
-        // (não são células puras), nenhuma variante nasce ali de verdade — não conta.
-        var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
-        biome.baseVariants.Add(entry);
-        biome.patchTerrains.Add(new BiomeTerrainEntry { terrain = dryDirt, coverageTarget = 2f, noiseScale = 0.08f });
-
-        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, 5, 5, 0f, 0f, biome));
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, biome.baseVariants, 5, 5, 0f, 0f));
     }
 
     [Test]
     public void HasFilledQuad_QuadCellsWonByDifferentEntry_ReturnsFalse()
     {
-        // Uma variante DIFERENTE vence todas as células vizinhas (primeira da lista, cobertura
+        // Uma entrada DIFERENTE vence todas as células vizinhas (primeira da lista, cobertura
         // sempre bate) — no RuleTile isso NÃO conecta com a entrada atual, mesmo ambas sendo
         // "variante de grama" conceitualmente. `water` aqui só representa "qualquer outra
         // entrada", sem relação com o terreno real.
@@ -389,7 +378,45 @@ public class TerrainSelectorTests
         biome.baseVariants.Add(otherEntry); // primeiro na lista = sempre vence
         biome.baseVariants.Add(highGrassEntry);
 
-        Assert.IsFalse(TerrainSelector.HasFilledQuad(highGrassEntry, 5, 5, 0f, 0f, biome));
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(highGrassEntry, biome.baseVariants, 5, 5, 0f, 0f));
+    }
+
+    [Test]
+    public void HasFilledQuad_GeneralizesToPatchTerrainsList_NotJustBaseVariants()
+    {
+        // O mesmo mecanismo, agora testado numa lista de patchTerrains — confirma que
+        // HasFilledQuad não depende de nada específico de baseVariants, só da lista passada.
+        var entry = new BiomeTerrainEntry { terrain = water, coverageTarget = 2f, noiseScale = 0.08f };
+        biome.patchTerrains.Add(entry);
+
+        Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, biome.patchTerrains, 5, 5, 0f, 0f));
+    }
+
+    [Test]
+    public void HasFilledQuad_PurityReferenceLevelClaimsNeighbor_ReturnsFalse()
+    {
+        // Caso específico de baseVariants: mesmo a variante "querendo" nascer nos vizinhos, se
+        // patchTerrains (passado como purityReferenceLevel) reivindica a célula, nenhuma
+        // variante nasce ali de verdade (ChunkTerrainGenerator só chama ChooseBaseVariant em
+        // célula pura) — não pode contar pro quadrado.
+        var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
+        biome.baseVariants.Add(entry);
+        biome.patchTerrains.Add(new BiomeTerrainEntry { terrain = dryDirt, coverageTarget = 2f, noiseScale = 0.08f });
+
+        Assert.IsFalse(TerrainSelector.HasFilledQuad(entry, biome.baseVariants, 5, 5, 0f, 0f, safeZoneRadius: 0f,
+            purityReferenceLevel: biome.patchTerrains));
+    }
+
+    [Test]
+    public void HasFilledQuad_NoPurityReferenceLevel_IgnoresPatchTerrainsEntirely()
+    {
+        // Sem purityReferenceLevel (uso normal em patchTerrains/nestedPatches), o que tem em
+        // patchTerrains não importa pro quadrado — só a própria lista conta.
+        var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 2f, noiseScale = 0.08f };
+        biome.baseVariants.Add(entry);
+        biome.patchTerrains.Add(new BiomeTerrainEntry { terrain = dryDirt, coverageTarget = 2f, noiseScale = 0.08f });
+
+        Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, biome.baseVariants, 5, 5, 0f, 0f));
     }
 
     [Test]
@@ -398,7 +425,7 @@ public class TerrainSelectorTests
         // Varre uma faixa real de células com uma máscara moderada (nem tudo bate, nem nada
         // bate — então existem bordas/pontas de verdade) e confirma que, sempre que
         // ChooseBaseVariant devolver uma variante, a célula fazia parte de um bloco 2×2 real.
-        var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 0.3f, noiseScale = 0.08f };
+        var entry = new BiomeTerrainEntry { terrain = highGrass, coverageTarget = 0.3f, noiseScale = 0.08f, requiresFilledQuad = true };
         biome.baseVariants.Add(entry);
 
         for (int x = 0; x < 25; x++)
@@ -409,11 +436,45 @@ public class TerrainSelectorTests
 
                 if (variant != null)
                 {
-                    Assert.IsTrue(TerrainSelector.HasFilledQuad(entry, x, y, 0f, 0f, biome),
+                    Assert.IsTrue(
+                        TerrainSelector.HasFilledQuad(entry, biome.baseVariants, x, y, 0f, 0f, safeZoneRadius: 0f,
+                            purityReferenceLevel: biome.patchTerrains),
                         $"Variante apareceu fora de um bloco 2×2 em ({x},{y}).");
                 }
             }
         }
+    }
+
+    [Test]
+    public void ChooseTerrainStack_PatchEntryWithRequiresFilledQuad_MatchesWhenQuadIsFilled()
+    {
+        // requiresFilledQuad funcionando de ponta a ponta via ChooseTerrainStack, não só
+        // baseVariants — confirma a generalização pedida pelo usuário.
+        biome.patchTerrains.Add(new BiomeTerrainEntry { terrain = water, coverageTarget = 2f, noiseScale = 0.08f, requiresFilledQuad = true });
+
+        var stack = TerrainSelector.ChooseTerrainStack(5, 5, 0f, 0f, biome);
+
+        Assert.AreEqual(2, stack.Count);
+        Assert.AreEqual(water, stack[1]);
+    }
+
+    [Test]
+    public void ChooseTerrainStack_PatchEntryWithRequiresFilledQuad_SkipsEntryWhenAnotherEntryWinsTheQuad()
+    {
+        // waterEntry bate pelo próprio ruído (coverage sempre verdadeiro), mas como
+        // requiresFilledQuad=true, o quadrado ao redor dela é resolvido com RawMatch na MESMA
+        // lista — e dirtEntry, por vir antes na lista e também cobrir tudo, vence em todo canto
+        // do quadrado. waterEntry nunca forma quadrado PRÓPRIO: passa pra ela mesma ser pulada
+        // (não bate) e dirtEntry — que nem precisa da flag — vence normalmente.
+        var dirtEntry = new BiomeTerrainEntry { terrain = dryDirt, coverageTarget = 2f, noiseScale = 0.08f };
+        var waterEntry = new BiomeTerrainEntry { terrain = water, coverageTarget = 2f, noiseScale = 0.08f, requiresFilledQuad = true };
+        biome.patchTerrains.Add(dirtEntry);
+        biome.patchTerrains.Add(waterEntry);
+
+        var stack = TerrainSelector.ChooseTerrainStack(5, 5, 0f, 0f, biome);
+
+        Assert.AreEqual(2, stack.Count);
+        Assert.AreEqual(dryDirt, stack[1]);
     }
 
     [Test]

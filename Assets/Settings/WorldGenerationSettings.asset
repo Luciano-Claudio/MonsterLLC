@@ -16,3 +16,7 @@ MonoBehaviour:
   chunkSize: 64
   streamingRadiusInChunks: 2
   haloInChunks: 1
+  safeZoneRadius: 12
+  distancePerSpawnDay: 100
+  daySpawnTable: {fileID: 11400000, guid: 7d9cab52b2ad73b40b72366c6d7ae781, type: 2}
+  tierBlendNoiseScale: 0.02

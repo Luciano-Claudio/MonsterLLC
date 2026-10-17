@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b918dc75bbb0bc34a9d7c7696cc6a06a, type: 3}
+  m_Name: EnvironmentProp_Statue_0
+  m_EditorClassIdentifier: Core::EnvironmentPropSO
+  id: Statue_0
+  prefab: {fileID: 8897689020363869075, guid: 6e8cbdfd68555274d91b8ee828c724cb, type: 3}
+  minSpacing: 10
+  density: 0.08
+  jitter: 0.4
+  forbiddenTerrains:
+  - {fileID: 11400000, guid: da61d73e162e437fa175b6d3ccd082be, type: 2}
+  - {fileID: 11400000, guid: 5f5d4bd84eb449d39e7a9ae940bdcea8, type: 2}
+  - {fileID: 11400000, guid: 251d5a0536464660aac10367379ecec9, type: 2}
+  - {fileID: 11400000, guid: af312c428c654ca89b9faf4704d343d8, type: 2}
+  - {fileID: 11400000, guid: 821a1251504b406098b06ddbac410fe6, type: 2}
+  footprintSize: {x: 1, y: 1}
+  canSpawnInSafeZone: 1

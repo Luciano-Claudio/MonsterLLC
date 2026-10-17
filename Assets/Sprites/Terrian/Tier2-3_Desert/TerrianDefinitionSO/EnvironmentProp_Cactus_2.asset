@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b918dc75bbb0bc34a9d7c7696cc6a06a, type: 3}
+  m_Name: EnvironmentProp_Cactus_2
+  m_EditorClassIdentifier: Core::EnvironmentPropSO
+  id: Cactus_2
+  prefab: {fileID: 7346523511831644524, guid: f2c240398be0e754e9c8aa751bda034a, type: 3}
+  minSpacing: 3
+  density: 0.0375
+  jitter: 0.6
+  forbiddenTerrains:
+  - {fileID: 11400000, guid: 11599dfb05b2402cbcbf64cd08484241, type: 2}
+  - {fileID: 11400000, guid: 4041c369eeaf4dc2aa4943c25cc1ead2, type: 2}
+  - {fileID: 11400000, guid: 61a1e3649dc54e1facc6941dab3ecc6c, type: 2}
+  footprintSize: {x: 1, y: 1}
+  canSpawnInSafeZone: 0

@@ -43,7 +43,7 @@ public class ShopHandler : MonoBehaviour
     public void StartNextDay()
     {
         MainMenuUI.CurrentRun.day++;
-        DayTimer.Instance.ResetForNewDay(100f);
+        DayTimer.Instance.ResetForNewDay();
         DemandTracker.Instance.StartDay(MainMenuUI.CurrentRun.day);
         GameStateManager.Instance.SetState(GameState.Gameplay);
         Debug.Log($"[ShopHandler] Iniciando Dia {MainMenuUI.CurrentRun.day}.");

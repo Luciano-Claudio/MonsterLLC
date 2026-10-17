@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15d065ae9cf080f408e1dc4e41b7511c, type: 3}
+  m_Name: BiomeProfile_Tier10
+  m_EditorClassIdentifier: Core::BiomeProfileSO
+  id: 5
+  baseTerrain: {fileID: 11400000, guid: 47ab1bfe9a00455197949ee2215b0ae5, type: 2}
+  patchTerrains:
+  - terrain: {fileID: 11400000, guid: 5e74386dfa9841169b1933a41cc54ee6, type: 2}
+    coverageTarget: 0.3
+    noiseScale: 0.06
+    nestedPatches: []
+    blockedInSafeZone: 0
+    requiresFilledQuad: 0
+  - terrain: {fileID: 11400000, guid: 71839ec9bbfe4b16847d96e65d27a66d, type: 2}
+    coverageTarget: 0.3
+    noiseScale: 0.05
+    nestedPatches: []
+    blockedInSafeZone: 1
+    requiresFilledQuad: 0
+  baseVariants: []
+  props: []

@@ -106,3 +106,12 @@ TestResults*.xml
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Resultados do Test Runner e logs de debug redirecionados pra arquivo (não são source)
+/[Aa]ssets/[Tt]ests/[Rr]esults/
+/[Aa]ssets/[Tt]ests/[Rr]esults.meta
+/[Aa]ssets/[Ll]ogs/
+/[Aa]ssets/[Ll]ogs.meta
+
+# Capturas do Profiler — podem passar de 100MB cada, nunca devem ir pro repositório
+/ProfilerCaptures/
