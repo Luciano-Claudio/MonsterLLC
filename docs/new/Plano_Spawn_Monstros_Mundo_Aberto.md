@@ -1,7 +1,9 @@
 # Plano — Spawn de Monstro Comum no Mundo Aberto (Fase A)
 
 **Status: Fase A IMPLEMENTADA e testada pelo usuário (população, despawn/replacement, distribuição
-de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados funcionando).**
+de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados funcionando). Depois
+desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`) e o Boss (P7)
+foi implementado — ver seção própria abaixo.**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
 bem longa (sincronização do A* Pathfinding com o terreno gerado por chunk) que não pode se perder.
@@ -14,7 +16,8 @@ Rings — testável com o que já existe (14 prefabs de Tier1/Tier2, Sprint 20).
 
 ## Decisão de escopo (Fase A) — o que ficou de fora de propósito
 
-- **Boss (P7)**: sistema próprio, maior, fica pra depois.
+- **Boss (P7)**: sistema próprio, maior, ficou pra depois nesta Fase A — **implementado depois**,
+  ver seção "Boss (P7) — implementado" abaixo.
 - **Ciclo Dia/Noite real**: `DaySpawnDefinition.nightWeights` existe na tabela mas nunca é lido —
   spawn de monstro usa sempre `dayWeights`, igual o terreno já fazia (decisão consistente).
 - **Simulation Rings (P8)**: ver seção própria abaixo — ideia documentada, não implementada (sem
@@ -124,6 +127,42 @@ Não compete com nosso `UpdateGraphs` por chunk (mesma fila de work items do pac
 único cuidado: não guardar `NodeInGridIndex` como identidade estável de nó (muda quando o grafo se
 move) — não fazemos isso em lugar nenhum do nosso código, então sem impacto.
 
+## Boss (P7) — implementado
+
+Depois da limpeza do sistema antigo de Floor (que incluiu remover o `BossSpawnManager` legado,
+Floor-acoplado e com rotação simples), construído do zero, mesma arquitetura do monstro comum
+(`WorldBossSpawnManager`/`BossSpawnSettings`/`BossDefinitionSO`, paralelos a
+`WorldPopulationManager`/`MonsterSpawnSettings`/`EnemyDefinitionSO`), mas com as regras próprias do
+doc de design (Seção 17):
+
+- **Boss Timer** (`BossSpawnSettings.bossSpawnInterval`, default 30s) — decide QUANDO. Cada
+  intervalo completo tenta adicionar 1 boss (bosses anteriores continuam vivos, podem acumular —
+  **sem teto de boss vivo simultâneo**, decisão explícita do usuário).
+- **Boss Tier = Tier predominante** (`WorldBossSpawnManager.TryPickBossDefinition`) — reaproveita
+  `WorldTierSelector.ComputeTierPercentsNonAlloc` (mesma distribuição do monstro comum na posição
+  atual do jogador), mas pega o Tier de MAIOR peso em vez de sortear. Se a pool desse Tier já
+  esgotou, avança pro próximo Tier por ordem de predominância (`PickNextStrongestTier`).
+- **`UsedBossIdsToday`** (`HashSet<BossDefinitionSO>`) — dentro de um Tier, sorteio uniforme entre
+  os ainda não usados (decisão do usuário: sem peso configurável por boss, diferente do `weight` do
+  monstro comum). Ao esgotar TODOS os `BossDefinitionSO` de um Tier específico, esse Tier reseta
+  sozinho (`TryPickUnusedBossForTier`) — decisão do usuário: continuar girando bosses enquanto
+  sobrar tempo de dia, em vez de travar até o próximo `ActualDay`. O reset diário
+  (`GameEvents.OnDayStart`, mesmo gatilho do `DayTimer.ResetForNewDay()`) continua existindo por
+  cima, mas na prática o reset por-Tier tende a disparar primeiro.
+- **Distance Despawn + replacement** (`bossDespawnDistance`, maior que o `enemyDespawnDistance` do
+  monstro comum de propósito) — nunca é morte, repõe a vaga na hora SEM resetar o Boss Timer
+  (`Replacement != novo Boss Timer Event`, doc). `bossReplacementCooldown` protege contra reroll por
+  ficar andando de um lado pro outro bem na borda da distância de despawn.
+- Se o jogador MATA o boss (não despawn por distância), não existe replacement automático — só o
+  próximo Boss Timer repõe.
+- Spawn usa o mesmo `WorldSpawnUtility.TryGetSpawnPosition` do monstro comum (Spawn Annulus, Safe
+  Zone, clearance de obstáculo) com os parâmetros próprios de `BossSpawnSettings`. Todo boss nasce
+  já em combate (`EnemyController.SetIsBoss(true)` + `ForceImmediateAggro()`), sem fase de
+  patrulha/idle.
+- Roster inicial: 7 `BossDefinitionSO` em `Assets/Settings/BossDefinitions/` — 3 Tier1
+  (Goblin King, Mother Slime Blue, Mother Slime Green) + 4 Tier2 (Centaur King, Rat People Royalty,
+  Spider Queen, Werewolf), todos reaproveitando prefabs já existentes em `Assets/Prefabs/Bosses/`.
+
 ## FUTURO — documentar como pendência, não implementar agora
 
 ### Simulation Rings (P8) — otimização de custo por monstro, por distância
@@ -152,23 +191,9 @@ principalmente em janela maximizada. Sem evidência real de que o custo por mons
 construir otimização sem um problema medido é o tipo de trabalho que evitamos a sessão toda. Fica
 pronta aqui pra quando (se) um teste real mostrar queda de FPS com população alta.
 
-### Boss (P7)
-
-Sistema próprio, maior — Boss Timer único por dia, Boss Tier = Tier predominante na distribuição
-atual (não mais um roll BT1-BT10 separado), sem repetição de `BossDefinition` no mesmo `ActualDay`,
-replacement por distância sem resetar o timer. `BossSpawnManager` atual é legado (rotação simples,
-Floor-acoplado) — precisa ser substituído, não adaptado, mesmo critério do `FloorPopulationManager`
-nesta rodada.
-
 ### Ciclo Dia/Noite real
 
 Não existe hoje (`DayTimer` é só um cronômetro único, sem fase interna Dia/Noite). O doc de design
 assume que isso já existe pro spawn de monstro consultar (`nightWeights`) — precisa ser construído
 antes de ativar essa parte da tabela.
 
-### Limpeza do sistema antigo de Floor
-
-Usuário já confirmou 100% morto (`FloorManager`/`FloorRegistry`/`FloorPopulationManager`/
-`FloorSpawnUtility`/`BossSpawnManager`/`MeleeAttackSlotManager` por-Floor/scripts relacionados, ~18
-arquivos que checam `ownerFloor`). Pendente — trabalho de remoção de código morto, separado desta
-rodada de spawn.

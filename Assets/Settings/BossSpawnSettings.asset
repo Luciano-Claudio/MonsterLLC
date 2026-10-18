@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c0e978b04c46713d0b7fc83fd5c0b9, type: 3}
+  m_Name: BossSpawnSettings
+  m_EditorClassIdentifier: Core::BossSpawnSettings
+  roster:
+  - {fileID: 11400000, guid: 9945c4bb408d1214ab3a0b9ade159a3f, type: 2}
+  - {fileID: 11400000, guid: 6e77a2fcfbd1fd5f354f1777a49a8f1e, type: 2}
+  - {fileID: 11400000, guid: 9ff5ae3ffe44b9e27edb5c403a797bc5, type: 2}
+  - {fileID: 11400000, guid: 5eed5bed5bcd0223b20895339440a2a4, type: 2}
+  - {fileID: 11400000, guid: a8dd80435169bacc2f0624879da466a4, type: 2}
+  - {fileID: 11400000, guid: dc8e73e9bc3a6fce84173a4c08fa2576, type: 2}
+  - {fileID: 11400000, guid: 8ffaed39d22bdbdbeecfe2df70767f08, type: 2}
+  bossSpawnInterval: 30
+  bossDespawnDistance: 45
+  bossReplacementSpawnMinDistance: 15
+  bossReplacementSpawnMaxDistance: 25
+  bossReplacementCooldown: 10
+  spawnSafetyPadding: 0
+  maxSpawnPositionAttempts: 20
+  spawnObstacleClearanceRadius: 0.6
+  obstacleLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
