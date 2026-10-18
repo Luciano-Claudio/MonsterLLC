@@ -35,6 +35,12 @@ public static class WorldSpawnUtility
     // direto na posição candidata, raio do tamanho real do monstro + margem — rejeita e tenta
     // de novo se colidir com qualquer coisa da `obstacleLayerMask`, sem nunca tocar no grafo
     // nem no Erosion (que continua 0, pathing normal sem restrição extra nenhuma).
+    // `preferOutsideCameraView` (default false — Seção 23/P9 do doc de design): PREFERÊNCIA,
+    // nunca requisito — "estar fora da câmera não torna uma posição válida caso ela esteja
+    // dentro da Safe Zone" (a Safe Zone sempre domina). Dentro do mesmo laço de tentativas,
+    // guarda o primeiro candidato totalmente válido como fallback e continua tentando achar
+    // um que TAMBÉM fique fora da visão atual da câmera; se as tentativas acabarem sem achar
+    // um assim, usa o fallback (nunca falha o spawn só por causa disso).
     public static bool TryGetSpawnPosition(
         Vector2 center,
         float minAnnulusDistance,
@@ -43,7 +49,8 @@ public static class WorldSpawnUtility
         int maxAttempts,
         out Vector3 position,
         float obstacleClearanceRadius = 0f,
-        LayerMask obstacleLayerMask = default)
+        LayerMask obstacleLayerMask = default,
+        bool preferOutsideCameraView = false)
     {
         position = default;
 
@@ -54,6 +61,8 @@ public static class WorldSpawnUtility
         constraint.graphMask = GraphMask.FromGraph(graph);
 
         float minDistanceFromOriginSqr = minDistanceFromOrigin * minDistanceFromOrigin;
+        bool hasFallback = false;
+        Vector3 fallbackPosition = default;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
@@ -79,11 +88,40 @@ public static class WorldSpawnUtility
             // Clearance física — só pro SPAWN, nunca muda o que o grafo considera andável.
             if (obstacleClearanceRadius > 0f && Physics2D.OverlapCircle(snapped, obstacleClearanceRadius, obstacleLayerMask) != null) continue;
 
-            position = snapped;
+            if (!preferOutsideCameraView || IsOutsideCameraView(snapped))
+            {
+                position = snapped;
+                return true;
+            }
+
+            if (!hasFallback) // candidato válido, mas visível — guarda só o primeiro, não precisa de mais
+            {
+                hasFallback = true;
+                fallbackPosition = snapped;
+            }
+        }
+
+        if (hasFallback)
+        {
+            position = fallbackPosition;
             return true;
         }
 
         return false;
+    }
+
+    // Camera.main reflete o que está sendo renderizado de verdade (PixelPerfectCamera +
+    // CinemachineBrain já resolveram lente/tamanho ali) — mais simples e sempre correto do
+    // que tentar calcular o enquadramento manualmente a partir da CinemachineCamera. Sem
+    // câmera ativa (raro, só em teste isolado) trata como "fora de visão" — preferência de
+    // apresentação nunca deveria travar o spawn por um detalhe de setup de cena.
+    private static bool IsOutsideCameraView(Vector2 worldPos)
+    {
+        var cam = Camera.main;
+        if (cam == null) return true;
+
+        Vector3 viewport = cam.WorldToViewportPoint(worldPos);
+        return viewport.z <= 0f || viewport.x < 0f || viewport.x > 1f || viewport.y < 0f || viewport.y > 1f;
     }
 
     // Mesmo padrão de FloorSpawnUtility.RestrictToOwnerGraph, mas pro grafo global — impede

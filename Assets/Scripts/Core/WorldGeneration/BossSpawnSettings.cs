@@ -35,4 +35,9 @@ public class BossSpawnSettings : ScriptableObject
     [Tooltip("Mesmo mecanismo do monstro comum (WorldSpawnUtility) — raio de sondagem física pra não nascer colado numa borda.")]
     public float spawnObstacleClearanceRadius = 0.6f;
     public LayerMask obstacleLayerMask;
+
+    [Header("Visão da câmera (doc de design, Seção 23/P9)")]
+    [Range(0f, 1f)]
+    [Tooltip("% dos spawns de boss (rolado individualmente, não por BossDefinitionSO) que PREFEREM nascer fora da visão atual da câmera — o resto pode nascer perto/à vista do jogador de propósito (decisão do usuário: dar um ar de perigo). Mesmo mecanismo do monstro comum, valor próprio e independente aqui.")]
+    public float outsideCameraViewChance = 0.6f;
 }

@@ -93,10 +93,12 @@ public class WorldBossSpawnManager : MonoBehaviour
         if (!TryPickBossDefinition(player.position, out var definition)) return; // pool do dia esgotada em todos os Tiers elegíveis — vaga fica pro próximo ciclo
 
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + bossSettings.spawnSafetyPadding;
+        // Rolado por spawn individual (não por BossDefinitionSO) — mesmo critério do monstro comum.
+        bool preferOutsideView = Random.value < bossSettings.outsideCameraViewChance;
         if (!WorldSpawnUtility.TryGetSpawnPosition(
                 player.position, bossSettings.bossReplacementSpawnMinDistance, bossSettings.bossReplacementSpawnMaxDistance,
                 minDistanceFromOrigin, bossSettings.maxSpawnPositionAttempts, out var spawnPosition,
-                bossSettings.spawnObstacleClearanceRadius, bossSettings.obstacleLayerMask))
+                bossSettings.spawnObstacleClearanceRadius, bossSettings.obstacleLayerMask, preferOutsideView))
         {
             return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
         }

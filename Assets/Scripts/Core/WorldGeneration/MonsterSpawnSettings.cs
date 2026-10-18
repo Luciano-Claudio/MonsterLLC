@@ -47,4 +47,9 @@ public class MonsterSpawnSettings : ScriptableObject
 
     [Tooltip("Layer(s) considerada(s) obstáculo pra checagem acima — mesma layer usada no Obstacle Layer Mask do GridGraph OpenWorld (ex.: \"Collision\").")]
     public LayerMask obstacleLayerMask;
+
+    [Header("Visão da câmera (doc de design, Seção 23/P9)")]
+    [Range(0f, 1f)]
+    [Tooltip("% dos spawns (rolado individualmente por monstro, não por EnemyDefinitionSO) que PREFEREM nascer fora da visão atual da câmera — o resto pode nascer perto/à vista do jogador de propósito (decisão do usuário: dar um ar de perigo). Nunca sobrepõe a Safe Zone (ver WorldSpawnUtility.TryGetSpawnPosition) — é só uma preferência de posição dentro do Spawn Annulus.")]
+    public float outsideCameraViewChance = 0.6f;
 }

@@ -228,3 +228,27 @@ inteiro.
   barato por distância — é mais uma configuração de asset por prefab do que lógica, e o
   `Light2D`/câmera já naturalmente não renderiza monstro fora de tela a essa distância.
 
+## Spawn preferindo fora da visão da câmera (P9, parte dele) — implementado
+
+Doc de design, Seção 23: "uma posição precisa passar pelas duas verificações quando aplicável:
+OutsideSafeZone e preferencialmente: OutsideCameraView. Estar fora da câmera não torna uma posição
+válida caso ela esteja dentro da Safe Zone." A rodada de Game Feel/câmera (Cinemachine Impulse/
+Target Group/boss reveal) ficou fora deste doc — só a parte de spawn entra aqui.
+
+- **`WorldSpawnUtility.TryGetSpawnPosition`** ganhou `preferOutsideCameraView` (default `false`,
+  aditivo). Dentro do mesmo laço de tentativas já existente: guarda o primeiro candidato
+  totalmente válido (Safe Zone + nó caminhável + clearance de obstáculo) como fallback e continua
+  tentando achar um que TAMBÉM fique fora da visão atual da câmera; se as tentativas acabarem sem
+  achar um assim, usa o fallback — nunca falha o spawn só por causa disso (a Safe Zone continua
+  sendo a única verificação que de fato bloqueia).
+- Checagem via `Camera.main.WorldToViewportPoint` — reflete o que está sendo renderizado de
+  verdade (já passou por `PixelPerfectCamera`/`CinemachineBrain`), mais simples e sempre correto
+  do que recalcular o enquadramento manualmente a partir da `CinemachineCamera`.
+- **`outsideCameraViewChance`** (`MonsterSpawnSettings`/`BossSpawnSettings`, padrão `0.6` = 60%) —
+  decisão do usuário: não é por TIPO de monstro/boss, é uma % rolada em CADA spawn individual
+  (`Random.value < outsideCameraViewChance`), independente de qual `EnemyDefinitionSO`/
+  `BossDefinitionSO` foi sorteado. Exemplo do usuário: população alvo de 50 → ~30 nascem fora da
+  tela, ~20 nascem perto/à vista do jogador de propósito, pra dar um ar de perigo.
+  `WorldPopulationManager`/`WorldBossSpawnManager` rolam isso a cada chamada de spawn (inclusive
+  replacement por despawn de distância).
+

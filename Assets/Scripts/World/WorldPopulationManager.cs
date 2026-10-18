@@ -121,10 +121,13 @@ public class WorldPopulationManager : MonoBehaviour
         if (!TryPickEnemyDefinition(tierIndex + 1, out var definition)) return; // roster inteiro vazio, nem Tier1 cadastrado
 
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
+        // Rolado por spawn individual (não por EnemyDefinitionSO) — decisão do usuário: uma %
+        // fixa dos monstros nasce perto/à vista do jogador de propósito, dá um ar de perigo.
+        bool preferOutsideView = Random.value < spawnSettings.outsideCameraViewChance;
         if (!WorldSpawnUtility.TryGetSpawnPosition(
                 player.position, spawnSettings.replacementSpawnMinDistance, spawnSettings.replacementSpawnMaxDistance,
                 minDistanceFromOrigin, spawnSettings.maxSpawnPositionAttempts, out var spawnPosition,
-                spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask))
+                spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask, preferOutsideView))
         {
             return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
         }
