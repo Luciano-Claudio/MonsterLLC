@@ -8,7 +8,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WorldGenerationSettings", menuName = "MonsterLLC/World Generation Settings")]
 public class WorldGenerationSettings : ScriptableObject
 {
-    [Tooltip("Seed determinística do mundo desta run. Sprint P10 passa a ler isto do RunState em vez do asset (GDD Seção 15/29).")]
+    [Tooltip("Sprint P10: a seed de verdade passou a morar em RunState.worldSeed (sorteada em RunCreation.CreateNewRun — cada jogo novo tem um mundo diferente). Este campo virou só o fallback de teste do Editor: usado quando ChunkTerrainGenerator/ChunkStreamer têm useTestWorldSeedOverride ligado, ou quando ainda não existe run nenhuma (fora do Play mode).")]
     public int worldSeed = 0;
 
     [Tooltip("Tamanho de cada chunk, em unidades de mundo. Ilustrativo (32x32 ou 64x64) — medir em protótipo antes de fechar.")]

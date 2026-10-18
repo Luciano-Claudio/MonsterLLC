@@ -70,7 +70,11 @@ public class ChunkStreamer : MonoBehaviour
     // WorldSeed + coordenada.
     public ChunkRuntimeData GenerateChunkData(ChunkCoord coord)
     {
-        return new ChunkRuntimeData(coord, settings.worldSeed);
+        // RunState.worldSeed é a fonte de verdade (Sprint P10) — settings.worldSeed só entra
+        // como fallback quando ainda não existe run nenhuma (ex.: teste isolado de Editor, ver
+        // ChunkStreamingDeterminismTest, que monta ChunkStreamer sem passar por MainMenuUI).
+        int worldSeed = MainMenuUI.CurrentRun != null ? MainMenuUI.CurrentRun.worldSeed : settings.worldSeed;
+        return new ChunkRuntimeData(coord, worldSeed);
     }
 
     // Consulta um canal de hash de um chunk vizinho mesmo que ele não esteja ativo agora —

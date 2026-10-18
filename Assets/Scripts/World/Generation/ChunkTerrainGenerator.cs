@@ -59,6 +59,9 @@ public class ChunkTerrainGenerator : MonoBehaviour
     [Range(1, 30)]
     public int testDayOverride = 1;
 
+    [Tooltip("Se marcado, ignora a seed real da run (RunState.worldSeed, sorteada em RunCreation.CreateNewRun) e usa settings.worldSeed no lugar — só pra testar a mesma seed sempre, sem depender de qual run começou.")]
+    public bool useTestWorldSeedOverride;
+
     [Header("Performance / Streaming (Sprint P4)")]
     [Tooltip("Orçamento de tempo real (milissegundos) de trabalho por frame durante o streaming NORMAL (chunk entrando no raio enquanto o jogador anda) — passado esse tempo, devolve o frame e continua no próximo. Início de jogo/Continuar e o botão \"Regenerar Mundo\" NÃO usam isso — continuam síncronos/rápidos de propósito (eventos pontuais, não streaming contínuo). docs/new/Plano_Performance_Streaming_Chunks.md, item 4.")]
     public float streamingMsBudgetPerFrame = 2f;
@@ -150,12 +153,37 @@ public class ChunkTerrainGenerator : MonoBehaviour
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
-    private void Awake()
+    // RunState.worldSeed é a fonte de verdade (Sprint P10) — settings.worldSeed vira só o
+    // fallback de teste (useTestWorldSeedOverride) ou pra quando não existe run nenhuma ainda
+    // (ex.: Editor fora do Play mode).
+    private int EffectiveWorldSeed
     {
-        int seed = settings != null ? settings.worldSeed : 0;
+        get
+        {
+            if (!useTestWorldSeedOverride && MainMenuUI.CurrentRun != null) return MainMenuUI.CurrentRun.worldSeed;
+            return settings != null ? settings.worldSeed : 0;
+        }
+    }
+
+    // Achado real (timing): Awake() roda assim que a cena carrega, ANTES do jogador clicar
+    // "Novo Jogo"/"Continuar" no MainMenuUI — nesse instante MainMenuUI.CurrentRun ainda é
+    // null, então EffectiveWorldSeed cairia sempre no fallback (settings.worldSeed) mesmo
+    // numa run real. Na prática isso é inofensivo aqui (nenhum chunk é pintado antes do herói
+    // nascer — ChunkStreamer.RefreshAroundTarget só roda dentro de HandleHeroSpawned, então a
+    // fila do ProcessPipeline iniciado abaixo fica vazia até lá), mas o offset precisa ser
+    // RECALCULADO em HandleHeroSpawned (ver lá), já com a seed certa da run, antes do primeiro
+    // chunk pintar de verdade.
+    private void RecomputeSeedOffsets()
+    {
+        int seed = EffectiveWorldSeed;
         // Offset derivado da seed, nunca de Random/Time — mesma seed, mesmo deslocamento, sempre.
         seedOffsetX = WorldHash.Hash2DFloat(1, 0, channel: 900, seed: seed) * 10000f;
         seedOffsetY = WorldHash.Hash2DFloat(0, 1, channel: 900, seed: seed) * 10000f;
+    }
+
+    private void Awake()
+    {
+        RecomputeSeedOffsets();
 
         int cellCount = settings != null ? settings.chunkSize * settings.chunkSize : 0;
         tierBaseBuffer = new TileBase[WorldTierSelector.TierGroupCount][];
@@ -350,6 +378,11 @@ public class ChunkTerrainGenerator : MonoBehaviour
     private void HandleHeroSpawned(Transform hero)
     {
         if (ChunkStreamer.Instance == null || settings == null) return;
+
+        // Recalcula AQUI (não só em Awake) — MainMenuUI.CurrentRun só fica disponível depois
+        // que o jogador clica "Novo Jogo"/"Continuar", bem depois de Awake() já ter rodado.
+        // Este é o ponto certo: nenhum chunk foi pintado ainda (ver RecomputeSeedOffsets).
+        RecomputeSeedOffsets();
 
         // ProceduralGraphMover.target não dá pra pré-configurar no Editor (o herói só existe a
         // partir do Instantiate em runtime) — seta aqui, mesmo padrão de evento já usado pro
@@ -1079,7 +1112,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
                 // encontrado pelo usuário: várias árvores empilhadas no mesmo ponto).
                 int propSalt = WorldHash.HashString(prop.id);
                 var positions = PropPlacement.GenerateCandidatePositions(
-                    originX, originY, size, prop.minSpacing, prop.density, prop.jitter, settings.worldSeed, propSalt);
+                    originX, originY, size, prop.minSpacing, prop.density, prop.jitter, EffectiveWorldSeed, propSalt);
 
                 Vector2 halfExtent = prop.footprintSize * 0.5f;
 

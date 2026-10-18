@@ -3,7 +3,8 @@
 **Status: Fase A IMPLEMENTADA e testada pelo usuário (população, despawn/replacement, distribuição
 de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados funcionando). Depois
 desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`), o Boss (P7)
-foi implementado, o Ciclo Dia/Noite real (lógica + visual) também, e o Simulation Rings (P8) também
+foi implementado, o Ciclo Dia/Noite real (lógica + visual) também, o Simulation Rings (P8) também, o
+spawn fora da visão da câmera (P9) também, e o WorldSeed migrou pro RunState (parte do P10) também
 — ver seções próprias abaixo.**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
@@ -251,4 +252,32 @@ Target Group/boss reveal) ficou fora deste doc — só a parte de spawn entra aq
   tela, ~20 nascem perto/à vista do jogador de propósito, pra dar um ar de perigo.
   `WorldPopulationManager`/`WorldBossSpawnManager` rolam isso a cada chamada de spawn (inclusive
   replacement por despawn de distância).
+
+## WorldSeed migrado pro RunState (P10, parte dele) — implementado
+
+**Achado real**: `RunState` (o save) não tinha NENHUM campo de seed nem de Tier Suppression. A
+seed do mundo vinha fixa de `WorldGenerationSettings.worldSeed` (compartilhada entre TODAS as
+runs) — ou seja, toda run nova gerava exatamente o MESMO mundo até agora. Tier Suppression nem
+existe como mecânica ainda (`WorldTierSelector.ComputeTierPercentsNonAlloc` já tem o parâmetro
+`suppressedTiers`, mas nenhum chamador real preenche isso — sem loja, sem estado) — decisão do
+usuário: migrar só a seed agora, Tier Suppression fica pendente pra quando a mecânica de loja/
+upgrade existir de verdade.
+
+- **`RunState.worldSeed`** (novo campo) — sorteado 1x em `RunCreation.CreateNewRun` (chamado pelo
+  `MainMenuUI.NewGame()`), não em `RunState` (que só guarda estado). Save antigo sem esse campo
+  carrega `0` no load — mesmo valor fixo que o asset sempre teve, nenhuma migração de dado
+  necessária.
+- **`ChunkTerrainGenerator`/`ChunkStreamer`** passam a ler `MainMenuUI.CurrentRun.worldSeed` em vez
+  de `settings.worldSeed` diretamente. `WorldGenerationSettings.worldSeed` vira só o fallback de
+  teste do Editor (`useTestWorldSeedOverride`, novo toggle em `ChunkTerrainGenerator`, mesmo
+  padrão do `useTestDayOverride`) ou pra quando ainda não existe run nenhuma.
+- **Achado real de timing, correção necessária**: `ChunkTerrainGenerator.Awake()` roda assim que a
+  cena carrega, ANTES do jogador clicar "Novo Jogo" no `MainMenuUI` — nesse instante
+  `MainMenuUI.CurrentRun` ainda é `null`, então calcular `seedOffsetX`/`seedOffsetY` só em
+  `Awake()` (como estava) sempre pegaria o fallback, nunca a seed real da run. Inofensivo por
+  enquanto (nenhum chunk pinta antes do herói nascer — `ChunkStreamer.RefreshAroundTarget` só
+  roda dentro de `HandleHeroSpawned`), mas corrigido mesmo assim: o cálculo virou
+  `RecomputeSeedOffsets()`, chamado em `Awake()` (valor provisório, nunca realmente consumido) E
+  de novo no INÍCIO de `HandleHeroSpawned` (valor definitivo, já com `MainMenuUI.CurrentRun`
+  garantidamente setado, antes do primeiro chunk pintar de verdade).
 

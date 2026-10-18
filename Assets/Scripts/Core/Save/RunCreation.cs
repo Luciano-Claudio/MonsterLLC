@@ -9,7 +9,10 @@ public static class RunCreation
             map = map,
             day = 1,
             gold = 0,
-            weaponTier = "Basic"
+            weaponTier = "Basic",
+            // Sorteada 1x por jogo novo — antes era um valor fixo no asset
+            // WorldGenerationSettings, gerando o MESMO mundo em toda run.
+            worldSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue)
         };
     }
 }
