@@ -5,7 +5,10 @@ de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados 
 desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`), o Boss (P7)
 foi implementado, o Ciclo Dia/Noite real (lógica + visual) também, o Simulation Rings (P8) também, o
 spawn fora da visão da câmera (P9) também, e o WorldSeed migrou pro RunState (parte do P10) também
-— ver seções próprias abaixo.**
+— ver seções próprias abaixo. **Full Migration Test (P11) confirmado pelo usuário** — checklist
+completo (terreno, Safe Zone, população, Boss, Simulation Rings, Game Feel, Floor/Save) passou sem
+problema reportado. Pré-Deadline Mundo Único (P1-P11) fecha aqui — só falta Tier Suppression
+(pendência separada, documentada acima, mecânica que nunca existiu de verdade).**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
 bem longa (sincronização do A* Pathfinding com o terreno gerado por chunk) que não pode se perder.
