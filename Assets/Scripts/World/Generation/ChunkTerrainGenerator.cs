@@ -153,6 +153,11 @@ public class ChunkTerrainGenerator : MonoBehaviour
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
+    // Tier Suppression (resto do P10) — decisão do usuário: suprimir um Tier remove também o
+    // bioma visual do terreno, não só o monstro/boss (WorldPopulationManager/
+    // WorldBossSpawnManager já respeitavam isso, o terreno não respeitava até agora).
+    private int SuppressedTierCount => MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
+
     // RunState.worldSeed é a fonte de verdade (Sprint P10) — settings.worldSeed vira só o
     // fallback de teste (useTestWorldSeedOverride) ou pra quando não existe run nenhuma ainda
     // (ex.: Editor fora do Play mode).
@@ -637,6 +642,11 @@ public class ChunkTerrainGenerator : MonoBehaviour
         StopAllCoroutines();
         pendingPaint.Clear();
 
+        // População inteira renasce do zero sob as regras atuais (ex.: Tier Suppression comprada
+        // nesta sessão) — nunca é morte (WorldPopulationManager/WorldBossSpawnManager escutam e
+        // só dão Destroy(), sem loot/kill).
+        GameEvents.ClearAllEnemies();
+
         // Limpa TUDO que pode ter sobrado de um clique anterior interrompido — não só
         // `paintedChunks` (que só reflete chunks que terminaram de pintar, inclusive os
         // OCULTOS — item 5 nunca os remove desse set), mas também qualquer coisa que estava na
@@ -696,7 +706,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
             distanceFromCenter, settings.safeZoneRadius, settings.distancePerSpawnDay, actualDay);
 
         var dayDef = settings.daySpawnTable != null ? settings.daySpawnTable.GetDay(effectiveDay) : null;
-        WorldTierSelector.ComputeTierGroupPercentsNonAlloc(dayDef, tierGroupPercentsBuffer);
+        WorldTierSelector.ComputeTierGroupPercentsNonAlloc(dayDef, tierGroupPercentsBuffer, SuppressedTierCount);
 
         return WorldTierSelector.ChooseActiveTierGroup(
             cellX, cellY, seedOffsetX, seedOffsetY, settings.tierBlendNoiseScale, tierGroupPercentsBuffer);
@@ -724,7 +734,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
         if (effectiveDay != haloEffectiveDayCache)
         {
             var dayDef = settings.daySpawnTable != null ? settings.daySpawnTable.GetDay(effectiveDay) : null;
-            WorldTierSelector.ComputeTierGroupPercentsNonAlloc(dayDef, tierGroupPercentsBuffer);
+            WorldTierSelector.ComputeTierGroupPercentsNonAlloc(dayDef, tierGroupPercentsBuffer, SuppressedTierCount);
             haloEffectiveDayCache = effectiveDay;
         }
 

@@ -12,7 +12,8 @@ public static class RunCreation
             weaponTier = "Basic",
             // Sorteada 1x por jogo novo — antes era um valor fixo no asset
             // WorldGenerationSettings, gerando o MESMO mundo em toda run.
-            worldSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue)
+            worldSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
+            suppressedTierCount = 0 // todo jogo novo começa sem nenhum Tier suprimido
         };
     }
 }

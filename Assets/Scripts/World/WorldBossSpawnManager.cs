@@ -38,12 +38,14 @@ public class WorldBossSpawnManager : MonoBehaviour
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
         GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
         GameEvents.OnDayStart -= HandleDayStart;
+        GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
     }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
@@ -51,6 +53,19 @@ public class WorldBossSpawnManager : MonoBehaviour
     // Novo ActualDay -> UsedBossIdsToday.Clear() (doc, Seção 17.3) — mesmo gatilho que
     // DayTimer.ResetForNewDay() já usa pra avisar o resto do jogo (ShopHandler/MainMenuUI).
     private void HandleDayStart() => usedBossIdsToday.Clear();
+
+    // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill). Não mexe
+    // em usedBossIdsToday nem em bossTimer de propósito — a identidade diária e o timer
+    // continuam contando normal, só os bosses vivos agora são removidos (o próximo Boss Timer
+    // já respeita Tier Suppression sozinho, via TryPickBossDefinition).
+    private void HandleClearAllEnemies()
+    {
+        foreach (var boss in aliveBosses)
+        {
+            if (boss != null) Destroy(boss);
+        }
+        aliveBosses.Clear();
+    }
 
     private void Update()
     {
@@ -135,7 +150,8 @@ public class WorldBossSpawnManager : MonoBehaviour
 
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
         bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, isNight: isNight);
+        int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight);
 
         for (int t = 0; t < WorldTierSelector.MonsterTierCount; t++) tierVisitedScratch[t] = false;
 

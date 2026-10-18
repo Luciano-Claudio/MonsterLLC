@@ -59,8 +59,13 @@ public static class WorldTierSelector
     // chamador). Existe pelo mesmo motivo de `TerrainSelector.ChooseTerrainStackNonAlloc`:
     // isso roda 1x por célula do mundo (até milhares de vezes por chunk), e a versão
     // alocando já causou engasgo de GC uma vez nesta sprint — não repetir o erro aqui.
-    // `buffer` precisa ter pelo menos `TierGroupCount` posições.
-    public static void ComputeTierGroupPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer)
+    // `buffer` precisa ter pelo menos `TierGroupCount` posições. `suppressedTierCount` (padrão
+    // 0) — decisão do usuário: suprimir um Tier remove TANTO o monstro/boss QUANTO o bioma
+    // visual do terreno (mesmo critério sequencial T1,T2,T3... de ComputeTierPercentsNonAlloc).
+    // Um grupo de terreno cobre vários Tiers individuais (ex.: Tier2-3 = T2+T3) — só fica
+    // totalmente suprimido quando TODOS os Tiers dele estiverem suprimidos; parcialmente
+    // suprimido, o "mais forte" é calculado só entre os Tiers restantes do grupo.
+    public static void ComputeTierGroupPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, int suppressedTierCount = 0)
     {
         for (int g = 0; g < TierGroupCount; g++) buffer[g] = 0f;
         if (dayDef == null || dayDef.dayWeights == null) return;
@@ -71,6 +76,7 @@ public static class WorldTierSelector
             float strongest = 0f;
             for (int t = startTierIndex; t < startTierIndex + count && t < dayDef.dayWeights.Length; t++)
             {
+                if (t < suppressedTierCount) continue; // Tier suprimido não compete pelo "mais forte" do grupo
                 if (dayDef.dayWeights[t] > strongest) strongest = dayDef.dayWeights[t];
             }
             buffer[g] = strongest / 100f;
@@ -89,7 +95,24 @@ public static class WorldTierSelector
             {
                 if (buffer[g] > 0f) buffer[g] /= activeSum;
             }
+            return;
         }
+
+        // Achado real (bug reportado): dia com peso só em Tiers agora suprimidos (ex.: Dia 1 =
+        // 100% Tier1, jogador suprime o Tier1) zera TODO grupo, sem isso a célula fica sem
+        // bioma nenhum pra sempre. Mesmo critério de "nunca deixar buraco" do resto do sistema
+        // — força 100% no grupo do Tier não suprimido mais baixo.
+        if (suppressedTierCount < MonsterTierCount) buffer[GroupForTier(suppressedTierCount)] = 1f;
+    }
+
+    private static int GroupForTier(int tierIndex0Based)
+    {
+        for (int g = 0; g < TierGroupCount; g++)
+        {
+            var (startTierIndex, count) = TierGroupRanges[g];
+            if (tierIndex0Based >= startTierIndex && tierIndex0Based < startTierIndex + count) return g;
+        }
+        return 0;
     }
 
     // Escolhe o grupo ativo numa célula por amostragem cumulativa (tipo roleta) sobre 1 único
@@ -129,14 +152,16 @@ public static class WorldTierSelector
     // que sobraram, sem piso nenhum).
     public const int MonsterTierCount = 10;
 
-    // `buffer` precisa ter pelo menos MonsterTierCount posições. `suppressedTiers`
-    // (opcional, null = nenhum suprimido) zera o peso de qualquer tier marcado true —
-    // Tier Suppression (compra de remoção de camada, upgrade sequencial P1→P2→...).
+    // `buffer` precisa ter pelo menos MonsterTierCount posições. `suppressedTierCount`
+    // (padrão 0 = nenhum suprimido) zera o peso dos PRIMEIROS N tiers (T1, T2, T3...) — Tier
+    // Suppression (doc de design, Seção 12: "A regra deverá continuar sequencial... Não poderá
+    // escolher livremente um Tier", compra 1 remove T1, compra 2 remove T2, etc. — por isso um
+    // único int basta pra representar o estado inteiro, em vez de um array de flags por tier).
     // `isNight` (default false) troca `dayWeights` por `nightWeights` — usado só pelo spawn de
     // monstro/boss (Ciclo Dia/Noite real), NUNCA pelo terreno/bioma
     // (ComputeTierGroupPercentsNonAlloc não tem esse parâmetro de propósito — decisão do
     // usuário: bioma não deve oscilar a cada troca de fase, só avançar com dia/distância).
-    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, bool[] suppressedTiers = null, bool isNight = false)
+    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, int suppressedTierCount = 0, bool isNight = false)
     {
         for (int t = 0; t < MonsterTierCount; t++) buffer[t] = 0f;
         var weights = isNight ? dayDef?.nightWeights : dayDef?.dayWeights;
@@ -145,7 +170,7 @@ public static class WorldTierSelector
         float sum = 0f;
         for (int t = 0; t < MonsterTierCount && t < weights.Length; t++)
         {
-            if (suppressedTiers != null && t < suppressedTiers.Length && suppressedTiers[t]) continue;
+            if (t < suppressedTierCount) continue; // Tier suprimido — peso zerado, redistribuído proporcionalmente abaixo (normalização, mesma matemática do doc, Seção 13)
             buffer[t] = weights[t] / 100f;
             sum += buffer[t];
         }
@@ -153,7 +178,14 @@ public static class WorldTierSelector
         if (sum > 0f)
         {
             for (int t = 0; t < MonsterTierCount; t++) buffer[t] /= sum;
+            return;
         }
+
+        // Mesmo problema do terreno (ver ComputeTierGroupPercentsNonAlloc): dia com peso só em
+        // Tiers agora suprimidos zera TODO o buffer — sem isso, RollMonsterTier devolve -1 pra
+        // sempre e o spawn para de funcionar por completo (bug real reportado pelo usuário).
+        // Força 100% no Tier não suprimido mais baixo.
+        if (suppressedTierCount < MonsterTierCount) buffer[suppressedTierCount] = 1f;
     }
 
     // Roleta cumulativa igual ChooseActiveTierGroup, mas pros 10 tiers individuais

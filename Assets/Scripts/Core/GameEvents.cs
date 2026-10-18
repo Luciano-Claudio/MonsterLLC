@@ -94,6 +94,16 @@ public static class GameEvents
     public static event Action<Transform> OnBossSpawned;
     public static void BossSpawned(Transform boss) => OnBossSpawned?.Invoke(boss);
 
+    // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
+    // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão
+    // do usuário: nos dois casos a população precisa renascer do zero sob as regras atuais
+    // (Tier suprimido não pode deixar monstro/boss "velho" daquele Tier sobrando na cena).
+    // WorldPopulationManager/WorldBossSpawnManager escutam isso e destroem (nunca Die(), sem
+    // loot/kill) tudo que está vivo — o próprio ciclo de população/Boss Timer detecta "caiu pra
+    // 0" e repõe sozinho no próximo Update(), sem precisar forçar spawn aqui.
+    public static event Action OnClearAllEnemies;
+    public static void ClearAllEnemies() => OnClearAllEnemies?.Invoke();
+
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.
 }

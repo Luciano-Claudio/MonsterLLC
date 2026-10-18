@@ -7,8 +7,8 @@ foi implementado, o Ciclo Dia/Noite real (lógica + visual) também, o Simulatio
 spawn fora da visão da câmera (P9) também, e o WorldSeed migrou pro RunState (parte do P10) também
 — ver seções próprias abaixo. **Full Migration Test (P11) confirmado pelo usuário** — checklist
 completo (terreno, Safe Zone, população, Boss, Simulation Rings, Game Feel, Floor/Save) passou sem
-problema reportado. Pré-Deadline Mundo Único (P1-P11) fecha aqui — só falta Tier Suppression
-(pendência separada, documentada acima, mecânica que nunca existiu de verdade).**
+problema reportado. Tier Suppression (resto do P10) também implementado logo depois. Pré-Deadline
+Mundo Único (P1-P11) fecha aqui por completo.**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
 bem longa (sincronização do A* Pathfinding com o terreno gerado por chunk) que não pode se perder.
@@ -260,11 +260,9 @@ Target Group/boss reveal) ficou fora deste doc — só a parte de spawn entra aq
 
 **Achado real**: `RunState` (o save) não tinha NENHUM campo de seed nem de Tier Suppression. A
 seed do mundo vinha fixa de `WorldGenerationSettings.worldSeed` (compartilhada entre TODAS as
-runs) — ou seja, toda run nova gerava exatamente o MESMO mundo até agora. Tier Suppression nem
-existe como mecânica ainda (`WorldTierSelector.ComputeTierPercentsNonAlloc` já tem o parâmetro
-`suppressedTiers`, mas nenhum chamador real preenche isso — sem loja, sem estado) — decisão do
-usuário: migrar só a seed agora, Tier Suppression fica pendente pra quando a mecânica de loja/
-upgrade existir de verdade.
+runs) — ou seja, toda run nova gerava exatamente o MESMO mundo até agora. Nesta rodada, a seed foi
+migrada primeiro — Tier Suppression (a outra metade do P10) foi implementado logo em seguida, ver
+seção própria abaixo.
 
 - **`RunState.worldSeed`** (novo campo) — sorteado 1x em `RunCreation.CreateNewRun` (chamado pelo
   `MainMenuUI.NewGame()`), não em `RunState` (que só guarda estado). Save antigo sem esse campo
@@ -283,4 +281,56 @@ upgrade existir de verdade.
   `RecomputeSeedOffsets()`, chamado em `Awake()` (valor provisório, nunca realmente consumido) E
   de novo no INÍCIO de `HandleHeroSpawned` (valor definitivo, já com `MainMenuUI.CurrentRun`
   garantidamente setado, antes do primeiro chunk pintar de verdade).
+
+## Tier Suppression (resto do P10) — implementado
+
+Doc de design, Seção 12/13: upgrade de loja que remove Tiers fracos da pool de spawn, SEMPRE
+sequencial a partir do Tier1 (compra 1 remove T1, compra 2 remove T2, ...) — nunca escolha livre.
+Peso removido é redistribuído proporcionalmente entre os Tiers restantes (normalização), nunca
+"desaparece" — já funcionava matematicamente antes (`ComputeTierPercentsNonAlloc` já normalizava),
+só faltava ligar o estado de verdade.
+
+- **`RunState.suppressedTierCount`** (novo campo, `int`) — como a regra é sempre sequencial, um
+  único inteiro representa o estado inteiro (`suppressedTierCount=2` = T1 e T2 fora da pool), sem
+  precisar de array de flags por Tier. `0` em save novo/antigo (ninguém suprimido ainda).
+- **`WorldTierSelector.ComputeTierPercentsNonAlloc`** trocou o parâmetro `bool[] suppressedTiers`
+  por `int suppressedTierCount` (mais simples, já que nunca é escolha livre) — zera o peso dos
+  primeiros N tiers antes de normalizar. `WorldPopulationManager`/`WorldBossSpawnManager` passam
+  `MainMenuUI.CurrentRun.suppressedTierCount` nas duas chamadas (monstro comum e boss).
+- **`ShopHandler.BuyNextTierSuppression()`** (novo, `[ContextMenu]`) — stub no mesmo padrão já
+  estabelecido de `BuyNextTier` (Weapon Tier): preço placeholder (`próximoTier × 100`), sem UI
+  real, só prova que a compra funciona e sobrevive ao Save/Load. Nome temático definitivo
+  ("Threat Suppression" etc., doc Seção 12) fica pra quando a loja de verdade existir.
+- **Achado real, correção necessária**: `WorldPopulationManager.TryPickEnemyDefinition` tinha um
+  fallback hardcoded pro Tier1 quando o Tier sorteado não tem NENHUM `EnemyDefinitionSO`
+  cadastrado (bestiário incompleto, hoje só Tier1/Tier2 têm conteúdo) — sem correção, suprimir o
+  Tier1 e rolar qualquer Tier vazio (ex.: Tier5) ainda assim spawnaria um Tier1, anulando a
+  compra. Corrigido: o fallback agora mira o Tier NÃO suprimido mais baixo
+  (`suppressedTierCount + 1`), nunca um Tier1 fixo. O sistema de Boss já era imune a esse bug por
+  construção (escolhe por ordem de predominância real, nunca um fallback hardcoded).
+- **Ajuste pós-teste do usuário**: a primeira versão só afetava monstro/boss — testando (comprar
+  supressão do Tier1 + "Regenerar Mundo"), o bioma visual do Tier1 continuava aparecendo. Decisão
+  do usuário: suprimir remove TAMBÉM o bioma, não só a ameaça. `WorldTierSelector.
+  ComputeTierGroupPercentsNonAlloc` (6 grupos de TERRENO) ganhou o mesmo parâmetro
+  `suppressedTierCount` — um grupo cobre vários Tiers individuais (ex.: Tier2-3 = T2+T3), então só
+  fica totalmente suprimido quando TODOS os Tiers dele estiverem suprimidos; parcialmente
+  suprimido, o "mais forte" do grupo é calculado só entre os Tiers restantes.
+  `ChunkTerrainGenerator` ganhou `SuppressedTierCount` (mesmo padrão de `ActualDay`/
+  `EffectiveWorldSeed`) e passa isso nas 2 chamadas (pintura normal e halo cacheado).
+- **`GameEvents.OnClearAllEnemies`** (novo evento) — decisão do usuário (revisada após teste): só
+  o botão de debug **"Regenerar Mundo"** limpa TODOS os monstros/bosses vivos. Comprar Tier
+  Suppression **não** limpa nada na hora — os que já estão vivos continuam até morrer/despawnar
+  por distância naturalmente; só o REPLACEMENT a partir da compra já respeita a supressão.
+  `WorldPopulationManager`/`WorldBossSpawnManager` escutam e dão `Destroy()` direto em tudo que
+  está vivo — nunca é morte (sem loot/kill/energia, mesmo critério do Distance Despawn). O ciclo
+  de população já detecta "caiu pra 0" sozinho e repõe no próximo `Update()` (mesmo mecanismo do
+  preenchimento inicial do jogo) — não precisa forçar spawn na hora.
+- **Bug real reportado pelo usuário — spawn parava de funcionar depois de suprimir**: o Dia 1 da
+  tabela é 100% Tier1 (`{100,0,0,...}`) — suprimir o Tier1 zerava o ÚNICO peso que existia,
+  deixando `ComputeTierPercentsNonAlloc`/`ComputeTierGroupPercentsNonAlloc` com soma 0.
+  `RollMonsterTier` passava a devolver -1 pra sempre (nenhum monstro nunca mais sorteado), e o
+  terreno ficava sem bioma nenhum pra sempre. Corrigido com o mesmo critério de "nunca deixar
+  buraco" já usado no resto do sistema: quando a soma dá 0 (toda a tabela do dia só tinha peso em
+  Tiers agora suprimidos), força 100% no Tier/grupo NÃO suprimido mais baixo
+  (`suppressedTierCount`, 0-based) em vez de devolver tudo zerado.
 

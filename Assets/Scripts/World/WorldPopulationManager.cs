@@ -40,10 +40,32 @@ public class WorldPopulationManager : MonoBehaviour
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
-    private void OnEnable() => GameEvents.OnHeroSpawned += HandleHeroSpawned;
-    private void OnDisable() => GameEvents.OnHeroSpawned -= HandleHeroSpawned;
+    private void OnEnable()
+    {
+        GameEvents.OnHeroSpawned += HandleHeroSpawned;
+        GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnHeroSpawned -= HandleHeroSpawned;
+        GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
+    }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
+
+    // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill/energia,
+    // mesmo critério do Distance Despawn). A população volta a 0, que já é <= ActiveMinimum,
+    // então a crise de repovoamento dispara sozinha no próximo Update() (mesmo mecanismo que já
+    // cobre o preenchimento inicial do jogo, ver HandleCrisis).
+    private void HandleClearAllEnemies()
+    {
+        foreach (var enemy in aliveEnemies)
+        {
+            if (enemy != null) Destroy(enemy);
+        }
+        aliveEnemies.Clear();
+    }
 
     private void Update()
     {
@@ -113,12 +135,13 @@ public class WorldPopulationManager : MonoBehaviour
 
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
         bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, isNight: isNight);
+        int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight);
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
         if (tierIndex < 0) return; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
 
-        if (!TryPickEnemyDefinition(tierIndex + 1, out var definition)) return; // roster inteiro vazio, nem Tier1 cadastrado
+        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, out var definition)) return; // roster inteiro vazio, nem o Tier de fallback cadastrado
 
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
         // Rolado por spawn individual (não por EnemyDefinitionSO) — decisão do usuário: uma %
@@ -143,10 +166,12 @@ public class WorldPopulationManager : MonoBehaviour
     // "Roll Monster Inside Tier" (doc, Seção 16) — roleta ponderada por
     // EnemyDefinitionSO.weight entre as entradas do roster cujo tier bate com
     // `tierNumber1Based`. Tier sorteado sem NENHUMA entrada cadastrada ainda (bestiário
-    // incompleto — só Tier1/Tier2 prontos por enquanto) cai pro Tier1, mesmo critério de
-    // "nunca deixar buraco" já usado pelo terreno (ChunkTerrainGenerator.ResolveBiome com
-    // tierBiomes[slot vazio]).
-    private bool TryPickEnemyDefinition(int tierNumber1Based, out EnemyDefinitionSO chosen)
+    // incompleto — só Tier1/Tier2 prontos por enquanto) cai pro Tier NÃO SUPRIMIDO mais baixo
+    // (`suppressedTierCount + 1`, nunca um Tier1 fixo) — sem isso, suprimir o Tier1 e rolar um
+    // Tier vazio (ex.: Tier5, sem bestiário ainda) voltaria a spawnar Tier1 mesmo assim,
+    // anulando a compra. Mesmo critério de "nunca deixar buraco" já usado pelo terreno
+    // (ChunkTerrainGenerator.ResolveBiome com tierBiomes[slot vazio]).
+    private bool TryPickEnemyDefinition(int tierNumber1Based, int suppressedTierCount, out EnemyDefinitionSO chosen)
     {
         chosen = null;
         candidateScratch.Clear();
@@ -161,7 +186,8 @@ public class WorldPopulationManager : MonoBehaviour
 
         if (candidateScratch.Count == 0)
         {
-            return tierNumber1Based != 1 && TryPickEnemyDefinition(1, out chosen);
+            int fallbackTier = suppressedTierCount + 1;
+            return tierNumber1Based != fallbackTier && TryPickEnemyDefinition(fallbackTier, suppressedTierCount, out chosen);
         }
 
         float roll = Random.value * totalWeight;
