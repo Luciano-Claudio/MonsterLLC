@@ -41,7 +41,7 @@ public class MeleeEnemyController : EnemyController
         flankAI = new PatrolAI(minFlankIdleDuration, maxFlankIdleDuration, minFlankWalkDuration, maxFlankWalkDuration);
     }
 
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         Vector2 toPlayer = player.position - transform.position;
         float distance = toPlayer.magnitude;
@@ -79,10 +79,10 @@ public class MeleeEnemyController : EnemyController
             return;
         }
 
-        UpdateFlanking(toPlayer);
+        UpdateFlanking(toPlayer, deltaTime);
     }
 
-    private void UpdateFlanking(Vector2 toPlayer)
+    private void UpdateFlanking(Vector2 toPlayer, float deltaTime)
     {
         if (!flankAngleInitialized)
         {
@@ -91,7 +91,7 @@ public class MeleeEnemyController : EnemyController
             flankAngleInitialized = true;
         }
 
-        flankAI.Tick(Time.deltaTime, PickNextFlankPoint);
+        flankAI.Tick(deltaTime, PickNextFlankPoint);
 
         bool orbiting = flankAI.CurrentPhase == PatrolPhase.Walking;
         SetMoving(orbiting);

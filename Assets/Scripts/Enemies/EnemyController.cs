@@ -123,6 +123,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // presente, ele que move o transform de verdade (path + RVO); sem ele, cai no
     // transform.Translate manual de sempre (fallback, ver MoveInDirection).
     protected IAstarAI ai;
+    private RVOController rvo; // cacheado em Awake — usado também pelo on/off de Simulation Rings, sem GetComponent repetido
 
     // Ponto de destino projetado à frente na direção desejada, não um waypoint real — os
     // controllers (Melee/Ranged/Slime/Sapper) recalculam a direção a cada frame (perseguir,
@@ -176,7 +177,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // reajustar os já existentes. Casos como o Goblin Sapper (dano real é a bomba, não o
         // stats.attackDamage base) sobrescrevem isso depois de base.Awake() — ver
         // GoblinSapperController.
-        var rvo = GetComponent<RVOController>();
+        rvo = GetComponent<RVOController>(); // cacheado (campo, não var local) — Simulation Rings liga/desliga a cada frame, sem GetComponent repetido
         if (rvo != null) rvo.priority = DamageToRvoPriority(stats.attackDamage);
     }
 
@@ -220,10 +221,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // foi removido — decisão já tomada na Fase A do spawn de monstro do mundo aberto
     // (WorldPopulationManager): todo monstro comum sempre simula em full, sem redução por
     // distância/zona; o despawn por distância (WorldPopulationManager) já limita quantos
-    // ficam vivos ao mesmo tempo. Simulation Rings (reduzir custo por distância sem
-    // despawnar) é uma ideia documentada pra depois, não implementada ainda — ver
-    // docs/new/Plano_Spawn_Monstros_Mundo_Aberto.md.
+    // ficam vivos ao mesmo tempo. Simulation Rings (abaixo) cobre a redução de custo por
+    // distância sem despawnar — ver docs/new/Plano_Spawn_Monstros_Mundo_Aberto.md.
     private bool aiSimulating = true;
+
+    [Header("Simulation Rings (otimização de custo por distância do jogador)")]
+    [Tooltip("Dentro deste raio do jogador, simulação completa (igual sempre foi) — todo frame. Além dele (mas ainda vivo, dentro do despawn por distância de WorldPopulationManager/WorldBossSpawnManager), a decisão de IA (patrulha/combate/ataque) passa a rodar com frequência reduzida (ver midRingUpdateInterval) e o RVOController é desligado — desvio fino entre monstros só importa aglomerado perto do jogador.")]
+    [SerializeField] private float simulationNearRingRadius = 15f; // 🔢 ajustável
+    [Tooltip("Com que intervalo (segundos) a IA do monstro é reavaliada quando está fora do anel próximo. AIPath continua se movendo normalmente nesse meio tempo em direção ao último destino setado — só a DECISÃO (pra onde ir, quando atacar) fica mais espaçada, imperceptível a essa distância.")]
+    [SerializeField] private float midRingUpdateInterval = 0.3f; // 🔢 ajustável
+    private float midRingAccumulator;
 
     protected virtual void Update()
     {
@@ -268,6 +275,27 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (player == null) TryFindPlayer();
         if (player == null) return;
 
+        // Simulation Rings — perto do jogador, simula em full (todo frame, igual sempre foi).
+        // Mais longe, desliga o RVOController (barato de checar todo frame, mesmo sem
+        // throttle) e reduz a FREQUÊNCIA da decisão de IA abaixo (nunca desliga — o monstro
+        // continua vivo, patrulhando/perseguindo, só reavaliado com menos frequência).
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        bool isNearRing = distanceToPlayer <= simulationNearRingRadius;
+        if (rvo != null) rvo.enabled = isNearRing;
+
+        float decisionDeltaTime;
+        if (isNearRing)
+        {
+            decisionDeltaTime = Time.deltaTime;
+        }
+        else
+        {
+            midRingAccumulator += Time.deltaTime;
+            if (midRingAccumulator < midRingUpdateInterval) return; // nem chegou a hora do próximo tick reduzido — dano/knockback/DoT acima já rodaram normalmente mesmo assim
+            decisionDeltaTime = midRingAccumulator; // tempo acumulado de verdade, não só o deltaTime deste frame — senão cooldowns/timers internos (ex.: AttackCooldown, PatrolAI) andariam em câmera lenta longe do jogador
+            midRingAccumulator = 0f;
+        }
+
         // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin) —
         // o monstro perde o alvo de verdade (isInCombat=false), não só congela: continua se
         // movendo/tocando a própria animação de patrulha normalmente, só sem saber que o player
@@ -283,13 +311,13 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         else if (wasPlayerUntargetable && isBoss) ForceImmediateAggro();
         wasPlayerUntargetable = isPlayerUntargetable;
 
-        if (hasAttackAnimation) attackAnimationCooldown.Tick(Time.deltaTime);
+        if (hasAttackAnimation) attackAnimationCooldown.Tick(decisionDeltaTime);
 
         if (attackAnimState == AttackAnimState.Attacking)
         {
             // Comprometido com a animação de ataque de verdade — não persegue, não
             // reinicia outro ataque no meio dela.
-            attackAnimElapsed += Time.deltaTime;
+            attackAnimElapsed += decisionDeltaTime;
             if (attackAnimElapsed >= maxAttackAnimationDuration)
             {
                 Debug.LogWarning($"[{GetType().Name}] AnimationAttackEndEvent nunca chegou — forçando fim do ataque (verifique o Animator Controller).");
@@ -298,8 +326,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
-        if (!isInCombat) UpdatePatrol();
-        else UpdateCombat();
+        if (!isInCombat) UpdatePatrol(decisionDeltaTime);
+        else UpdateCombat(decisionDeltaTime);
     }
 
     // GDD Seção 22: antes de detectar o jogador, alterna idle/walk aleatoriamente. A
@@ -309,7 +337,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // code-side chegou a existir aqui, mas usava o timer da fase de patrulha inteira
     // (até maxWalkDuration, vários segundos) em vez do tamanho real do clipe — o monstro
     // ficava "ignorando" o jogador por tempo demais. Removido.
-    private void UpdatePatrol()
+    private void UpdatePatrol(float deltaTime)
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         // !IsPlayerUntargetable aqui é o que faz a camuflagem funcionar de verdade — sem
@@ -336,7 +364,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
-        patrolAI.Tick(Time.deltaTime, () => spawnOrigin + Random.insideUnitCircle * patrolRadius);
+        patrolAI.Tick(deltaTime, () => spawnOrigin + Random.insideUnitCircle * patrolRadius);
 
         // A fase "Walking" do PatrolAI dura um tempo aleatório fixo, sem saber a
         // distância real até o alvo — se o monstro chega no alvo antes desse tempo
@@ -392,6 +420,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
+        // Fallback sem AIPath (prefab placeholder não migrado) — usa Time.deltaTime puro, não
+        // o deltaTime (possivelmente acumulado) do chamador: Simulation Rings no anel médio
+        // chamaria isso só 1x a cada midRingUpdateInterval, movendo em saltos em vez de
+        // suave. Não é um problema de verdade hoje porque todo monstro real já tem AIPath
+        // (só placeholder cai aqui) — documentado, não corrigido, pra não encadear mais uma
+        // mudança de assinatura (MoveInDirection) por um caminho sem uso real no momento.
         if (canWalk) transform.Translate(direction * stats.moveSpeed * Time.deltaTime);
     }
 
@@ -404,11 +438,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (!simulating) ai.isStopped = true; // trava o destino também, pra não retomar andando um frame antes do resto acordar
         var aiBehaviour = ai as Behaviour;
         if (aiBehaviour != null) aiBehaviour.enabled = simulating;
-        var rvo = GetComponent<RVOController>();
-        if (rvo != null) rvo.enabled = simulating; // OnEnable/OnDisable do próprio RVOController já tira/põe o agente no RVOSimulator
+        if (rvo != null) rvo.enabled = simulating; // OnEnable/OnDisable do próprio RVOController já tira/põe o agente no RVOSimulator — Simulation Rings pode religar isso em seguida se o monstro estiver no anel médio (ver Update())
     }
 
-    private void UpdateCombat()
+    private void UpdateCombat(float deltaTime)
     {
         // Só monstros de emboscada desistem — o resto do jogo persegue pra sempre depois
         // de detectar (regra padrão, inalterada). Sem animação de transição de volta: se
@@ -434,11 +467,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // aproximando ou parado.
         Vector2 toPlayer = player.position - transform.position;
         SetAimDirection(toPlayer.normalized);
-        Move();
+        Move(deltaTime);
         if (hasAttackAnimation) TryStartAttackAnimation();
     }
 
-    protected abstract void Move(); // implementado por Melee (gruda no contato) e Ranged (mantém alcance, foge se o player chegar perto demais)
+    // deltaTime recebido (não Time.deltaTime direto) — Simulation Rings chama isso com o
+    // tempo ACUMULADO quando o monstro está fora do anel próximo (reavaliação menos
+    // frequente, não desligada); cooldowns/timers internos de cada implementação (ex.:
+    // flankAI do Melee, biteCooldown da Spider Queen) precisam desse valor pra não andar em
+    // câmera lenta longe do jogador.
+    protected abstract void Move(float deltaTime); // implementado por Melee (gruda no contato) e Ranged (mantém alcance, foge se o player chegar perto demais)
     protected abstract void ExecuteAttackHit(); // golpe/disparo real — chamado pelo AnimationHitEvent, no frame exato em que a animação conecta
     protected abstract bool InAttackRange(); // define o alcance que autoriza iniciar a animação de ataque (mesmo raio usado pelo contato/disparo)
 

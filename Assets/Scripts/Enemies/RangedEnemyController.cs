@@ -9,7 +9,7 @@ public class RangedEnemyController : EnemyController
     // sem precisar de mais um campo em EnemyStats.
     private const float MinRangeFraction = 0.8f;
 
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         Vector2 toPlayer = player.position - transform.position;
         float distance = toPlayer.magnitude;

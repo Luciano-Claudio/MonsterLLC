@@ -43,7 +43,7 @@ public class GoblinSapperController : EnemyController
         if (rvo != null) rvo.priority = DamageToRvoPriority(stats.attackDamage * bombExplosionDamageMultiplier);
     }
 
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         if (animator != null) animator.SetBool("IsArmed", phase == SapperPhase.Armed);
 
@@ -63,7 +63,7 @@ public class GoblinSapperController : EnemyController
         }
 
         // Fleeing — recarrega por tempo, e ativamente aumenta distância se o player alcançar.
-        fleeElapsed += Time.deltaTime;
+        fleeElapsed += deltaTime;
         if (fleeElapsed >= reloadDuration)
         {
             phase = SapperPhase.Armed;
@@ -78,7 +78,7 @@ public class GoblinSapperController : EnemyController
             return;
         }
 
-        fleeAI.Tick(Time.deltaTime, () => (Vector2)transform.position + Random.insideUnitCircle * safeFleeRadius);
+        fleeAI.Tick(deltaTime, () => (Vector2)transform.position + Random.insideUnitCircle * safeFleeRadius);
 
         // Mesma proteção já usada em UpdatePatrol() (EnemyController) — sem isso, ao chegar
         // perto o bastante do ponto aleatório de vagar, a distância até ele encolhe perto de

@@ -3,7 +3,8 @@
 **Status: Fase A IMPLEMENTADA e testada pelo usuário (população, despawn/replacement, distribuição
 de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados funcionando). Depois
 desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`), o Boss (P7)
-foi implementado e o Ciclo Dia/Noite real (lógica + visual) também — ver seções próprias abaixo.**
+foi implementado, o Ciclo Dia/Noite real (lógica + visual) também, e o Simulation Rings (P8) também
+— ver seções próprias abaixo.**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
 bem longa (sincronização do A* Pathfinding com o terreno gerado por chunk) que não pode se perder.
@@ -21,8 +22,9 @@ Rings — testável com o que já existe (14 prefabs de Tier1/Tier2, Sprint 20).
 - **Ciclo Dia/Noite real**: `DaySpawnDefinition.nightWeights` existia na tabela mas nunca era lido —
   ficou pra depois nesta Fase A, **implementado depois**, ver seção "Ciclo Dia/Noite real —
   implementado" abaixo.
-- **Simulation Rings (P8)**: ver seção própria abaixo — ideia documentada, não implementada (sem
-  evidência real de que seja necessária ainda, ver "Por que ainda não implementamos").
+- **Simulation Rings (P8)**: ficou pra depois nesta Fase A (sem evidência real de que fosse
+  necessária ainda) — **implementado depois, como preparação** (decisão do usuário: sem um problema
+  de FPS medido, mas quis adiantar mesmo assim), ver seção "Simulation Rings — implementado" abaixo.
 - **Bestiário dos Tiers 3-10**: conteúdo (prefab/arte), não é trabalho de engenharia — o sistema já
   nasce pronto pra esses tiers assim que os prefabs existirem (basta criar `EnemyDefinitionSO` novo
   apontando pro prefab e marcar o `tier`).
@@ -191,31 +193,38 @@ em vez de só a lógica).
   não Dia/Noite — `DayTimer` como cronômetro único já existia de uma sprint numerada bem anterior).
   Por isso os comentários no código não citam nenhum `Px`/Sprint, só a Seção 3/4/25 do doc de design.
 
-## FUTURO — documentar como pendência, não implementar agora
+## Simulation Rings (P8) — implementado
 
-### Simulation Rings (P8) — otimização de custo por monstro, por distância
+**Por que agora, sem problema de FPS medido**: testado antes com `populationTarget=50`/`Maximum=80`
+e o FPS ficou de boa — não tinha evidência real de necessidade. O usuário decidiu implementar mesmo
+assim, como preparação, em vez de esperar um teste real mostrar queda. `Limpeza de Combat Scope`
+(a outra metade do P8 oficial — `FloorActivationCheck`/`ownerFloor` substituídos) já tinha sido feita
+na rodada de limpeza do sistema de Floor, antes mesmo do Boss (P7) — então esta rodada fecha o P8
+inteiro.
 
-**Ideia central**: hoje todo monstro ativo roda o ciclo completo de `EnemyController.Update()` (IA,
-`AIPath`, `RVOController`, Animator) com o mesmo custo, não importa se está a 2 unidades do jogador
-(visível, importa) ou a 28 (quase no limite de despawn, fora de tela). Simulation Rings divide o
-espaço ao redor do jogador em faixas de fidelidade:
+**Implementado em `EnemyController.cs`** (sem sistema novo — tudo dentro do `Update()` já existente):
 
-- **Anel perto** (ex.: até ~15 unidades): simulação completa, igual hoje.
-- **Anel médio** (15 até `enemyDespawnDistance`): simulação REDUZIDA, não desligada —
-  `EnemyController.Update()` roda com frequência menor (ex.: a cada 0,2-0,5s em vez de todo frame,
-  imperceptível a essa distância); `RVOController` desligado ou com prioridade mínima (desvio fino
-  entre monstros só importa aglomerado perto do jogador); Animator num modo mais barato (Culling
-  Mode da própria Unity).
-- **Além do despawn**: já removido — isso já existe, não muda.
-
-**Onde entraria no código**: o gancho natural é o MESMO gate que já existe em
-`EnemyController.Update()` (`GameplayGate.IsActive && FloorActivationCheck.IsActive(...)`) — viraria
-uma função de 3 níveis em vez de só ligado/desligado, usando a mesma distância até o jogador que
-`WorldPopulationManager` já calcula pro despawn. Não precisa de sistema novo do zero.
-
-**Por que ainda não implementamos**: testado com `populationTarget=50`/`Maximum=80` (bem mais monstro
-simultâneo do que o "população pequena" que justificou pular isso na Fase A) e o FPS ficou de boa,
-principalmente em janela maximizada. Sem evidência real de que o custo por monstro esteja doendo —
-construir otimização sem um problema medido é o tipo de trabalho que evitamos a sessão toda. Fica
-pronta aqui pra quando (se) um teste real mostrar queda de FPS com população alta.
+- `simulationNearRingRadius` (padrão 15) — dentro desse raio do jogador, simulação completa, todo
+  frame, igual sempre foi.
+- Fora do raio (mas ainda vivo — despawn por distância continua sendo
+  `WorldPopulationManager`/`WorldBossSpawnManager`, não muda): `RVOController` desligado todo frame
+  (checagem barata, sem throttle — desvio fino entre monstros só importa aglomerado perto do
+  jogador) e a DECISÃO de IA (patrulha/combate/ataque) passa a rodar num intervalo reduzido
+  (`midRingUpdateInterval`, padrão 0,3s) em vez de todo frame — nunca desligada, só menos frequente.
+  `AIPath` continua se movendo sozinho (Update/FixedUpdate próprios, fora do controle deste
+  `Update()`) em direção ao último destino setado entre os ticks reduzidos.
+- **Achado real, correção de ponta a ponta**: simplesmente chamar a decisão com menos frequência
+  quebraria cooldowns/timers internos (`AttackCooldown`, `PatrolAI`, `flankAI` do Melee, etc.) — eles
+  andariam em câmera lenta longe do jogador (ex.: Spider Queen atacando a cada ~20s reais em vez de
+  a cada ~1,5s) em vez de "imperceptível". Corrigido passando o tempo ACUMULADO
+  (`midRingAccumulator`, não só o `Time.deltaTime` daquele frame) pra toda a cadeia de decisão —
+  exigiu trocar `protected abstract void Move()` por `Move(float deltaTime)` e atualizar as 6
+  implementações (Melee/Ranged/GoblinSapper/RatPeopleRoyalty/Slime/SpiderQueen) pra usar o parâmetro
+  em vez de `Time.deltaTime` direto nos próprios cooldowns/sub-IAs.
+- Dano/knockback/DoT (`UpdateDamageFlash`/`UpdateKnockback`/`StatusEffectController.Tick`) **não**
+  são throttled — continuam em tempo real todo frame, mesmo longe, pra não alterar quanto dano um
+  DoT aplica por segundo real nem atrasar o feedback visual de ter sido atingido.
+- **Não implementado** (deixado de fora de propósito, menor impacto): Animator Culling Mode mais
+  barato por distância — é mais uma configuração de asset por prefab do que lógica, e o
+  `Light2D`/câmera já naturalmente não renderiza monstro fora de tela a essa distância.
 

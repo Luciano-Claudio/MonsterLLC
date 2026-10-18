@@ -36,7 +36,7 @@ public class RatPeopleRoyaltyController : EnemyController
         throwCooldown = new AttackCooldown(throwCooldownDuration);
     }
 
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         // Comprometido com melee ou arremesso — não se move nem reinicia outra ação no meio
         // dela (mesmo critério de "ação real" usado em toda outra classe do projeto).
@@ -52,7 +52,7 @@ public class RatPeopleRoyaltyController : EnemyController
         if (distance <= stats.attackRadius)
         {
             SetMoving(false); // colado no player -> idle_combat, tenta melee pelo cooldown próprio
-            meleeCooldown.Tick(Time.deltaTime);
+            meleeCooldown.Tick(deltaTime);
             if (meleeCooldown.TryConsume())
             {
                 StartMeleeAttack();
@@ -68,7 +68,7 @@ public class RatPeopleRoyaltyController : EnemyController
             // comum, além do rangedAttackRadius nem esse alcançaria.
             if (distance <= rangedAttackRadius)
             {
-                throwCooldown.Tick(Time.deltaTime);
+                throwCooldown.Tick(deltaTime);
                 if (throwCooldown.TryConsume()) StartThrow();
             }
         }

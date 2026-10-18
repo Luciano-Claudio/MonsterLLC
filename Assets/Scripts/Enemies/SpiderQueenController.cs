@@ -38,7 +38,7 @@ public class SpiderQueenController : EnemyController
         webCooldown = new AttackCooldown(webCooldownDuration);
     }
 
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         if (isAttacking)
         {
@@ -53,7 +53,7 @@ public class SpiderQueenController : EnemyController
         {
             // Colada no player -> idle_combat, tenta mordida pelo cooldown próprio.
             SetMoving(false);
-            biteCooldown.Tick(Time.deltaTime);
+            biteCooldown.Tick(deltaTime);
             if (biteCooldown.TryConsume()) StartBite();
             return;
         }
@@ -66,7 +66,7 @@ public class SpiderQueenController : EnemyController
         MoveInDirection(toPlayer.normalized);
         if (distance <= rangedAttackRadius)
         {
-            webCooldown.Tick(Time.deltaTime);
+            webCooldown.Tick(deltaTime);
             if (webCooldown.TryConsume()) StartWeb();
         }
     }

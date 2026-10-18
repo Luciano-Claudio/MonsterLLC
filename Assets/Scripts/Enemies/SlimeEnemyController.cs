@@ -21,7 +21,7 @@ public class SlimeEnemyController : EnemyController
     // player todo frame, e o player ficava sendo arrastado pela tela enquanto o Slime bate
     // nele (mesmo corte que MeleeEnemyController já usa, só que aqui nunca sai desse estado
     // pra atacar, já que não existe attack real).
-    protected override void Move()
+    protected override void Move(float deltaTime)
     {
         Vector2 toPlayer = player.position - transform.position;
         float distance = toPlayer.magnitude;
