@@ -266,7 +266,7 @@ public class Paladin : HeroController
 
     // ===================== Passiva — shield periódico =====================
 
-    public override void TakeDamage(float amount)
+    public override void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
         // Absorção total enquanto o shield tiver QUALQUER vida restante — mesmo um hit que
         // sozinho exceda a vida restante do shield não vaza pro Paladin (GDD: "o shield

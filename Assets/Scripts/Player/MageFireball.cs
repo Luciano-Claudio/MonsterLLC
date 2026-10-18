@@ -204,7 +204,7 @@ public class MageFireball : MonoBehaviour
             // continua acertando normal, esse aqui é o rastro "elemental" propriamente dito.
             if (statusEffects != null && statusEffects.IsImmuneTo(StatusEffectType.Fire)) continue;
 
-            enemy.TakeDamage(groundedDamagePerTick);
+            enemy.TakeDamage(groundedDamagePerTick, isDirectPlayerHit: false); // rastro/DoT, sem Game Feel — só o impacto direto (linha ~150) aciona
             // Além do dano da área em si, quem está dentro no tick ganha o status Fire —
             // continua queimando por conta própria mesmo depois de sair da área.
             if (statusEffects != null) statusEffects.ApplyStatusEffect(StatusEffectType.Fire, fireStatusDuration, fireStatusDamagePerSecond);

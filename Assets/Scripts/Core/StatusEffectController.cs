@@ -177,7 +177,9 @@ public class StatusEffectController : MonoBehaviour
             }
 
             effect.tick.Tick(deltaTime);
-            if (effect.tick.TryConsume() && target != null) target.TakeDamage(effect.damagePerSecond * tickInterval);
+            // isDirectPlayerHit: false — DoT nunca aciona o Game Feel de hit direto
+            // (HitFeelController), só o hit de verdade aciona.
+            if (effect.tick.TryConsume() && target != null) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
         }
 
         // Enquanto o flash estiver tocando, ele manda no visual sozinho (FlashStatus já deu o

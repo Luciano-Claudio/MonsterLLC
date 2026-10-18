@@ -64,7 +64,7 @@ public class RoguePulseArea : MonoBehaviour
         if (!tick.TryConsume()) return;
 
         enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu desde o último tick
-        foreach (var enemy in enemiesInRange) enemy.TakeDamage(damagePerTick);
+        foreach (var enemy in enemiesInRange) enemy.TakeDamage(damagePerTick, isDirectPlayerHit: false); // área pulsante, sem Game Feel — mesmo critério do rastro do MageFireball
     }
 
     private void OnTriggerEnter2D(Collider2D other)

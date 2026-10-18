@@ -116,6 +116,8 @@ public class WorldBossSpawnManager : MonoBehaviour
 
         usedBossIdsToday.Add(definition); // só marca usado depois do spawn de fato acontecer — se a posição falhar acima, a entrada continua disponível
         aliveBosses.Add(bossObj);
+
+        GameEvents.BossSpawned(bossObj.transform); // Game Feel (BossEncounterCameraController) escuta isso pra tocar a sequência de reveal
     }
 
     // DominantTier = Tier de maior peso na distribuição atual (nunca um roll, diferente do

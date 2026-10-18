@@ -156,7 +156,7 @@ public class RangerKnife : MonoBehaviour
 
         foreach (var enemy in enemiesInRange)
         {
-            enemy.TakeDamage(groundedDamagePerTick);
+            enemy.TakeDamage(groundedDamagePerTick, isDirectPlayerHit: false); // tick da faca fincada, sem Game Feel — só o hit de voo (linha ~101) aciona
             Vector2 away = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
             enemy.ApplyKnockback(away, groundedKnockbackForce);
             ApplyBleeding(enemy);

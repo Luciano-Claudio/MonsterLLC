@@ -590,7 +590,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         Gizmos.DrawWireSphere(center, stats.attackRadius);
     }
 
-    public void TakeDamage(float amount)
+    // `isDirectPlayerHit` (default true, Game Feel) — false só pras fontes de dano repetido/
+    // passivo (DoT via StatusEffectController, áreas "grounded"/pulse tick do Mage/Ranger/
+    // Rogue, dano de Pet) — HitFeelController usa isso pra só fazer shake/zoom no hit direto
+    // do próprio jogador (ex.: impacto de projétil, explosão de habilidade), nunca em tick
+    // repetido. Não afeta dano/combate/floating text, só o filtro de juice.
+    public void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
         if (isDead) return;
 
@@ -602,7 +607,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         Debug.Log($"[{GetType().Name}] Recebeu {amount} de dano. HP = {stats.health}/{stats.maxHealth}");
-        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount);
+        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: false, isDirectPlayerHit);
 
         if (HealthSystem.IsDead(stats.health))
         {

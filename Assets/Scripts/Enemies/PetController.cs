@@ -32,6 +32,8 @@ public class PetController : MonoBehaviour
     private Transform owner;
     private Transform teleportPoint; // pra onde o pet salta quando o jogador muda de andar
     private Animator animator;
+    private bool hasIsMovingParam;
+    private bool hasActionSpeedMultiplierParam;
     private AttackCooldown attackCooldown;
     private Transform currentTarget;
     // Direção NE/NW/SE/SW só (Blend Tree de 4 pontos, mesmo esquema do quadrante do
@@ -52,13 +54,30 @@ public class PetController : MonoBehaviour
         owner = petOwner;
         teleportPoint = spawnPoint;
         transform.localScale = Vector3.one * sizeMultiplier;
-        if (animator != null) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
+        if (hasActionSpeedMultiplierParam) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
     }
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        // Achado real (console do usuário): Animator.SetBool/SetFloat num parâmetro que não
+        // existe no Controller NÃO é silencioso — a Unity loga "Parameter 'X' does not exist"
+        // toda vez. Cacheado 1x aqui (em vez de escanear animator.parameters todo frame em
+        // SetMoving) pros 2 parâmetros que só o Elemental de Sangue tem de verdade (Phoenix
+        // não) — ver comentário de SetMoving abaixo.
+        hasIsMovingParam = HasParameter("IsMoving");
+        hasActionSpeedMultiplierParam = HasParameter("ActionSpeedMultiplier");
         attackCooldown = new AttackCooldown(attackCooldownDuration);
+    }
+
+    private bool HasParameter(string paramName)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+        {
+            if (p.name == paramName) return true;
+        }
+        return false;
     }
 
     private void OnEnable()
@@ -113,13 +132,14 @@ public class PetController : MonoBehaviour
         }
     }
 
-    // Phoenix não tem esse parâmetro no Animator — SetBool() num parâmetro inexistente é
-    // ignorado silenciosamente pela Unity, sem erro, então chamar isso sempre (pros 2 pets) é
-    // seguro. Só o Elemental de Sangue (Sprint 30) realmente usa IsMoving pra transicionar
-    // entre Idle e Move (mesmo critério do IsMoving do EnemyController/HeroController).
+    // Phoenix não tem esse parâmetro no Animator. Suposição antiga errada (achado real, console
+    // do usuário): SetBool() num parâmetro inexistente NÃO é silencioso, a Unity loga
+    // "Parameter 'IsMoving' does not exist" toda chamada — por isso o hasIsMovingParam
+    // (cacheado 1x em Awake). Só o Elemental de Sangue (Sprint 30) realmente usa IsMoving pra
+    // transicionar entre Idle e Move (mesmo critério do IsMoving do EnemyController/HeroController).
     private void SetMoving(bool moving)
     {
-        if (animator != null) animator.SetBool("IsMoving", moving);
+        if (hasIsMovingParam) animator.SetBool("IsMoving", moving);
     }
 
     // Raio de perseguição centrado no DONO, não no pet (GDD, explícito) — um pet que já esteja
@@ -194,7 +214,7 @@ public class PetController : MonoBehaviour
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
         EnemyController.CollectDistinct(results, count, hitTargets);
-        foreach (var enemy in hitTargets) enemy.TakeDamage(damage);
+        foreach (var enemy in hitTargets) enemy.TakeDamage(damage, isDirectPlayerHit: false); // dano de Pet, sem Game Feel (decisão do usuário: só o hit direto do jogador aciona)
     }
 
     // Animation Event, fim do clipe de ataque.

@@ -23,7 +23,9 @@ public class FloatingCombatTextSpawner : MonoBehaviour
         GameEvents.OnHealReceived -= HandleHealReceived;
     }
 
-    private void HandleDamageTaken(Vector3 position, float amount)
+    // `isPlayer`/`isDirectPlayerHit` não importam pro texto flutuante (mesmo visual sempre,
+    // inclusive DoT/Pet) — só existem no evento pra quem precisa diferenciar (HitFeelController).
+    private void HandleDamageTaken(Vector3 position, float amount, bool isPlayer, bool isDirectPlayerHit)
     {
         if (floatingCombatTextPrefab == null || canvasParent == null) return;
 

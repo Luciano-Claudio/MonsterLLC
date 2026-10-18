@@ -42,9 +42,15 @@ public static class GameEvents
 
     // Floating Combat Text — quem sofreu dano (herói ou monstro) não sabe nada de UI/texto,
     // só avisa aqui. position já vem calculada em cima do sprite (topo/"cabeça"), não é o
-    // pivot bruto da entidade.
-    public static event Action<Vector3, float> OnDamageTaken;
-    public static void DamageTaken(Vector3 position, float amount) => OnDamageTaken?.Invoke(position, amount);
+    // pivot bruto da entidade. `isPlayer` (Game Feel/Cinemachine, quebra de assinatura
+    // proposital — único consumidor antes disso era FloatingCombatTextSpawner): true = o
+    // HERÓI tomou esse dano, false = um MONSTRO tomou (hoje só o jogador causa dano a
+    // monstro neste jogo, então false aqui equivale a "o jogador acertou um hit"). `isDirectPlayerHit`
+    // só importa quando isPlayer=false (irrelevante/sempre true no caso do herói) — false pra
+    // DoT/pulse tick/dano de Pet (ver EnemyController.TakeDamage), deixa HitFeelController
+    // fazer shake/zoom só no hit direto do jogador, nunca em dano repetido/passivo.
+    public static event Action<Vector3, float, bool, bool> OnDamageTaken;
+    public static void DamageTaken(Vector3 position, float amount, bool isPlayer, bool isDirectPlayerHit) => OnDamageTaken?.Invoke(position, amount, isPlayer, isDirectPlayerHit);
 
     // Mesma ideia do OnDamageTaken, mas pra dano que foi inteiramente ABSORVIDO antes de
     // chegar na vida real (ex.: shield do Paladin) — a vida não muda, mas o jogador precisa
@@ -80,6 +86,13 @@ public static class GameEvents
     // .Find/tag polling.
     public static event Action<Transform> OnHeroSpawned;
     public static void HeroSpawned(Transform hero) => OnHeroSpawned?.Invoke(hero);
+
+    // Disparado logo depois do Instantiate() de um boss (WorldBossSpawnManager.TrySpawnBoss)
+    // — Game Feel escuta isso pra tocar a sequência de "boss reveal" (pausa, Cinemachine foca
+    // no boss, volta pro jogador, despausa, troca pro CinemachineTargetGroup). Não dispara pra
+    // monstro comum, só boss.
+    public static event Action<Transform> OnBossSpawned;
+    public static void BossSpawned(Transform boss) => OnBossSpawned?.Invoke(boss);
 
     // Mais eventos entram aqui conforme os sistemas nascerem.
     // Nenhum outro script deve declarar um event solto — tudo passa por aqui.

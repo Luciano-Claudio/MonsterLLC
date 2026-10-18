@@ -482,7 +482,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Owl do Druid, etc.), já que TakeDamage() não devolvia nenhum sinal de "bloqueei".
     public bool IsCurrentlyDamageImmune => isDead || IsDamageImmune;
 
-    public virtual void TakeDamage(float amount)
+    // `isDirectPlayerHit` não é usado aqui (só EnemyController se importa) — existe só pra
+    // bater com a assinatura de IDamageable (ver comentário lá).
+    public virtual void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
         // Guarda contra reentrância: sem isso, dois hits antes do respawn terminar
         // disparam OnDeath() duas vezes (penalidade de -30s duplicada, PlayTransition
@@ -492,7 +494,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
-        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount);
+        // isDirectPlayerHit não importa aqui (isPlayer=true) — valor fixo, nunca lido pelo HitFeelController nesse caso.
+        GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: true, isDirectPlayerHit: true);
 
         // Golpe fatal vai direto pro DieTrigger — não dispara Damage no mesmo frame que
         // já vai morrer.
