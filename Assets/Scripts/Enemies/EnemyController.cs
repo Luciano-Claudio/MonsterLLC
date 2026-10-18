@@ -27,12 +27,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20;
     public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
-    public FloorDefinition ownerFloor;
 
     // Bestiário (Rat People Royalty) — "summons criados por este boss não geram loot". Quem
     // sumona (ex.: RatPeopleThrowProjectile) seta isso false logo após o Instantiate(); todo
-    // monstro "de verdade" (spawn normal via FloorPopulationManager/BossSpawnManager) nunca
-    // toca nisso, então o default true cobre 100% do resto do jogo sem precisar de mudança.
+    // monstro "de verdade" (spawn normal via WorldPopulationManager) nunca toca nisso, então o
+    // default true cobre 100% do resto do jogo sem precisar de mudança.
     public bool dropsLoot = true;
 
     // Bosses são imunes a knockback (decisão do usuário, Sprint 18→19) — sem isso, ataques
@@ -213,15 +212,22 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     // AIPath/RVOController têm Update/FixedUpdate próprios, fora do controle desse Update()
     // — GameplayGate não usa Time.timeScale (por isso Coroutine não respeita ele, comentário
-    // de AnimationDieEndEvent acima), e o Floor Sleep sempre foi "custo zero" pro monstro
-    // dormente. Sem isso, migrar pro AIPath reintroduziria custo de path/RVO rodando durante
-    // pausa e em Floors dormentes — desligar os componentes de verdade (não só isStopped)
-    // nas transições é o que preserva as duas garantias.
+    // de AnimationDieEndEvent acima). Sem isso, migrar pro AIPath reintroduziria custo de
+    // path/RVO rodando durante pausa — desligar os componentes de verdade (não só isStopped)
+    // na transição é o que preserva essa garantia.
+    //
+    // [Limpeza sistema de Floor] "Floor Sleep" (gate extra por FloorActivationCheck/ownerFloor)
+    // foi removido — decisão já tomada na Fase A do spawn de monstro do mundo aberto
+    // (WorldPopulationManager): todo monstro comum sempre simula em full, sem redução por
+    // distância/zona; o despawn por distância (WorldPopulationManager) já limita quantos
+    // ficam vivos ao mesmo tempo. Simulation Rings (reduzir custo por distância sem
+    // despawnar) é uma ideia documentada pra depois, não implementada ainda — ver
+    // docs/new/Plano_Spawn_Monstros_Mundo_Aberto.md.
     private bool aiSimulating = true;
 
     protected virtual void Update()
     {
-        bool shouldSimulate = GameplayGate.IsActive && FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor);
+        bool shouldSimulate = GameplayGate.IsActive;
         if (shouldSimulate != aiSimulating)
         {
             aiSimulating = shouldSimulate;

@@ -1,7 +1,11 @@
 # Plano de Performance — Geração de Terreno/Props por Chunk
 
-**Status: PLANEJADO, NÃO IMPLEMENTADO.** Documento preparado ao fim de uma sessão de trabalho
-(Sprint P3) pra não perder o raciocínio/debate — a implementação começa na próxima sessão.
+**Status: itens "Agora" (1-6) IMPLEMENTADOS em `ChunkTerrainGenerator.cs`/`WorldHash.cs`, mais
+um 7º item (gap real encontrado em teste: geração do Dia 1 extremamente lenta, hoje resolvido
+via espiral a partir do centro — ver "Item 7") e uma Parte A (origem do mundo centralizada no
+chunk central, ver "Parte A", `ChunkCoord.cs`). Itens "Futuro" ainda não implementados, ver
+seção própria.** Documento preparado ao fim de uma sessão de trabalho
+(Sprint P3) pra não perder o raciocínio/debate — a implementação aconteceu na sessão seguinte.
 Contexto: depois de criar os ~199 prefabs de prop (Sprint P3) e cortar a densidade deles em
 87,5% (4 cortes de 50% sucessivos), o usuário reportou que o lag "continua absurdo" tanto ao
 caminhar pra um chunk novo quanto ao clicar em "Regenerar Mundo" — e também ao simplesmente
@@ -51,9 +55,9 @@ uma UI por cima da MESMA cena de gameplay, que nunca pausa por baixo. Isso impor
 é só a mesma fila de streaming paceada continuando a rodar atrás da UI — ganhando de graça o
 tempo que o jogador ficar na tela da Loja antes de voltar a andar.
 
-## AGORA — implementar na próxima sessão, testável sem UI nova
+## AGORA — IMPLEMENTADO (Sprint P4), testável sem UI nova
 
-### 1. Buffer de tier ativo por chunk + margem de 1 célula (elimina os 9x)
+### 1. Buffer de tier ativo por chunk + margem de 1 célula (elimina os 9x) ✅
 
 Calcular `ActiveTierGroupAt` 1 vez por célula do chunk (mais 1 célula de halo em volta, pra
 cobrir os vizinhos da borda), guardar num array `int[(size+2)*(size+2)]` reaproveitado entre
@@ -61,7 +65,7 @@ chunks (igual os outros buffers já existentes). `ComputeChunkBuffers` e `IsTier
 passam a LER desse buffer em vez de chamar `ActiveTierGroupAt` de novo — elimina a
 redundância dos 9x.
 
-### 2. Cache de `effectiveDay`/`tierGroupPercentsBuffer` por chunk
+### 2. Cache de `effectiveDay`/`tierGroupPercentsBuffer` por chunk ✅
 
 `EffectiveSpawnDay` só depende da distância até a origem — dentro de um único chunk de 64
 células, quase sempre é o MESMO valor inteiro em toda célula (só muda perto de uma fronteira
@@ -73,14 +77,14 @@ fronteira de distância) por chunk, guardado junto com o buffer do item 1, e dei
 `WorldTierSelector.ChooseActiveTierGroup` (Perlin + soma cumulativa, bem mais barato) correndo
 célula a célula de verdade. Esse é provavelmente o ganho MAIOR dos dois (mais que o item 1).
 
-### 3. `SpawnProps` pula tier ausente no chunk antes do scan caro
+### 3. `SpawnProps` pula tier ausente no chunk antes do scan caro ✅
 
 Reaproveitando o buffer do item 1 (já sabe quais grupos aparecem no chunk), checar ANTES de
 chamar `PropPlacement.GenerateCandidatePositions` pra cada prop de um tier — se aquele tier
 não aparece em NENHUMA célula do chunk, pula a lista de props dele inteira, sem gerar grade de
 candidato nenhuma.
 
-### 4. Pacing por orçamento de milissegundos (não células) no streaming normal
+### 4. Pacing por orçamento de milissegundos (não células) no streaming normal ✅
 
 Hoje só o `SetTilesBlock` final é espalhado entre frames (1 por frame) — o cálculo pesado
 (`ComputeChunkBuffers` inteiro + `SpawnProps` inteiro) roda tudo síncrono, de uma vez, sem
@@ -93,7 +97,7 @@ enquanto o jogador anda). Início de jogo (`NewGame`/`ContinueGame`) e o botão 
 Mundo" continuam rápidos/síncronos como hoje — são eventos pontuais onde uma espera curta é
 aceitável, e o usuário explicitamente não quer que ESSES fiquem lentos.
 
-### 5. "Ocultar, não destruir" — streaming normal não limpa mais ao sair do raio
+### 5. "Ocultar, não destruir" — streaming normal não limpa mais ao sair do raio ✅
 
 Quando um chunk sai do raio de streaming (`ChunkStreamer`), parar de chamar
 `ClearChunkIncremental`/destruir os props. Em vez disso: deixar o Tilemap como está (os tiles
@@ -108,13 +112,118 @@ precisa só garantir que ele também destrói/limpa os chunks que estavam OCULTO
 `paintedChunks` ativos), já que o código dele já itera por `paintedChunks` inteiro (que vai
 continuar contendo os ocultos, já que eles nunca saem desse set agora).
 
-### 6. Pré-busca preditiva (direção de movimento do jogador)
+**Implementado:** `ClearChunkIncremental`/`pendingClear` removidos por inteiro (ficaram mortos
+— nada mais enfileira clear incremental). `hiddenChunks` (novo `HashSet`) rastreia quem está
+oculto; `Update()` reativa (`ShowChunkProps`) quando o chunk oculto volta pro raio, e oculta
+(`HideChunkProps`) quando sai. `RegenerateWorld` limpa `hiddenChunks` também, além de
+`paintedChunks`/`queuedChunks`.
+
+### 6. Pré-busca preditiva (direção de movimento do jogador) ✅
 
 `ChunkStreamer` (ou `ChunkTerrainGenerator.Update`) olha a direção que o alvo de streaming
 está se movendo (delta de posição entre frames, ou a velocidade do Rigidbody2D) e, se for
 consistente por um tempinho, antecipa a entrada na fila de pintura dos chunks NAQUELA direção
 antes do raio de streaming "oficialmente" pedir — dá a folga que o item 4 (pacing mais lento)
 precisa pra nunca aparecer incompleto bem na frente do jogador.
+
+**Implementado:** `EnqueuePredictiveChunk()` em `ChunkTerrainGenerator`, chamado todo
+`Update()`. Usa `DirectionUtility.SnapTo8Directions` (mesma lógica já usada pra mira do herói)
+pra decidir qual dos 8 vizinhos antecipar, 1 chunk além do raio configurado
+(`streamingRadiusInChunks + 1`). Novo campo `predictiveMinMoveDelta` — abaixo disso, considera
+parado e não antecipa nada.
+
+**Resumo da implementação dos itens 1-4 (`ChunkTerrainGenerator.cs`):** `ComputeTierGroupHalo`
+(novo) calcula o tier de cada célula do chunk + 1 de margem numa única varredura, com
+`ActiveTierGroupAtCached` pulando o recálculo da tabela de 30 dias/% dos grupos enquanto o
+`EffectiveSpawnDay` não mudar (`haloEffectiveDayCache`). `tierPresentInChunkBuffer` (novo)
+guarda quais tiers existem no chunk, consultado por `SpawnPropsCore` antes do scan de
+candidatos. `ComputeChunkBuffersCore`/`SpawnPropsCore` (novos, `IEnumerator`) substituem
+`ComputeChunkBuffers`/`SpawnProps` como núcleo compartilhado entre a versão síncrona (mesmo
+nome de antes, usada por `PaintChunkImmediate`/`RegenerateWorld`) e a paceada por
+`streamingMsBudgetPerFrame` (usada só por `PaintChunkIncremental`, streaming normal).
+
+### 7. Início de run (NewGame) pintava os chunks iniciais pela fila paceada — ✅ corrigido (2 rodadas)
+
+**Gap real encontrado em teste, não previsto no plano original.** O item 4 deixou claro que
+"início de jogo continua síncrono/rápido", mas isso nunca foi IMPLEMENTADO de verdade —
+`MainMenuUI.NewGame()` não chama `RegenerateWorld()`/nenhuma pintura síncrona em lugar nenhum.
+Os chunks iniciais (TODO o raio de streaming de uma vez, ex. 5×5=25 chunks, não 1 por vez como
+caminhando) entravam pela MESMA fila paceada do item 4 — resultando no "Dia 1 extremamente
+lento" relatado pelo usuário (o mundo "vazava" aos poucos ao redor do jogador já parado ali,
+por muitos segundos).
+
+**1ª rodada (superada pela 2ª, ver abaixo):** `ChunkTerrainGenerator` passou a escutar
+`GameEvents.OnHeroSpawned` e pintar TODOS os ~25 chunks iniciais sincronamente via
+`PaintAllActiveChunksImmediate()` — resolvia o "vazar aos poucos", mas trocava por 1
+congelamento de frame único perceptível (todos os 25 chunks de uma vez, sem pacing).
+
+**2ª rodada — ideia do usuário, implementada:** em vez de pintar todos os chunks iniciais de
+uma vez, pinta só o chunk que CONTÉM o herói (instantâneo) e solta ele pra andar — os outros
+chunks do raio entram na MESMA fila já paceada do item 4, mas em ORDEM DE ESPIRAL a partir do
+centro (não a ordem crua de iteração do `Dictionary`): anel mais próximo primeiro, cada anel
+em sentido horário começando pelo Norte (N → NE → E → SE → S → SW → W → NW). Resultado: nenhum
+congelamento perceptível — o jogador só nota o chunk onde já está (pintado na hora) e, no
+tempo que leva pra andar até a borda dele, o anel imediatamente ao redor já teve tempo de
+sobra pra terminar (pacing de poucos ms/frame do item 4).
+
+**Implementado:**
+- `ChunkCoord.FromWorldPosition`/`RefreshAroundTarget` já identificam corretamente o chunk
+  central do herói — nenhuma mudança adicional necessária aí além da centralização (Parte A,
+  abaixo).
+- `HandleHeroSpawned` (`ChunkTerrainGenerator.cs`): chama `ChunkStreamer.Instance.
+  RefreshAroundTarget(hero.position)` (garante `ActiveChunks` populado já), pinta o chunk
+  central via `PaintChunkImmediate`, depois chama `EnqueueSpiralAroundCenter`.
+- `EnqueueSpiralAroundCenter(center, radius)` (novo): enfileira (`pendingPaint`, a mesma fila
+  paceada de sempre) cada anel de `r=1` até `radius`, na ordem dada por
+  `RingClockwiseFromNorth`.
+- `RingClockwiseFromNorth(center, r)` (novo, `IEnumerable<ChunkCoord>` estático): percorre o
+  perímetro do anel de distância de Chebyshev `r`, em sentido horário a partir do Norte — 8r
+  coordenadas, sem repetir nenhuma.
+- `PaintAllActiveChunksImmediate()` foi MANTIDO (não removido) mas re-escopado: hoje só é
+  usado pelo botão de debug "Regenerar Mundo" (`RegenerateWorld`), que precisa continuar 100%
+  atômico/síncrono por design (evita reintroduzir o bug já corrigido de clique rápido
+  interrompendo a coroutine de pintura). O início de run normal não usa mais esse método.
+
+**Não corrigido de propósito:** `MainMenuUI.ContinueGame()` não chama `SpawnHero()` (gap
+pré-existente, já documentado no próprio código, fora de escopo — "Deadline 8") — então o
+evento `OnHeroSpawned` não dispara nesse fluxo, e carregar um save continua sem esse fix. Só
+vira relevante quando o gap do `ContinueGame` for resolvido.
+
+### Parte A — Centralização da origem do mundo (0,0,0) no centro do chunk central ✅
+
+**Ideia do usuário, a partir de teste visual (imagem da malha 5×5 de streaming):** a posição
+`(0,0,0)` — onde o herói nasce — caía no VÉRTICE compartilhado por 4 chunks (canto de
+`A(4,2)/A(4,3)/A(3,2)/A(3,3)` na nomenclatura da imagem), não no centro de nenhum chunk único.
+Isso quebrava a simetria radial da malha de streaming/safe zone em volta do jogador — ele
+sempre nascia meio-deslocado em relação ao próprio raio de chunks ativos. A correção: deslocar
+a malha de chunks em meio chunk (`chunkSize/2`) nos dois eixos, fazendo o chunk (0,0) passar a
+cobrir `[-half, +half)` em vez de `[0, chunkSize)` — origem exatamente no centro geométrico do
+chunk central.
+
+**Por que é seguro (analisado antes de implementar):** terreno, safe zone e
+`EffectiveSpawnDay` usam sempre coordenada de CÉLULA global absoluta (`cellX`/`cellY`), nunca
+coordenada de chunk — então deslocar a fronteira de "qual chunk contém qual célula" não muda
+NADA do conteúdo já gerado, só reagrupa as mesmas células em chunks diferentes. Não precisou
+tocar em `WorldTierSelector`, `DaySpawnTableSO` nem na lógica de safe zone.
+
+**Implementado (`ChunkCoord.cs`):**
+- `HalfSize(chunkSize)` → `chunkSize / 2`.
+- `FromWorldPosition` agora soma `half` antes de dividir: `Mathf.FloorToInt((worldPosition + half) / chunkSize)`.
+- `ToWorldOrigin(chunkSize)` (novo, inverso de `FromWorldPosition`): devolve o canto
+  inferior-esquerdo do chunk em coordenadas de mundo (`X*chunkSize - half`, `Y*chunkSize -
+  half`) — único lugar que faz essa conversão agora; todo código que precisava do "mundo de
+  origem" de um chunk (`ComputeChunkBuffersCore`, `PaintChunkIncremental`,
+  `PaintChunkImmediate`, `ChunkBounds`, em `ChunkTerrainGenerator.cs`) passou a chamar isto em
+  vez de `coord.X * chunkSize` direto.
+- `ChunkStreamer.OnDrawGizmos`: o centro do gizmo de cada chunk simplifica de
+  `(coord.X + 0.5f) * chunkSize` pra `coord.X * chunkSize` (centro = origem + half =
+  `(X*size - half) + half` = `X*size`).
+- `ChunkCoordTests.cs`: testes de fronteira/round-trip atualizados pro novo comportamento
+  (chunk 0 cobre `[-32, 32)` pra `chunkSize=64`, não mais `[0, 64)`), mais 4 testes novos
+  (`FromWorldPosition_Origin_FallsInsideCenterChunk`,
+  `FromWorldPosition_ExactlyAtHalfChunkBoundary_BelongsToTheOuterChunk`,
+  `ToWorldOrigin_CenterChunk_StartsHalfChunkBeforeOrigin`,
+  `ToWorldOrigin_RoundTripsWithFromWorldPosition`).
 
 ## FUTURO — documentar como pendência, não implementar agora
 

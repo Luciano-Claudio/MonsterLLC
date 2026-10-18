@@ -311,9 +311,8 @@ public class Mage : HeroController
     }
 
     // GDD (Seção 52, "Pet retorna junto"): a Phoenix NÃO desaparece na morte do herói — ela
-    // sobrevive e se teleporta sozinha pro térreo de graça, via PetController.HandleFloorChanged()
-    // (já inscrito em GameEvents.OnFloorChanged, que o Respawn() da base já dispara através de
-    // FloorManager.SetCurrentFloor). Chamar Disappear() aqui destruía o pet de vez e contradizia
+    // sobrevive e se teleporta sozinha de graça, via PetController.HandleHeroRespawned()
+    // (já inscrito em GameEvents.OnHeroRespawned, que o Respawn() da base já dispara). Chamar Disappear() aqui destruía o pet de vez e contradizia
     // essa regra — era por isso que o pet nunca voltava depois do respawn. currentPet continua
     // vivo e é só substituído no AnimationSummonPetEvent() do próximo dia, como já era.
     protected override void OnHeroDeath()

@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa73c7ca8b985d9ca7a174b5fa2697b3, type: 3}
+  m_Name: EnemyDefinition_Minotaur
+  m_EditorClassIdentifier: Core::EnemyDefinitionSO
+  tier: 2
+  prefab: {fileID: 146173984137662061, guid: 4010498b71fd9574297a0523b3489686, type: 3}
+  weight: 1

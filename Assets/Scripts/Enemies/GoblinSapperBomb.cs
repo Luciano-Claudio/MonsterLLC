@@ -8,22 +8,15 @@ public class GoblinSapperBomb : MonoBehaviour
 {
     [SerializeField] private float explosionRadius = 1.5f; // 🔢 ajustável
     private float damage;
-    private FloorDefinition ownerFloor;
 
-    public void Initialize(float bombDamage, FloorDefinition floor)
+    public void Initialize(float bombDamage)
     {
         damage = bombDamage;
-        ownerFloor = floor;
     }
 
-    private void Update()
-    {
-        // Respeita Floor Sleep como qualquer outra entidade com timing próprio (ex.:
-        // EnemyProjectile) — o Animator já conduz o tempo até a explosão sozinho via
-        // Animation Event; este Update() só existe pro early-return ficar no mesmo padrão.
-        if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
-    }
+    // [Limpeza sistema de Floor] Tinha um Update() aqui só com o gate de Floor Sleep (nenhuma
+    // lógica própria — o Animator já conduz o tempo até a explosão sozinho via Animation
+    // Event) — removido por inteiro, não fazia nada de observável.
 
     // Animation Event, no frame exato da explosão — só aplica o dano. A destruição real
     // fica pro fim de verdade do clipe (AnimationBombEndEvent), depois do estouro visual

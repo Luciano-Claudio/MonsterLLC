@@ -23,6 +23,5 @@ public class GroundCasterEnemyController : RangedEnemyController
         var hazardObj = Instantiate(groundHazardPrefab, player.position, Quaternion.identity);
         var hazard = hazardObj.GetComponent<GroundTargetHazard>() ?? hazardObj.AddComponent<GroundTargetHazard>();
         hazard.damage = stats.attackDamage;
-        hazard.ownerFloor = ownerFloor;
     }
 }

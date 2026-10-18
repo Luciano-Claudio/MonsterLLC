@@ -47,7 +47,6 @@ public class RangedEnemyController : EnemyController
         var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
         var proj = projObj.GetComponent<EnemyProjectile>() ?? projObj.AddComponent<EnemyProjectile>();
         proj.speed = projectileSpeed;
-        proj.ownerFloor = ownerFloor;
         // Sem telegraph — mira a posição atual do player no instante exato em que a
         // animação de conjuração manda o Animation Event, não uma posição travada. Passa a
         // distância real pro Launch() garantir alcance suficiente (ver comentário lá) — o

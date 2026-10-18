@@ -34,10 +34,6 @@ public class MotherSlimeController : SlimeEnemyController
             var childController = childObj.GetComponent<EnemyController>();
             if (childController == null) continue;
 
-            // Mesmo Floor da mãe (ela já tinha isso certo — sem isso, os filhotes nasceriam
-            // sem ownerFloor, sem restrição de graph e fora do gate de FloorActivationCheck).
-            childController.ownerFloor = ownerFloor;
-
             // Decisão do usuário: os 3 Slimes nascem já com o jogador como alvo, igual ao
             // boss que acabou de morrer — sem fase de patrulha/idle esperando
             // observationRadius detectar (mesmo critério de "agressão imediata" do

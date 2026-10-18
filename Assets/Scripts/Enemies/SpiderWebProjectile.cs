@@ -15,14 +15,12 @@ public class SpiderWebProjectile : MonoBehaviour
     [SerializeField] private float trapDuration = 3f; // 🔢 Bestiário: "não consegue andar por alguns segundos"
 
     private Vector2 direction;
-    private FloorDefinition ownerFloor;
     private float distanceTraveled;
     private bool done;
 
-    public void Launch(Vector2 dir, FloorDefinition floor)
+    public void Launch(Vector2 dir)
     {
         direction = dir.normalized;
-        ownerFloor = floor;
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
@@ -31,7 +29,6 @@ public class SpiderWebProjectile : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
         if (done) return;
 
         float step = speed * Time.deltaTime;

@@ -21,7 +21,6 @@ public class EnemyProjectile : MonoBehaviour
     public float speed = 6f;
     public float damage = 5f;
     public float lifetime = 3f;
-    public FloorDefinition ownerFloor;
 
     [Header("Comportamento no impacto/limite")]
     [SerializeField] private ImpactMode impactMode = ImpactMode.Simple;
@@ -94,7 +93,6 @@ public class EnemyProjectile : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
 
         if (phase == Phase.Flying) UpdateFlying();
         else if (phase == Phase.Grounded) UpdateGrounded();

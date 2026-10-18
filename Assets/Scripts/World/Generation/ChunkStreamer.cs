@@ -92,9 +92,12 @@ public class ChunkStreamer : MonoBehaviour
         {
             var coord = pair.Key;
             var color = ColorFromDebugSeedValue(pair.Value.DebugSeedValue);
+            // [Sprint P4] Chunk (0,0) agora é CENTRADO na origem do mundo (ver
+            // ChunkCoord.ToWorldOrigin/HalfSize) — o centro de qualquer chunk X vira
+            // simplesmente X*chunkSize, não mais (X+0.5)*chunkSize.
             var center = new Vector3(
-                (coord.X + 0.5f) * settings.chunkSize,
-                (coord.Y + 0.5f) * settings.chunkSize,
+                coord.X * settings.chunkSize,
+                coord.Y * settings.chunkSize,
                 0f);
             Gizmos.color = color;
             Gizmos.DrawWireCube(center, new Vector3(settings.chunkSize, settings.chunkSize, 0f));

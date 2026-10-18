@@ -54,11 +54,11 @@ public class MeleeEnemyController : EnemyController
 
         // O player pode se afastar depois do monstro já ter conseguido vaga — sem isso,
         // quem pegou vaga primeiro ficaria com ela pra sempre, perseguindo o player pelo
-        // Floor inteiro, enquanto outros monstros de verdade perto agora não conseguem
+        // mapa inteiro, enquanto outros monstros de verdade perto agora não conseguem
         // nenhuma. Libera assim que cair fora do próprio flankRadius.
         if (hasAttackSlot && distance > FlankRadius)
         {
-            if (MeleeAttackSlotManager.Instance != null) MeleeAttackSlotManager.Instance.ReleaseSlot(ownerFloor);
+            if (MeleeAttackSlotManager.Instance != null) MeleeAttackSlotManager.Instance.ReleaseSlot();
             hasAttackSlot = false;
         }
 
@@ -71,7 +71,7 @@ public class MeleeEnemyController : EnemyController
         }
 
         // chegou no anel de flanco sem vaga garantida — tenta pegar uma agora
-        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot(ownerFloor))
+        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot())
         {
             hasAttackSlot = true;
             SetMoving(true);
@@ -99,7 +99,7 @@ public class MeleeEnemyController : EnemyController
 
         // tenta de novo a cada frame enquanto flanqueia — barato (comparação de int) e
         // garante que a vaga seja ocupada assim que alguém morrer/liberar, sem atraso.
-        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot(ownerFloor))
+        if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot())
             hasAttackSlot = true;
     }
 
@@ -145,7 +145,7 @@ public class MeleeEnemyController : EnemyController
     protected override void Die()
     {
         if (hasAttackSlot && MeleeAttackSlotManager.Instance != null)
-            MeleeAttackSlotManager.Instance.ReleaseSlot(ownerFloor);
+            MeleeAttackSlotManager.Instance.ReleaseSlot();
 
         base.Die();
     }

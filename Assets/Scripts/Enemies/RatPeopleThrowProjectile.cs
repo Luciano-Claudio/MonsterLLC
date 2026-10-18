@@ -18,15 +18,13 @@ public class RatPeopleThrowProjectile : MonoBehaviour
 
     private Vector2 direction;
     private float damage;
-    private FloorDefinition ownerFloor;
     private float distanceTraveled;
     private bool impacted;
 
-    public void Launch(Vector2 dir, float dmg, FloorDefinition floor)
+    public void Launch(Vector2 dir, float dmg)
     {
         direction = dir.normalized;
         damage = dmg;
-        ownerFloor = floor;
 
         // Sprite de referência nasce apontando pra "cima" (N, +Y) — mesma técnica de todo
         // projétil do projeto (EnemyProjectile/RangerArrow/etc.).
@@ -37,7 +35,6 @@ public class RatPeopleThrowProjectile : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
         if (impacted) return;
 
         float step = speed * Time.deltaTime;
@@ -84,7 +81,6 @@ public class RatPeopleThrowProjectile : MonoBehaviour
             var enemy = obj.GetComponent<EnemyController>();
             if (enemy != null)
             {
-                enemy.ownerFloor = ownerFloor;
                 enemy.dropsLoot = false; // Bestiário: "summons criados por este boss não geram loot"
                 enemy.ForceImmediateAggro(); // nasceu na cara do player, já sabe que ele existe
             }

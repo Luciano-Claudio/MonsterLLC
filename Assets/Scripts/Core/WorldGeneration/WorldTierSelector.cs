@@ -117,4 +117,60 @@ public static class WorldTierSelector
 
         return 0;
     }
+
+    // 10 Tiers de monstro (T1..T10, índice 0-based) — igual DaySpawnDefinition.dayWeights/
+    // nightWeights. Diferente de ComputeTierGroupPercentsNonAlloc (6 grupos de TERRENO, com
+    // "mais forte vence" + piso de 20%): spawn de monstro comum (Fase A, docs/new/Mudanca_
+    // Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md, Seção 16) é só normalização
+    // DIRETA dos 10 pesos — decisão do usuário: o piso de 20% foi pensado especificamente
+    // pra grupo de terreno (evitar grupo fraco de vários tiers vencer artificialmente grupo
+    // forte de 1 tier só); não se aplica do mesmo jeito a 10 tiers individuais. Bate com a
+    // regra de Tier Suppression do doc (remover peso = renormalizar proporcional entre os
+    // que sobraram, sem piso nenhum).
+    public const int MonsterTierCount = 10;
+
+    // `buffer` precisa ter pelo menos MonsterTierCount posições. `suppressedTiers`
+    // (opcional, null = nenhum suprimido) zera o peso de qualquer tier marcado true —
+    // Tier Suppression (compra de remoção de camada, upgrade sequencial P1→P2→...).
+    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, bool[] suppressedTiers = null)
+    {
+        for (int t = 0; t < MonsterTierCount; t++) buffer[t] = 0f;
+        if (dayDef == null || dayDef.dayWeights == null) return;
+
+        float sum = 0f;
+        for (int t = 0; t < MonsterTierCount && t < dayDef.dayWeights.Length; t++)
+        {
+            if (suppressedTiers != null && t < suppressedTiers.Length && suppressedTiers[t]) continue;
+            buffer[t] = dayDef.dayWeights[t] / 100f;
+            sum += buffer[t];
+        }
+
+        if (sum > 0f)
+        {
+            for (int t = 0; t < MonsterTierCount; t++) buffer[t] /= sum;
+        }
+    }
+
+    // Roleta cumulativa igual ChooseActiveTierGroup, mas pros 10 tiers individuais
+    // ("Roll Tier", doc Seção 16) — recebe um valor já sorteado (Random.value) em vez de
+    // ruído Perlin por célula: spawn de monstro é um evento pontual no tempo, não precisa
+    // de coerência espacial célula a célula como o terreno. `tierPercents` precisa somar 1
+    // (ver ComputeTierPercentsNonAlloc). Devolve índice 0-based (T1=0..T10=9).
+    public static int RollMonsterTier(float roll01, float[] tierPercents)
+    {
+        float cumulative = 0f;
+        for (int t = 0; t < MonsterTierCount; t++)
+        {
+            cumulative += tierPercents[t];
+            if (roll01 < cumulative) return t;
+        }
+
+        // Sobra de arredondamento — cai no último tier ativo.
+        for (int t = MonsterTierCount - 1; t >= 0; t--)
+        {
+            if (tierPercents[t] > 0f) return t;
+        }
+
+        return -1; // nenhum tier com peso > 0 — chamador precisa checar (ex.: roster vazio)
+    }
 }

@@ -115,7 +115,7 @@ public class RatPeopleRoyaltyController : EnemyController
 
         var obj = Instantiate(throwProjectilePrefab, transform.position, Quaternion.identity);
         var proj = obj.GetComponent<RatPeopleThrowProjectile>();
-        if (proj != null) proj.Launch((player.position - transform.position).normalized, stats.attackDamage, ownerFloor);
+        if (proj != null) proj.Launch((player.position - transform.position).normalized, stats.attackDamage);
     }
 
     // Animation Event, no fim do clipe de arremesso.

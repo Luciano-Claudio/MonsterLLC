@@ -63,19 +63,20 @@ public class PetController : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnFloorChanged += HandleFloorChanged;
+        GameEvents.OnHeroRespawned += HandleHeroRespawned;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnFloorChanged -= HandleFloorChanged;
+        GameEvents.OnHeroRespawned -= HandleHeroRespawned;
     }
 
-    // Mudar de andar teleporta o pet direto pro spawn point, em vez de deixá-lo "andando" de
-    // um andar pro outro atrás do dono — o alvo também é descartado, já que um monstro do
-    // andar anterior não faz mais sentido como perseguição (Combat Scope, Seção 11: pets só
-    // combatem no Floor atual do jogador).
-    private void HandleFloorChanged(FloorDefinition floor)
+    // [Limpeza sistema de Floor] Era HandleFloorChanged (GameEvents.OnFloorChanged) — teleporta
+    // o pet direto pro spawn point ao herói respawnar, em vez de deixá-lo "andando" atrás do
+    // dono — o alvo também é descartado (não faz sentido perseguir algo de antes da morte). O
+    // parâmetro FloorDefinition nunca foi usado aqui (só o disparo do evento importava), então
+    // a troca pro evento novo (sem payload) é direta.
+    private void HandleHeroRespawned()
     {
         currentTarget = null;
         Vector3 destination = teleportPoint != null ? teleportPoint.position : (owner != null ? owner.position : transform.position);

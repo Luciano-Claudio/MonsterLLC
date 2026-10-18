@@ -113,7 +113,7 @@ public class SpiderQueenController : EnemyController
         Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
         var obj = Instantiate(webProjectilePrefab, transform.position, Quaternion.identity);
         var web = obj.GetComponent<SpiderWebProjectile>();
-        if (web != null) web.Launch(dir, ownerFloor);
+        if (web != null) web.Launch(dir);
     }
 
     // Animation Event, no fim do clipe de teia.

@@ -9,7 +9,6 @@ using UnityEngine;
 public class GroundTargetHazard : MonoBehaviour
 {
     public float damage;
-    public FloorDefinition ownerFloor;
 
     // Rede de segurança — mesmo padrão do resto do EnemyController: se o Animation Event
     // de fim nunca disparar (clipe sem o evento configurado), o hazard não fica na cena
@@ -28,7 +27,6 @@ public class GroundTargetHazard : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive) return;
-        if (!FloorActivationCheck.IsActive(ownerFloor, FloorManager.Instance.CurrentFloor)) return;
         if (ended) return;
 
         elapsed += Time.deltaTime;

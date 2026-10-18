@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3209779c9fad08df1ee85f883cec17, type: 3}
+  m_Name: MonsterSpawnSettings
+  m_EditorClassIdentifier: Core::MonsterSpawnSettings
+  roster:
+  - {fileID: 11400000, guid: d2388201b6bd1acb5c95b64f7cd0f219, type: 2}
+  - {fileID: 11400000, guid: 4926b63606f4351e6bcf61f05df62fba, type: 2}
+  - {fileID: 11400000, guid: 7b07d8a7196c503eaa574ee1f85edef4, type: 2}
+  - {fileID: 11400000, guid: c03e64907b82f5599c977373d7421596, type: 2}
+  - {fileID: 11400000, guid: e239a5fc84426b478ad2dd0e153e91ce, type: 2}
+  - {fileID: 11400000, guid: 44152602eea159603dede480642730b5, type: 2}
+  - {fileID: 11400000, guid: 5cb13164f2ef9a62b66a89ef3fd6914e, type: 2}
+  - {fileID: 11400000, guid: 18113cbd33cc165c7932e60cc3e073a2, type: 2}
+  - {fileID: 11400000, guid: 73258bdd8720976dea463ac466eb3815, type: 2}
+  - {fileID: 11400000, guid: 135aac6a028b849bc3015e509fb5363d, type: 2}
+  - {fileID: 11400000, guid: 8a229db9af7d91cc6723ee19a09ad1f0, type: 2}
+  - {fileID: 11400000, guid: 62cfc14bde2990365511095eca3419b1, type: 2}
+  - {fileID: 11400000, guid: 9a45e3cb764ae8063cf162c0ff8c19be, type: 2}
+  - {fileID: 11400000, guid: 21f4ce48f74c27a2c25c70c79e47ad8b, type: 2}
+  populationMinimum: 20
+  populationTarget: 50
+  populationMaximum: 80
+  respawnInterval: 3
+  crisisStreakToEscalate: 3
+  spawnSafetyPadding: 0
+  enemyDespawnDistance: 30
+  replacementSpawnMinDistance: 10
+  replacementSpawnMaxDistance: 18
+  maxSpawnPositionAttempts: 20
+  spawnObstacleClearanceRadius: 0.6
+  obstacleLayerMask:
+    serializedVersion: 2
+    m_Bits: 64

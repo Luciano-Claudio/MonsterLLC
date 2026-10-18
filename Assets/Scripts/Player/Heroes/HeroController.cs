@@ -645,12 +645,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // já cobriu a tela por completo — o jogador nunca vê o salto de posição.
         TransitionHelper.PlayTransition(respawnTransition, () =>
         {
-            var ground = FloorRegistry.Instance.Floors.Find(f => f.originalFloorIdentity == 0);
-            if (ground != null)
-            {
-                transform.position = ground.transform.position;
-                FloorManager.Instance.SetCurrentFloor(ground);
-            }
+            // [Limpeza sistema de Floor] Antes voltava pro "Floor térreo"
+            // (FloorRegistry/FloorManager) — Mundo Único não tem andares, volta sempre pra
+            // origem do mundo (0,0,0), que é o centro da Safe Zone e o mesmo ponto onde o
+            // herói nasce em MainMenuUI.SpawnHero().
+            transform.position = Vector3.zero;
+            GameEvents.HeroRespawned(); // substitui GameEvents.FloorChanged — PetController escuta isso pra teleportar o pet junto
 
             stats.health = stats.maxHealth;
             GameEvents.HealthChanged(stats.health, stats.maxHealth);
@@ -662,7 +662,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             // trigger/transição pra sair de um estado terminal).
             if (animator != null) animator.Play("Idle", 0, 0f);
 
-            Debug.Log("[HeroController] Respawn no térreo com HP cheio.");
+            Debug.Log("[HeroController] Respawn na origem do mundo com HP cheio.");
         });
     }
 

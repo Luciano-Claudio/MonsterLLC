@@ -14,4 +14,7 @@ public class TerrainDefinitionSO : ScriptableObject
 {
     public string id;
     public TileBase tile;
+
+    [Tooltip("Água/void/lava/rainbow — bloqueio sólido simples (sem dano, sem regra por estado do personagem; ver docs/new/Mudanca_Estrutural_Geracao_Procedural...md, item 11/seção 'Água, lava, paredes e colisores'). Pintado também no Tilemap de colisão dedicado (ChunkTerrainGenerator.hazardCollisionTilemap) sempre que este terreno aparecer na pilha de uma célula — os RuleTiles de água/lava/void/rainbow já têm colliderType=Sprite configurado, só faltava o Tilemap com TilemapCollider2D pra usar isso.")]
+    public bool blocksMovement;
 }

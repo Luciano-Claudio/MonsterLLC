@@ -14,8 +14,11 @@ public static class GameEvents
     public static event Action<float, float> OnHealthChanged;
     public static void HealthChanged(float current, float max) => OnHealthChanged?.Invoke(current, max);
 
-    public static event Action<FloorDefinition> OnFloorChanged;
-    public static void FloorChanged(FloorDefinition floor) => OnFloorChanged?.Invoke(floor);
+    // [Limpeza sistema de Floor] Substitui OnFloorChanged — único consumidor real era
+    // PetController.HandleFloorChanged, que nem usava o parâmetro FloorDefinition (só reagia
+    // ao disparo). Disparado por HeroController.Respawn() (volta pra origem do mundo).
+    public static event Action OnHeroRespawned;
+    public static void HeroRespawned() => OnHeroRespawned?.Invoke();
 
     public static event Action<Bag> OnBagChanged;
     public static void BagChanged(Bag bag) => OnBagChanged?.Invoke(bag);

@@ -96,7 +96,7 @@ public class GoblinSapperController : EnemyController
         {
             var bombObj = Instantiate(bombPrefab, player.position, Quaternion.identity);
             var bomb = bombObj.GetComponent<GoblinSapperBomb>();
-            if (bomb != null) bomb.Initialize(stats.attackDamage * bombExplosionDamageMultiplier, ownerFloor);
+            if (bomb != null) bomb.Initialize(stats.attackDamage * bombExplosionDamageMultiplier);
         }
         phase = SapperPhase.Fleeing;
         fleeElapsed = 0f;
