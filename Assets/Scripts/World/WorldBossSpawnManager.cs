@@ -130,7 +130,8 @@ public class WorldBossSpawnManager : MonoBehaviour
             distanceFromOrigin, worldSettings.safeZoneRadius, worldSettings.distancePerSpawnDay, ActualDay);
 
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer);
+        bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, isNight: isNight);
 
         for (int t = 0; t < WorldTierSelector.MonsterTierCount; t++) tierVisitedScratch[t] = false;
 

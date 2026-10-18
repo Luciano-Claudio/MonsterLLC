@@ -389,11 +389,11 @@ MonoBehaviour:
     moveSpeed: 4
     observationRadius: 6
     attackRadius: 1.5
-    attackDamage: 12
+    attackDamage: 2
     attackAnimationCooldown: 2.5
   energyReward: 20
   monsterEssenceDropAmount: 1
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 0
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -414,7 +414,7 @@ MonoBehaviour:
   reloadDuration: 4
   minSafeDistanceFromPlayer: 6
   safeFleeRadius: 4
-  dieExplosionDamageMultiplier: 1
+  dieExplosionDamageMultiplier: 6
   dieExplosionRadius: 1.5
   dieExplosionOffsetY: 0.7
 --- !u!114 &999999999990001

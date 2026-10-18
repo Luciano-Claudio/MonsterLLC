@@ -64,6 +64,15 @@ public static class GameEvents
     public static event Action OnDayStart;
     public static void DayStarted() => OnDayStart?.Invoke();
 
+    // Ciclo Dia/Noite real (docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_
+    // ATUALIZADO_V2.md, Seção 3) — dispara 1x só na TROCA de fase dentro do dia atual (Dia ->
+    // Noite em 50% da duração, Noite -> próximo Dia só no OnDayStart seguinte). true = virou
+    // Noite. Fonte única: DayTimer. Spawn de monstro/boss escuta isso (ou lê
+    // DayTimer.Instance.IsNight direto) pra trocar de dayWeights pra nightWeights — terreno/
+    // bioma NUNCA escuta isso de propósito (decisão do usuário: bioma não oscila a cada ciclo).
+    public static event Action<bool> OnDayNightPhaseChanged;
+    public static void DayNightPhaseChanged(bool isNight) => OnDayNightPhaseChanged?.Invoke(isNight);
+
     // Disparado quando o herói é instanciado de verdade (MainMenuUI.SpawnHero) — não existe
     // herói nenhum na cena antes disso (Sprint P2, Pré-Deadline Mundo Único). ChunkStreamer
     // escuta isso pra saber quem seguir (streamingTarget); qualquer outro sistema que precise

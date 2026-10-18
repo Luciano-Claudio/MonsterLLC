@@ -132,16 +132,21 @@ public static class WorldTierSelector
     // `buffer` precisa ter pelo menos MonsterTierCount posições. `suppressedTiers`
     // (opcional, null = nenhum suprimido) zera o peso de qualquer tier marcado true —
     // Tier Suppression (compra de remoção de camada, upgrade sequencial P1→P2→...).
-    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, bool[] suppressedTiers = null)
+    // `isNight` (default false) troca `dayWeights` por `nightWeights` — usado só pelo spawn de
+    // monstro/boss (Ciclo Dia/Noite real), NUNCA pelo terreno/bioma
+    // (ComputeTierGroupPercentsNonAlloc não tem esse parâmetro de propósito — decisão do
+    // usuário: bioma não deve oscilar a cada troca de fase, só avançar com dia/distância).
+    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, bool[] suppressedTiers = null, bool isNight = false)
     {
         for (int t = 0; t < MonsterTierCount; t++) buffer[t] = 0f;
-        if (dayDef == null || dayDef.dayWeights == null) return;
+        var weights = isNight ? dayDef?.nightWeights : dayDef?.dayWeights;
+        if (weights == null) return;
 
         float sum = 0f;
-        for (int t = 0; t < MonsterTierCount && t < dayDef.dayWeights.Length; t++)
+        for (int t = 0; t < MonsterTierCount && t < weights.Length; t++)
         {
             if (suppressedTiers != null && t < suppressedTiers.Length && suppressedTiers[t]) continue;
-            buffer[t] = dayDef.dayWeights[t] / 100f;
+            buffer[t] = weights[t] / 100f;
             sum += buffer[t];
         }
 

@@ -2,8 +2,8 @@
 
 **Status: Fase A IMPLEMENTADA e testada pelo usuário (população, despawn/replacement, distribuição
 de Tier, Safe Zone, clearance de obstáculo, grafo móvel — todos confirmados funcionando). Depois
-desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`) e o Boss (P7)
-foi implementado — ver seção própria abaixo.**
+desta rodada, o sistema antigo de Floor foi removido por completo (commit `16bc2b1`), o Boss (P7)
+foi implementado e o Ciclo Dia/Noite real (lógica + visual) também — ver seções próprias abaixo.**
 Documento preparado depois da implementação, mesmo padrão do `Plano_Performance_Streaming_Chunks.md`
 — registra o raciocínio/decisões antes de esquecer, já que essa rodada teve uma sessão de debug
 bem longa (sincronização do A* Pathfinding com o terreno gerado por chunk) que não pode se perder.
@@ -18,8 +18,9 @@ Rings — testável com o que já existe (14 prefabs de Tier1/Tier2, Sprint 20).
 
 - **Boss (P7)**: sistema próprio, maior, ficou pra depois nesta Fase A — **implementado depois**,
   ver seção "Boss (P7) — implementado" abaixo.
-- **Ciclo Dia/Noite real**: `DaySpawnDefinition.nightWeights` existe na tabela mas nunca é lido —
-  spawn de monstro usa sempre `dayWeights`, igual o terreno já fazia (decisão consistente).
+- **Ciclo Dia/Noite real**: `DaySpawnDefinition.nightWeights` existia na tabela mas nunca era lido —
+  ficou pra depois nesta Fase A, **implementado depois**, ver seção "Ciclo Dia/Noite real —
+  implementado" abaixo.
 - **Simulation Rings (P8)**: ver seção própria abaixo — ideia documentada, não implementada (sem
   evidência real de que seja necessária ainda, ver "Por que ainda não implementamos").
 - **Bestiário dos Tiers 3-10**: conteúdo (prefab/arte), não é trabalho de engenharia — o sistema já
@@ -163,6 +164,33 @@ doc de design (Seção 17):
   (Goblin King, Mother Slime Blue, Mother Slime Green) + 4 Tier2 (Centaur King, Rat People Royalty,
   Spider Queen, Werewolf), todos reaproveitando prefabs já existentes em `Assets/Prefabs/Bosses/`.
 
+## Ciclo Dia/Noite real — implementado
+
+Lógica de gameplay + visual, numa rodada só (decisão do usuário: fechar a feature de ponta a ponta
+em vez de só a lógica).
+
+- **`DayTimer.IsNight`** — fase calculada a partir do tempo decorrido vs. a duração REAL do dia
+  corrente (`currentDayDuration`, guardada a cada `ResetForNewDay(duration)` — cobre o caso de
+  duração customizada, não só `defaultDayDuration`). 50% Dia / 50% Noite sempre, nunca quebra essa
+  proporção (doc, Seção 3). Todo dia novo começa em Dia. `GameEvents.OnDayNightPhaseChanged` dispara
+  só na troca de fase (edge trigger), nunca todo frame.
+- **`WorldTierSelector.ComputeTierPercentsNonAlloc`** ganhou parâmetro `isNight` (default `false`,
+  aditivo — não quebra nenhum call site existente) — troca `dayWeights` por `nightWeights`.
+  `ComputeTierGroupPercentsNonAlloc` (terreno/bioma) **não** ganhou esse parâmetro de propósito —
+  decisão de escopo já registrada: bioma nunca oscila a cada troca de fase.
+- **`WorldPopulationManager`/`WorldBossSpawnManager`** leem `DayTimer.Instance.IsNight` e passam pro
+  cálculo de Tier — monstro comum e boss já reagem à fase real (Tiers superiores ganham mais peso à
+  noite, conforme a tabela de `nightWeights` de cada Dia, Seção 4 do doc).
+- **`DayNightLightController`** (novo) — crossfade suave (smoothstep, ~5s configurável) de cor/
+  intensidade de um `Light2D` Global do URP 2D Renderer, disparado por
+  `GameEvents.OnDayNightPhaseChanged`. Respeita a pausa do jogo (achado real: a pausa deste projeto
+  é só uma flag — `TimeManager.IsPaused` — `Time.timeScale` continua 1, então sem o gate explícito
+  `GameplayGate.IsActive` o crossfade continuaria rodando com o menu de pausa/loja aberto).
+- **Numeração**: não existe uma Sprint/Deadline oficial reservada especificamente pra essa feature
+  no `Projeto_Torre_Plano_Producao_v7.md` (P8 lá é "Simulation Rings + Limpeza de Combat Scope",
+  não Dia/Noite — `DayTimer` como cronômetro único já existia de uma sprint numerada bem anterior).
+  Por isso os comentários no código não citam nenhum `Px`/Sprint, só a Seção 3/4/25 do doc de design.
+
 ## FUTURO — documentar como pendência, não implementar agora
 
 ### Simulation Rings (P8) — otimização de custo por monstro, por distância
@@ -190,10 +218,4 @@ simultâneo do que o "população pequena" que justificou pular isso na Fase A) 
 principalmente em janela maximizada. Sem evidência real de que o custo por monstro esteja doendo —
 construir otimização sem um problema medido é o tipo de trabalho que evitamos a sessão toda. Fica
 pronta aqui pra quando (se) um teste real mostrar queda de FPS com população alta.
-
-### Ciclo Dia/Noite real
-
-Não existe hoje (`DayTimer` é só um cronômetro único, sem fase interna Dia/Noite). O doc de design
-assume que isso já existe pro spawn de monstro consultar (`nightWeights`) — precisa ser construído
-antes de ativar essa parte da tabela.
 

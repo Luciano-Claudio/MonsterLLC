@@ -9,12 +9,12 @@ using UnityEngine;
 // Monster Inside Tier (Seção 16) -> posição no Spawn Annulus ao redor do jogador
 // (WorldSpawnUtility) -> spawn.
 //
-// Fase A (escopo desta rodada, decisão do usuário): sem Boss (fica pra rodada própria, P7),
-// sem ciclo Dia/Noite real (usa sempre dayWeights, igual o terreno já faz —
-// DaySpawnDefinition.nightWeights fica reservado pra quando o ciclo dia/noite existir de
-// verdade), sem Simulation Rings (todo monstro comum sempre simula em full — aceitável
-// porque a população é pequena, Min/Target/Max, e o despawn por distância já limita o total
-// de monstros vivos ao mesmo tempo).
+// Fase A (escopo original desta rodada, decisão do usuário): sem Boss (implementado depois,
+// Sprint P7, ver WorldBossSpawnManager), sem Simulation Rings (todo monstro comum sempre
+// simula em full — aceitável porque a população é pequena, Min/Target/Max, e o despawn por
+// distância já limita o total de monstros vivos ao mesmo tempo). Ciclo Dia/Noite real
+// (DaySpawnDefinition.nightWeights) implementado depois também — ver DayTimer.IsNight, lido
+// abaixo em SpawnOne().
 public class WorldPopulationManager : MonoBehaviour
 {
     public WorldGenerationSettings worldSettings;
@@ -112,7 +112,8 @@ public class WorldPopulationManager : MonoBehaviour
             distanceFromOrigin, worldSettings.safeZoneRadius, worldSettings.distancePerSpawnDay, ActualDay);
 
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer);
+        bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, isNight: isNight);
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
         if (tierIndex < 0) return; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
