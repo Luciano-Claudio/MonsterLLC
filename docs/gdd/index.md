@@ -1060,8 +1060,10 @@ Progressão de stack: 16→32→128→1.024→8.192→131.072→1.048.576 (valor
 
 **Descartar:** clique direito. **Reorganizar:** arrastar com clique esquerdo. Compras na loja nunca competem por espaço no inventário.
 
-### Interações de drag/drop ainda não definidas 🟡
-Os comportamentos exatos de merge/swap ao arrastar itens não foram fechados pelo designer — não devem ser presumidos. Ver a lista completa na Seção 53 (Pendências Abertas): comportamento ao arrastar uma stack sobre outra stack do mesmo item; merge parcial quando o destino não comporta a stack inteira; comportamento ao arrastar para um slot ocupado por item diferente; quantidade efetivamente removida por um clique direito (stack inteira, 1 unidade, ou seleção de quantidade).
+### Interações de drag/drop — parcialmente definidas ✅🟡
+**Reposicionamento (TAB) — fechado ✅ (2026-10-18):** a movimentação de itens dentro do inventário só existe com o inventário aberto (TAB), nunca na barra inferior de 5 slots durante gameplay normal. Clicar e arrastar um item pra outra posição move ele pra lá; se a posição de destino já tiver outro item, os dois **trocam de lugar (swap)** — nunca merge nem bloqueio. Durante o arraste, o ícone do item segue o cursor do mouse (mesmo feedback visual de arrastar um arquivo no sistema operacional). Ver spec completa de UI em `docs/sprints/adiantamentos.md` (adiantamento, destino Sprint 42).
+
+**Ainda não definido 🟡** (ver Seção 53): comportamento ao arrastar uma stack sobre outra stack do MESMO item (merge, não swap — mas a regra exata ainda não existe); merge parcial quando o destino não comporta a stack inteira; quantidade efetivamente removida por um clique direito (stack inteira, 1 unidade, ou seleção de quantidade).
 
 ### Coleta parcial ✅
 Pilha maior que o espaço disponível: coleta o máximo que couber, resto fica no chão como entidade separada. Nunca tudo-ou-nada.
@@ -1079,7 +1081,7 @@ Loot entra no Pickup Radius → Player tenta coletar
 - **Filtro de bag continua valendo:** um tipo de loot bloqueado pelo filtro não é coletado automaticamente mesmo entrando no raio.
 - **Valor base:** o jogador possui um Pickup Radius base. 🔢 valor numérico pendente de balanceamento — não fixado em unidades, tiles, metros ou pixels aqui.
 - **Upgrade "Increase Pickup Radius"** (aba Bonuses — Seção 41): aumenta o raio do jogador. **Run-Persistent** — persiste entre dias da run, reseta para o raio base em nova run (mesma categoria de qualquer bonus comprado, Seção 15). 🔢 quantidade de compras, curva de aumento e preços pendentes — não presumir tiers, percentuais ou incrementos específicos.
-- **Aggregação de drops não muda:** pilhas seguem a mesma lógica de representação visual (1–9 individual, 10–49/50–99 stacks, 100+ quantidade interna — Seção 38); ao entrar no Pickup Radius, a lógica de coleta/venda se aplica sobre a quantidade interna real, não exige que cada unidade visual entre individualmente na área.
+- **Aggregação de drops não muda:** pilhas seguem a mesma lógica de representação visual (sprite por limiar de quantidade — 1/2+/5+/20+, Seção 38); ao entrar no Pickup Radius, a lógica de coleta/venda se aplica sobre a quantidade interna real, não exige que cada unidade visual entre individualmente na área.
 - **Feedback visual do raio é decisão de UI/UX** — pode ser invisível normalmente, mostrado ao comprar o upgrade, mostrado em debug, ou outra solução; não definido aqui.
 - **Não é o raio do Coletor Employee.** O Pickup Radius é um sistema do jogador; o Coletor continua com sua própria lógica, capacidade, movimento e ciclo (Seção 34), incluindo a Coleta Distribuída pelo Mundo (Seção 36, antigo "Cross-Floor") — os dois sistemas não se conectam.
 
@@ -1093,8 +1095,14 @@ Todo loot ainda no inventário é destruído (Daily — Seção 15).
 
 ## 38. Drops no Chão — Agregação Visual e Regras de Loot
 
-### Agregação visual — feedback de poder, não só otimização ✅
-1–9: individual. 10–49: stacks de 10. 50–99: stacks de 50. 100+: sprite(s) com quantidade real interna, podendo se distribuir em múltiplas pilhas visuais para reforçar a sensação de fartura. Coleta parcial de pilhas grandes segue a mesma lógica da Seção 37.
+### Agregação visual — feedback de poder, não só otimização ✅ (regra revisada 2026-10-18)
+**Substitui a regra antiga (1–9/10–49/50–99/100+, que falava em QUANTOS objetos de pilha aparecem).** A regra nova é sobre qual SPRITE cada pilha individual usa, baseado na quantidade que ela representa — 4 variações de arte por item (já desenhadas pelo usuário): **1** (sozinho) / **2+** / **5+** / **20+**. Os 3 limiares (2/5/20) são configuráveis (variável serializada), não fixos em código. Coleta parcial de pilhas grandes segue a mesma lógica da Seção 37.
+
+### Física do drop ✅ (2026-10-18)
+Todo loot nasce com física real (Rigidbody2D, sem Freeze Rotation Z — o item pode girar ao cair/ser jogado), é arremessado pra cima com pouca força no instante da morte do monstro (hop curto, não um lançamento forte), e tem atrito suficiente pra não deslizar muito longe do ponto de morte antes de parar.
+
+### Stacking por proximidade (trigger) ✅ (2026-10-18)
+Cada item de loot tem um trigger que detecta outros itens do MESMO tipo próximos — quando detecta, eles se juntam numa única pilha (visual e logicamente), cuja sprite é escolhida pelos limiares acima (1/2+/5+/20+) de acordo com a quantidade total acumulada. **Um drop já pode nascer acima do limiar**: se um abate solta, por exemplo, 25 unidades de um material de uma vez, a pilha já nasce direto com a sprite de "20+", sem precisar esperar o trigger de proximidade juntar uma por uma.
 
 ### Rolagens independentes — regra restaurada ✅
 **Cada tipo de loot realiza sua própria rolagem de chance de drop, independentemente das demais.** Um único abate pode dropar múltiplos materiais diferentes simultaneamente se as rolagens correspondentes forem bem-sucedidas — por exemplo, um mesmo monstro pode dropar Monster Essence **+** Monster Fragment **+** Spirit Dust **+** Arcane Shard no mesmo abate. **Não se trata de "escolher apenas um item da tabela"** — é um conjunto de rolagens independentes, uma por material possível daquele monstro.
@@ -1484,7 +1492,7 @@ Responsabilidades conceituais (nomes ilustrativos):
 - **Assassin (Seção 17.9) — pendência nova desta revisão estrutural:** o critério antigo ("alcançar o Andar 6") não existe mais; precisa de um critério equivalente no mundo único (candidato: distância do centro onde `EffectiveSpawnDay` chega a 6 — Seção 23).
 - **Inventário (Seção 37):** drag entre stacks iguais — comportamento de merge ainda não definido.
 - **Inventário (Seção 37):** merge parcial quando o destino não comporta a stack inteira ainda não definido.
-- **Inventário (Seção 37):** drag para slot ocupado por item diferente — swap/bloqueio ainda não definido.
+- ~~**Inventário (Seção 37):** drag para slot ocupado por item diferente — swap/bloqueio ainda não definido.~~ **Resolvido 2026-10-18:** swap (troca de posição), nunca bloqueio.
 - **Inventário (Seção 37):** clique direito — quantidade efetivamente descartada ainda não definida.
 - **Magnet (Seção 29):** utiliza o Filtro de Bag do jogador para decidir quais tipos de loot vender automaticamente, ignora esse filtro, ou terá uma regra própria de filtro?
 - **Efeitos persistentes do herói e Simulation Rings (Seção 24) — pendência nova desta revisão:** rastro de fogo do Mage, facas do Ranger e equivalentes, deixados atrás ao se afastar — seguem a mesma regra de simulação seletiva por distância dos monstros (pausam/são recolhidos), ou continuam ativos indefinidamente até a duração acabar, independente da distância? Substitui a antiga pendência "Combat / Floor Transition".

@@ -6,6 +6,54 @@ Quando um adiantamento é finalmente consumido pela sprint de destino, o própri
 
 ---
 
+## 2026-10-18 — Spec de UI do Inventário (drag-and-drop) (destino: Sprint 42, "UI Final de Gameplay — Parte 2")
+
+**Por que adiantado:** durante o planejamento da Sprint 31/32 (Loot), o usuário decidiu aproveitar
+o contexto fresco de loot/materiais pra já fechar o design da UI do inventário — resolvendo de
+quebra uma pendência que já estava marcada em aberto no GDD (Seção 37/53: "comportamento ao
+arrastar pra um slot ocupado por item diferente — swap/bloqueio ainda não definido"). Nenhum
+código foi escrito — é spec pura, pra não se perder até a Sprint 42 chegar.
+
+### Spec completa
+
+- **Barra inferior (HUD normal, fora do TAB):** 5 slots sempre visíveis durante gameplay — sem
+  movimentação/drag possível aqui, só visualização + coleta automática (Pickup Radius, já
+  existente).
+- **Abrir com TAB:** expande a visualização pra mostrar até os 20 slots máximos (GDD Seção 37,
+  progressão 5→10→15→20 por compra). Slots que o jogador ainda não comprou (além dos que já
+  desbloqueou) aparecem **cinza/bloqueados** na grade, não escondidos — dá pra ver o "teto" de
+  slots possíveis mesmo sem ter comprado ainda.
+- **Reposicionamento só existe dentro do TAB:** clicar e arrastar um item com o botão esquerdo
+  pra outra posição da grade move ele pra lá.
+- **Slot de destino ocupado por outro item → SWAP:** os dois itens trocam de posição entre si.
+  Nunca merge, nunca bloqueio, nunca "empurra" pra outro lugar.
+- **Feedback visual do drag:** o ícone do item segue o cursor do mouse durante o arraste — mesmo
+  comportamento de arrastar um ícone de arquivo numa área de trabalho (desktop OS).
+- **Fora de escopo desta spec** (continuam 🟡 em aberto no GDD Seção 53): merge entre 2 pilhas do
+  MESMO item (drag de uma stack em cima de outra igual), merge parcial quando o destino não
+  comporta a pilha inteira, e quantidade efetivamente removida por um clique direito.
+
+### GDD atualizado
+
+`docs/gdd/index.md` — Seção 37 (subseção "Interações de drag/drop") marcada parcialmente ✅,
+Seção 53 (Pendências Abertas) com o item de swap riscado/resolvido.
+
+### Pendências (ficam para quando a Sprint 42 chegar)
+
+- Nenhum código, nenhum mockup visual ainda — só a spec de comportamento acima.
+- As 3 pendências de drag/drop que continuam abertas (merge de stacks iguais, merge parcial,
+  quantidade do clique direito) precisam de decisão do usuário antes da Sprint 42 fechar de
+  verdade.
+- Visual exato da grade (tamanho de slot, espaçamento, estilo do "cinza bloqueado") não
+  especificado — só o comportamento funcional.
+
+### Quando isso for retomado (Sprint 42)
+
+Ler esta entrada inteira antes de começar a UI do inventário — cobre o "porquê" do swap e do
+comportamento de TAB, que não estará óbvio só olhando pro GDD nessa altura.
+
+---
+
 ## 2026-09-16 — Base Animator + ferramenta para monstros de "emboscada" (destino: Batch 4, Sprint 25, Floor 5)
 
 **Por que adiantado:** enquanto adicionava manualmente as sprites de ataque de todos os monstros (trabalho contínuo, fora de sprint), o usuário notou que a maioria dos monstros do Andar 5 (undeads — principalmente Skeletons e o Gargoyle) não se encaixa no padrão de `idle` direcional usado por todo o resto do Bestiário: eles não vagam sozinhos, ficam numa única pose parada (sem arte NE/NW/SE/SW) até detectar o jogador. Isso exigia mudança na `MonsterAnimationGeneratorWindow` e em 2 novos Animators base — trabalho de infraestrutura que só vai ser efetivamente **usado** no Batch 4 (Floor 5–6, Sprint 25, GDD/Plano de Produção), mas que fazia sentido resolver agora, com o contexto do pivô de combate da Sprint 16 ainda fresco.
