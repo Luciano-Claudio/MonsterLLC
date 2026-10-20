@@ -255,8 +255,10 @@ public class Cleric : HeroController
         isUsingSecondaryAbility = false; // arma o cooldown no próximo Update() da base
     }
 
-    private void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
+        base.OnDrawGizmosSelected(); // gizmo do Pickup Radius (HeroController), se ligado no Inspector
+
         if (showAttackRadiusGizmo)
         {
             Gizmos.color = Color.red;

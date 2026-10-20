@@ -777,6 +777,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
+    // Cacheado 1x (Resources.Load não é caro, mas também não precisa repetir a cada abate) —
+    // prefab em Assets/Resources/Loot/LootDrop.prefab. static: mesmo prefab serve pra qualquer
+    // monstro/boss, não precisa de 1 referência serializada em cada um dos 21 prefabs.
+    private static GameObject lootDropPrefab;
+
     // "Cada tipo de loot realiza sua própria rolagem de chance, independentemente das demais"
     // (GDD Seção 38) — testa CADA entrada do drop table separadamente, nunca escolhe só 1 item
     // da lista. Um abate pode dropar vários materiais diferentes ao mesmo tempo (ou nenhum, se
@@ -784,6 +789,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Essence de todo monstro comum é sempre 100% no Bestiário).
     private void DropLoot()
     {
+        if (lootDropPrefab == null) lootDropPrefab = Resources.Load<GameObject>("Loot/LootDrop");
+
         foreach (var entry in lootDrops)
         {
             if (string.IsNullOrEmpty(entry.itemName)) continue;
@@ -796,9 +803,9 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             int quantity = Mathf.RoundToInt(baseQuantity * HeroController.LootMultiplier);
             if (quantity <= 0) continue;
 
-            var lootObj = new GameObject($"Loot_{entry.itemName}");
-            lootObj.transform.position = transform.position;
-            var drop = lootObj.AddComponent<LootDrop>();
+            var lootObj = Instantiate(lootDropPrefab, transform.position, Quaternion.identity);
+            lootObj.name = $"Loot_{entry.itemName}";
+            var drop = lootObj.GetComponent<LootDrop>();
             drop.loot = new LootDefinition { itemName = entry.itemName, quantity = quantity };
         }
     }

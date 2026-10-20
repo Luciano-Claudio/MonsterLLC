@@ -111,11 +111,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     public static float LootMultiplier = 1f;
 
     // Sprint 32 — GDD Seção 37 (Pickup Radius). Static pelo mesmo motivo de LootMultiplier (só
-    // existe 1 herói jogável por vez). 🔢 valor base pendente de balanceamento (mesmo valor que
-    // o antigo LootDrop.pickupRadius usava como padrão). Upgrade "Increase Pickup Radius"
-    // (Bonuses, Seção 41, ainda não implementado) só precisa mudar este valor — o collider
-    // físico que de fato detecta o loot (pickupTrigger, abaixo) lê ele todo frame.
+    // existe 1 herói jogável por vez). Upgrade "Increase Pickup Radius" (Bonuses, Seção 41,
+    // ainda não implementado) só precisa mudar este valor — o collider físico que de fato
+    // detecta o loot (pickupRadius, abaixo — HeroPickupRadius, num GameObject filho) lê ele
+    // todo frame.
     public static float PickupRadius = 1f;
+
+    // Exposto no Inspector só pra ajustar o valor BASE acima sem precisar editar código — campo
+    // comum de instância (não static), igual qualquer outro 🔢 pendente de balanceamento
+    // (ex.: energyReward do EnemyController). Copiado pro PickupRadius static em Awake(); como
+    // só 1 herói existe por vez, mudar isso num prefab específico é o jeito de testar valores.
+    [SerializeField] private float basePickupRadius = 1f;
 
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
@@ -155,10 +161,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private CapsuleCollider2D bodyCollider;
     private float bodyColliderOffsetXFacingEast;
 
-    // 2º Collider2D no mesmo GameObject do corpo — mesmo padrão já usado em EnemyController
-    // (1 collider físico + 1 trigger maior pra detecção). Criado via AddComponent (não existe
-    // em nenhum dos 10 prefabs de herói ainda) pra não precisar editar cada prefab no Editor.
-    private CircleCollider2D pickupTrigger;
+    // Vive num GameObject FILHO dedicado (ver HeroPickupRadius) — NUNCA no mesmo GameObject do
+    // corpo. Motivo real (achado em playtest): Unity dispara OnTriggerStay2D quando QUALQUER
+    // collider do GameObject é trigger, mesmo o sólido do corpo — compartilhar o objeto faria o
+    // corpo (bem maior) coletar loot sozinho, ignorando o raio configurado.
+    private HeroPickupRadius pickupRadius;
 
     // [Sprint P3] Movimento deliberado passou de transform.Translate pra rb.linearVelocity —
     // Translate ignora Collider2D sólido (o herói atravessava props sólidos, ex.: pedra/
@@ -188,9 +195,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (bodyCollider != null) bodyColliderOffsetXFacingEast = bodyCollider.offset.x;
         rb = GetComponent<Rigidbody2D>();
 
-        pickupTrigger = gameObject.AddComponent<CircleCollider2D>();
-        pickupTrigger.isTrigger = true;
-        pickupTrigger.radius = PickupRadius;
+        PickupRadius = basePickupRadius;
+        var pickupRadiusObj = new GameObject("PickupRadius");
+        pickupRadiusObj.transform.SetParent(transform, false);
+        pickupRadius = pickupRadiusObj.AddComponent<HeroPickupRadius>();
+        pickupRadius.SetRadius(PickupRadius);
+
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
@@ -259,7 +269,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // Reflete qualquer upgrade de Pickup Radius no collider de verdade, todo frame — mais
         // simples que um setter dedicado, já que PickupRadius é static (qualquer sistema pode
         // mudar o valor direto, mesmo critério do LootMultiplier).
-        if (pickupTrigger != null) pickupTrigger.radius = PickupRadius;
+        if (pickupRadius != null) pickupRadius.SetRadius(PickupRadius);
 
         if (!GameplayGate.IsActive) return;
 
@@ -362,21 +372,6 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         {
             transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
         }
-    }
-
-    // Pickup Radius (GDD Seção 37) — substitui o antigo polling por Distance()/FindGameObjectWithTag
-    // dentro de cada LootDrop; agora só processa quem está DE VERDADE dentro do raio. OnTriggerSTAY
-    // (não Enter) de propósito — a Bag pode estar cheia no instante em que o loot entra no raio, e
-    // precisa continuar tentando a cada frame físico enquanto o overlap persistir (ex.: o jogador
-    // libera espaço vendendo no Vendor sem se mover). GameplayGate.IsActive porque TimeManager.
-    // IsPaused é só uma flag — a física continua simulando durante a pausa, então sem este guard
-    // seria possível coletar loot com o inventário (TAB) aberto.
-    private void OnTriggerStay2D(Collider2D other)
-    {
-        if (!GameplayGate.IsActive) return;
-
-        var lootDrop = other.GetComponent<LootDrop>();
-        if (lootDrop != null) lootDrop.Collect();
     }
 
     private void UpdateAimDirection(Vector2 screenPosition)
@@ -755,4 +750,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // heróis com estado que precisa ser desfeito na morte (ex.: pet do Mage/Blood Mage)
     // sobrescrevem isso.
     protected virtual void OnHeroDeath() { }
+
+    // Gizmo de debug (Scene, objeto selecionado) — mesmo padrão do showAttackRadiusGizmo do
+    // EnemyController. virtual (não private) pra heróis que já têm o próprio OnDrawGizmosSelected
+    // (ex.: Cleric) poderem chamar base.OnDrawGizmosSelected() e somar os dois.
+    [SerializeField] private bool showPickupRadiusGizmo = false;
+
+    protected virtual void OnDrawGizmosSelected()
+    {
+        if (!showPickupRadiusGizmo) return;
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, basePickupRadius);
+    }
 }

@@ -75,11 +75,13 @@ estava sendo exibida no chão.
 - **Componente de loot com física** — substitui o `LootDrop` atual (hoje sem física nenhuma, só
   checa distância até o player em `Update()`). Precisa de `Rigidbody2D` (gravidade 2D ligada,
   sem Freeze Rotation Z), um impulso inicial pra cima no spawn, e atrito/drag alto.
-- **Trigger de stacking** — `Collider2D` isTrigger. **Decisão tomada na implementação (diferente
-  da suposição conceitual acima):** só 1 collider (trigger), não 2 — loot não precisa de colisão
-  física sólida contra nada do mundo (não existe "parede" que o item precise respeitar), então o
-  mesmo `CircleCollider2D` trigger cobre física (o Rigidbody2D funciona sem collider sólido) e
-  detecção de stacking ao mesmo tempo.
+- **Trigger de stacking** — `Collider2D` isTrigger. Passou por 2 decisões: primeiro só 1
+  collider (trigger único cobrindo física + stacking, por "não existir parede que o loot
+  precise respeitar"); **revisado em 2026-10-20** — o usuário quis física de verdade (um
+  monstro passando por cima empurra o item, não atravessa), então voltou a ser **2 colliders**
+  como a suposição conceitual original já previa: 1 sólido (menor, física real) + 1 trigger
+  (maior, stacking). Rigidbody2D ganhou `Angular Damping` alto (10) nessa mesma revisão, pro
+  giro do hop não continuar rodando por muito tempo.
 - **Resolução de sprite por quantidade** — função pura (quantidade → qual dos 4 sprites usar),
   reavaliada toda vez que a quantidade da pilha muda (fusão por proximidade, spawn inicial
   grande, ou coleta parcial reduzindo o que sobra no chão).

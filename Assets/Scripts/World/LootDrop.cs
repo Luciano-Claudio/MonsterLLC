@@ -3,18 +3,22 @@ using UnityEngine;
 // Sprint 32 (GDD Seção 38) — física real de "hop" ao nascer e stacking por proximidade com
 // itens do MESMO material. Collect() é chamado de fora (HeroController — o Pickup Radius mora
 // no player, não aqui, ver Seção 37) em vez de um polling próprio por distância.
-// Nasce via `new GameObject()`/`AddComponent<LootDrop>()` em EnemyController.DropLoot() — sem
-// prefab nenhum, por isso TODOS os componentes (Rigidbody2D, Collider2D, SpriteRenderer) são
-// adicionados aqui mesmo, em Awake(), em vez de pré-configurados num prefab/cena.
+// Agora vive num prefab de verdade (Assets/Resources/Loot/LootDrop.prefab — Resources.Load em
+// EnemyController.DropLoot(), sem precisar de 1 referência serializada em cada um dos 21
+// prefabs de monstro/boss). Rigidbody2D/SpriteRenderer já vêm configurados no próprio prefab
+// (ajustáveis no Inspector com precisão), este script só lê (GetComponent), não configura mais
+// nada neles via código. 2 CircleCollider2D no prefab, de propósito (voltou a ser 2, não 1 —
+// decisão revisada): o menor é SÓLIDO (física real — um monstro passando por cima empurra o
+// item, não atravessa), o maior é trigger (detecção de stacking, Seção 38 abaixo) — um trigger
+// sozinho não gera colisão física real nenhuma, só overlap.
+[RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D), typeof(SpriteRenderer))]
 public class LootDrop : MonoBehaviour
 {
     public LootDefinition loot = new LootDefinition { itemName = "Monster Essence", quantity = 1 };
 
     // 🔢 chute inicial de balanceamento visual, não calibrado em playtest ainda.
     public float hopForce = 2.5f;
-    public float maxSpinSpeed = 180f; // graus/s — só efeito visual, gira livre ao sair voando
-    public float linearDrag = 6f; // atrito alto — assenta rápido, sem deslizar longe do ponto de morte
-    public float stackMergeRadius = 0.4f;
+    public float maxSpinSpeed = 120f; // graus/s — só efeito visual, gira livre ao sair voando; o Angular Damping alto do Rigidbody2D (prefab) já faz o giro desacelerar rápido e parar
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
@@ -26,19 +30,8 @@ public class LootDrop : MonoBehaviour
 
     private void Awake()
     {
-        rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0f; // jogo top-down — gravidade real empurraria o item pro "sul" do mapa, não faz sentido aqui
-        rb.linearDamping = linearDrag;
-        rb.freezeRotation = false; // GDD Seção 38: "pode girar livremente ao cair"
-
-        // 1 collider só, em trigger — não existe nada no mundo que o loot precise colidir de
-        // verdade (parar numa parede), e o MESMO trigger serve pra detectar outro loot do mesmo
-        // material por perto (stacking) sem precisar de um 2º Collider2D separado.
-        var trigger = gameObject.AddComponent<CircleCollider2D>();
-        trigger.isTrigger = true;
-        trigger.radius = stackMergeRadius;
-
-        spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Start()

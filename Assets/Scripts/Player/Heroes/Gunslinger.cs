@@ -104,8 +104,10 @@ public class Gunslinger : HeroController
     // aproximada. Sorteia de novo a cada repaint da Scene view, de propósito: olhando por
     // alguns segundos dá pra ver o espalhamento completo entre as linhas mais distantes e
     // calibrar shotMaxDeviationAngle por cima disso.
-    private void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
+        base.OnDrawGizmosSelected(); // gizmo do Pickup Radius (HeroController), se ligado no Inspector
+
         if (!showShotLinesGizmo) return;
 
         Vector2 origin = transform.position;

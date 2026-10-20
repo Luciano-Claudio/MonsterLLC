@@ -75,6 +75,13 @@ public static class GameEvents
     public static event Action OnDayStart;
     public static void DayStarted() => OnDayStart?.Invoke();
 
+    // Fim do dia de gameplay — dispara de DayResolver.ResolveEndOfDay() (timer de DayTimer
+    // chegando a zero), ANTES de decidir Results ou GameOver (dispara nos dois casos: o Vendor
+    // fecha a loja de qualquer forma, sucesso ou fracasso na Demanda). Sprint 32 — Vendor usa
+    // isso pra tocar Shop_Closing.
+    public static event Action OnDayEnd;
+    public static void DayEnded() => OnDayEnd?.Invoke();
+
     // Ciclo Dia/Noite real (docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_
     // ATUALIZADO_V2.md, Seção 3) — dispara 1x só na TROCA de fase dentro do dia atual (Dia ->
     // Noite em 50% da duração, Noite -> próximo Dia só no OnDayStart seguinte). true = virou
