@@ -189,6 +189,8 @@ Relógio do dia, monstros (movimento e IA), ataques, projéteis, employees, pets
 ### Relação com o Sistema de Habilidades (Seção 12) ✅
 Pausar entre o início da animação e o instante do hit congela o progresso sem cancelá-lo. Ao despausar, a habilidade continua exatamente daquele ponto. Isso é diferente da morte (Seção 11), que **cancela** em vez de congelar.
 
+**🔲 Pendência registrada (teste manual, Sprint 32) — auditoria de cobertura, prazo antes da Deadline 13/Sprint 60 (Content Complete):** a regra acima ("ataques, projéteis... qualquer outro timer dependente da gameplay") já cobre o caso em teoria, mas falta uma auditoria explícita por fonte de dano demorado/telegrafado (bomba do Goblin Sapper, futuro Totem do Orc Shaman, e qualquer mecânica parecida — telegraph com delay entre o gatilho e o dano real). Risco concreto relatado pelo usuário: jogador aciona a bomba do Goblin Sapper e, antes da explosão, pausa o jogo (TAB) — se a física/animação daquele dano específico não estiver gateada por `GameplayGate.IsActive` (ou estiver usando Coroutine/`WaitForSeconds`, que não respeita a pausa — ver nota de arquitetura da Sprint 13), o jogador pode morrer com o jogo "pausado". Não é pra resolver agora — só fica registrado aqui pra virar um passe de auditoria antes do Content Complete.
+
 ---
 
 ## 10. Core Loop

@@ -1,18 +1,19 @@
 using UnityEngine;
 
-// Spider Queen (Bestiário — exceção pontual, Melee/Ranged híbrido de verdade). 2 raios de
-// ataque independentes, igual todo Melee/Ranged comum já tem o próprio attackRadius: dentro
-// de stats.attackRadius (melee) se comporta exatamente como uma Spider comum, ataque corpo a
-// corpo real (bite, 4 direções diagonais, hitbox + AnimationBiteEvent); entre o attackRadius e
-// o rangedAttackRadius, dispara a teia à distância (attack, 8 direções, projétil real nascido
-// via AnimationWebEvent); além do rangedAttackRadius, nenhum dos dois alcança — só persegue.
+// Spider Queen (Bestiário — exceção pontual, Melee/Ranged híbrido de verdade). Decisão do
+// usuário: igual ao Melee comum, a mordida deixou de usar "attack radius" (distância) —
+// morde de verdade quando o player toca qualquer um dos 4 triggers de ataque
+// (IsPlayerTouchingAnyHitbox). stats.attackRadius sobrou só pra teia à distância (attack, 8
+// direções, projétil real nascido via AnimationWebEvent) — mesmo papel que
+// RangedEnemyController.InAttackRange() já usa: fora do range de toque, dispara teia se
+// estiver dentro de stats.attackRadius; além dele, nenhum dos dois alcança, só persegue.
 // Diferente de um RangedEnemyController comum, NUNCA foge: sempre tenta voltar a fechar
 // distância pro melee (Move() só aproxima ou fica parada, nunca afasta).
 // Não usa o pipeline genérico de Attack/AttackTrigger da base (hasAttackAnimation deve ficar
 // FALSE no Inspector) porque esse pipeline só suporta 1 tipo de ataque por monstro — aqui são
-// 2, escolhidos por distância a cada frame, cada um com seu próprio trigger/cooldown/evento,
-// tratados inteiramente em Move() (mesmo padrão arquitetural do Goblin Sapper/Rat People
-// Royalty).
+// 2, escolhidos por toque/distância a cada frame, cada um com seu próprio trigger/cooldown/
+// evento, tratados inteiramente em Move() (mesmo padrão arquitetural do Goblin Sapper/Rat
+// People Royalty).
 public class SpiderQueenController : EnemyController
 {
     [Header("Bite (corpo a corpo — 4 direções diagonais)")]
@@ -25,7 +26,6 @@ public class SpiderQueenController : EnemyController
     [Header("Teia (à distância — 8 direções)")]
     [SerializeField] private GameObject webProjectilePrefab; // precisa ter SpiderWebProjectile
     [SerializeField] private float webCooldownDuration = 4f; // 🔢 ajustável
-    [SerializeField] private float rangedAttackRadius = 6f; // 🔢 ajustável — além disso, nem a teia alcança, só persegue
 
     private AttackCooldown biteCooldown;
     private AttackCooldown webCooldown;
@@ -46,10 +46,7 @@ public class SpiderQueenController : EnemyController
             return;
         }
 
-        Vector2 toPlayer = player.position - transform.position;
-        float distance = toPlayer.magnitude;
-
-        if (distance <= stats.attackRadius)
+        if (IsPlayerTouchingAnyHitbox())
         {
             // Colada no player -> idle_combat, tenta mordida pelo cooldown próprio.
             SetMoving(false);
@@ -59,16 +56,34 @@ public class SpiderQueenController : EnemyController
         }
 
         // Fora de alcance de mordida -> SEMPRE aproxima (nunca foge, diferente de um Ranged
-        // comum). Só tenta a teia se também estiver dentro do alcance dela — além do
-        // rangedAttackRadius, nem o Ranged mais comum do jogo alcançaria, então a Spider Queen
-        // também não.
+        // comum). Só tenta a teia se também estiver dentro do alcance dela
+        // (RangedEnemyController.InAttackRange()) — além de stats.attackRadius, nem o Ranged
+        // mais comum do jogo alcançaria, então a Spider Queen também não.
+        Vector2 toPlayer = player.position - transform.position;
+        float distance = toPlayer.magnitude;
+
         SetMoving(true);
         MoveInDirection(toPlayer.normalized);
-        if (distance <= rangedAttackRadius)
+        if (distance <= stats.attackRadius)
         {
             webCooldown.Tick(deltaTime);
             if (webCooldown.TryConsume()) StartWeb();
         }
+    }
+
+    // Mesmo critério do MeleeEnemyController — qualquer um dos 4 (não só o da direção que
+    // está olhando) já libera; o golpe de verdade (AnimationBiteEvent) continua testando só o
+    // trigger de GetHitboxForFacing(), no frame exato do Animation Event.
+    private bool IsPlayerTouchingAnyHitbox()
+    {
+        var heroCollider = player.GetComponent<Collider2D>();
+        if (heroCollider == null) return false;
+
+        if (attackHitboxNE != null && attackHitboxNE.IsTouching(heroCollider)) return true;
+        if (attackHitboxNW != null && attackHitboxNW.IsTouching(heroCollider)) return true;
+        if (attackHitboxSE != null && attackHitboxSE.IsTouching(heroCollider)) return true;
+        if (attackHitboxSW != null && attackHitboxSW.IsTouching(heroCollider)) return true;
+        return false;
     }
 
     private void StartBite()

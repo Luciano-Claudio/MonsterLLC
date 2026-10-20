@@ -1,15 +1,16 @@
 using UnityEngine;
 
 // Rat People Royalty (Bestiário — exceção pontual, Melee/Ranged híbrido, mesmo padrão
-// arquitetural da Spider Queen). 2 raios de ataque independentes, igual todo Melee/Ranged
-// comum já tem o próprio attackRadius: dentro de stats.attackRadius (melee) ataca corpo a
-// corpo de verdade (attack, 4 direções diagonais, hitbox + AnimationMeleeHitEvent) —
-// substitui o antigo dano de contato passivo; entre o attackRadius e o rangedAttackRadius,
-// arremessa (Throw_Rat, 4 direções diagonais); além do rangedAttackRadius, nenhum dos dois
-// alcança — só persegue. Igual à Spider Queen, nunca foge: sempre tenta voltar a fechar
-// distância pro melee. Não usa o pipeline genérico de Attack/AttackTrigger da base
-// (hasAttackAnimation deve ficar FALSE no Inspector) — melee e arremesso são tratados
-// inteiramente em Move(), cada um com seu próprio trigger/cooldown/evento.
+// arquitetural da Spider Queen). Decisão do usuário: igual ao Melee comum, o corpo a corpo
+// deixou de usar "attack radius" (distância) — ataca de verdade quando o player toca
+// qualquer um dos 4 triggers de ataque (IsPlayerTouchingAnyHitbox), substituindo o antigo
+// dano de contato passivo. stats.attackRadius sobrou só pro arremesso (Throw_Rat, 4 direções
+// diagonais) — mesmo papel que RangedEnemyController.InAttackRange() já usa: fora do range de
+// toque, arremessa se estiver dentro de stats.attackRadius; além dele, nenhum dos dois
+// alcança, só persegue. Nunca foge: sempre tenta voltar a fechar distância pro melee. Não usa
+// o pipeline genérico de Attack/AttackTrigger da base (hasAttackAnimation deve ficar FALSE no
+// Inspector) — melee e arremesso são tratados inteiramente em Move(), cada um com seu próprio
+// trigger/cooldown/evento.
 public class RatPeopleRoyaltyController : EnemyController
 {
     [Header("Ataque corpo a corpo (4 direções diagonais)")]
@@ -22,7 +23,6 @@ public class RatPeopleRoyaltyController : EnemyController
     [Header("Arremesso de Rat People (Bestiário — exceção pontual)")]
     [SerializeField] private GameObject throwProjectilePrefab; // precisa ter RatPeopleThrowProjectile
     [SerializeField] private float throwCooldownDuration = 5f; // 🔢 ajustável
-    [SerializeField] private float rangedAttackRadius = 6f; // 🔢 ajustável — além disso, nem o arremesso alcança, só persegue
 
     private AttackCooldown meleeCooldown;
     private AttackCooldown throwCooldown;
@@ -46,10 +46,7 @@ public class RatPeopleRoyaltyController : EnemyController
             return;
         }
 
-        Vector2 toPlayer = player.position - transform.position;
-        float distance = toPlayer.magnitude;
-
-        if (distance <= stats.attackRadius)
+        if (IsPlayerTouchingAnyHitbox())
         {
             SetMoving(false); // colado no player -> idle_combat, tenta melee pelo cooldown próprio
             meleeCooldown.Tick(deltaTime);
@@ -61,17 +58,36 @@ public class RatPeopleRoyaltyController : EnemyController
         }
         else
         {
+            Vector2 toPlayer = player.position - transform.position;
+            float distance = toPlayer.magnitude;
+
             SetMoving(true); // SEMPRE aproxima (nunca foge) — tenta voltar pro melee
             MoveInDirection(toPlayer.normalized);
 
             // Só tenta o arremesso se também estiver dentro do alcance dele — igual um Ranged
-            // comum, além do rangedAttackRadius nem esse alcançaria.
-            if (distance <= rangedAttackRadius)
+            // comum (RangedEnemyController.InAttackRange()), além do stats.attackRadius nem
+            // esse alcançaria.
+            if (distance <= stats.attackRadius)
             {
                 throwCooldown.Tick(deltaTime);
                 if (throwCooldown.TryConsume()) StartThrow();
             }
         }
+    }
+
+    // Mesmo critério do MeleeEnemyController — qualquer um dos 4 (não só o da direção que
+    // está olhando) já libera; o golpe de verdade (AnimationMeleeHitEvent) continua testando
+    // só o trigger de GetHitboxForFacing(), no frame exato do Animation Event.
+    private bool IsPlayerTouchingAnyHitbox()
+    {
+        var heroCollider = player.GetComponent<Collider2D>();
+        if (heroCollider == null) return false;
+
+        if (attackHitboxNE != null && attackHitboxNE.IsTouching(heroCollider)) return true;
+        if (attackHitboxNW != null && attackHitboxNW.IsTouching(heroCollider)) return true;
+        if (attackHitboxSE != null && attackHitboxSE.IsTouching(heroCollider)) return true;
+        if (attackHitboxSW != null && attackHitboxSW.IsTouching(heroCollider)) return true;
+        return false;
     }
 
     private void StartMeleeAttack()

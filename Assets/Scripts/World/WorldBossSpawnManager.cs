@@ -13,6 +13,8 @@ using UnityEngine;
 // continua existindo por cima disso, mas na prática o reset por-Tier tende a disparar primeiro.
 public class WorldBossSpawnManager : MonoBehaviour
 {
+    public static WorldBossSpawnManager Instance { get; private set; }
+
     public WorldGenerationSettings worldSettings;
     public BossSpawnSettings bossSettings;
 
@@ -33,6 +35,20 @@ public class WorldBossSpawnManager : MonoBehaviour
     private float replacementCooldownTimer; // proteção contra reroll por distância (doc, Seção 17) — andar de um lado pro outro na borda do bossDespawnDistance não gera replacement repetido
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
+
+    private void Awake() => Instance = this;
+
+    // Chamado pelo ChunkTerrainGenerator.RegenerateWorld() — bug real reportado: o botão
+    // "Regenerar Mundo" só repintava o bioma com o override do PRÓPRIO ChunkTerrainGenerator;
+    // WorldPopulationManager/WorldBossSpawnManager tinham seus próprios campos
+    // useTestDayOverride/testDayOverride, nunca sincronizados automaticamente — resultado: o
+    // bioma mudava de Tier mas monstro/boss continuavam nascendo no Dia antigo (cada um lia o
+    // próprio ActualDay, nunca atualizado). Sincroniza os 3 de uma vez só no clique do botão.
+    public void SyncDayOverride(bool enabled, int day)
+    {
+        useTestDayOverride = enabled;
+        testDayOverride = day;
+    }
 
     private void OnEnable()
     {

@@ -5,18 +5,33 @@ public class MeleeEnemyController : EnemyController
     // 4 clipes de ataque diagonais (NE/NW/SE/SW), cada um com seu próprio trigger filho
     // fixo naquela direção — o GameObject nunca vira, só a animação muda, então o trigger
     // certo depende de pra que lado o monstro estava olhando quando o ataque começou.
-    // Ficam sem uso se hasAttackAnimation for falso (ex.: Slimes).
+    // Ficam sem uso se hasAttackAnimation for falso (ex.: Slimes). Decisão do usuário: Melee
+    // não usa mais "attack radius" (distância) pra decidir quando parar/atacar — qualquer um
+    // dos 4 tocando o player já libera (ver IsPlayerTouchingAnyHitbox), medido direto contra
+    // o collider de verdade em vez de Vector2.Distance <= stats.attackRadius (bug recorrente:
+    // RVO/colisão entre vários monstros às vezes nunca deixava fechar a distância exata).
     [Header("Triggers de ataque (um por direção diagonal)")]
     [SerializeField] private Collider2D attackHitboxNE;
     [SerializeField] private Collider2D attackHitboxNW;
     [SerializeField] private Collider2D attackHitboxSE;
     [SerializeField] private Collider2D attackHitboxSW;
 
+    // Exceção (Bestiário Andar 3, Warbreed Phalanx — lança) — arte de ataque sem pose
+    // diagonal real, só ortogonal (N/S/E/W); precisa de Animator Controller próprio (não um
+    // AnimatorOverrideController do Base_Melee), com a Blend Tree de Attack reposicionada nos
+    // 4 cardeais e alimentada por CardinalAimX/Y em vez de DiagonalAimX/Y (ver
+    // EnemyController.SetAimDirection/DirectionUtility.SnapTo4Cardinals). Os 4 campos acima
+    // continuam sendo os únicos 4 triggers — aqui só mudam de NOME CONCEITUAL (NE guarda o
+    // trigger de South, NW o de North, SE o de East, SW o de West — mapeamento confirmado
+    // pelo usuário comparando a arte real), e GetHitboxForFacing() escolhe entre eles pelo
+    // eixo dominante em vez de quadrante diagonal.
+    [SerializeField] private bool orthogonalAttack = false;
+
     // Enquanto a "vaga" perto do player estiver cheia (MeleeAttackSlotManager), o monstro
-    // não fecha até o attackRadius — fica flanqueando no flankRadius, alternando andar na
-    // borda do círculo e idle_combat. Reaproveita o PatrolAI (mesma lógica de alternância
-    // com timers aleatórios) só que com o alvo sempre recalculado num ponto do anel, não
-    // num ponto fixo de patrulha.
+    // não fecha pra tentar tocar os triggers de ataque — fica flanqueando no flankRadius,
+    // alternando andar na borda do círculo e idle_combat. Reaproveita o PatrolAI (mesma
+    // lógica de alternância com timers aleatórios) só que com o alvo sempre recalculado num
+    // ponto do anel, não num ponto fixo de patrulha.
     [Header("Flanco (quando a vaga perto do player está cheia)")]
     [SerializeField] private float minFlankIdleDuration = 1f;
     [SerializeField] private float maxFlankIdleDuration = 2.5f;
@@ -46,7 +61,7 @@ public class MeleeEnemyController : EnemyController
         Vector2 toPlayer = player.position - transform.position;
         float distance = toPlayer.magnitude;
 
-        if (distance <= stats.attackRadius)
+        if (IsPlayerTouchingAnyHitbox())
         {
             SetMoving(false); // colado no player -> idle_combat, enquanto os cooldowns não liberam
             return;
@@ -111,8 +126,26 @@ public class MeleeEnemyController : EnemyController
         return (Vector2)player.position + offset;
     }
 
-    protected override bool InAttackRange() =>
-        Vector2.Distance(transform.position, player.position) <= stats.attackRadius;
+    // Decisão do usuário (bug recorrente: RVO/colisão entre vários monstros às vezes nunca
+    // deixava fechar EXATAMENTE a distância de stats.attackRadius, monstro perseguia pra
+    // sempre sem nunca atacar) — "attack radius" deixou de existir pra Melee. Em vez de medir
+    // distância, testa contato real contra os 4 triggers de ataque: qualquer um dos 4 já
+    // libera (não precisa ser o da direção que está olhando) — o golpe de verdade
+    // (ExecuteAttackHit) continua testando só o trigger de GetHitboxForFacing(), no frame
+    // exato do Animation Hit Event.
+    private bool IsPlayerTouchingAnyHitbox()
+    {
+        var heroCollider = player.GetComponent<Collider2D>();
+        if (heroCollider == null) return false;
+
+        if (attackHitboxNE != null && attackHitboxNE.IsTouching(heroCollider)) return true;
+        if (attackHitboxNW != null && attackHitboxNW.IsTouching(heroCollider)) return true;
+        if (attackHitboxSE != null && attackHitboxSE.IsTouching(heroCollider)) return true;
+        if (attackHitboxSW != null && attackHitboxSW.IsTouching(heroCollider)) return true;
+        return false;
+    }
+
+    protected override bool InAttackRange() => IsPlayerTouchingAnyHitbox();
 
     protected override void ExecuteAttackHit()
     {
@@ -135,6 +168,17 @@ public class MeleeEnemyController : EnemyController
     // escolher entre atk_ne/nw/se/sw.
     private Collider2D GetHitboxForFacing()
     {
+        if (orthogonalAttack)
+        {
+            // Eixo dominante (não quadrante) — mesmo critério de DirectionUtility.
+            // SnapTo4Cardinals, só que escolhendo um Collider2D em vez de um Vector2.
+            // Mapeamento conceitual (ver comentário no campo orthogonalAttack):
+            // NE=South, NW=North, SE=East, SW=West.
+            bool horizontalDominant = Mathf.Abs(AimDirection.x) >= Mathf.Abs(AimDirection.y);
+            if (horizontalDominant) return AimDirection.x >= 0f ? attackHitboxSE : attackHitboxSW;
+            return AimDirection.y >= 0f ? attackHitboxNW : attackHitboxNE;
+        }
+
         bool east = AimDirection.x >= 0f;
         bool north = AimDirection.y >= 0f;
 

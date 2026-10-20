@@ -642,6 +642,15 @@ public class ChunkTerrainGenerator : MonoBehaviour
         StopAllCoroutines();
         pendingPaint.Clear();
 
+        // Bug real reportado: sem isso, WorldPopulationManager/WorldBossSpawnManager
+        // continuavam lendo o PRÓPRIO useTestDayOverride/testDayOverride (nunca sincronizado
+        // com o deste componente) — o bioma mudava de Tier aqui, mas os monstros/bosses
+        // recém-spawnados (abaixo, via ClearAllEnemies) continuavam nascendo no Dia antigo.
+        // Precisa rodar ANTES do ClearAllEnemies — a repopulação automática (crise, ver
+        // WorldPopulationManager.Update) já lê o Dia novo no próprio frame seguinte.
+        if (WorldPopulationManager.Instance != null) WorldPopulationManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
+        if (WorldBossSpawnManager.Instance != null) WorldBossSpawnManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
+
         // População inteira renasce do zero sob as regras atuais (ex.: Tier Suppression comprada
         // nesta sessão) — nunca é morte (WorldPopulationManager/WorldBossSpawnManager escutam e
         // só dão Destroy(), sem loot/kill).

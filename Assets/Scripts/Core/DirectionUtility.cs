@@ -58,4 +58,17 @@ public static class DirectionUtility
         float y = direction.y >= 0f ? 0.70710678f : -0.70710678f;
         return new Vector2(x, y);
     }
+
+    // Direção crua encaixada só nos 4 cardeais (N/E/S/W) — NUNCA diagonal. Caso espelhado de
+    // SnapTo4Diagonals: existe pra Blend Trees cuja arte de ataque não tem pose diagonal real
+    // (ex.: Warbreed Phalanx — lança ortogonal, Bestiário Andar 3), mesmo raciocínio de
+    // instabilidade perto da zona ambígua, só que rotado 45°: aqui a zona sem largura fica nos
+    // eixos DIAGONAIS (|x|==|y|), nunca nos cardeais. Resolve pelo eixo dominante (|x| vs |y|);
+    // empate exato cai pro eixo X (E/W) — escolha arbitrária, mas determinística (sem ruído).
+    public static Vector2 SnapTo4Cardinals(Vector2 direction)
+    {
+        if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y))
+            return new Vector2(direction.x >= 0f ? 1f : -1f, 0f);
+        return new Vector2(0f, direction.y >= 0f ? 1f : -1f);
+    }
 }

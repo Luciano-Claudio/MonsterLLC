@@ -2,6 +2,10 @@
 
 Histórico de mudanças por sprint. Para o detalhe completo de cada uma (decisões técnicas, dívida técnica, etc.), veja os [Sprint Reports](sprints/).
 
+## Pós-Sprint 32 — Pendência registrada: auditoria de pausa em dano telegrafado/demorado
+
+Achado em teste manual, durante validação do Tier 3 (nada quebrado agora — registrado pra não esquecer). **Pendência registrada no GDD (Seção 9):** o Sistema Central de Pausa já declara "ataques, projéteis... qualquer outro timer dependente da gameplay" como coberto, mas falta auditar isso por fonte específica de dano com delay entre gatilho e efeito — bomba do Goblin Sapper, futuro Totem do Orc Shaman (Bestiário Andar 3), e qualquer mecânica parecida. Risco relatado pelo usuário: acionar a bomba e pausar (TAB) antes da explosão pode matar o jogador com o jogo "pausado", se aquele timer específico usar Coroutine/`WaitForSeconds` em vez de ser gateado por `GameplayGate.IsActive` (ver nota de arquitetura da Sprint 13 — Coroutine não respeita a pausa). **Prazo: antes da Deadline 13/Sprint 60 (Content Complete).**
+
 ## Pós-Sprint 22 — Sistema de Spawn de Herói (MainMenuUI) + 3 bugs de detecção de monstro
 
 Trabalho de infraestrutura entre sprints (pedido direto do usuário, fora do escopo de qualquer sprint numerada) — até aqui, `MainMenuUI.NewGame()` só criava o `RunState`, sem nenhum herói de verdade nascendo na cena; todo teste deste projeto até a Sprint 22 dependia de um herói pré-colocado manualmente. Relevante pra **todo herói futuro**: é o primeiro "New Game" que efetivamente coloca o jogador no mundo.

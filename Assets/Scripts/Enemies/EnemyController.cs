@@ -609,6 +609,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
         animator.SetFloat("DiagonalAimX", diagonal.x);
         animator.SetFloat("DiagonalAimY", diagonal.y);
+
+        // CardinalAimX/Y — só existe como parâmetro nos controllers de monstro cujo ataque não
+        // tem pose diagonal real (ex.: Warbreed Phalanx, controller próprio — ver
+        // DirectionUtility.SnapTo4Cardinals). SetFloat num parâmetro que o Animator Controller
+        // do monstro não declara é um no-op silencioso (mesma garantia que já vale pra
+        // DiagonalMoveX/Y sendo setado em todo monstro, mesmo os que não usam) — sem custo real
+        // de manter isso incondicional aqui em vez de condicionar por monstro.
+        Vector2 cardinal = DirectionUtility.SnapTo4Cardinals(direction);
+        animator.SetFloat("CardinalAimX", cardinal.x);
+        animator.SetFloat("CardinalAimY", cardinal.y);
     }
 
     [SerializeField] private float floatingTextHeightAdjust = -0.5f; // 🔢 ajuste fino, negativo baixa o texto
@@ -677,6 +687,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // visual continua), só não reinicia a pose enquanto já está reagindo a uma anterior.
         else if (AnimatorStateCheck.IsInState(animator, "Damage")) TriggerDamageFlash();
         else AnimatorTrigger("DamageTrigger");
+    }
+
+    // Orc Shaman (Bestiário Andar 3) — primeiro caso de cura em monstro (Totem de Heal).
+    // Mesmo texto flutuante verde que o herói já usa (GameEvents.OnHealReceived é genérico,
+    // só recebe posição/valor, nunca assumiu "sempre é o herói").
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+
+        stats.health = HealthSystem.ApplyHeal(stats.health, amount, stats.maxHealth);
+        GameEvents.HealReceived(GetFloatingTextSpawnPosition(), amount);
     }
 
     private void TriggerDamageFlash()

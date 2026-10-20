@@ -17,6 +17,8 @@ using UnityEngine;
 // abaixo em SpawnOne().
 public class WorldPopulationManager : MonoBehaviour
 {
+    public static WorldPopulationManager Instance { get; private set; }
+
     public WorldGenerationSettings worldSettings;
     public MonsterSpawnSettings spawnSettings;
 
@@ -39,6 +41,18 @@ public class WorldPopulationManager : MonoBehaviour
     private int ActiveTarget => escalated ? spawnSettings.populationMaximum : spawnSettings.populationTarget;
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
+
+    private void Awake() => Instance = this;
+
+    // Chamado pelo ChunkTerrainGenerator.RegenerateWorld() — mesmo motivo/comentário completo
+    // em WorldBossSpawnManager.SyncDayOverride(): sem isso, o bioma mudava de Tier no botão
+    // "Regenerar Mundo" mas o spawn de monstro comum continuava usando o Dia antigo (campo
+    // useTestDayOverride/testDayOverride próprio, nunca sincronizado).
+    public void SyncDayOverride(bool enabled, int day)
+    {
+        useTestDayOverride = enabled;
+        testDayOverride = day;
+    }
 
     private void OnEnable()
     {
