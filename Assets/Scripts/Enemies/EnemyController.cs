@@ -26,7 +26,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20;
-    public int monsterEssenceDropAmount = 1; // quantidade dropada por abate (GDD Seção 38, 🔢 valor de balanceamento pendente)
+
+    // Drop table do monstro (GDD Seção 38/39, valores reais já no Bestiário por ficha) —
+    // substitui o antigo monsterEssenceDropAmount (1 item fixo). Cada entrada rola sua própria
+    // chance de forma independente das demais — um abate pode dropar várias ao mesmo tempo.
+    [Header("Loot (GDD Seção 38 — cada entrada rola independente das demais)")]
+    public List<LootDropEntry> lootDrops = new();
 
     // Bestiário (Rat People Royalty) — "summons criados por este boss não geram loot". Quem
     // sumona (ex.: RatPeopleThrowProjectile) seta isso false logo após o Instantiate(); todo
@@ -767,17 +772,34 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         dieHandled = true;
 
         // Bestiário (Rat People Royalty): "summons criados por este boss não geram loot".
-        if (dropsLoot)
-        {
-            var lootObj = new GameObject("Loot_MonsterEssence");
-            lootObj.transform.position = transform.position;
-            var drop = lootObj.AddComponent<LootDrop>();
-            // HeroController.LootMultiplier — passiva de sorte do Gunslinger (Sprint 28,
-            // GDD Seção 17.8), default 1 = sem efeito em nenhum outro herói.
-            int quantity = Mathf.RoundToInt(monsterEssenceDropAmount * HeroController.LootMultiplier);
-            drop.loot = new LootDefinition { itemName = "Monster Essence", quantity = quantity };
-        }
+        if (dropsLoot) DropLoot();
 
         Destroy(gameObject);
+    }
+
+    // "Cada tipo de loot realiza sua própria rolagem de chance, independentemente das demais"
+    // (GDD Seção 38) — testa CADA entrada do drop table separadamente, nunca escolhe só 1 item
+    // da lista. Um abate pode dropar vários materiais diferentes ao mesmo tempo (ou nenhum, se
+    // todas as rolagens falharem — só acontece em entradas com chance < 100%, já que Monster
+    // Essence de todo monstro comum é sempre 100% no Bestiário).
+    private void DropLoot()
+    {
+        foreach (var entry in lootDrops)
+        {
+            if (string.IsNullOrEmpty(entry.itemName)) continue;
+            if (Random.value * 100f >= entry.dropChancePercent) continue;
+
+            int baseQuantity = Random.Range(entry.minQuantity, entry.maxQuantity + 1); // Random.Range(int,int) já é max-exclusivo
+            // HeroController.LootMultiplier — passiva de sorte do Gunslinger (Sprint 28, GDD
+            // Seção 17.8), default 1 = sem efeito em nenhum outro herói. Aplicado em TODO
+            // material, não só Monster Essence.
+            int quantity = Mathf.RoundToInt(baseQuantity * HeroController.LootMultiplier);
+            if (quantity <= 0) continue;
+
+            var lootObj = new GameObject($"Loot_{entry.itemName}");
+            lootObj.transform.position = transform.position;
+            var drop = lootObj.AddComponent<LootDrop>();
+            drop.loot = new LootDefinition { itemName = entry.itemName, quantity = quantity };
+        }
     }
 }

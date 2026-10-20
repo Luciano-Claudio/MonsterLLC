@@ -37,30 +37,10 @@ MonoBehaviour:
     coverageTarget: 0.4
     noiseScale: 0.045
     nestedPatches:
-    - terrain: {fileID: 11400000, guid: 843360f589ee4098841f7457ce590f1e, type: 2}
-      coverageTarget: 0.15
-      noiseScale: 0.08
-      nestedPatches: []
-      blockedInSafeZone: 1
-      requiresFilledQuad: 1
-    - terrain: {fileID: 11400000, guid: 2774ad96d4b14fbaa5d894ba0027cabe, type: 2}
-      coverageTarget: 0.15
-      noiseScale: 0.08
-      nestedPatches: []
-      blockedInSafeZone: 0
-      requiresFilledQuad: 0
-    - terrain: {fileID: 11400000, guid: 9ca1070b17a648baaeecd0c88d4b8f85, type: 2}
-      coverageTarget: 0.12
-      noiseScale: 0.07
-      nestedPatches: []
-      blockedInSafeZone: 0
-      requiresFilledQuad: 1
-    - terrain: {fileID: 11400000, guid: 440472b184ec45c69158dae9cf3819c3, type: 2}
-      coverageTarget: 0.12
-      noiseScale: 0.07
-      nestedPatches: []
-      blockedInSafeZone: 0
-      requiresFilledQuad: 1
+    - rid: 1
+    - rid: 2
+    - rid: 3
+    - rid: 4
     blockedInSafeZone: 0
     requiresFilledQuad: 0
   baseVariants: []
@@ -113,3 +93,42 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3dbdca6376804a31b302229b11a910e9, type: 2}
   - {fileID: 11400000, guid: dd83603c58214ce188727340d4513a5a, type: 2}
   - {fileID: 11400000, guid: 403e5c04cbc74f2db738b2d616e765f2, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1
+      type: {class: BiomeTerrainEntry, ns: , asm: Core}
+      data:
+        terrain: {fileID: 11400000, guid: 843360f589ee4098841f7457ce590f1e, type: 2}
+        coverageTarget: 0.15
+        noiseScale: 0.08
+        nestedPatches: []
+        blockedInSafeZone: 1
+        requiresFilledQuad: 1
+    - rid: 2
+      type: {class: BiomeTerrainEntry, ns: , asm: Core}
+      data:
+        terrain: {fileID: 11400000, guid: 2774ad96d4b14fbaa5d894ba0027cabe, type: 2}
+        coverageTarget: 0.15
+        noiseScale: 0.08
+        nestedPatches: []
+        blockedInSafeZone: 0
+        requiresFilledQuad: 0
+    - rid: 3
+      type: {class: BiomeTerrainEntry, ns: , asm: Core}
+      data:
+        terrain: {fileID: 11400000, guid: 9ca1070b17a648baaeecd0c88d4b8f85, type: 2}
+        coverageTarget: 0.12
+        noiseScale: 0.07
+        nestedPatches: []
+        blockedInSafeZone: 0
+        requiresFilledQuad: 1
+    - rid: 4
+      type: {class: BiomeTerrainEntry, ns: , asm: Core}
+      data:
+        terrain: {fileID: 11400000, guid: 440472b184ec45c69158dae9cf3819c3, type: 2}
+        coverageTarget: 0.12
+        noiseScale: 0.07
+        nestedPatches: []
+        blockedInSafeZone: 0
+        requiresFilledQuad: 1

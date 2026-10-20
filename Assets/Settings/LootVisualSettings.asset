@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eca8d3958b464c037c3f66d767f899b, type: 3}
+  m_Name: LootVisualSettings
+  m_EditorClassIdentifier: Core::LootVisualSettings
+  icons:
+  - itemName: Monster Essence
+    tier1: {fileID: -5395870018298921715, guid: b5f46c4586bf5c64db39279782ee6e14, type: 3}
+    tier2Plus: {fileID: 8169641371175622363, guid: b5f46c4586bf5c64db39279782ee6e14, type: 3}
+    tier5Plus: {fileID: -240239094149218245, guid: b5f46c4586bf5c64db39279782ee6e14, type: 3}
+    tier20Plus: {fileID: -870934402675198980, guid: b5f46c4586bf5c64db39279782ee6e14, type: 3}
+  - itemName: Monster Fragment
+    tier1: {fileID: 8052441684927952640, guid: 6581a7fd20b84ad489a58d4150457435, type: 3}
+    tier2Plus: {fileID: -564270817284175911, guid: 6581a7fd20b84ad489a58d4150457435, type: 3}
+    tier5Plus: {fileID: 1436604978949193117, guid: 6581a7fd20b84ad489a58d4150457435, type: 3}
+    tier20Plus: {fileID: 9066496570693489036, guid: 6581a7fd20b84ad489a58d4150457435, type: 3}
+  - itemName: Spirit Dust
+    tier1: {fileID: 9192619796615834034, guid: 255bd729521339f40a0af0279ce51f68, type: 3}
+    tier2Plus: {fileID: -1788358233948029596, guid: 255bd729521339f40a0af0279ce51f68, type: 3}
+    tier5Plus: {fileID: 7807607189748775521, guid: 255bd729521339f40a0af0279ce51f68, type: 3}
+    tier20Plus: {fileID: -5015618633209521782, guid: 255bd729521339f40a0af0279ce51f68, type: 3}
+  - itemName: Arcane Shard
+    tier1: {fileID: -6111304139855563541, guid: a6c06ecdab5a79d4f9657e5bab242769, type: 3}
+    tier2Plus: {fileID: -3839852497154115794, guid: a6c06ecdab5a79d4f9657e5bab242769, type: 3}
+    tier5Plus: {fileID: -3407890846243984112, guid: a6c06ecdab5a79d4f9657e5bab242769, type: 3}
+    tier20Plus: {fileID: 1727211559773155722, guid: a6c06ecdab5a79d4f9657e5bab242769, type: 3}
+  - itemName: Dark Crystal
+    tier1: {fileID: 2042313033829986242, guid: 3237e7cb2d126114b92540e3b0792a54, type: 3}
+    tier2Plus: {fileID: 2841745234869020033, guid: 3237e7cb2d126114b92540e3b0792a54, type: 3}
+    tier5Plus: {fileID: 8233271816298514353, guid: 3237e7cb2d126114b92540e3b0792a54, type: 3}
+    tier20Plus: {fileID: 1115149451, guid: 3237e7cb2d126114b92540e3b0792a54, type: 3}
+  - itemName: Soul Fragment
+    tier1: {fileID: 2162854668209812275, guid: 83a2e4f500c111d4fbcf79f137751265, type: 3}
+    tier2Plus: {fileID: -8441491381968813321, guid: 83a2e4f500c111d4fbcf79f137751265, type: 3}
+    tier5Plus: {fileID: -5221006868132574954, guid: 83a2e4f500c111d4fbcf79f137751265, type: 3}
+    tier20Plus: {fileID: -547744502, guid: 83a2e4f500c111d4fbcf79f137751265, type: 3}
+  - itemName: Corrupted Core
+    tier1: {fileID: -136737855397637486, guid: 0c9bc2fd2bab8f548aee6bfae49a9f99, type: 3}
+    tier2Plus: {fileID: -8731062770955771006, guid: 0c9bc2fd2bab8f548aee6bfae49a9f99, type: 3}
+    tier5Plus: {fileID: 3065376583250259667, guid: 0c9bc2fd2bab8f548aee6bfae49a9f99, type: 3}
+    tier20Plus: {fileID: 92772623, guid: 0c9bc2fd2bab8f548aee6bfae49a9f99, type: 3}
+  - itemName: Elemental Shard
+    tier1: {fileID: 5496959154229582104, guid: fe0567cd0a213d24f959085e82ba34d4, type: 3}
+    tier2Plus: {fileID: -7484678320120948621, guid: fe0567cd0a213d24f959085e82ba34d4, type: 3}
+    tier5Plus: {fileID: 6712823316391059793, guid: fe0567cd0a213d24f959085e82ba34d4, type: 3}
+    tier20Plus: {fileID: -1953231615, guid: fe0567cd0a213d24f959085e82ba34d4, type: 3}
+  - itemName: Ancient Fragment
+    tier1: {fileID: -7384548965364540653, guid: 9f96ee754ec0ff4459448a4bd167f52a, type: 3}
+    tier2Plus: {fileID: 5353347671588391673, guid: 9f96ee754ec0ff4459448a4bd167f52a, type: 3}
+    tier5Plus: {fileID: -671081046053357050, guid: 9f96ee754ec0ff4459448a4bd167f52a, type: 3}
+    tier20Plus: {fileID: -1401173125, guid: 9f96ee754ec0ff4459448a4bd167f52a, type: 3}
+  - itemName: Infernal Ash
+    tier1: {fileID: -6099535019864864075, guid: 31dc1365e47eb3f45ae7b99d1ff05896, type: 3}
+    tier2Plus: {fileID: -900389362724640118, guid: 31dc1365e47eb3f45ae7b99d1ff05896, type: 3}
+    tier5Plus: {fileID: -1559890362817745067, guid: 31dc1365e47eb3f45ae7b99d1ff05896, type: 3}
+    tier20Plus: {fileID: 5551364847445835116, guid: 31dc1365e47eb3f45ae7b99d1ff05896, type: 3}
+  - itemName: Chaos Crystal
+    tier1: {fileID: 6822298848847222806, guid: eefe76aa53690fd468a842e948aeb23f, type: 3}
+    tier2Plus: {fileID: -8788952017783112357, guid: eefe76aa53690fd468a842e948aeb23f, type: 3}
+    tier5Plus: {fileID: 2901333464958901869, guid: eefe76aa53690fd468a842e948aeb23f, type: 3}
+    tier20Plus: {fileID: -4751641436842900831, guid: eefe76aa53690fd468a842e948aeb23f, type: 3}
+  - itemName: Nightmare Residue
+    tier1: {fileID: 965889107416122396, guid: a0b8349eee1fd7647b09eec83c3e689b, type: 3}
+    tier2Plus: {fileID: 1928957333805864104, guid: a0b8349eee1fd7647b09eec83c3e689b, type: 3}
+    tier5Plus: {fileID: -247857786679192154, guid: a0b8349eee1fd7647b09eec83c3e689b, type: 3}
+    tier20Plus: {fileID: 3904441587893040452, guid: a0b8349eee1fd7647b09eec83c3e689b, type: 3}
+  - itemName: Void Shard
+    tier1: {fileID: -9016602953049993319, guid: 3c6684d1eb4a6744e8ae472b920dd3a7, type: 3}
+    tier2Plus: {fileID: 5885731925412332957, guid: 3c6684d1eb4a6744e8ae472b920dd3a7, type: 3}
+    tier5Plus: {fileID: 8351850180528497995, guid: 3c6684d1eb4a6744e8ae472b920dd3a7, type: 3}
+    tier20Plus: {fileID: 3016964538153858284, guid: 3c6684d1eb4a6744e8ae472b920dd3a7, type: 3}
+  - itemName: Celestial Fragment
+    tier1: {fileID: 8227826036357053216, guid: 20bb7b1f5c9ef144696532f508c2b986, type: 3}
+    tier2Plus: {fileID: -5330799350342056205, guid: 20bb7b1f5c9ef144696532f508c2b986, type: 3}
+    tier5Plus: {fileID: 7411746205347095804, guid: 20bb7b1f5c9ef144696532f508c2b986, type: 3}
+    tier20Plus: {fileID: 5388822546011245946, guid: 20bb7b1f5c9ef144696532f508c2b986, type: 3}
+  - itemName: Divine Core
+    tier1: {fileID: 613606492977508376, guid: f14221145b6da3b4d8954e477d189c19, type: 3}
+    tier2Plus: {fileID: 7080883257486013828, guid: f14221145b6da3b4d8954e477d189c19, type: 3}
+    tier5Plus: {fileID: -3478097634550697384, guid: f14221145b6da3b4d8954e477d189c19, type: 3}
+    tier20Plus: {fileID: 6113913949149111024, guid: f14221145b6da3b4d8954e477d189c19, type: 3}
+  tier2Threshold: 2
+  tier5Threshold: 5
+  tier20Threshold: 20

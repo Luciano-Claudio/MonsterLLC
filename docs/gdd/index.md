@@ -1042,19 +1042,21 @@ Contagem lógica (quanto o jogador possui) é diferente de quantidade fisicament
 ## 37. Inventário (Bag)
 
 ### Regras confirmadas ✅
-Aberto com **TAB** (pausa — Seção 9). Contém exclusivamente loot — nenhum item utilizável, arma física ou consumível. Início: **5 slots**, stack **16**.
+Aberto com **TAB** (pausa — Seção 9). Contém exclusivamente loot — nenhum item utilizável, arma física ou consumível. Início: **10 slots**, stack **16**.
 
-### Progressão de slots — matemática corrigida ✅
+### Progressão de slots — matemática corrigida ✅ (regra revisada 2026-10-19)
 ```text
-5 (inicial)
+10 (inicial)
 ↓ compra 1
-10
+20
 ↓ compra 2
-15
+30
 ↓ compra 3
-20 (máximo)
+40 (máximo)
 ```
-**3 compras** levam de 5 a 20 slots (+5 por compra) — não 4. 🔢 preços de cada compra.
+**3 compras** levam de 10 a 40 slots (+10 por compra) — não 4. A barra inferior sempre mostra os **10 primeiros slots** (fixos, nunca escondidos); o TAB abre a grade completa de **40 slots fixos** — os que excedem o `maxSlots` atual aparecem com sprite de "bloqueado" até a compra correspondente. 🔢 preços de cada compra.
+
+*(Valor anterior ao balanceamento de 2026-10-19: 5 → 10 → 15 → 20, +5 por compra — substituído integralmente.)*
 
 Progressão de stack: 16→32→128→1.024→8.192→131.072→1.048.576 (valores totais). 🔢 preços.
 

@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07249835c5261ce0ef2a4216ccefaadf, type: 3}
+  m_Name: LootPricingSettings
+  m_EditorClassIdentifier: Core::LootPricingSettings
+  prices:
+  - itemName: Monster Essence
+    sellValue: 1
+  - itemName: Monster Fragment
+    sellValue: 3
+  - itemName: Spirit Dust
+    sellValue: 4
+  - itemName: Arcane Shard
+    sellValue: 8
+  - itemName: Dark Crystal
+    sellValue: 10
+  - itemName: Soul Fragment
+    sellValue: 40
+  - itemName: Corrupted Core
+    sellValue: 70
+  - itemName: Elemental Shard
+    sellValue: 300
+  - itemName: Ancient Fragment
+    sellValue: 500
+  - itemName: Infernal Ash
+    sellValue: 4000
+  - itemName: Chaos Crystal
+    sellValue: 7000
+  - itemName: Nightmare Residue
+    sellValue: 750000
+  - itemName: Void Shard
+    sellValue: 5000000
+  - itemName: Celestial Fragment
+    sellValue: 10000000000
+  - itemName: Divine Core
+    sellValue: 1000000000000

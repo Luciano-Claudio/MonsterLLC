@@ -473,7 +473,27 @@ MonoBehaviour:
     attackDamage: 8
     attackAnimationCooldown: 2.5
   energyReward: 20
-  monsterEssenceDropAmount: 1
+  lootDrops:
+  - itemName: Monster Essence
+    dropChancePercent: 100
+    minQuantity: 50
+    maxQuantity: 200
+  - itemName: Monster Fragment
+    dropChancePercent: 100
+    minQuantity: 10
+    maxQuantity: 50
+  - itemName: Spirit Dust
+    dropChancePercent: 75
+    minQuantity: 10
+    maxQuantity: 30
+  - itemName: Arcane Shard
+    dropChancePercent: 8
+    minQuantity: 10
+    maxQuantity: 10
+  - itemName: Dark Crystal
+    dropChancePercent: 4
+    minQuantity: 10
+    maxQuantity: 10
   ownerFloor: {fileID: 0}
   isBoss: 1
   minIdleDuration: 1.5

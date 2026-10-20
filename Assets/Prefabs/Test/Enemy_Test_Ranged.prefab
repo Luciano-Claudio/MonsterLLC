@@ -155,7 +155,11 @@ MonoBehaviour:
     hitboxActiveDuration: 0.2
     recoveryDuration: 0.3
   energyReward: 20
-  monsterEssenceDropAmount: 1
+  lootDrops:
+  - itemName: Monster Essence
+    dropChancePercent: 100
+    minQuantity: 1
+    maxQuantity: 1
   projectileSpeed: 6
   projectilePrefab: {fileID: 999183690986960401, guid: bdd5cebdb4a885641ba3c7202ff94cb6, type: 3}
 --- !u!50 &-6487069121594594975

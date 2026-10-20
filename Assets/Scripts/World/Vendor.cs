@@ -2,31 +2,35 @@ using UnityEngine;
 
 public class Vendor : Interactable
 {
-    public int pricePerEssence = 1; // valor placeholder — Economia real chega na Deadline 9 do roadmap
+    // Preço por material (GDD Seção 39) — substitui o antigo pricePerEssence fixo (Sprint 31:
+    // vendia só "Monster Essence", hardcoded a 1 gold). Itens sem entrada em pricingSettings
+    // não são vendidos (ficam na Bag).
+    public LootPricingSettings pricingSettings;
 
     public override void Interact(Transform interactor)
     {
         var bag = BagController.Instance.Bag;
-        int totalSold = 0;
+        long goldEarned = 0;
 
         for (int i = bag.Slots.Count - 1; i >= 0; i--)
         {
-            if (bag.Slots[i].itemName != "Monster Essence") continue;
-            totalSold += bag.Slots[i].quantity;
+            var slot = bag.Slots[i];
+            if (!pricingSettings.TryGetPrice(slot.itemName, out long sellValue)) continue;
+
+            goldEarned += slot.quantity * sellValue;
+            DemandTracker.Instance.RegisterSale(slot.itemName, slot.quantity);
             bag.RemoveSlot(i);
         }
 
-        if (totalSold == 0)
+        if (goldEarned == 0)
         {
             Debug.Log("[Vendor] Nada pra vender.");
             return;
         }
 
-        int goldEarned = totalSold * pricePerEssence;
         MainMenuUI.CurrentRun.gold += goldEarned;
-        DemandTracker.Instance.RegisterSale("Monster Essence", totalSold);
 
-        Debug.Log($"[Vendor] Vendeu {totalSold}x Monster Essence por {goldEarned} gold. Total: {MainMenuUI.CurrentRun.gold}");
+        Debug.Log($"[Vendor] Vendeu itens por {goldEarned} gold. Total: {MainMenuUI.CurrentRun.gold}");
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
         GameEvents.BagChanged(bag);
     }

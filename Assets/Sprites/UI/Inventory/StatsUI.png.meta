@@ -1,16 +1,13 @@
 fileFormatVersion: 2
-guid: 66b0c6c31200a3c4f93d13fcff70ca85
+guid: 1f2f9ec9f3f1393458a4a3d13aad48b4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9102225429533885184
-    second: 10_elemental_shard_terra_stacks_0
+      213: 9020452952286918745
+    second: StatsUI_0
   - first:
-      213: -4476426872818276857
-    second: 10_elemental_shard_terra_stacks_1
-  - first:
-      213: -5933748386210029642
-    second: 10_elemental_shard_terra_stacks_2
+      213: 1948954160382493505
+    second: StatsUI_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -132,57 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 10_elemental_shard_terra_stacks_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 00dfa1f82366ea180800000000000000
-      internalID: -9102225429533885184
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 10_elemental_shard_terra_stacks_1
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 70667aee97980e1c0800000000000000
-      internalID: -4476426872818276857
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 10_elemental_shard_terra_stacks_2
+      name: StatsUI_0
       rect:
         serializedVersion: 2
         x: 32
-        y: 0
-        width: 16
-        height: 16
+        y: 160
+        width: 320
+        height: 192
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,30 +144,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6bf5765f74717ada0800000000000000
-      internalID: -5933748386210029642
+      spriteID: 9587f2eea261f2d70800000000000000
+      internalID: 9020452952286918745
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 10_elemental_shard_terra_stacks_3
+      name: StatsUI_1
       rect:
         serializedVersion: 2
-        x: 48
-        y: 0
-        width: 16
-        height: 16
+        x: 96
+        y: 96
+        width: 64
+        height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 969e480be3a3f344c978373657cde94e
-      internalID: 1876426402
+      spriteID: 1434e1d9b731c0b10800000000000000
+      internalID: 1948954160382493505
       vertices: []
       indices: 
       edges: []
@@ -223,7 +176,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: fcd1b96c859d3174b84b5358defbee3d
+    spriteID: 8a2ff3cdc48ae7448919e4cb85f16ecc
     internalID: 0
     vertices: []
     indices: 
@@ -231,14 +184,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      10_elemental_shard_terra_stacks_0: -9102225429533885184
-      10_elemental_shard_terra_stacks_1: -4476426872818276857
-      10_elemental_shard_terra_stacks_2: -5933748386210029642
-      10_elemental_shard_terra_stacks_3: 1876426402
+      StatsUI_0: 9020452952286918745
+      StatsUI_1: 1948954160382493505
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

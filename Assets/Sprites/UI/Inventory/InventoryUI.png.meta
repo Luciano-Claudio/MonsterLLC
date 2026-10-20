@@ -1,16 +1,13 @@
 fileFormatVersion: 2
-guid: 9e68665da9562444ebda8a4e580b6b0c
+guid: f7137949580db344c908d44e29d26c6a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 318267556911974468
-    second: 11_elemental_shard_ar_stacks_0
+      213: 7452060249203165287
+    second: InventoryUI_0
   - first:
-      213: 3258754807322922310
-    second: 11_elemental_shard_ar_stacks_1
-  - first:
-      213: 8407793928784266162
-    second: 11_elemental_shard_ar_stacks_2
+      213: -3117615785175638144
+    second: InventoryUI_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -132,57 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 11_elemental_shard_ar_stacks_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 448054128a6ba6400800000000000000
-      internalID: 318267556911974468
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 11_elemental_shard_ar_stacks_1
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 64d449c4b3c693d20800000000000000
-      internalID: 3258754807322922310
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 11_elemental_shard_ar_stacks_2
+      name: InventoryUI_0
       rect:
         serializedVersion: 2
         x: 32
-        y: 0
-        width: 16
-        height: 16
+        y: 160
+        width: 320
+        height: 192
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,30 +144,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2b34fd5280c7ea470800000000000000
-      internalID: 8407793928784266162
+      spriteID: 768409e50590b6760800000000000000
+      internalID: 7452060249203165287
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 11_elemental_shard_ar_stacks_3
+      name: InventoryUI_1
       rect:
         serializedVersion: 2
-        x: 48
-        y: 0
-        width: 16
-        height: 16
+        x: 96
+        y: 96
+        width: 64
+        height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08f947216f00cb4d0800000000000000
+      internalID: -3117615785175638144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventoryUI_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a7390ea7ac1f7e242aefbac4da10ee14
-      internalID: 1016286559
+      spriteID: a5238822d4b56524bbd6c4216628f918
+      internalID: -1513301714
       vertices: []
       indices: 
       edges: []
@@ -223,7 +198,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 16481947859272d4a913f0f284d85913
+    spriteID: 4e451ef59f631be40aa3f046afe21636
     internalID: 0
     vertices: []
     indices: 
@@ -231,14 +206,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      11_elemental_shard_ar_stacks_0: 318267556911974468
-      11_elemental_shard_ar_stacks_1: 3258754807322922310
-      11_elemental_shard_ar_stacks_2: 8407793928784266162
-      11_elemental_shard_ar_stacks_3: 1016286559
+      InventoryUI_0: 7452060249203165287
+      InventoryUI_1: -3117615785175638144
+      InventoryUI_2: -1513301714
+      InventoryUI_3: -796994152
+      InventoryUI_4: 10987024
+      InventoryUI_5: 1907079655
+      InventoryUI_6: -233053507
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

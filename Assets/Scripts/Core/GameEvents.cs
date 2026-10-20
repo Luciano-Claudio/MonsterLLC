@@ -23,6 +23,11 @@ public static class GameEvents
     public static event Action<Bag> OnBagChanged;
     public static void BagChanged(Bag bag) => OnBagChanged?.Invoke(bag);
 
+    // TAB abre/fecha o painel (BagController.ToggleBag) — a UI do inventário escuta isso pra
+    // mostrar/esconder o painel em vez de fazer polling de IsOpen todo frame.
+    public static event Action<bool> OnBagToggled;
+    public static void BagToggled(bool isOpen) => OnBagToggled?.Invoke(isOpen);
+
     // long, não int — Gold usa o mesmo tipo de RunState.gold (Sprint 4), sem teto de ~2,1bi.
     public static event Action<long> OnGoldChanged;
     public static void GoldChanged(long gold) => OnGoldChanged?.Invoke(gold);

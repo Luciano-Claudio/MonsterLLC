@@ -155,7 +155,11 @@ MonoBehaviour:
     hitboxActiveDuration: 0.2
     recoveryDuration: 0.3
   energyReward: 20
-  monsterEssenceDropAmount: 40
+  lootDrops:
+  - itemName: Monster Essence
+    dropChancePercent: 100
+    minQuantity: 1
+    maxQuantity: 1
 --- !u!50 &2509872407123320144
 Rigidbody2D:
   serializedVersion: 5

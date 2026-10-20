@@ -36,6 +36,7 @@ public class MageFireball : MonoBehaviour
     private AttackCooldown groundedTick;
     private readonly HashSet<EnemyController> enemiesInRange = new();
     private readonly List<EnemyController> explosionTargets = new();
+    private readonly List<EnemyController> groundedTickTargets = new();
 
     private void Awake()
     {
@@ -145,7 +146,8 @@ public class MageFireball : MonoBehaviour
         var results = new Collider2D[16];
         int count = circleCollider.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
-        // O dano no chão (UpdateGrounded) já é seguro — usa enemiesInRange, um HashSet.
+        // (O dano no chão em UpdateGrounded usa enemiesInRange, que já deduplica por natureza
+        // sendo HashSet — mas precisou de uma cópia própria por um motivo diferente, ver lá.)
         EnemyController.CollectDistinct(results, count, explosionTargets);
         foreach (var enemy in explosionTargets) enemy.TakeDamage(impactDamage);
     }
@@ -196,7 +198,14 @@ public class MageFireball : MonoBehaviour
 
         enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu desde o último tick
 
-        foreach (var enemy in enemiesInRange)
+        // Cópia pro foreach — TakeDamage() pode matar o monstro ou empurrar outro (knockback)
+        // fora do raio, e isso dispara OnTriggerExit2D NESTE MESMO MageFireball de volta, que
+        // faz enemiesInRange.Remove() enquanto o foreach original ainda estava rodando nele
+        // (InvalidOperationException: "Collection was modified").
+        groundedTickTargets.Clear();
+        groundedTickTargets.AddRange(enemiesInRange);
+
+        foreach (var enemy in groundedTickTargets)
         {
             var statusEffects = enemy.GetComponent<StatusEffectController>();
             // Imune a Fire (ex.: futuro Fire Elemental) não leva o dano da superfície nem

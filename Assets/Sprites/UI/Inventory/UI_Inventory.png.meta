@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: 89d1d4cee9ecf8d4aa381f08b912911b
+guid: 25ba780e309d8324891f31f27014b72d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 790232490924771374
-    second: 09_elemental_shard_agua_stacks_0
-  - first:
-      213: -4708061577830256555
-    second: 09_elemental_shard_agua_stacks_1
-  - first:
-      213: 2553036544872417457
-    second: 09_elemental_shard_agua_stacks_2
+      213: -6715934915461066560
+    second: UI_Inventory_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -132,57 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 09_elemental_shard_agua_stacks_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e280b8f734877fa00800000000000000
-      internalID: 790232490924771374
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 09_elemental_shard_agua_stacks_1
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 55033c870fa99aeb0800000000000000
-      internalID: -4708061577830256555
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 09_elemental_shard_agua_stacks_2
+      name: UI_Inventory_0
       rect:
         serializedVersion: 2
         x: 32
         y: 0
-        width: 16
-        height: 16
+        width: 320
+        height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,30 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1b806b306353e6320800000000000000
-      internalID: 2553036544872417457
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 09_elemental_shard_agua_stacks_3
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d2b1cd1094e8e9e4ea9382a5c816cbc3
-      internalID: 101287386
+      spriteID: 0c0dc45e6c43cc2a0800000000000000
+      internalID: -6715934915461066560
       vertices: []
       indices: 
       edges: []
@@ -223,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 29f6a8250e3134a41b540c2c01943e6d
+    spriteID: 400a9ec778b76dd4ca967516a65baef1
     internalID: 0
     vertices: []
     indices: 
@@ -231,14 +159,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      09_elemental_shard_agua_stacks_0: 790232490924771374
-      09_elemental_shard_agua_stacks_1: -4708061577830256555
-      09_elemental_shard_agua_stacks_2: 2553036544872417457
-      09_elemental_shard_agua_stacks_3: 101287386
+      UI_Inventory_0: -6715934915461066560
+      UI_Inventory_1: 707672601
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -20,7 +20,13 @@ public class BiomeTerrainEntry
     [Tooltip("Quanto maior, mais rápido o padrão de manchas varia por célula — pequeno = manchas grandes e suaves, grande = manchas pequenas e irregulares.")]
     public float noiseScale = 0.08f;
 
+    // [SerializeReference] (2026-10-20) — sem isso, o serializador padrão do Unity trata este
+    // campo como profundidade infinita só por ser do MESMO tipo (BiomeTerrainEntry contendo
+    // List<BiomeTerrainEntry>), e sempre loga "Serialization depth limit 10 exceeded" no
+    // Console mesmo com os dados reais tendo só 1-2 níveis — SerializeReference serializa por
+    // referência (tabela plana em vez de aninhado inline), o que resolve o aviso de vez.
     [Tooltip("Patches que podem nascer DENTRO deste terreno (1 grid mais fundo) — ex.: DarkSoil dentro de DryDirt.")]
+    [SerializeReference]
     public List<BiomeTerrainEntry> nestedPatches = new();
 
     [Tooltip("Marca este terreno como perigoso (água, lava, futuros hazards) — nunca nasce dentro do raio de safe zone (WorldGenerationSettings.safeZoneRadius), nem no topo da árvore nem aninhado. Deixe desmarcado pra Grama/Dirt/Pedra e variações delas.")]

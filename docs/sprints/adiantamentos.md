@@ -6,6 +6,59 @@ Quando um adiantamento é finalmente consumido pela sprint de destino, o própri
 
 ---
 
+## 2026-10-19 — Implementação real da UI do Inventário (destino: Sprint 42, "UI Final de Gameplay — Parte 2")
+
+**Por que adiantado:** o usuário já montou a hierarquia completa da UI na cena (`_TestScene.unity`
+— `Inventory_Background` com 10 ícones fixos, `Inventory` com `Inventory_UI`/`Inventory_Slots`
+(40 slots) e `Stats_UI`, incluindo os botões de aba `Stats_Button`/`Inventory_Button`) e pediu pra
+conectar tudo agora, em vez de esperar a Sprint 42. Mudança de escopo em relação ao adiantamento
+de 2026-10-18: **progressão de slots corrigida para 10→20→30→40** (não mais 5→10→15→20) — ver
+`docs/gdd/index.md` Seção 37.
+
+### O que foi descoberto na análise da hierarquia
+- Os 40 `Slot_N` já nasceram com `Button` + `Image` de fundo, e a hierarquia já tem a sprite de
+  "destravado" nos Slots 1-10 e a de "travado" nos Slots 11-40 (sprites de um mesmo spritesheet,
+  `d8c66e6755a46e743b2c40e0d02c2ccd`) — já compatível com o novo `maxSlots` inicial de 10.
+- A ordem dos filhos em `Inventory_Slots` bate exatamente com a numeração (`Slot_1` é o filho 0,
+  `Slot_40` é o filho 39) — permitiu escrever o código sem precisar de 40 referências manuais no
+  Inspector.
+- `Bag.cs` usava lista compactada (sem posição fixa por item) — incompatível com slots fixos +
+  swap. Reescrito para array fixo de 40 (`Bag.TotalSlotCount`), com `Swap(indexA, indexB)` novo.
+
+### Arquivos criados/alterados
+- `Assets/Scripts/Core/Inventory/Bag.cs` — array fixo de 40 slots (antes: lista compactada),
+  `Swap()` novo, `RemoveSlot` agora limpa in-place em vez de deslocar.
+- `Assets/Scripts/Core/Inventory/InventorySlot.cs` — `IsEmpty` novo.
+- `Assets/Scripts/Player/BagController.cs` — `maxSlots` 5→10, dispara `GameEvents.BagToggled`.
+- `Assets/Scripts/Core/GameEvents.cs` — evento `OnBagToggled` novo.
+- `Assets/Scripts/Core/Loot/LootVisualSettings.cs` (+ asset `Assets/Settings/LootVisualSettings.asset`,
+  já populado com os 4 sprites de pilha — 1/2+/5+/20+, GDD Seção 38 — dos 15 materiais reais) —
+  mesma fonte de ícone vai servir pro drop físico no chão quando a Sprint 32 chegar.
+- `Assets/Scripts/UI/InventorySlotUI.cs` — comportamento de 1 slot (hover/Selector, drag, drop,
+  swap); anexado via `AddComponent` em runtime pelo `InventoryTabUI`, não pré-colocado na cena.
+- `Assets/Scripts/UI/InventoryTabUI.cs` — grade dos 40 slots, ícone fantasma do drag, bloqueio de
+  drop em slot travado.
+- `Assets/Scripts/UI/InventoryHudUI.cs` — barra inferior (10 ícones fixos).
+- `Assets/Scripts/UI/InventoryPanelController.cs` — abre/fecha o painel do TAB, troca de aba
+  Inventory/Stats (liga os 2 `Button.onClick` por código).
+- `Assets/Scripts/UI/BagIndicatorUI.cs` — texto de debug ajustado pro novo array fixo (contava
+  `Slots.Count`, que agora é sempre 40).
+
+### Pendências (ligação na cena — Editor, não código)
+Os scripts se auto-configuram nos filhos (ícones, texto, Selector) via `transform.Find`/
+`GetChild`, mas os 3 componentes-raiz ainda precisam ser arrastados manualmente no Editor e
+alguns campos preenchidos no Inspector (instruções completas dadas ao usuário no chat, não
+repetidas aqui): `InventoryHudUI` em `Inventory_Background`, `InventoryTabUI` em `Inventory_UI`
+(+ sprites destravado/travado + `LootVisualSettings`), `InventoryPanelController` em `Canvas`
+(+ referências pra `Inventory`/`Inventory_UI`/`Stats_UI`).
+
+### Quando isso for retomado (Sprint 42)
+Ainda em aberto (GDD Seção 53, inalterado por este adiantamento): merge de stacks do mesmo item,
+merge parcial, quantidade do clique direito. A aba Stats em si continua sem nenhum conteúdo real
+(só o botão existe) — fora de escopo até a sprint que definir o que vai nela.
+
+---
+
 ## 2026-10-18 — Spec de UI do Inventário (drag-and-drop) (destino: Sprint 42, "UI Final de Gameplay — Parte 2")
 
 **Por que adiantado:** durante o planejamento da Sprint 31/32 (Loot), o usuário decidiu aproveitar
@@ -16,13 +69,13 @@ código foi escrito — é spec pura, pra não se perder até a Sprint 42 chegar
 
 ### Spec completa
 
-- **Barra inferior (HUD normal, fora do TAB):** 5 slots sempre visíveis durante gameplay — sem
-  movimentação/drag possível aqui, só visualização + coleta automática (Pickup Radius, já
-  existente).
-- **Abrir com TAB:** expande a visualização pra mostrar até os 20 slots máximos (GDD Seção 37,
-  progressão 5→10→15→20 por compra). Slots que o jogador ainda não comprou (além dos que já
-  desbloqueou) aparecem **cinza/bloqueados** na grade, não escondidos — dá pra ver o "teto" de
-  slots possíveis mesmo sem ter comprado ainda.
+- **Barra inferior (HUD normal, fora do TAB):** ~~5 slots~~ **10 slots** sempre visíveis durante
+  gameplay (número corrigido em 2026-10-19 — ver entrada abaixo) — sem movimentação/drag possível
+  aqui, só visualização + coleta automática (Pickup Radius, já existente).
+- **Abrir com TAB:** expande a visualização pra mostrar até os ~~20~~ **40 slots** máximos (GDD
+  Seção 37, progressão ~~5→10→15→20~~ **10→20→30→40** por compra — corrigido em 2026-10-19). Slots
+  que o jogador ainda não comprou (além dos que já desbloqueou) aparecem **cinza/bloqueados** na
+  grade, não escondidos — dá pra ver o "teto" de slots possíveis mesmo sem ter comprado ainda.
 - **Reposicionamento só existe dentro do TAB:** clicar e arrastar um item com o botão esquerdo
   pra outra posição da grade move ele pra lá.
 - **Slot de destino ocupado por outro item → SWAP:** os dois itens trocam de posição entre si.
