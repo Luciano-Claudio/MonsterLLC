@@ -18,6 +18,14 @@ public class LootVisualEntry
 [CreateAssetMenu(fileName = "LootVisualSettings", menuName = "MonsterLLC/Loot/Loot Visual Settings")]
 public class LootVisualSettings : ScriptableObject
 {
+    // LootDrop (Sprint 32) nasce via `new GameObject()`/`AddComponent` em EnemyController, sem
+    // nenhum slot de Inspector pra arrastar este asset — por isso o acesso global por aqui.
+    // OnEnable roda quando o asset é carregado (já é referenciado por InventoryHudUI/
+    // InventoryTabUI, então carrega na mesma hora que a cena), sem precisar de Resources.Load
+    // nem de outro singleton MonoBehaviour só pra isso.
+    public static LootVisualSettings Instance { get; private set; }
+    private void OnEnable() => Instance = this;
+
     public List<LootVisualEntry> icons = new();
 
     public int tier2Threshold = 2;

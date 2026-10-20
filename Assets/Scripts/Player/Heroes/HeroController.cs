@@ -110,6 +110,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // efeito em nenhum herói existente.
     public static float LootMultiplier = 1f;
 
+    // Sprint 32 — GDD Seção 37 (Pickup Radius). Static pelo mesmo motivo de LootMultiplier (só
+    // existe 1 herói jogável por vez). 🔢 valor base pendente de balanceamento (mesmo valor que
+    // o antigo LootDrop.pickupRadius usava como padrão). Upgrade "Increase Pickup Radius"
+    // (Bonuses, Seção 41, ainda não implementado) só precisa mudar este valor — o collider
+    // físico que de fato detecta o loot (pickupTrigger, abaixo) lê ele todo frame.
+    public static float PickupRadius = 1f;
+
     // GDD Seção 11: "Mira: posição do mouse, resolvida em 8 direções (N, S, L, O, NE, NO, SE, SO)."
     protected Vector2 AimDirection { get; private set; } = Vector2.down;
 
@@ -148,6 +155,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private CapsuleCollider2D bodyCollider;
     private float bodyColliderOffsetXFacingEast;
 
+    // 2º Collider2D no mesmo GameObject do corpo — mesmo padrão já usado em EnemyController
+    // (1 collider físico + 1 trigger maior pra detecção). Criado via AddComponent (não existe
+    // em nenhum dos 10 prefabs de herói ainda) pra não precisar editar cada prefab no Editor.
+    private CircleCollider2D pickupTrigger;
+
     // [Sprint P3] Movimento deliberado passou de transform.Translate pra rb.linearVelocity —
     // Translate ignora Collider2D sólido (o herói atravessava props sólidos, ex.: pedra/
     // árvore, achado do usuário criando os prefabs de props); rb.linearVelocity é resolvido
@@ -175,6 +187,10 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         bodyCollider = GetComponent<CapsuleCollider2D>();
         if (bodyCollider != null) bodyColliderOffsetXFacingEast = bodyCollider.offset.x;
         rb = GetComponent<Rigidbody2D>();
+
+        pickupTrigger = gameObject.AddComponent<CircleCollider2D>();
+        pickupTrigger.isTrigger = true;
+        pickupTrigger.radius = PickupRadius;
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
@@ -240,6 +256,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     protected virtual void Update()
     {
+        // Reflete qualquer upgrade de Pickup Radius no collider de verdade, todo frame — mais
+        // simples que um setter dedicado, já que PickupRadius é static (qualquer sistema pode
+        // mudar o valor direto, mesmo critério do LootMultiplier).
+        if (pickupTrigger != null) pickupTrigger.radius = PickupRadius;
+
         if (!GameplayGate.IsActive) return;
 
         // Detecta o instante em que a Habilidade Secundária termina de verdade (qualquer
@@ -341,6 +362,21 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         {
             transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
         }
+    }
+
+    // Pickup Radius (GDD Seção 37) — substitui o antigo polling por Distance()/FindGameObjectWithTag
+    // dentro de cada LootDrop; agora só processa quem está DE VERDADE dentro do raio. OnTriggerSTAY
+    // (não Enter) de propósito — a Bag pode estar cheia no instante em que o loot entra no raio, e
+    // precisa continuar tentando a cada frame físico enquanto o overlap persistir (ex.: o jogador
+    // libera espaço vendendo no Vendor sem se mover). GameplayGate.IsActive porque TimeManager.
+    // IsPaused é só uma flag — a física continua simulando durante a pausa, então sem este guard
+    // seria possível coletar loot com o inventário (TAB) aberto.
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (!GameplayGate.IsActive) return;
+
+        var lootDrop = other.GetComponent<LootDrop>();
+        if (lootDrop != null) lootDrop.Collect();
     }
 
     private void UpdateAimDirection(Vector2 screenPosition)

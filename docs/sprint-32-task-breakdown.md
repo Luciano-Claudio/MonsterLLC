@@ -21,15 +21,13 @@
    Precisa de atrito suficiente (Linear Drag alto, ou um Physics Material 2D com friction alto)
    pra não deslizar muito longe do ponto de morte antes de assentar.
 
-2. **Stacking por proximidade via trigger** — cada item de loot tem um `Collider2D` (trigger)
-   que detecta outros itens do MESMO material próximos. Ao detectar, eles se juntam numa única
-   pilha (visual + lógica — 1 entidade representando a soma, não N objetos sobrepostos). A
-   sprite da pilha resultante é escolhida pelos limiares do item 0, pela quantidade TOTAL
-   acumulada. **Pergunta em aberto**: quando 2 itens se juntam, um dos dois GameObjects é
-   destruído e o outro absorve a quantidade (mais simples, mantém só 1 Rigidbody/Collider vivo),
-   ou existe uma entidade "pilha" separada que os itens individuais alimentam? A primeira opção
-   é mais barata e mais fácil de alinhar com a física (sem flutuar sem dono) — presumo essa,
-   mas vale confirmar.
+2. **Stacking por proximidade via trigger — resolvido 2026-10-20 ✅** — cada item de loot tem um
+   `Collider2D` (trigger) que detecta outros itens do MESMO material próximos. Ao detectar, eles
+   se juntam numa única pilha (visual + lógica — 1 entidade representando a soma, não N objetos
+   sobrepostos). A sprite da pilha resultante é escolhida pelos limiares do item 0, pela
+   quantidade TOTAL acumulada. **Confirmado: um dos dois GameObjects é destruído e o outro
+   absorve a quantidade** (implementado via desempate determinístico por `GetInstanceID()`, pra
+   nenhum dos 2 lados tentar destruir o outro ao mesmo tempo).
 
 3. **Drop que já nasce acima do limiar** — se um abate solta, de uma vez, uma quantidade que já
    ultrapassa um limiar (ex.: 25 unidades de um material cujo limiar "20+" é 20), a pilha nasce
@@ -39,15 +37,12 @@
    quando o resultado da rolagem já é grande — mais barato e evita um "flash" visual de várias
    sprites pequenas se juntando instantaneamente.
 
-4. **Entrega oficial fala em "pilha de 10.000 unidades"** — isso é ORDEM DE GRANDEZA bem acima
-   dos 4 limiares de sprite (1/2+/5+/20+ — o maior limiar documentado hoje é 20). Duas leituras
-   possíveis: (a) a sprite "20+" simplesmente representa "quantidade grande" de forma genérica,
-   sem mais variações de arte conforme a pilha cresce além de 20 — 10.000 unidades usa a MESMA
-   sprite de 25 unidades, só muda o número exibido/interno; ou (b) existe uma lógica adicional de
-   "múltiplas pilhas visuais" pra números muito grandes (como a regra antiga do GDD sugeria,
-   "podendo se distribuir em múltiplas pilhas visuais pra reforçar a sensação de fartura"), e os
-   4 limiares cobrem só a base da curva. **Pergunta em aberto, importante pra fechar o escopo
-   real desta sprint.**
+4. **Entrega oficial fala em "pilha de 10.000 unidades" — resolvido 2026-10-20 ✅** — isso é ORDEM
+   DE GRANDEZA bem acima dos 4 limiares de sprite (1/2+/5+/20+ — o maior limiar documentado hoje
+   é 20). **Confirmado (a): a sprite "20+" representa "quantidade grande" de forma genérica, sem
+   mais variações de arte conforme a pilha cresce além de 20** — 10.000 unidades usa a MESMA
+   sprite de 25 unidades, só muda o número exibido/interno (`LootVisualSettings.GetSprite` já
+   não tem teto superior pro limiar `tier20Threshold`). Sem lógica de múltiplas pilhas visuais.
 
 5. **Coleta parcial continua valendo** (GDD Seção 37) — uma pilha maior que o espaço disponível
    na Bag entrega o máximo que couber, o resto fica no chão como entidade separada (nova pilha,
@@ -80,9 +75,11 @@ estava sendo exibida no chão.
 - **Componente de loot com física** — substitui o `LootDrop` atual (hoje sem física nenhuma, só
   checa distância até o player em `Update()`). Precisa de `Rigidbody2D` (gravidade 2D ligada,
   sem Freeze Rotation Z), um impulso inicial pra cima no spawn, e atrito/drag alto.
-- **Trigger de stacking** — `Collider2D` isTrigger separado do collider físico (mesmo padrão já
-  usado em `EnemyController`, 2 colliders por entidade: 1 físico + 1 trigger maior) — ao entrar
-  em contato com outro item do mesmo material, dispara a fusão (ver Seção 0, item 2).
+- **Trigger de stacking** — `Collider2D` isTrigger. **Decisão tomada na implementação (diferente
+  da suposição conceitual acima):** só 1 collider (trigger), não 2 — loot não precisa de colisão
+  física sólida contra nada do mundo (não existe "parede" que o item precise respeitar), então o
+  mesmo `CircleCollider2D` trigger cobre física (o Rigidbody2D funciona sem collider sólido) e
+  detecção de stacking ao mesmo tempo.
 - **Resolução de sprite por quantidade** — função pura (quantidade → qual dos 4 sprites usar),
   reavaliada toda vez que a quantidade da pilha muda (fusão por proximidade, spawn inicial
   grande, ou coleta parcial reduzindo o que sobra no chão).
