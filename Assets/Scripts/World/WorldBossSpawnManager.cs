@@ -4,19 +4,26 @@ using UnityEngine;
 // Substitui o BossSpawnManager antigo (removido junto com o resto do sistema de Floor) —
 // Sprint P7. Segue o design de docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_
 // ATUALIZADO_V2.md (Seção 17): Boss Timer decide QUANDO, a mesma distribuição de Tier usada
-// pelo monstro comum (WorldTierSelector) decide QUAL Tier priorizar — mas aqui é o Tier de
-// MAIOR peso (DominantTier), nunca um roll. Identidade: nenhum BossDefinitionSO repete DENTRO
-// do mesmo giro de um Tier (UsedBossIdsToday) — decisão do usuário: ao esgotar TODOS os
-// BossDefinitionSO de um Tier específico, esse Tier reseta sozinho (volta a valer tudo de
-// novo) em vez de travar até o próximo ActualDay, pra continuar girando bosses se ainda
-// sobrar tempo de dia (ver TryPickUnusedBossForTier). O reset diário (GameEvents.OnDayStart)
-// continua existindo por cima disso, mas na prática o reset por-Tier tende a disparar primeiro.
+// pelo monstro comum (WorldTierSelector) decide QUAL Tier priorizar — mas aqui é por ORDEM DE
+// PREDOMINÂNCIA (maior peso primeiro), nunca um roll.
+//
+// Identidade "bag sem repetição" (UsedBossIdsToday) — decisão do usuário (2026-10-21,
+// corrigindo o comportamento antigo): esgotar os BossDefinitionSO de UM Tier NÃO reseta mais
+// só aquele Tier sozinho — isso fazia o Tier dominante (maior %) nunca dar espaço pros outros,
+// porque ele se auto-resetava e continuava sendo escolhido pra sempre. Agora, esgotar um Tier
+// só avança pro PRÓXIMO Tier de maior peso ainda com boss disponível (TryPickFromRankedTiers);
+// o reset geral (volta tudo a valer) só acontece quando TODOS os Tiers elegíveis (peso > 0)
+// já esgotaram TODOS os seus BossDefinitionSO hoje. O reset diário (GameEvents.OnDayStart)
+// continua existindo por cima disso.
 public class WorldBossSpawnManager : MonoBehaviour
 {
     public static WorldBossSpawnManager Instance { get; private set; }
 
     public WorldGenerationSettings worldSettings;
     public BossSpawnSettings bossSettings;
+
+    [Tooltip("Quantos bosses nascem juntos a cada Boss Timer periódico (🔢 ajustável) — decisão do usuário: 2, em vez de 1. NÃO se aplica ao replacement por distância, que continua repondo 1 por vez.")]
+    public int bossesPerSpawnCycle = 2;
 
     [Header("Debug / Teste")]
     [Tooltip("Mesmo padrão de WorldPopulationManager/ChunkTerrainGenerator — ignora o Dia real da run e usa testDayOverride no lugar.")]
@@ -28,6 +35,7 @@ public class WorldBossSpawnManager : MonoBehaviour
     private readonly List<GameObject> aliveBosses = new();
     private readonly HashSet<BossDefinitionSO> usedBossIdsToday = new();
     private readonly List<BossDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickUnusedBossForTier
+    private readonly List<Transform> spawnBatchScratch = new(); // reaproveitado em Update, pro Boss Timer periódico
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
     private readonly bool[] tierVisitedScratch = new bool[WorldTierSelector.MonsterTierCount]; // ordem de predominância em TryPickBossDefinition
 
@@ -102,11 +110,13 @@ public class WorldBossSpawnManager : MonoBehaviour
 
                 // Boss Distance Despawn nunca é morte (sem loot/kill) — Destroy() direto, igual
                 // WorldPopulationManager faz com monstro comum. Repõe a vaga na hora, sem tocar
-                // em bossTimer (Replacement != novo Boss Timer Event).
+                // em bossTimer (Replacement != novo Boss Timer Event). Replacement sempre repõe
+                // só 1 (quem nasce de novo é 1 boss só, diferente do Boss Timer periódico).
                 Destroy(aliveBosses[i]);
                 aliveBosses.RemoveAt(i);
                 replacementCooldownTimer = bossSettings.bossReplacementCooldown;
-                TrySpawnBoss();
+                var replacement = SpawnOneBoss();
+                if (replacement != null) GameEvents.BossGroupSpawned(new[] { replacement.transform });
                 break; // só 1 replacement por frame — o cooldown que acabou de começar cobre o resto deste ciclo
             }
         }
@@ -115,13 +125,21 @@ public class WorldBossSpawnManager : MonoBehaviour
         if (bossTimer < bossSettings.bossSpawnInterval) return;
         bossTimer = 0f;
 
-        TrySpawnBoss();
+        // Boss Timer periódico — spawna bossesPerSpawnCycle bosses juntos (decisão do usuário:
+        // 2, não mais 1) e dispara UM reveal só com o grupo inteiro.
+        spawnBatchScratch.Clear();
+        for (int i = 0; i < bossesPerSpawnCycle; i++)
+        {
+            var spawned = SpawnOneBoss();
+            if (spawned != null) spawnBatchScratch.Add(spawned.transform);
+        }
+        if (spawnBatchScratch.Count > 0) GameEvents.BossGroupSpawned(spawnBatchScratch.ToArray()); // snapshot — spawnBatchScratch é reaproveitado no próximo ciclo
     }
 
-    private void TrySpawnBoss()
+    private GameObject SpawnOneBoss()
     {
-        if (bossSettings.roster == null || bossSettings.roster.Count == 0) return;
-        if (!TryPickBossDefinition(player.position, out var definition)) return; // pool do dia esgotada em todos os Tiers elegíveis — vaga fica pro próximo ciclo
+        if (bossSettings.roster == null || bossSettings.roster.Count == 0) return null;
+        if (!TryPickBossDefinition(player.position, out var definition)) return null; // pool do dia esgotada em todos os Tiers elegíveis — vaga fica pro próximo ciclo
 
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + bossSettings.spawnSafetyPadding;
         // Rolado por spawn individual (não por BossDefinitionSO) — mesmo critério do monstro comum.
@@ -131,7 +149,7 @@ public class WorldBossSpawnManager : MonoBehaviour
                 minDistanceFromOrigin, bossSettings.maxSpawnPositionAttempts, out var spawnPosition,
                 bossSettings.spawnObstacleClearanceRadius, bossSettings.obstacleLayerMask, preferOutsideView))
         {
-            return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
+            return null; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
         }
 
         var bossObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity);
@@ -150,16 +168,18 @@ public class WorldBossSpawnManager : MonoBehaviour
         usedBossIdsToday.Add(definition); // só marca usado depois do spawn de fato acontecer — se a posição falhar acima, a entrada continua disponível
         aliveBosses.Add(bossObj);
 
-        GameEvents.BossSpawned(bossObj.transform); // Game Feel (BossEncounterCameraController) escuta isso pra tocar a sequência de reveal
+        return bossObj;
     }
 
     // DominantTier = Tier de maior peso na distribuição atual (nunca um roll, diferente do
     // monstro comum). Se a pool desse Tier já esgotou hoje (todo BossDefinitionSO em
-    // UsedBossIdsToday), avança pro próximo Tier por ordem de predominância (doc, Seção 17.4).
+    // UsedBossIdsToday), avança pro próximo Tier por ordem de predominância (doc, Seção 17.4) —
+    // isso é o que "dá espaço" pros Tiers de peso menor nascerem (exemplo do usuário: 50%
+    // Tier1/25% Tier2/25% Tier3, Tier1 esgotado -> tenta Tier2, depois Tier3). Só se TODOS os
+    // Tiers elegíveis (peso > 0) esgotarem é que reseta geral (usedBossIdsToday.Clear()) e
+    // tenta a rodada inteira de novo, uma única vez.
     private bool TryPickBossDefinition(Vector2 playerPosition, out BossDefinitionSO chosen)
     {
-        chosen = null;
-
         float distanceFromOrigin = playerPosition.magnitude;
         int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
             distanceFromOrigin, worldSettings.safeZoneRadius, worldSettings.distancePerSpawnDay, ActualDay);
@@ -169,6 +189,17 @@ public class WorldBossSpawnManager : MonoBehaviour
         int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
         WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight);
 
+        if (TryPickFromRankedTiers(out chosen)) return true;
+
+        usedBossIdsToday.Clear();
+        return TryPickFromRankedTiers(out chosen);
+    }
+
+    // Percorre os Tiers elegíveis (peso > 0) em ordem de predominância, maior peso primeiro,
+    // e usa o primeiro que ainda tiver algum BossDefinitionSO não usado hoje.
+    private bool TryPickFromRankedTiers(out BossDefinitionSO chosen)
+    {
+        chosen = null;
         for (int t = 0; t < WorldTierSelector.MonsterTierCount; t++) tierVisitedScratch[t] = false;
 
         for (int rank = 0; rank < WorldTierSelector.MonsterTierCount; rank++)
@@ -201,36 +232,24 @@ public class WorldBossSpawnManager : MonoBehaviour
     }
 
     // "Bag sem repetição" dentro do Tier (doc, Seção 17.3) — sorteio uniforme entre os ainda
-    // não usados hoje (decisão do usuário: sem peso configurável por BossDefinitionSO).
+    // não usados hoje (decisão do usuário: sem peso configurável por BossDefinitionSO). SEM
+    // auto-reset por Tier aqui (ver comentário de TryPickBossDefinition) — exaurir este Tier só
+    // retorna false, pra TryPickFromRankedTiers avançar pro próximo Tier da ordem de
+    // predominância. Vale tanto pra Tier sem nenhum BossDefinitionSO cadastrado (bestiário
+    // incompleto) quanto pra Tier com todos já usados hoje — os dois casos dão passagem igual.
     private bool TryPickUnusedBossForTier(int tierNumber1Based, out BossDefinitionSO chosen)
     {
         chosen = null;
         candidateScratch.Clear();
-        bool anyDefinitionForTier = false;
 
         foreach (var def in bossSettings.roster)
         {
             if (def == null || def.prefab == null || def.tier != tierNumber1Based) continue;
-            anyDefinitionForTier = true;
             if (usedBossIdsToday.Contains(def)) continue;
             candidateScratch.Add(def);
         }
 
-        // Pool do Tier esgotada HOJE, mas existe gente cadastrada nesse Tier (decisão do
-        // usuário: diferente de esperar o próximo ActualDay pra reciclar — aqui reseta só os
-        // BossDefinitionSO desse Tier específico e tenta de novo, pra continuar girando bosses
-        // enquanto ainda sobrar tempo de dia). Não mexe nos outros Tiers.
-        if (candidateScratch.Count == 0 && anyDefinitionForTier)
-        {
-            usedBossIdsToday.RemoveWhere(def => def.tier == tierNumber1Based);
-            foreach (var def in bossSettings.roster)
-            {
-                if (def == null || def.prefab == null || def.tier != tierNumber1Based) continue;
-                candidateScratch.Add(def);
-            }
-        }
-
-        if (candidateScratch.Count == 0) return false; // nenhum BossDefinitionSO cadastrado nesse Tier ainda (bestiário incompleto)
+        if (candidateScratch.Count == 0) return false;
 
         chosen = candidateScratch[Random.Range(0, candidateScratch.Count)];
         return true;

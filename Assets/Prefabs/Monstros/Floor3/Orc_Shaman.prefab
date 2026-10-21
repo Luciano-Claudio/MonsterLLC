@@ -119,7 +119,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -201,7 +201,7 @@ MonoBehaviour:
     dropChancePercent: 0.7
     minQuantity: 1
     maxQuantity: 1
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 0
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -216,6 +216,8 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
   floatingTextHeightAdjust: -0.5
   projectileSpeed: 6
   projectilePrefab: {fileID: 0}
@@ -224,9 +226,10 @@ MonoBehaviour:
   iceTotemPrefab: {fileID: 4474333305538336205, guid: 9a139e89033943669dea5659cc81e7a6, type: 3}
   healCooldownDuration: 10
   fireCooldownDuration: 5
-  iceCooldownDuration: 15
+  iceCooldownDuration: 10
   castCooldownDuration: 5
   allySearchRadius: 6
+  maxCastAnimationDuration: 6
 --- !u!70 &2227558813645391280
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -325,8 +328,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 373b52eb9bf8c40f785bb6947a1aee66, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   drawGizmos: 1
   detailedGizmos: 0
@@ -386,8 +389,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6eb1402c17e84a9282a7f0f62eb584f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   radius: 0.33
   height: 2
@@ -433,8 +436,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 560112f876f5746c780eca0d404e7139, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   radiusBackingField: 0.5
   heightBackingField: 2
@@ -460,8 +463,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f217bbc7b6e9a6448bf1b69b1190898, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   physicalCollider: {fileID: 0}
 --- !u!1 &1772999587157587040
 GameObject:
@@ -573,7 +576,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -588,7 +591,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.2D.Runtime::UnityEngine.Rendering.Universal.Light2D
   m_ComponentVersion: 2
   m_LightType: 3

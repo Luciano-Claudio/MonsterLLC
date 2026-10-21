@@ -1,83 +1,132 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Cinemachine;
 
-// Sequência de "boss reveal" (Cinemachine, Game Feel — ideia experimental do usuário, cada
-// trecho fácil de remover se não ficar bom no teste): ao nascer um boss, pausa o jogo, troca o
-// Follow da câmera pro boss, segura nele, volta o Follow pro jogador e despausa. SEM
-// CinemachineTargetGroup — removido por decisão do usuário (o Group Framing afastando a
-// câmera durante o combate atrapalhava a visão/controle do jogador). Depois do reveal a
-// câmera simplesmente volta a seguir só o jogador, igual sempre foi.
-// Achado real: CinemachineBrain.DefaultBlend só blenda troca ENTRE vcams diferentes, nunca
-// troca de Follow dentro do MESMO vcam — e o CinemachineFollow daqui roda com
-// PositionDamping=0 (parte da correção do jitter do Pixel Perfect), então sem o pan suave
-// abaixo a troca de Follow seria um corte seco.
+// Sequência de "boss reveal" (Game Feel) — ao nascer um grupo de bosses
+// (GameEvents.OnBossGroupSpawned, 1+ bosses no mesmo ciclo), pausa o jogo, dá foco em
+// sequência em CADA boss do grupo (hold configurável por boss), depois volta o foco pro
+// jogador (hold configurável) e só então despausa.
+//
+// Reescrito (2026-10-21) — bug real reportado pelo usuário: a versão anterior trocava o
+// Follow de UM vcam só e simulava o pan subindo CinemachineFollow.PositionDamping à mão, o
+// que dava corte seco/tremida (jitter do Pixel Perfect lutando contra a troca de alvo sem
+// blend de verdade). CinemachineBrain só blenda de fato TROCANDO de vcam (por Priority),
+// nunca trocando o Follow dentro do MESMO vcam — então agora o reveal usa 2 vcams dedicados
+// (instanciados aqui a partir de revealCameraPrefab, NUNCA o vcam principal do jogador) em
+// ping-pong: aponta o Follow do vcam OCIOSO pro próximo alvo e SÓ DEPOIS sobe a Priority dele
+// acima do vcam ativo — isso dispara um blend real do Brain, pixel-perfect incluso (o prefab
+// tem CinemachinePixelPerfect, igual o vcam principal). Pra voltar ao jogador não precisa
+// trocar o Follow de ninguém: o vcam principal nunca solta o Follow do jogador (ver
+// MainMenuUI), só baixa a Priority de quem estava ativo e o principal retoma sozinho.
 public class BossEncounterCameraController : MonoBehaviour
 {
+    [Header("Vcam principal (do jogador) — o Follow dele nunca é tocado por aqui")]
     public CinemachineCamera cinemachineCamera;
+    [Tooltip("Priority explícita do vcam do jogador — precisa ficar SEMPRE acima da Priority ociosa dos vcams de reveal (0) e SEMPRE abaixo da Priority ativa deles durante o reveal.")]
+    public int playerCameraPriority = 10;
 
-    [Header("Boss Reveal")]
-    public float bossRevealHoldDuration = 1.5f;
-    [Tooltip("Espera depois de voltar o Follow pro jogador, antes de despausar — dá tempo do pan de volta terminar antes do jogo se mexer de novo.")]
-    public float returnToPlayerHoldDuration = 0.3f;
+    [Header("Vcam de reveal — instanciado 2x em Awake a partir deste prefab (nunca editar a cena pra isso)")]
+    public CinemachineCamera revealCameraPrefab;
+    [Tooltip("Priority que o vcam de reveal assume quando é a vez dele ficar em foco — soma +1 por alvo da sequência, então o 2º boss sempre fica ACIMA do 1º (garante o blend pro lado certo).")]
+    public int revealCameraPriority = 20;
 
-    [Header("Pan suave durante o reveal")]
-    [Tooltip("O CinemachineFollow da câmera roda com PositionDamping 0 (de propósito — parte da correção do jitter do Pixel Perfect). Sem isso, trocar o Follow vira um corte seco em vez de pan. Aqui sobe o damping SÓ durante o reveal (jogo pausado, alvos parados) e devolve a 0 antes de despausar — nunca toca no damping durante gameplay normal.")]
-    public CinemachineFollow followComponent;
-    public float revealPanDamping = 1.5f;
+    [Header("Durações (ajustável — o jogo fica pausado durante a sequência inteira)")]
+    [Tooltip("Quanto tempo a câmera segura em CADA boss do grupo, em sequência.")]
+    public float bossRevealHoldDuration = 1f;
+    [Tooltip("Quanto tempo a câmera segura de volta no jogador antes de despausar.")]
+    public float returnToPlayerHoldDuration = 1f;
 
     private Transform player;
+    private CinemachineCamera revealCamA;
+    private CinemachineCamera revealCamB;
     private bool revealInProgress;
+    private Coroutine revealRoutine;
+
+    private void Awake()
+    {
+        if (revealCameraPrefab == null) return; // Game Feel desligado (prefab não configurado no Inspector) — HandleBossGroupSpawned vira no-op
+
+        revealCamA = Instantiate(revealCameraPrefab, transform);
+        revealCamB = Instantiate(revealCameraPrefab, transform);
+        revealCamA.Priority = 0;
+        revealCamB.Priority = 0;
+    }
 
     private void OnEnable()
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
-        GameEvents.OnBossSpawned += HandleBossSpawned;
+        GameEvents.OnBossGroupSpawned += HandleBossGroupSpawned;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
-        GameEvents.OnBossSpawned -= HandleBossSpawned;
+        GameEvents.OnBossGroupSpawned -= HandleBossGroupSpawned;
+
+        // Defesa contra o jogo ficar travado pausado pra sempre — se este objeto for
+        // desativado/destruído NO MEIO de uma sequência (ex.: troca de cena), a coroutine
+        // morre sem nunca chegar no TimeManager.Resume() do fim. Força o resume e devolve as
+        // Priorities pro estado ocioso antes de sumir.
+        if (revealRoutine != null)
+        {
+            StopCoroutine(revealRoutine);
+            revealRoutine = null;
+        }
+        if (revealInProgress)
+        {
+            if (revealCamA != null) revealCamA.Priority = 0;
+            if (revealCamB != null) revealCamB.Priority = 0;
+            TimeManager.Instance?.Resume();
+            revealInProgress = false;
+        }
     }
 
-    // Só guarda a referência — quem seta o Follow inicial da câmera pro jogador continua sendo
-    // o MainMenuUI (já fazia isso antes desta feature existir).
-    private void HandleHeroSpawned(Transform hero) => player = hero;
-
-    private void HandleBossSpawned(Transform boss)
+    // Só guarda a referência e trava a Priority do vcam do jogador — quem seta o Follow dele
+    // continua sendo o MainMenuUI (já fazia isso antes desta feature existir).
+    private void HandleHeroSpawned(Transform hero)
     {
-        if (boss == null) return;
-
-        // Já tem outro reveal rolando (2 bosses nascendo muito perto no tempo, ex.: replacement
-        // por distância logo depois de um Boss Timer) — não briga por Follow no meio de uma
-        // sequência já em andamento, simplesmente ignora o reveal deste segundo boss.
-        if (revealInProgress || cinemachineCamera == null || player == null) return;
-
-        StartCoroutine(PlayBossRevealSequence(boss));
+        player = hero;
+        if (cinemachineCamera != null) cinemachineCamera.Priority = playerCameraPriority;
     }
 
-    private IEnumerator PlayBossRevealSequence(Transform boss)
+    private void HandleBossGroupSpawned(IReadOnlyList<Transform> bosses)
+    {
+        if (bosses == null || bosses.Count == 0) return;
+        if (revealInProgress || cinemachineCamera == null || player == null) return;
+        if (revealCamA == null || revealCamB == null) return;
+
+        revealRoutine = StartCoroutine(PlayBossRevealSequence(bosses));
+    }
+
+    private IEnumerator PlayBossRevealSequence(IReadOnlyList<Transform> bosses)
     {
         revealInProgress = true;
         TimeManager.Instance?.Pause();
 
-        Vector3 originalDamping = followComponent != null ? followComponent.TrackerSettings.PositionDamping : Vector3.zero;
-        if (followComponent != null) followComponent.TrackerSettings.PositionDamping = Vector3.one * revealPanDamping;
+        var active = revealCamA;
+        var idle = revealCamB;
 
-        cinemachineCamera.Follow = boss;
-        yield return new WaitForSecondsRealtime(bossRevealHoldDuration);
+        for (int i = 0; i < bosses.Count; i++)
+        {
+            var boss = bosses[i];
+            if (boss == null) continue; // defesa — não deveria acontecer com o jogo pausado, mas não trava a sequência se acontecer
 
-        cinemachineCamera.Follow = player;
+            idle.Follow = boss;
+            idle.Priority = revealCameraPriority + i + 1; // sempre maior que o passo anterior, pra garantir o blend pro alvo novo
+            yield return new WaitForSecondsRealtime(bossRevealHoldDuration);
+
+            (active, idle) = (idle, active);
+        }
+
+        // Os 2 vcams de reveal voltam pra Priority 0 — devolve o controle pro vcam do
+        // jogador, que nunca teve o Follow alterado por aqui.
+        revealCamA.Priority = 0;
+        revealCamB.Priority = 0;
         yield return new WaitForSecondsRealtime(returnToPlayerHoldDuration);
 
-        // Volta o damping pro valor original ANTES de despausar — gameplay normal (jogador se
-        // movendo de verdade) nunca deve ver nenhum damping > 0 aqui, senão reintroduz o
-        // jitter do Pixel Perfect que já foi resolvido.
-        if (followComponent != null) followComponent.TrackerSettings.PositionDamping = originalDamping;
-
         TimeManager.Instance?.Resume();
-
         revealInProgress = false;
+        revealRoutine = null;
     }
 }

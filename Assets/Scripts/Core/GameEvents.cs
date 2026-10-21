@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class GameEvents
@@ -99,12 +100,13 @@ public static class GameEvents
     public static event Action<Transform> OnHeroSpawned;
     public static void HeroSpawned(Transform hero) => OnHeroSpawned?.Invoke(hero);
 
-    // Disparado logo depois do Instantiate() de um boss (WorldBossSpawnManager.TrySpawnBoss)
-    // — Game Feel escuta isso pra tocar a sequência de "boss reveal" (pausa, Cinemachine foca
-    // no boss, volta pro jogador, despausa, troca pro CinemachineTargetGroup). Não dispara pra
-    // monstro comum, só boss.
-    public static event Action<Transform> OnBossSpawned;
-    public static void BossSpawned(Transform boss) => OnBossSpawned?.Invoke(boss);
+    // Disparado logo depois do(s) Instantiate() de um CICLO de spawn de boss
+    // (WorldBossSpawnManager) — 1 ou mais bosses nascidos juntos no mesmo ciclo (hoje: 2 no
+    // Boss Timer periódico, 1 no replacement por distância). Game Feel escuta isso pra tocar a
+    // sequência de "boss reveal" (pausa, foca em cada boss do grupo em sequência, volta pro
+    // jogador, despausa). Não dispara pra monstro comum, só boss.
+    public static event Action<IReadOnlyList<Transform>> OnBossGroupSpawned;
+    public static void BossGroupSpawned(IReadOnlyList<Transform> bosses) => OnBossGroupSpawned?.Invoke(bosses);
 
     // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
     // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão

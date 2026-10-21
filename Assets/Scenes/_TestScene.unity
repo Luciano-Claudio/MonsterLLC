@@ -6503,6 +6503,10 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 200110, guid: 8bc4c46cc4ebe7596196d726f2236b2b, type: 3}
+      propertyPath: cart
+      value: 
+      objectReference: {fileID: 1804319440}
     - target: {fileID: 200122, guid: 8bc4c46cc4ebe7596196d726f2236b2b, type: 3}
       propertyPath: m_LocalPosition.y
       value: 1.75
@@ -6523,10 +6527,6 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: -1.3769373
       objectReference: {fileID: 0}
-    - target: {fileID: 200110, guid: 8bc4c46cc4ebe7596196d726f2236b2b, type: 3}
-      propertyPath: cart
-      value:
-      objectReference: {fileID: 1804319440}
     m_RemovedComponents:
     - {fileID: 200124, guid: 8bc4c46cc4ebe7596196d726f2236b2b, type: 3}
     m_RemovedGameObjects: []
@@ -7043,6 +7043,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldBossSpawnManager
   worldSettings: {fileID: 11400000, guid: 4c48b7391e03c1d408ee87b64d75d207, type: 2}
   bossSettings: {fileID: 11400000, guid: b63e2b09b7e95d42e42d301b0321b74b, type: 2}
+  bossesPerSpawnCycle: 2
   useTestDayOverride: 0
   testDayOverride: 1
 --- !u!1 &619394800
@@ -8853,10 +8854,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossEncounterCameraController
   cinemachineCamera: {fileID: 721605314}
+  playerCameraPriority: 10
+  revealCameraPrefab: {fileID: 5237912022135483139, guid: aa3c49657ba94920a59c9fb6ed669b56, type: 3}
+  revealCameraPriority: 20
   bossRevealHoldDuration: 1.5
   returnToPlayerHoldDuration: 0.3
-  followComponent: {fileID: 721605317}
-  revealPanDamping: 1.5
 --- !u!114 &756656719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11472,7 +11474,7 @@ MonoBehaviour:
     prefab: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
   - name: BloodMage
     prefab: {fileID: 7800000000000001, guid: e33d74b439ec4f15abb66dd4cad881af, type: 3}
-  heroToSpawn: Barbarian
+  heroToSpawn: Cleric
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -21938,6 +21940,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 300106, guid: 25b6fae55b5b2eec4064fa6fcdb3ab4f, type: 3}
   m_PrefabInstance: {fileID: 1804319438}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ccc7f66f5d4fbf980bef37b809716df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VendorCart
 --- !u!1 &1807220774
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,14 +27,12 @@ public class OrcShamanTotem : MonoBehaviour
     public float damagePerTick = 15f;
     public float iceStunDuration = 2f;
 
-    // Indicador visual (pedido do usuário) — círculo translúcido com contorno, cor por kind
-    // (ver prefab), sempre do tamanho exato de `radius` pra avisar o jogador de verdade onde
-    // ele não pode pisar, não só decorativo. Escalado aqui (não no prefab) porque `radius` é
-    // ajustável por instância — se ficasse fixo no prefab, dessincronizaria sozinho assim que
-    // alguém mudasse o raio sem lembrar de também redimensionar o indicador. Sprite provisória
-    // (gerada por código) até o usuário desenhar a arte de verdade — troca só o Sprite do
-    // SpriteRenderer filho, não precisa mexer aqui.
-    [Header("Indicador de área (filho — ver AreaIndicatorCircle)")]
+    // Indicador visual (pedido do usuário) — círculo com a arte própria dele, cor/formato por
+    // kind (ver prefab). Escala 100% manual, calibrada à mão no Inspector de cada prefab pra
+    // casar com a arte — o código NUNCA mexe nela (já tentei auto-calcular a partir do
+    // tamanho da sprite, decisão do usuário foi reverter: o valor que ele ajustou já bate
+    // perfeito, não precisa/não deve de conta nenhuma em cima).
+    [Header("Indicador de área (filho — escala ajustada à mão, não mexer por código)")]
     [SerializeField] private Transform areaIndicator;
 
     // Gizmo de debug (Editor) — mostra o raio REAL do efeito (`radius`), independente de a
@@ -56,10 +54,8 @@ public class OrcShamanTotem : MonoBehaviour
         animator = GetComponent<Animator>();
         tickCooldown = new AttackCooldown(tickInterval);
 
-        // Sprite nasce desenhada com raio = 1 unidade em escala 1 (ver AreaIndicatorCircle.png,
-        // PPU 128 pra isso bater exato) — escalar por `radius` direto já cobre qualquer valor
-        // ajustado no Inspector, sem precisar de mais contas aqui.
-        if (areaIndicator != null) areaIndicator.localScale = Vector3.one * radius;
+        // areaIndicator.localScale NUNCA é tocado aqui — decisão do usuário, ver comentário
+        // no campo acima. A escala fica inteiramente a cargo do que foi ajustado no prefab.
     }
 
     private void Update()
