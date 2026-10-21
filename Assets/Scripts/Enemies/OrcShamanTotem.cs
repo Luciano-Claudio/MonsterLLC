@@ -27,6 +27,23 @@ public class OrcShamanTotem : MonoBehaviour
     public float damagePerTick = 15f;
     public float iceStunDuration = 2f;
 
+    // Indicador visual (pedido do usuário) — círculo translúcido com contorno, cor por kind
+    // (ver prefab), sempre do tamanho exato de `radius` pra avisar o jogador de verdade onde
+    // ele não pode pisar, não só decorativo. Escalado aqui (não no prefab) porque `radius` é
+    // ajustável por instância — se ficasse fixo no prefab, dessincronizaria sozinho assim que
+    // alguém mudasse o raio sem lembrar de também redimensionar o indicador. Sprite provisória
+    // (gerada por código) até o usuário desenhar a arte de verdade — troca só o Sprite do
+    // SpriteRenderer filho, não precisa mexer aqui.
+    [Header("Indicador de área (filho — ver AreaIndicatorCircle)")]
+    [SerializeField] private Transform areaIndicator;
+
+    // Gizmo de debug (Editor) — mostra o raio REAL do efeito (`radius`), independente de a
+    // sprite do indicador estar certa ou não. Ligado por padrão (diferente do
+    // showAttackRadiusGizmo do EnemyController, que é opt-in por monstro) porque o pedido aqui
+    // foi explicitamente "ver a área real" pra calibrar a arte contra ela.
+    [Header("Debug — só pra visualização em Editor, não afeta gameplay")]
+    [SerializeField] private bool showAreaGizmo = true;
+
     private Animator animator;
     private AttackCooldown tickCooldown;
     private float activeElapsed;
@@ -38,6 +55,11 @@ public class OrcShamanTotem : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         tickCooldown = new AttackCooldown(tickInterval);
+
+        // Sprite nasce desenhada com raio = 1 unidade em escala 1 (ver AreaIndicatorCircle.png,
+        // PPU 128 pra isso bater exato) — escalar por `radius` direto já cobre qualquer valor
+        // ajustado no Inspector, sem precisar de mais contas aqui.
+        if (areaIndicator != null) areaIndicator.localScale = Vector3.one * radius;
     }
 
     private void Update()
@@ -120,5 +142,23 @@ public class OrcShamanTotem : MonoBehaviour
     public void AnimationTotemDisappearEndEvent()
     {
         Destroy(gameObject);
+    }
+
+    // Só pra visualização em Editor (calibrar a arte contra a área real) — não roda em build,
+    // não afeta gameplay. Cor por kind, mesma associação visual do indicador (verde/
+    // laranja-vermelho/ciano). OnDrawGizmos (sempre visível), não só Selected — totem é um
+    // objeto transiente (nasce/some sozinho em segundos), não dá tempo real de clicar nele na
+    // Hierarchy toda vez só pra comparar o tamanho da arte contra o raio de verdade.
+    private void OnDrawGizmos()
+    {
+        if (!showAreaGizmo) return;
+        Gizmos.color = kind switch
+        {
+            TotemKind.Heal => new Color(0.35f, 1f, 0.35f),
+            TotemKind.Fire => new Color(1f, 0.35f, 0.15f),
+            TotemKind.Ice => new Color(0.35f, 0.85f, 1f),
+            _ => Color.white,
+        };
+        Gizmos.DrawWireSphere(transform.position, radius);
     }
 }

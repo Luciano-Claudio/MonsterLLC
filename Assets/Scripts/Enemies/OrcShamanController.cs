@@ -20,15 +20,23 @@ public class OrcShamanController : RangedEnemyController
     public GameObject iceTotemPrefab;
 
     [Header("Cooldowns independentes por tipo")]
-    public float healCooldownDuration = 6f;
-    public float fireCooldownDuration = 4f;
-    public float iceCooldownDuration = 8f;
-    public float castCooldownDuration = 2f; // ritmo geral entre tentativas de cast (qualquer tipo)
+    public float healCooldownDuration = 10f;
+    public float fireCooldownDuration = 5f;
+    public float iceCooldownDuration = 15f;
+    public float castCooldownDuration = 5f; // ritmo geral entre tentativas de cast (qualquer tipo) — 1 totem a cada 5s
 
     // Raio de busca por aliado ferido (Heal) — DIFERENTE de stats.attackRadius, que aqui só
     // controla a distância que o Shaman mantém do PLAYER (kiting), sem relação com procurar
     // aliados pra curar.
     public float allySearchRadius = 6f;
+
+    // Rede de segurança — mesmo critério de EnemyController.maxAttackAnimationDuration: se o
+    // AnimationCastEndEvent nunca chegar (clipe sem o evento, erro de setup do Animator), o
+    // Shaman ficava preso em isCasting=true pra sempre — achado real reportado pelo usuário
+    // ("taca 1 totem e fica lá esperando o jogo inteiro"). Força o fim do cast depois desse
+    // tempo em vez de travar pro resto da run. Default cobre o clipe mais longo (44 frames a
+    // 8fps = 5.5s) com folga.
+    public float maxCastAnimationDuration = 6f;
 
     private AttackCooldown healCooldown;
     private AttackCooldown fireCooldown;
@@ -39,6 +47,7 @@ public class OrcShamanController : RangedEnemyController
     private bool isCasting;
     private GameObject pendingTotemPrefab;
     private Vector3 pendingTotemPosition;
+    private float castAnimElapsed;
 
     protected override void Awake()
     {
@@ -58,7 +67,16 @@ public class OrcShamanController : RangedEnemyController
         iceCooldown.Tick(deltaTime);
         castCooldown.Tick(deltaTime);
 
-        if (isCasting) return; // comprometido com o cast atual — não inicia outro por cima
+        if (isCasting)
+        {
+            castAnimElapsed += deltaTime;
+            if (castAnimElapsed >= maxCastAnimationDuration)
+            {
+                Debug.LogWarning($"[{GetType().Name}] AnimationCastEndEvent nunca chegou — forçando fim do cast (verifique o Animator Controller).");
+                AnimationCastEndEvent();
+            }
+            return; // comprometido com o cast atual — não inicia outro por cima
+        }
         if (Vector2.Distance(transform.position, player.position) > stats.attackRadius) return;
         if (!castCooldown.TryConsume()) return;
 
@@ -94,6 +112,7 @@ public class OrcShamanController : RangedEnemyController
     private void StartCast(GameObject totemPrefab, Vector3 position, string triggerName)
     {
         isCasting = true;
+        castAnimElapsed = 0f;
         pendingTotemPrefab = totemPrefab;
         pendingTotemPosition = position;
         SetMoving(false);
