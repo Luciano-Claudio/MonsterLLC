@@ -96,6 +96,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     private float attackAnimElapsed;
     private bool attackHitFired; // já conectou nesse ciclo de ataque? evita golpe duplicado se o teto de aceleração for atingido depois do Hit Event já ter disparado
 
+    // Golpe duplo (Bestiário Andar 4, Acolyte possuído — chicotada dupla do tentáculo):
+    // evento/guard SEPARADO do par AnimationHitEvent/attackHitFired acima — não dá pra só
+    // duplicar o AnimationHitEvent no clipe, porque o guard dele existe justamente pra
+    // ignorar uma 2ª chamada dentro do mesmo golpe (ver comentário em AnimationHitEvent).
+    // Monstro com só 1 golpe por ataque nunca dispara esse evento, então isso fica sempre
+    // false/sem uso pra eles.
+    private bool attackSecondHitFired;
+
     // Regra nova (substitui "dano durante o attack vira só flash, sem mais nada"): cada
     // interrupção acelera a própria animação do golpe em andamento — visualmente fica
     // óbvio que o dano "pegou", sem cancelar o compromisso com o ataque. Acima do teto, o
@@ -493,6 +501,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         attackAnimState = AttackAnimState.Attacking;
         attackAnimElapsed = 0f;
         attackHitFired = false;
+        attackSecondHitFired = false;
         attackSpeedMultiplier = 1f;
         // Não confiar no valor default do parâmetro no Animator (Unity cria Float novo
         // com default 0, não 1) — sem isso, o primeiro ataque de cada instância tocaria
@@ -516,6 +525,18 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // consultado em AccelerateAttack(), nunca aqui.
         if (attackHitFired) return;
         attackHitFired = true;
+        ExecuteAttackHit();
+    }
+
+    // 2ª conexão do mesmo golpe (ex.: chicotada dupla do Acolyte possuído) — Animation Event
+    // à parte, colocado no 2º frame de conexão real do clipe. Guard próprio (attackSecondHitFired),
+    // pelo mesmo motivo do guard de AnimationHitEvent: a Attack é Blend Tree 2D Freeform
+    // Directional, então o Animator dispara o evento de todo clipe com peso > 0 na mistura.
+    public void AnimationSecondHitEvent()
+    {
+        if (attackAnimState != AttackAnimState.Attacking) return;
+        if (attackSecondHitFired) return;
+        attackSecondHitFired = true;
         ExecuteAttackHit();
     }
 

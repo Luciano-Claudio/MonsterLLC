@@ -11,10 +11,13 @@ public class MeleeEnemyController : EnemyController
     // o collider de verdade em vez de Vector2.Distance <= stats.attackRadius (bug recorrente:
     // RVO/colisão entre vários monstros às vezes nunca deixava fechar a distância exata).
     [Header("Triggers de ataque (um por direção diagonal)")]
-    [SerializeField] private Collider2D attackHitboxNE;
-    [SerializeField] private Collider2D attackHitboxNW;
-    [SerializeField] private Collider2D attackHitboxSE;
-    [SerializeField] private Collider2D attackHitboxSW;
+    // protected (não mais private) — PossessableMeleeEnemyController (Bestiário Andar 4)
+    // precisa de um 2º conjunto pra forma possuída (corpo maior) e sobrescreve
+    // IsPlayerTouchingAnyHitbox()/GetHitboxForFacing() pra escolher qual conjunto usar.
+    [SerializeField] protected Collider2D attackHitboxNE;
+    [SerializeField] protected Collider2D attackHitboxNW;
+    [SerializeField] protected Collider2D attackHitboxSE;
+    [SerializeField] protected Collider2D attackHitboxSW;
 
     // Exceção (Bestiário Andar 3, Warbreed Phalanx — lança) — arte de ataque sem pose
     // diagonal real, só ortogonal (N/S/E/W); precisa de Animator Controller próprio (não um
@@ -133,7 +136,7 @@ public class MeleeEnemyController : EnemyController
     // libera (não precisa ser o da direção que está olhando) — o golpe de verdade
     // (ExecuteAttackHit) continua testando só o trigger de GetHitboxForFacing(), no frame
     // exato do Animation Hit Event.
-    private bool IsPlayerTouchingAnyHitbox()
+    protected virtual bool IsPlayerTouchingAnyHitbox()
     {
         var heroCollider = player.GetComponent<Collider2D>();
         if (heroCollider == null) return false;
@@ -166,7 +169,7 @@ public class MeleeEnemyController : EnemyController
     // Classifica AimDirection (sempre em direção ao player) num dos 4 quadrantes
     // diagonais — mesmo critério que o Blend Tree 2D Freeform Directional usa pra
     // escolher entre atk_ne/nw/se/sw.
-    private Collider2D GetHitboxForFacing()
+    protected virtual Collider2D GetHitboxForFacing()
     {
         if (orthogonalAttack)
         {
