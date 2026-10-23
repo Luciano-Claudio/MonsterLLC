@@ -373,7 +373,9 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             "4ª linha = N" +
 
             (isAmbushMonster
-                ? "\n\nActivate: 1 linha só (igual Die). O 1º frame dela vira o " +
+                ? "\n\nActivate: não-direcional, pode ter 1 ou mais linhas — todas juntas " +
+                  "formam 1 animação só (lido linha por linha, esquerda pra direita em " +
+                  "cada uma), nunca uma direção por linha. O 1º frame da 1ª linha vira o " +
                   "clipe 'idle' estático (não-direcional). IdleCombat, nesse caso, " +
                   "é derivado do 1º frame de cada direção do Walk (não existe mais " +
                   "sheet de Idle direcional pra tirar isso)."
@@ -811,7 +813,8 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
             isAmbushMonster &&
             !ValidateSingleRowSpriteSheet(
                 activateSpriteSheet,
-                "Activate"
+                "Activate",
+                allowMultipleRows: true
             )
         )
         {
@@ -953,7 +956,8 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
 
     private bool ValidateSingleRowSpriteSheet(
         Texture2D spriteSheet,
-        string animationLabel
+        string animationLabel,
+        bool allowMultipleRows = false
     )
     {
         List<Sprite> sprites =
@@ -972,7 +976,12 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         List<List<Sprite>> rows =
             MonsterAnimationUtility.GroupSpritesByRows(sprites);
 
-        if (rows.Count != 1)
+        // Activate (allowMultipleRows=true) é não-direcional mas pode vir quebrado em várias
+        // linhas só por organização da sheet (ex.: sprite sheet muito larga) — não representa
+        // direção nenhuma, diferente de Idle/Walk/Attack/Damage. GenerateSingleRowAnimation já
+        // lê linha por linha (GroupSpritesByRows, de cima pra baixo) em vez de só ordenar por
+        // X, então várias linhas viram 1 sequência só, corretamente.
+        if (!allowMultipleRows && rows.Count != 1)
         {
             ShowError(
                 animationLabel +
@@ -1099,11 +1108,15 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         List<Sprite> sprites =
             MonsterAnimationUtility.LoadSprites(spriteSheet);
 
+        // Lido linha por linha (de cima pra baixo, esquerda pra direita em cada uma) em vez
+        // de só ordenar por X cru — sheet de 1 linha só continua dando o mesmo resultado de
+        // sempre, mas sheet com várias linhas (ex.: Activate quebrado em várias linhas só
+        // por organização, sem representar direção nenhuma) agora vira 1 sequência contínua
+        // corretamente, em vez de intercalar frames de linhas diferentes que compartilham X.
         List<Sprite> orderedSprites =
-            sprites
-                .OrderBy(
-                    sprite => sprite.rect.x
-                )
+            MonsterAnimationUtility
+                .GroupSpritesByRows(sprites)
+                .SelectMany(row => row)
                 .ToList();
 
         AnimationClip clip =
@@ -1137,11 +1150,15 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
         Dictionary<string, AnimationClip> generatedClips
     )
     {
+        // Mesmo critério de GenerateSingleRowAnimation — linha por linha, não só por X cru,
+        // senão o [0] podia pegar qualquer frame empatado em X de uma linha diferente da 1ª
+        // quando o Activate vier quebrado em várias linhas.
         List<Sprite> orderedSprites =
-            MonsterAnimationUtility.LoadSprites(spriteSheet)
-                .OrderBy(
-                    sprite => sprite.rect.x
+            MonsterAnimationUtility
+                .GroupSpritesByRows(
+                    MonsterAnimationUtility.LoadSprites(spriteSheet)
                 )
+                .SelectMany(row => row)
                 .ToList();
 
         AnimationClip idleClip =
