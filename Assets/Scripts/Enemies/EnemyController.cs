@@ -669,7 +669,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Rogue, dano de Pet) — HitFeelController usa isso pra só fazer shake/zoom no hit direto
     // do próprio jogador (ex.: impacto de projétil, explosão de habilidade), nunca em tick
     // repetido. Não afeta dano/combate/floating text, só o filtro de juice.
-    public void TakeDamage(float amount, bool isDirectPlayerHit = true)
+    public virtual void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
         if (isDead) return;
 

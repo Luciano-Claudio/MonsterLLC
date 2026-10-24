@@ -45,6 +45,14 @@ public class EnemyProjectile : MonoBehaviour
     [SerializeField] private bool explodesOnImpact = false;
     [SerializeField] private float explosionRadius = 1.5f; // 🔢 ajustável
 
+    // Bicephalous (Bestiário Andar 9) — "caso 4" da taxonomia de projéteis (Seção 13): o
+    // próprio projétil vira o monstro ao fim da trajetória (hit ou limite), nasce ali, vivo.
+    // Independente do impactMode (que só decide o destino VISUAL do próprio projétil) — o
+    // spawn acontece de qualquer forma, no ponto exato onde o projétil estava.
+    [Header("Vira monstro ao impacto/limite (opcional — 'caso 4' da taxonomia de projéteis)")]
+    [SerializeField] private bool spawnsMonsterOnImpact = false;
+    [SerializeField] private GameObject monsterPrefab;
+
     [Header("Área persistente (só ImpactSurface)")]
     [SerializeField] private CircleCollider2D circleCollider; // mesmo collider do voo, redimensionado ao virar área
     [SerializeField] private float groundedRadius = 1.2f; // 🔢 ajustável
@@ -160,6 +168,7 @@ public class EnemyProjectile : MonoBehaviour
     private void ReachedLimit()
     {
         if (explodesOnImpact) ApplyImpactExplosion();
+        if (spawnsMonsterOnImpact) SpawnMonster();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
     }
@@ -167,8 +176,15 @@ public class EnemyProjectile : MonoBehaviour
     private void HitPlayer()
     {
         if (explodesOnImpact) ApplyImpactExplosion();
+        if (spawnsMonsterOnImpact) SpawnMonster();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
+    }
+
+    private void SpawnMonster()
+    {
+        if (monsterPrefab == null) return;
+        Instantiate(monsterPrefab, transform.position, Quaternion.identity);
     }
 
     // Burst instantâneo no ponto de impacto — dispara 1 vez só (via ReachedLimit/HitPlayer),

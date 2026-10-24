@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa73c7ca8b985d9ca7a174b5fa2697b3, type: 3}
+  m_Name: EnemyDefinition_Gargoyle
+  m_EditorClassIdentifier: Core::EnemyDefinitionSO
+  tier: 5
+  prefab: {fileID: 2732731110660338628, guid: 115048cdb39044d1ae2b93e2e3adcfb8, type: 3}
+  weight: 1
