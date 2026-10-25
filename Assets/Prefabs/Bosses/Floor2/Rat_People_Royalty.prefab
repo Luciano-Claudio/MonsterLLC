@@ -452,6 +452,7 @@ GameObject:
   - component: {fileID: 7100000000000023}
   - component: {fileID: 7100000000000024}
   - component: {fileID: 7100000000000025}
+  - component: {fileID: -2295524447859010632}
   - component: {fileID: 7100000000000026}
   - component: {fileID: 7100000000000027}
   - component: {fileID: 7100000000000028}
@@ -627,9 +628,45 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05, y: 0.5}
-  m_Size: {x: 0.0001, y: 1}
+  m_Offset: {x: -0.05000005, y: 0.24919839}
+  m_Size: {x: 0.0001, y: 0.49840364}
   m_Direction: 1
+--- !u!58 &-2295524447859010632
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7100000000000020}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.71}
+  m_Radius: 0.8
 --- !u!114 &7100000000000026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -676,7 +713,6 @@ MonoBehaviour:
     dropChancePercent: 6.4
     minQuantity: 12
     maxQuantity: 12
-  ownerFloor: {fileID: 0}
   dropsLoot: 1
   isBoss: 1
   minIdleDuration: 1.5
@@ -692,6 +728,8 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.26
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 7100000000000012}
   attackHitboxNW: {fileID: 7100000000000014}
@@ -700,7 +738,6 @@ MonoBehaviour:
   meleeCooldownDuration: 1.5
   throwProjectilePrefab: {fileID: 7200000000000001, guid: d097f7b42c68404fa894e356ed1b0525, type: 3}
   throwCooldownDuration: 5
-  rangedAttackRadius: 6
 --- !u!114 &7100000000000027
 MonoBehaviour:
   m_ObjectHideFlags: 0

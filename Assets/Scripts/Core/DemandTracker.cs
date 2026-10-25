@@ -3,8 +3,10 @@ using UnityEngine;
 public class DemandTracker : MonoBehaviour
 {
     public static DemandTracker Instance { get; private set; }
-    public int Sold { get; private set; }
-    public int Target { get; private set; }
+    // long (não int) — "40 x 2^(Dia-1)" (DemandCalculator) já passa de 2,1 bilhões por volta
+    // do Dia 28, bem antes do fim dos 30 dias.
+    public long Sold { get; private set; }
+    public long Target { get; private set; }
 
     private void Awake() => Instance = this;
 
@@ -15,7 +17,7 @@ public class DemandTracker : MonoBehaviour
         GameEvents.DemandChanged(Sold, Target);
     }
 
-    public void RegisterSale(string itemName, int amount)
+    public void RegisterSale(string itemName, long amount)
     {
         if (itemName != "Monster Essence") return;
         Sold += amount;

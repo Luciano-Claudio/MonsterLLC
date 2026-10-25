@@ -9,10 +9,13 @@ public class Bag
     public const int TotalSlotCount = 40;
 
     public int maxSlots;
-    public int stackSize;
+    // long (não int) — stackSize começa em 16 (GDD Seção 37) mas sobe por compra na loja, sem
+    // teto previsto; precisa acompanhar o mesmo teto de quantity abaixo, senão a mesma
+    // conversão quebra de novo assim que a loja empurrar isso pra cima de ~2,1 bilhões.
+    public long stackSize;
     public List<InventorySlot> Slots = new();
 
-    public Bag(int maxSlots, int stackSize)
+    public Bag(int maxSlots, long stackSize)
     {
         this.maxSlots = maxSlots;
         this.stackSize = stackSize;
@@ -20,18 +23,18 @@ public class Bag
     }
 
     // Retorna quanto REALMENTE entrou — pode ser menor que 'amount' (coleta parcial, GDD Seção 37).
-    public int AddItem(string itemName, int amount)
+    public long AddItem(string itemName, long amount)
     {
-        int remaining = amount;
+        long remaining = amount;
 
         for (int i = 0; i < maxSlots; i++)
         {
             var slot = Slots[i];
             if (slot.itemName != itemName) continue;
-            int space = stackSize - slot.quantity;
+            long space = stackSize - slot.quantity;
             if (space <= 0) continue;
 
-            int toAdd = System.Math.Min(space, remaining);
+            long toAdd = System.Math.Min(space, remaining);
             slot.quantity += toAdd;
             remaining -= toAdd;
             if (remaining == 0) return amount;
@@ -42,7 +45,7 @@ public class Bag
             var slot = Slots[i];
             if (!slot.IsEmpty) continue;
 
-            int toAdd = System.Math.Min(stackSize, remaining);
+            long toAdd = System.Math.Min(stackSize, remaining);
             slot.itemName = itemName;
             slot.quantity = toAdd;
             remaining -= toAdd;

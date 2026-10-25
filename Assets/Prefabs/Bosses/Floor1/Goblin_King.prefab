@@ -452,6 +452,7 @@ GameObject:
   - component: {fileID: 5920802690907136958}
   - component: {fileID: 2021336301586162846}
   - component: {fileID: 2765172535700747555}
+  - component: {fileID: -885099152183054412}
   - component: {fileID: 4050528624145407006}
   - component: {fileID: 7661835149682937085}
   - component: {fileID: 8266930439021508298}
@@ -627,9 +628,45 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05, y: 0.8}
-  m_Size: {x: 0.0001, y: 1.5}
+  m_Offset: {x: -0.050000004, y: 0.6106207}
+  m_Size: {x: 0.0001, y: 1.1212417}
   m_Direction: 1
+--- !u!58 &-885099152183054412
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8865572683995257460}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 1.34}
+  m_Radius: 1.3
 --- !u!114 &4050528624145407006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -672,7 +709,7 @@ MonoBehaviour:
     dropChancePercent: 4
     minQuantity: 12
     maxQuantity: 12
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 1
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -687,11 +724,14 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.26
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 2572191539293762635}
   attackHitboxNW: {fileID: 7656730792205409088}
   attackHitboxSE: {fileID: 1114483783774601518}
   attackHitboxSW: {fileID: 2426134957244175886}
+  orthogonalAttack: 0
   minFlankIdleDuration: 1
   maxFlankIdleDuration: 2.5
   minFlankWalkDuration: 1

@@ -29,9 +29,9 @@ public class BagController : MonoBehaviour
         Debug.Log($"[BagController] Bag {(IsOpen ? "aberta" : "fechada")}.");
     }
 
-    public int AddItem(string itemName, int amount)
+    public long AddItem(string itemName, long amount)
     {
-        int added = Bag.AddItem(itemName, amount);
+        long added = Bag.AddItem(itemName, amount);
         GameEvents.BagChanged(Bag);
         return added;
     }

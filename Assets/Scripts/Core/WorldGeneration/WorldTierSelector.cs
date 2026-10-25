@@ -161,9 +161,21 @@ public static class WorldTierSelector
     // monstro/boss (Ciclo Dia/Noite real), NUNCA pelo terreno/bioma
     // (ComputeTierGroupPercentsNonAlloc não tem esse parâmetro de propósito — decisão do
     // usuário: bioma não deve oscilar a cada troca de fase, só avançar com dia/distância).
-    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, int suppressedTierCount = 0, bool isNight = false)
+    // `forcedTierIndex0Based` (padrão -1 = desligado) — isolamento de Tier só pra TESTE
+    // (WorldPopulationManager/WorldBossSpawnManager.useTierIsolationOverride): quando >= 0,
+    // ignora dayDef/suppressedTierCount/isNight por completo e força 100% nesse único Tier —
+    // decisão do usuário: com o isolamento ligado "não terá mais % de tiers", então nem
+    // suprimir tier nem Dia/Noite devem interferir, só o Tier escolhido deve nascer.
+    public static void ComputeTierPercentsNonAlloc(DaySpawnDefinition dayDef, float[] buffer, int suppressedTierCount = 0, bool isNight = false, int forcedTierIndex0Based = -1)
     {
         for (int t = 0; t < MonsterTierCount; t++) buffer[t] = 0f;
+
+        if (forcedTierIndex0Based >= 0 && forcedTierIndex0Based < MonsterTierCount)
+        {
+            buffer[forcedTierIndex0Based] = 1f;
+            return;
+        }
+
         var weights = isNight ? dayDef?.nightWeights : dayDef?.dayWeights;
         if (weights == null) return;
 

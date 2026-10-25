@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1229858627709956937, guid: f325def653921334097d67635f0a0de4, type: 3}
+  m_Sprite: {fileID: 6591756066159149786, guid: f325def653921334097d67635f0a0de4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -130,9 +130,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
   speed: 7
-  damage: 240000000000
+  damage: 2.4e+11
   lifetime: 4
-  ownerFloor: {fileID: 0}
   impactMode: 1
   appliesStatusEffect: 0
   statusEffectType: 0
@@ -140,6 +139,8 @@ MonoBehaviour:
   statusEffectDamagePerSecond: 2
   explodesOnImpact: 1
   explosionRadius: 1.5
+  spawnsMonsterOnImpact: 0
+  monsterPrefab: {fileID: 0}
   circleCollider: {fileID: 0}
   groundedRadius: 1.2
   groundedDuration: 4

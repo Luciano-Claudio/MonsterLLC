@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc59ad5258091f5d7d78e1fb0cc54f32, type: 3}
+  m_Name: BossDefinition_Stickman
+  m_EditorClassIdentifier: Core::BossDefinitionSO
+  tier: 9
+  prefab: {fileID: -3045175119719979281, guid: 76880cb8039f4c808a88f33beacf429b, type: 3}

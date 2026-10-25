@@ -40,8 +40,8 @@ public static class GameEvents
     public static event Action<float> OnTimeChanged;
     public static void TimeChanged(float time) => OnTimeChanged?.Invoke(time);
 
-    public static event Action<int, int> OnDemandChanged;
-    public static void DemandChanged(int sold, int target) => OnDemandChanged?.Invoke(sold, target);
+    public static event Action<long, long> OnDemandChanged;
+    public static void DemandChanged(long sold, long target) => OnDemandChanged?.Invoke(sold, target);
 
     public static event Action<GameState> OnGameStateChanged;
     public static void GameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);

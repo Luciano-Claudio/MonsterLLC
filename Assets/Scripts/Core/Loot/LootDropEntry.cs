@@ -13,6 +13,10 @@ public class LootDropEntry
     [Range(0f, 100f)]
     public float dropChancePercent = 100f;
 
-    public int minQuantity = 1;
-    public int maxQuantity = 1;
+    // long (não int) — Tier 10 do Bestiário já passa de 2,1 bilhões por drop sozinho (ex.:
+    // Monster Essence 50-500 bilhões), bem acima do teto do int32. Achado real (2026-10-25):
+    // o Unity recusava os prefabs com "Failed to convert ... to a signed 32 bit int" assim que
+    // o campo era int, mesmo a GDD já pedindo esses valores desde o Tier 5+.
+    public long minQuantity = 1;
+    public long maxQuantity = 1;
 }

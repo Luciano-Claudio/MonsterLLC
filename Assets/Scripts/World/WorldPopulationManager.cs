@@ -28,6 +28,12 @@ public class WorldPopulationManager : MonoBehaviour
     [Range(1, 30)]
     public int testDayOverride = 1;
 
+    [Header("Debug / Teste — Isolamento de Tier (só teste, não existe no jogo real)")]
+    [Tooltip("Se marcado, ignora toda a % normal de distribuição por Dia e força 100% dos monstros comuns vindo só do testTierOverride — de propósito quebra o sistema de % (não tem mais % de tier nenhum enquanto isto estiver ligado). Depois de marcar/mudar o Tier, usa o botão de contexto abaixo pra resetar os monstros vivos e já nascer todo mundo sob a regra nova.")]
+    public bool useTierIsolationOverride;
+    [Range(1, 10)]
+    public int testTierOverride = 1;
+
     private Transform player;
     private readonly List<GameObject> aliveEnemies = new();
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
@@ -52,6 +58,25 @@ public class WorldPopulationManager : MonoBehaviour
     {
         useTestDayOverride = enabled;
         testDayOverride = day;
+    }
+
+    // Botão de contexto (clique direito no componente no Inspector) — mesmo padrão do
+    // "Regenerar Mundo" do ChunkTerrainGenerator, só que aqui não precisa sincronizar nada
+    // com outro manager: WorldBossSpawnManager tem seu próprio useTierIsolationOverride/
+    // testTierOverride independente, e os dois já escutam o mesmo GameEvents.ClearAllEnemies.
+    [ContextMenu("Debug: Resetar e isolar Tier")]
+    public void DebugResetForTierIsolation()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[WorldPopulationManager] \"Resetar e isolar Tier\" só funciona em Play Mode.");
+            return;
+        }
+
+        GameEvents.ClearAllEnemies();
+        Debug.Log(useTierIsolationOverride
+            ? $"[WorldPopulationManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora."
+            : "[WorldPopulationManager] useTierIsolationOverride está desmarcado — resetou, mas a distribuição normal por % continua valendo.");
     }
 
     private void OnEnable()
@@ -150,12 +175,18 @@ public class WorldPopulationManager : MonoBehaviour
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
         bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
         int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight);
+        int forcedTierIndex = useTierIsolationOverride ? testTierOverride - 1 : -1;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
         if (tierIndex < 0) return; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
 
-        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, out var definition)) return; // roster inteiro vazio, nem o Tier de fallback cadastrado
+        // Com isolamento ligado, nunca cai pro Tier de fallback (ver TryPickEnemyDefinition) —
+        // se o Tier isolado não tiver bestiário nenhum cadastrado ainda, o certo é não nascer
+        // NADA (silêncio), não vazar pra Tier1/outro Tier por baixo dos panos: o ponto inteiro
+        // do isolamento é testar só aquele Tier, nunca ver outro aparecendo "disfarçado".
+        bool allowFallbackTier = !useTierIsolationOverride;
+        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, allowFallbackTier, out var definition)) return; // roster vazio pra esse Tier (ou, sem isolamento, nem o Tier de fallback cadastrado)
 
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
         // Rolado por spawn individual (não por EnemyDefinitionSO) — decisão do usuário: uma %
@@ -184,8 +215,10 @@ public class WorldPopulationManager : MonoBehaviour
     // (`suppressedTierCount + 1`, nunca um Tier1 fixo) — sem isso, suprimir o Tier1 e rolar um
     // Tier vazio (ex.: Tier5, sem bestiário ainda) voltaria a spawnar Tier1 mesmo assim,
     // anulando a compra. Mesmo critério de "nunca deixar buraco" já usado pelo terreno
-    // (ChunkTerrainGenerator.ResolveBiome com tierBiomes[slot vazio]).
-    private bool TryPickEnemyDefinition(int tierNumber1Based, int suppressedTierCount, out EnemyDefinitionSO chosen)
+    // (ChunkTerrainGenerator.ResolveBiome com tierBiomes[slot vazio]). `allowFallbackTier`
+    // (padrão true) — desligado pelo isolamento de Tier de debug (useTierIsolationOverride):
+    // ali um Tier vazio deve ficar em silêncio, nunca vazar pra outro Tier escondido.
+    private bool TryPickEnemyDefinition(int tierNumber1Based, int suppressedTierCount, bool allowFallbackTier, out EnemyDefinitionSO chosen)
     {
         chosen = null;
         candidateScratch.Clear();
@@ -200,8 +233,9 @@ public class WorldPopulationManager : MonoBehaviour
 
         if (candidateScratch.Count == 0)
         {
+            if (!allowFallbackTier) return false;
             int fallbackTier = suppressedTierCount + 1;
-            return tierNumber1Based != fallbackTier && TryPickEnemyDefinition(fallbackTier, suppressedTierCount, out chosen);
+            return tierNumber1Based != fallbackTier && TryPickEnemyDefinition(fallbackTier, suppressedTierCount, allowFallbackTier, out chosen);
         }
 
         float roll = Random.value * totalWeight;

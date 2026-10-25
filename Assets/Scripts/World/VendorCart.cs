@@ -46,7 +46,7 @@ public class VendorCart : MonoBehaviour
     private struct PendingArc
     {
         public string itemName;
-        public int representedQuantity; // quanto esse arco "representa" de verdade, pra sprite
+        public long representedQuantity; // quanto esse arco "representa" de verdade, pra sprite
         public Vector3 origin;
         public float readyAt; // em elapsedTime
     }
@@ -54,7 +54,7 @@ public class VendorCart : MonoBehaviour
     private class ActiveArc
     {
         public string itemName;
-        public int representedQuantity;
+        public long representedQuantity;
         public int slotIndex; // -1 = pilha já cheia, voa mas não deixa nada ao chegar
         public Vector3 start;
         public Vector3 end;
@@ -113,12 +113,17 @@ public class VendorCart : MonoBehaviour
     // NO INSTANTE da venda (não acompanha o herói se ele andar durante a animação, de propósito
     // — arcos são curtos, não compensa a complexidade de perseguir um alvo móvel pra um efeito
     // cosmético).
-    public void AcceptSale(string itemName, int quantity, Vector3 origin)
+    public void AcceptSale(string itemName, long quantity, Vector3 origin)
     {
         if (quantity <= 0) return;
 
-        int chunkSize = ResolveChunkSize(quantity);
-        int visualEvents = Mathf.CeilToInt(quantity / (float)chunkSize);
+        // double em vez de Mathf.CeilToInt/float — quantity já passa de 2,1 bilhões no Tier
+        // 10 do Bestiário (Mathf.CeilToInt devolve int, reintroduziria o mesmo teto de
+        // conversão que quebrou os prefabs). visualEvents em si fica pequeno de verdade (é
+        // sempre travado em maxVisualArcsPerSale logo abaixo), só chunkSize/quantity que
+        // precisam do range maior.
+        long chunkSize = ResolveChunkSize(quantity);
+        int visualEvents = (int)System.Math.Ceiling(quantity / (double)chunkSize);
 
         // Teto de eventos visuais — nunca deixa uma venda gigante virar uma animação gigante.
         // O que cada arco REPRESENTA escala pra cima (a sprite usada já não distingue 20 de
@@ -126,7 +131,7 @@ public class VendorCart : MonoBehaviour
         if (visualEvents > maxVisualArcsPerSale)
         {
             visualEvents = maxVisualArcsPerSale;
-            chunkSize = Mathf.CeilToInt(quantity / (float)visualEvents);
+            chunkSize = (long)System.Math.Ceiling(quantity / (double)visualEvents);
         }
 
         for (int i = 0; i < visualEvents; i++)
@@ -141,7 +146,7 @@ public class VendorCart : MonoBehaviour
         }
     }
 
-    private int ResolveChunkSize(int quantity)
+    private long ResolveChunkSize(long quantity)
     {
         if (quantity <= smallSaleThreshold) return 1;
         if (quantity <= mediumSaleThreshold) return 2;

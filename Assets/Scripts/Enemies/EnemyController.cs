@@ -838,11 +838,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             if (string.IsNullOrEmpty(entry.itemName)) continue;
             if (Random.value * 100f >= entry.dropChancePercent) continue;
 
-            int baseQuantity = Random.Range(entry.minQuantity, entry.maxQuantity + 1); // Random.Range(int,int) já é max-exclusivo
+            // Random.Range(int,int) não serve mais — minQuantity/maxQuantity são long (Tier 10
+            // do Bestiário já passa de 2,1 bilhões por drop), e Random.Range não tem overload
+            // pra long. RollQuantity() abaixo resolve isso sem perder a precisão do float em
+            // ranges gigantes.
+            long baseQuantity = RollQuantity(entry.minQuantity, entry.maxQuantity);
             // HeroController.LootMultiplier — passiva de sorte do Gunslinger (Sprint 28, GDD
             // Seção 17.8), default 1 = sem efeito em nenhum outro herói. Aplicado em TODO
-            // material, não só Monster Essence.
-            int quantity = Mathf.RoundToInt(baseQuantity * HeroController.LootMultiplier);
+            // material, não só Monster Essence. Math.Round em double (não Mathf.RoundToInt,
+            // que devolve int e reintroduziria o mesmo teto de 2,1 bilhões aqui).
+            long quantity = (long)System.Math.Round(baseQuantity * (double)HeroController.LootMultiplier);
             if (quantity <= 0) continue;
 
             var lootObj = Instantiate(lootDropPrefab, transform.position, Quaternion.identity);
@@ -850,5 +855,20 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             var drop = lootObj.GetComponent<LootDrop>();
             drop.loot = new LootDefinition { itemName = entry.itemName, quantity = quantity };
         }
+    }
+
+    // Substitui Random.Range(int,int) pra ranges que passam do int32 (ver DropLoot acima) —
+    // Random.value sozinho (float) já tem mais de 24 bits de mantissa, sobra precisão de
+    // sobra pra um roll de loot (ninguém nota a diferença entre cair em 50.000.000.012 ou
+    // 50.000.000.780 — o LargeNumberFormatter arredonda pra "50b" de qualquer jeito).
+    private static long RollQuantity(long minInclusive, long maxInclusive)
+    {
+        if (maxInclusive <= minInclusive) return minInclusive;
+
+        double range = (double)(maxInclusive - minInclusive) + 1.0;
+        long offset = (long)(Random.value * range);
+        if (offset >= range) offset = (long)range - 1; // defesa — Random.value raramente bate exatamente 1.0
+
+        return minInclusive + offset;
     }
 }

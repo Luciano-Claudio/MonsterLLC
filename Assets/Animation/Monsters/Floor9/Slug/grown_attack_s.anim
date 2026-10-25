@@ -37,7 +37,7 @@ AnimationClip:
     - time: 0.875
       value: {fileID: -704441392, guid: 2e4751d6c22b0854bb8bf6b6cca55e98, type: 3}
     attribute: m_Sprite
-    path:
+    path: 
     classID: 212
     script: {fileID: 0}
     flags: 2
@@ -91,16 +91,16 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.625
+  - time: 0.375
     functionName: AnimationHitEvent
-    data:
+    data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
   - time: 0.875
     functionName: AnimationAttackEndEvent
-    data:
+    data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

@@ -943,6 +943,8 @@ MonoBehaviour:
   spawnSettings: {fileID: 11400000, guid: f1a2c3d4e5b6a7f8091011121314abcd, type: 2}
   useTestDayOverride: 0
   testDayOverride: 1
+  useTierIsolationOverride: 0
+  testTierOverride: 1
 --- !u!1 &118709370
 GameObject:
   m_ObjectHideFlags: 0
@@ -7043,9 +7045,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldBossSpawnManager
   worldSettings: {fileID: 11400000, guid: 4c48b7391e03c1d408ee87b64d75d207, type: 2}
   bossSettings: {fileID: 11400000, guid: b63e2b09b7e95d42e42d301b0321b74b, type: 2}
-  bossesPerSpawnCycle: 2
+  bossesPerSpawnCycle: 1
   useTestDayOverride: 0
   testDayOverride: 1
+  useTierIsolationOverride: 0
+  testTierOverride: 1
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0

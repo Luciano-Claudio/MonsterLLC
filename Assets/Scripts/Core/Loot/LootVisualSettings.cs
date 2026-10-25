@@ -32,7 +32,7 @@ public class LootVisualSettings : ScriptableObject
     public int tier5Threshold = 5;
     public int tier20Threshold = 20;
 
-    public Sprite GetSprite(string itemName, int quantity)
+    public Sprite GetSprite(string itemName, long quantity)
     {
         foreach (var entry in icons)
         {

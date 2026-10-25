@@ -22,14 +22,20 @@ public class WorldBossSpawnManager : MonoBehaviour
     public WorldGenerationSettings worldSettings;
     public BossSpawnSettings bossSettings;
 
-    [Tooltip("Quantos bosses nascem juntos a cada Boss Timer periódico (🔢 ajustável) — decisão do usuário: 2, em vez de 1. NÃO se aplica ao replacement por distância, que continua repondo 1 por vez.")]
-    public int bossesPerSpawnCycle = 2;
+    [Tooltip("Quantos bosses nascem juntos a cada Boss Timer periódico (🔢 ajustável). Revertido pra 1 (decisão do usuário, 2026-10-25) — chegou a ser 2 por um tempo, mas voltou ao padrão de 1 boss por ciclo. NÃO se aplica ao replacement por distância, que continua repondo 1 por vez.")]
+    public int bossesPerSpawnCycle = 1;
 
     [Header("Debug / Teste")]
     [Tooltip("Mesmo padrão de WorldPopulationManager/ChunkTerrainGenerator — ignora o Dia real da run e usa testDayOverride no lugar.")]
     public bool useTestDayOverride;
     [Range(1, 30)]
     public int testDayOverride = 1;
+
+    [Header("Debug / Teste — Isolamento de Tier (só teste, não existe no jogo real)")]
+    [Tooltip("Se marcado, ignora toda a % normal/ordem de predominância e força 100% dos bosses vindo só do testTierOverride — de propósito quebra o sistema de % (não tem mais % de tier nenhum enquanto isto estiver ligado). Depois de marcar/mudar o Tier, usa o botão de contexto abaixo pra resetar os bosses vivos e já nascer todo mundo sob a regra nova.")]
+    public bool useTierIsolationOverride;
+    [Range(1, 10)]
+    public int testTierOverride = 1;
 
     private Transform player;
     private readonly List<GameObject> aliveBosses = new();
@@ -56,6 +62,24 @@ public class WorldBossSpawnManager : MonoBehaviour
     {
         useTestDayOverride = enabled;
         testDayOverride = day;
+    }
+
+    // Mesmo GameEvents.ClearAllEnemies que WorldPopulationManager.DebugResetForTierIsolation
+    // já usa — clicar em qualquer um dos dois reseta os dois (bosses e monstros comuns
+    // escutam o mesmo evento), não precisa de nenhuma sincronização nova entre os managers.
+    [ContextMenu("Debug: Resetar e isolar Tier")]
+    public void DebugResetForTierIsolation()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[WorldBossSpawnManager] \"Resetar e isolar Tier\" só funciona em Play Mode.");
+            return;
+        }
+
+        GameEvents.ClearAllEnemies();
+        Debug.Log(useTierIsolationOverride
+            ? $"[WorldBossSpawnManager] Isolamento de Tier ativo — só nasce boss do Tier {testTierOverride} agora."
+            : "[WorldBossSpawnManager] useTierIsolationOverride está desmarcado — resetou, mas a distribuição normal por % continua valendo.");
     }
 
     private void OnEnable()
@@ -125,8 +149,9 @@ public class WorldBossSpawnManager : MonoBehaviour
         if (bossTimer < bossSettings.bossSpawnInterval) return;
         bossTimer = 0f;
 
-        // Boss Timer periódico — spawna bossesPerSpawnCycle bosses juntos (decisão do usuário:
-        // 2, não mais 1) e dispara UM reveal só com o grupo inteiro.
+        // Boss Timer periódico — spawna bossesPerSpawnCycle bosses juntos (hoje, 1 de novo) e
+        // dispara UM reveal só com o grupo inteiro (o reveal em si continua funcionando pra
+        // qualquer tamanho de grupo, não precisou mudar nada em BossEncounterCameraController).
         spawnBatchScratch.Clear();
         for (int i = 0; i < bossesPerSpawnCycle; i++)
         {
@@ -187,7 +212,8 @@ public class WorldBossSpawnManager : MonoBehaviour
         var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
         bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
         int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight);
+        int forcedTierIndex = useTierIsolationOverride ? testTierOverride - 1 : -1;
+        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
 
         if (TryPickFromRankedTiers(out chosen)) return true;
 

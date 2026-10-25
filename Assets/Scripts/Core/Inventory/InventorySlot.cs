@@ -2,7 +2,7 @@
 public class InventorySlot
 {
     public string itemName;
-    public int quantity;
+    public long quantity;
 
     public bool IsEmpty => string.IsNullOrEmpty(itemName);
 }

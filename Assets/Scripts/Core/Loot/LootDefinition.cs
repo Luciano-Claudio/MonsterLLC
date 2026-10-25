@@ -2,5 +2,5 @@
 public class LootDefinition
 {
     public string itemName;
-    public int quantity;
+    public long quantity;
 }

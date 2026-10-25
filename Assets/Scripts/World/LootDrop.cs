@@ -88,7 +88,7 @@ public class LootDrop : MonoBehaviour
     {
         if (beingDestroyed) return; // já sendo absorvido por outro loot neste mesmo frame
 
-        int added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
+        long added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
 
         if (added > 0)
             Debug.Log($"[LootDrop] Coletado: {added}x {loot.itemName}");
