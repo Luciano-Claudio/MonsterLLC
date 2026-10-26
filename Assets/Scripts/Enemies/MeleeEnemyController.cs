@@ -47,6 +47,15 @@ public class MeleeEnemyController : EnemyController
     private float flankAngle;
     private bool flankAngleInitialized;
 
+    // Bug real reportado pelo usuário (2026-10-26): monstro possuído (Bestiário Andar 4) ficava
+    // preso em "Walk_Possession" sem nunca se mover de verdade — MoveInDirection() só libera o
+    // AIPath quando o Animator já confirmou ter entrado no estado de nome walkStateName (ver
+    // comentário lá), que aqui sempre era "Walk" (o default do parâmetro), nunca existente pra
+    // quem está possuído (o estado real se chama "Walk_Possession"). Virtual pra
+    // PossessableMeleeEnemyController sobrescrever — mesmo padrão já usado pelo Goblin Sapper
+    // (Walk/Walk_Bomb via IsArmed).
+    protected virtual string WalkStateName => "Walk";
+
     // Geral pra todo Melee agora, configurado no MeleeAttackSlotManager (não mais por
     // monstro em EnemyStats) — mesmo lugar que já decide quantos cabem perto do player,
     // faz sentido o raio do anel de flanco morar junto. Fallback só pro caso raro do
@@ -84,7 +93,7 @@ public class MeleeEnemyController : EnemyController
         {
             // já garantiu vaga, ou ainda está longe demais até pra flanquear -> aproxima normalmente
             SetMoving(true);
-            MoveInDirection(toPlayer.normalized);
+            MoveInDirection(toPlayer.normalized, WalkStateName);
             return;
         }
 
@@ -93,7 +102,7 @@ public class MeleeEnemyController : EnemyController
         {
             hasAttackSlot = true;
             SetMoving(true);
-            MoveInDirection(toPlayer.normalized);
+            MoveInDirection(toPlayer.normalized, WalkStateName);
             return;
         }
 
@@ -113,7 +122,7 @@ public class MeleeEnemyController : EnemyController
 
         bool orbiting = flankAI.CurrentPhase == PatrolPhase.Walking;
         SetMoving(orbiting);
-        if (orbiting) MoveInDirection((flankAI.WalkTarget - (Vector2)transform.position).normalized);
+        if (orbiting) MoveInDirection((flankAI.WalkTarget - (Vector2)transform.position).normalized, WalkStateName);
 
         // tenta de novo a cada frame enquanto flanqueia — barato (comparação de int) e
         // garante que a vaga seja ocupada assim que alguém morrer/liberar, sem atraso.

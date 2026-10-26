@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7200000000000006}
   - component: {fileID: 7200000000000007}
   - component: {fileID: 7200000000000008}
+  - component: {fileID: 2833626205372369147}
   m_Layer: 8
   m_Name: Gunslinger
   m_TagString: Player
@@ -185,8 +186,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.1}
-  m_Size: {x: 0.7, y: 0.25}
+  m_Offset: {x: 0, y: 0.15}
+  m_Size: {x: 0.0001, y: 0.3}
   m_Direction: 1
 --- !u!114 &7200000000000007
 MonoBehaviour:
@@ -210,14 +211,16 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
+  maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
   actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 2
   secondaryAbilityCooldownDuration: 8
+  basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  showPickupRadiusGizmo: 0
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
@@ -253,6 +256,43 @@ MonoBehaviour:
   statusAnimator: {fileID: 7200000000000013}
   tickInterval: 1
   immunities: 
+--- !u!70 &2833626205372369147
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7200000000000001}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Size: {x: 1, y: 1.5}
+  m_Direction: 0
 --- !u!1 &7200000000000009
 GameObject:
   m_ObjectHideFlags: 0

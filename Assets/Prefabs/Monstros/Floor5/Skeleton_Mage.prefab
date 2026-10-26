@@ -169,7 +169,7 @@ MonoBehaviour:
     moveSpeed: 3
     observationRadius: 6
     attackRadius: 5
-    attackDamage: 0
+    attackDamage: 1080
     attackAnimationCooldown: 2.5
   energyReward: 20
   lootDrops:
@@ -219,7 +219,7 @@ MonoBehaviour:
   staysDormantUntilDetected: 1
   hasAttackAnimation: 1
   maxAttackAnimationDuration: 5
-  maxDieDuration: 3
+  maxDieDuration: 6
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5

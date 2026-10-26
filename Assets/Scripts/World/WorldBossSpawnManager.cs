@@ -64,9 +64,19 @@ public class WorldBossSpawnManager : MonoBehaviour
         testDayOverride = day;
     }
 
-    // Mesmo GameEvents.ClearAllEnemies que WorldPopulationManager.DebugResetForTierIsolation
-    // já usa — clicar em qualquer um dos dois reseta os dois (bosses e monstros comuns
-    // escutam o mesmo evento), não precisa de nenhuma sincronização nova entre os managers.
+    // Chamado pelo DebugResetForTierIsolation do OUTRO manager (ver lá embaixo) — sem isso,
+    // bug real reportado pelo usuário: isolar o Tier só em WorldBossSpawnManager (ou só em
+    // WorldPopulationManager) deixava o outro lado inteiro de fora, nascendo bosses/monstros de
+    // Tiers passados enquanto o lado "isolado" já estava certinho.
+    public void SyncTierIsolation(bool enabled, int tier)
+    {
+        useTierIsolationOverride = enabled;
+        testTierOverride = tier;
+    }
+
+    // Botão de contexto (clique direito no componente no Inspector) — espelha o bool/Tier pro
+    // WorldPopulationManager ANTES de limpar, então 1 clique em QUALQUER um dos dois já isola
+    // monstro comum E boss juntos, sempre no mesmo Tier.
     [ContextMenu("Debug: Resetar e isolar Tier")]
     public void DebugResetForTierIsolation()
     {
@@ -76,9 +86,11 @@ public class WorldBossSpawnManager : MonoBehaviour
             return;
         }
 
+        WorldPopulationManager.Instance?.SyncTierIsolation(useTierIsolationOverride, testTierOverride);
         GameEvents.ClearAllEnemies();
+        LootDrop.DestroyAllOnGround(); // só debug — poluição visual/FPS numa sessão de teste, nunca no fluxo normal
         Debug.Log(useTierIsolationOverride
-            ? $"[WorldBossSpawnManager] Isolamento de Tier ativo — só nasce boss do Tier {testTierOverride} agora."
+            ? $"[WorldBossSpawnManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora (monstro comum e boss)."
             : "[WorldBossSpawnManager] useTierIsolationOverride está desmarcado — resetou, mas a distribuição normal por % continua valendo.");
     }
 

@@ -21,6 +21,10 @@ public class RatPeopleThrowProjectile : MonoBehaviour
     private float distanceTraveled;
     private bool impacted;
 
+    // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca disparava
+    // (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
+    private void Awake() => PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
+
     public void Launch(Vector2 dir, float dmg)
     {
         direction = dir.normalized;

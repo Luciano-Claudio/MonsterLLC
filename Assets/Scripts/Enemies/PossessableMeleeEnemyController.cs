@@ -27,6 +27,12 @@ public class PossessableMeleeEnemyController : MeleeEnemyController
 
     public bool IsPossessed => isPossessed;
 
+    // Estado real do Animator passa a se chamar "Walk_Possession" depois da transformação —
+    // sem isso, MoveInDirection() (MeleeEnemyController.WalkStateName) nunca confirma que o
+    // Animator entrou no estado de andar, e o AIPath fica travado (ai.isStopped = true) pra
+    // sempre, mesmo com o Animator já tocando Walk_Possession normalmente.
+    protected override string WalkStateName => isPossessed ? "Walk_Possession" : base.WalkStateName;
+
     // Chamado pelo Dark Channeler (Animation Event do próprio cast dele) nos 3 monstros
     // elegíveis mais próximos — "elegível" já deve excluir quem já estiver possuído antes de
     // chamar isto (ver IsPossessed acima), mas o guard abaixo protege de qualquer forma.
@@ -48,6 +54,12 @@ public class PossessableMeleeEnemyController : MeleeEnemyController
         stats.health = possessedMaxHealth;
         stats.attackDamage = possessedAttackDamage;
         if (animator != null) animator.SetBool("IsPossessed", true);
+
+        // Pedido do usuário (2026-10-26): a forma possuída já nasce em combate — não espera o
+        // player entrar em observationRadius (que o Acolyte/Hound/Zealot original usava antes
+        // de ser possuído). Mesmo mecanismo que todo summon "que já nasce sabendo do player"
+        // usa no projeto (Rat People arremessado, bosses ao nascer).
+        ForceImmediateAggro();
     }
 
     // Depois de possuído, troca pro 2º conjunto de triggers (corpo maior) — os 2 métodos

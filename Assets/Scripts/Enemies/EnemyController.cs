@@ -80,12 +80,6 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected AttackCooldown attackAnimationCooldown;
     protected bool isInCombat;
 
-    // Uma vez que o monstro sofre dano, ele trava em combate pra sempre — nem um monstro
-    // de emboscada (staysDormantUntilDetected) pode voltar a dormir depois disso. Sem isso,
-    // dava pra ficar atacando um monstro de longe (ex.: leque do Ranger) sem ele nunca vir
-    // pro corpo a corpo, já que ataques à distância não entram no observationRadius sozinhos.
-    private bool combatLocked;
-
     // Sprint 24 (Boss Spawn System) — detecta a transição true -> false da Camuflagem
     // (mesmo padrão de wasUsingSecondaryAbility em HeroController.Update()), só pra saber o
     // instante exato em que ela ACABA de cair (ver Update()).
@@ -129,6 +123,20 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     private Color spriteOriginalColor;
     private float damageFlashTimer;
 
+    // Achado real (console do usuário, 2026-10-25): Animator.SetFloat num parâmetro que o
+    // Controller não declara NÃO é um no-op silencioso — loga "Parameter 'X' does not exist"
+    // TODO FRAME (mesmo achado já documentado em PetController.cs). A suposição antiga "todo
+    // monstro tem esses parâmetros" está errada: Base_Melee_Ambush/Base_Ranged_Ambush/Lich não
+    // têm DiagonalMoveX/Y nem DiagonalAimX/Y, RatPeople não tem AimX/Y, e CardinalAimX/Y só
+    // existe nos poucos monstros de ataque ortogonal (Warbreed Phalanx e companhia).
+    // Cacheado 1x aqui (nunca escanear animator.parameters todo frame em SetMoveDirection/
+    // SetAimDirection).
+    private bool hasMoveParam;
+    private bool hasDiagonalMoveParam;
+    private bool hasAimParam;
+    private bool hasDiagonalAimParam;
+    private bool hasCardinalAimParam;
+
     private const float DamageFlashDuration = 0.08f;
 
     // A* Pathfinding Project (AIPath) — pode não existir em prefabs ainda não migrados/
@@ -148,6 +156,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving/SetInCombat/SetMoveDirection)
+        hasMoveParam = HasParameter("MoveX");
+        hasDiagonalMoveParam = HasParameter("DiagonalMoveX");
+        hasAimParam = HasParameter("AimX");
+        hasDiagonalAimParam = HasParameter("DiagonalAimX");
+        hasCardinalAimParam = HasParameter("CardinalAimX");
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         spawnOrigin = transform.position;
@@ -454,24 +467,19 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (rvo != null) rvo.enabled = simulating; // OnEnable/OnDisable do próprio RVOController já tira/põe o agente no RVOSimulator — Simulation Rings pode religar isso em seguida se o monstro estiver no anel médio (ver Update())
     }
 
+    // Emboscada (staysDormantUntilDetected): true depois que o Animator já saiu do estado
+    // "Activate" pela 1ª vez — nunca mais reavaliado depois disso (o monstro não volta a
+    // dormir, ver UpdateCombat).
+    private bool hasActivated;
+    private bool activateAimCaptured;
+    private Vector2 activateAimSnapshot;
+
     private void UpdateCombat(float deltaTime)
     {
-        // Só monstros de emboscada desistem — o resto do jogo persegue pra sempre depois
-        // de detectar (regra padrão, inalterada). Sem animação de transição de volta: se
-        // o jogador já saiu do raio de observação, ele nem está olhando pra esse monstro
-        // nesse instante — snap direto pra pose parada.
-        if (staysDormantUntilDetected && !combatLocked)
-        {
-            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-            if (distanceToPlayer > stats.observationRadius)
-            {
-                isInCombat = false;
-                SetMoving(false);
-                SetInCombat(false);
-                return;
-            }
-        }
-
+        // Decisão do usuário (2026-10-26, revertendo a exceção anterior): monstro de
+        // emboscada (staysDormantUntilDetected) voltava pra pose dormente sozinho quando o
+        // player saía do observationRadius — igual todo resto do jogo, depois de detectar uma
+        // vez, persegue pra sempre, sem desistir por distância.
         SetInCombat(true);
         // Direção de movimento != direção de mira: o Ranged foge do player (MoveX/MoveY
         // aponta pra longe dele), mas continua precisando "olhar" pro player enquanto
@@ -479,7 +487,37 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // direção à posição real do player, independente de Move() estar fugindo,
         // aproximando ou parado.
         Vector2 toPlayer = player.position - transform.position;
-        SetAimDirection(toPlayer.normalized);
+
+        // Bug real reportado pelo usuário (2026-10-26, Andar 5): com a mira recalculada
+        // todo frame (padrão normal), um monstro de emboscada com Activate em Blend Tree
+        // direcional (ex.: Gargoyle, 4 clipes NE/NW/SE/SW) podia trocar de clipe-filho NO
+        // MEIO da própria animação de ativação — cada filho do Blend Tree tem sua própria
+        // linha do tempo, então trocar de filho parecia reiniciar a animação do zero antes
+        // de pular pro Walk. Trava a mira no valor capturado no instante da detecção
+        // enquanto o Animator ainda estiver de fato no estado "Activate" (1x só, depois
+        // nunca mais — hasActivated).
+        if (staysDormantUntilDetected && !hasActivated)
+        {
+            if (AnimatorStateCheck.IsInState(animator, "Activate"))
+            {
+                if (!activateAimCaptured)
+                {
+                    activateAimSnapshot = toPlayer.normalized;
+                    activateAimCaptured = true;
+                }
+                SetAimDirection(activateAimSnapshot);
+            }
+            else
+            {
+                hasActivated = true;
+                SetAimDirection(toPlayer.normalized);
+            }
+        }
+        else
+        {
+            SetAimDirection(toPlayer.normalized);
+        }
+
         Move(deltaTime);
         if (hasAttackAnimation) TryStartAttackAnimation();
     }
@@ -603,15 +641,31 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // "flip" perto dos eixos cardeais já corrigida do lado do herói (regra de arquitetura,
     // GDD) — MoveX/MoveY continuam sendo alimentados normalmente, caso algum Blend Tree
     // futuro tenha pose cardeal real e precise do valor cru.
+    private bool HasParameter(string paramName)
+    {
+        if (animator == null) return false;
+        foreach (var p in animator.parameters)
+        {
+            if (p.name == paramName) return true;
+        }
+        return false;
+    }
+
     protected void SetMoveDirection(Vector2 direction)
     {
         if (animator == null) return;
-        animator.SetFloat("MoveX", direction.x);
-        animator.SetFloat("MoveY", direction.y);
+        if (hasMoveParam)
+        {
+            animator.SetFloat("MoveX", direction.x);
+            animator.SetFloat("MoveY", direction.y);
+        }
 
-        Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
-        animator.SetFloat("DiagonalMoveX", diagonal.x);
-        animator.SetFloat("DiagonalMoveY", diagonal.y);
+        if (hasDiagonalMoveParam)
+        {
+            Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
+            animator.SetFloat("DiagonalMoveX", diagonal.x);
+            animator.SetFloat("DiagonalMoveY", diagonal.y);
+        }
     }
 
     // Alimenta AimX/AimY — Blend Tree 2D (Freeform Directional) do Attack e do
@@ -624,22 +678,28 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     {
         if (direction.sqrMagnitude > 0.0001f) AimDirection = direction;
         if (animator == null) return;
-        animator.SetFloat("AimX", direction.x);
-        animator.SetFloat("AimY", direction.y);
+        if (hasAimParam)
+        {
+            animator.SetFloat("AimX", direction.x);
+            animator.SetFloat("AimY", direction.y);
+        }
 
-        Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
-        animator.SetFloat("DiagonalAimX", diagonal.x);
-        animator.SetFloat("DiagonalAimY", diagonal.y);
+        if (hasDiagonalAimParam)
+        {
+            Vector2 diagonal = DirectionUtility.SnapTo4Diagonals(direction);
+            animator.SetFloat("DiagonalAimX", diagonal.x);
+            animator.SetFloat("DiagonalAimY", diagonal.y);
+        }
 
         // CardinalAimX/Y — só existe como parâmetro nos controllers de monstro cujo ataque não
         // tem pose diagonal real (ex.: Warbreed Phalanx, controller próprio — ver
-        // DirectionUtility.SnapTo4Cardinals). SetFloat num parâmetro que o Animator Controller
-        // do monstro não declara é um no-op silencioso (mesma garantia que já vale pra
-        // DiagonalMoveX/Y sendo setado em todo monstro, mesmo os que não usam) — sem custo real
-        // de manter isso incondicional aqui em vez de condicionar por monstro.
-        Vector2 cardinal = DirectionUtility.SnapTo4Cardinals(direction);
-        animator.SetFloat("CardinalAimX", cardinal.x);
-        animator.SetFloat("CardinalAimY", cardinal.y);
+        // DirectionUtility.SnapTo4Cardinals).
+        if (hasCardinalAimParam)
+        {
+            Vector2 cardinal = DirectionUtility.SnapTo4Cardinals(direction);
+            animator.SetFloat("CardinalAimX", cardinal.x);
+            animator.SetFloat("CardinalAimY", cardinal.y);
+        }
     }
 
     [SerializeField] private float floatingTextHeightAdjust = -0.5f; // 🔢 ajuste fino, negativo baixa o texto
@@ -676,7 +736,6 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // Aggro instantâneo — sofrer dano põe o monstro em combate na hora, independente
         // de distância/observationRadius. Sem isso, ataques à distância (ex.: leque do
         // Ranger) deixavam o player "pokar" um monstro parado sem ele nunca vir de verdade.
-        combatLocked = true;
         isInCombat = true;
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
@@ -761,7 +820,6 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Instantiate(), e de novo internamente quando a Camuflagem cai (ver Update()).
     public void ForceImmediateAggro()
     {
-        combatLocked = true;
         isInCombat = true;
     }
 
@@ -788,16 +846,25 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         SetMoving(false); // trava o AIPath (ai.isStopped) — Update() nem chama mais Move()/MoveInDirection depois disso
 
-        // Corrida clássica de Trigger do Animator: se um DamageTrigger de um hit anterior ainda
-        // não foi consumido pelo Animator quando o DieTrigger é setado logo em seguida (comum
-        // em monstros que levam 2-3 hits pra morrer — cada hit não-letal dispara DamageTrigger,
-        // ver TakeDamage()), o Unity pode processar só o DamageTrigger e descartar o DieTrigger
-        // sem nunca seguir a transição de morte — o monstro fica preso no destino do Damage
-        // (IdleCombat, já que InCombat continua true) pra sempre, só resgatado pelo timeout de
-        // segurança (maxDieDuration). AttackTrigger não entra aqui: TakeDamage() nunca o seta
-        // (só o início do próprio golpe do monstro faz isso, em outro lugar), então não existe
-        // cenário real de corrida com ele nesse ponto.
-        if (animator != null) animator.ResetTrigger("DamageTrigger");
+        // Corrida clássica de Trigger do Animator: qualquer trigger ainda não consumido pelo
+        // Animator no instante em que o DieTrigger é setado pode "vencer" a corrida e fazer a
+        // Unity descartar o DieTrigger sem nunca seguir a transição de morte — preso no
+        // destino do outro trigger pra sempre, só resgatado pelo timeout de segurança
+        // (maxDieDuration). Achava que só DamageTrigger entrava nisso (comum em monstros que
+        // levam 2-3 hits — cada hit não-letal dispara DamageTrigger, ver TakeDamage()), mas
+        // bug real reportado pelo usuário (2026-10-26, intermitente — "às vezes"): o golpe
+        // fatal pode acontecer bem no instante em que o PRÓPRIO monstro acabou de setar seu
+        // AttackTrigger (ou o trigger de ação de um híbrido — ThrowTrigger do Rat People
+        // Royalty, WebTrigger/BiteTrigger da Spider Queen, IceClawsTrigger/ReanimationTrigger
+        // do Lich, etc.), ainda não consumido. Em vez de resetar por nome (lista que cresce a
+        // cada monstro novo), reseta TODO trigger do Animator genericamente.
+        if (animator != null)
+        {
+            foreach (var param in animator.parameters)
+            {
+                if (param.type == AnimatorControllerParameterType.Trigger) animator.ResetTrigger(param.name);
+            }
+        }
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward);
     }

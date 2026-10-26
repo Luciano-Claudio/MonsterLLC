@@ -128,7 +128,14 @@ public class Barbarian : HeroController
 
         float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier();
 
-        var results = new Collider2D[16];
+        // 128 (não 16) — bug real reportado pelo usuário (2026-10-26): com muito monstro
+        // aglomerado perto do player (vários já "parados" no próprio slot de ataque, viram
+        // obstáculo RVO pros outros), o golpe deixava de acertar alguns mesmo claramente
+        // dentro do hitbox. Causa: Overlap() só devolve até results.Length colliders — com
+        // 2 Collider2D por monstro, 16 satura com só 8 monstros sobrepostos, e o resto
+        // simplesmente nunca entra no array (sem erro, sem aviso). 128 cobre 64 monstros de
+        // verdade, bem acima de qualquer aglomerado plausível numa hitbox de golpe.
+        var results = new Collider2D[128];
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
         // trigger genérico), então Overlap() sem isso acertava o mesmo monstro 2x (mesmo bug

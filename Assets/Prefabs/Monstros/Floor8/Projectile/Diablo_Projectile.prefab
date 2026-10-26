@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -7653919756051062241, guid: c66c55efa95c2e441981a4f748d6177a, type: 3}
+  m_Sprite: {fileID: 3402949254656701813, guid: c66c55efa95c2e441981a4f748d6177a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -132,7 +132,6 @@ MonoBehaviour:
   speed: 5
   damage: 420000000
   lifetime: 4
-  ownerFloor: {fileID: 0}
   impactMode: 1
   appliesStatusEffect: 0
   statusEffectType: 0
@@ -140,11 +139,14 @@ MonoBehaviour:
   statusEffectDamagePerSecond: 2
   explodesOnImpact: 1
   explosionRadius: 2.5
+  spawnsMonsterOnImpact: 0
+  monsterPrefab: {fileID: 0}
   circleCollider: {fileID: 0}
   groundedRadius: 1.2
   groundedDuration: 4
   groundedTickInterval: 1
   groundedDamagePerSecond: 2
+  showExplosionGizmo: 1
 --- !u!58 &5811765459573257257
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4603881260930512254}
   - component: {fileID: 6375903834917578240}
   - component: {fileID: 1137751000451965340}
+  - component: {fileID: 8048400557567247715}
   m_Layer: 8
   m_Name: Mage
   m_TagString: Player
@@ -184,8 +185,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.1}
-  m_Size: {x: 0.7, y: 0.25}
+  m_Offset: {x: 0, y: 0.15}
+  m_Size: {x: 0.0001, y: 0.3}
   m_Direction: 1
 --- !u!114 &4603881260930512254
 MonoBehaviour:
@@ -209,7 +210,7 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
+  maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -294,6 +295,43 @@ MonoBehaviour:
         - localeIdentifier:
             m_Code: en
           value: 2
+--- !u!70 &8048400557567247715
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385074858891067883}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Size: {x: 1, y: 1.5}
+  m_Direction: 0
 --- !u!1 &5909618122711402853
 GameObject:
   m_ObjectHideFlags: 0

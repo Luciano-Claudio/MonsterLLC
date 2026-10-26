@@ -42,6 +42,9 @@ public class RangerKnife : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         circleCollider = GetComponent<CircleCollider2D>();
+        // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca
+        // disparava (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
+        PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
     }
 
     public void Launch(Vector2 dir, float flightDamage, float groundedDamage, float bleedPerSecond,

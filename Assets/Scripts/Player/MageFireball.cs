@@ -42,6 +42,9 @@ public class MageFireball : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         circleCollider = GetComponent<CircleCollider2D>();
+        // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca
+        // disparava (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
+        PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
     }
 
     // damagePerSecond/fireDamagePerSecond são TAXAS (GDD: "0,5x o dano do Mage por segundo"
@@ -143,7 +146,9 @@ public class MageFireball : MonoBehaviour
         // Overlap() do próprio collider (já redimensionado em Explode()) — mesmo padrão
         // confiável usado no golpe do Barbarian/shield bash do Paladin/fire do Mage, em vez
         // de um OverlapCircle com raio calculado à parte.
-        var results = new Collider2D[16];
+        // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
+        // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
+        var results = new Collider2D[128];
         int count = circleCollider.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
         // (O dano no chão em UpdateGrounded usa enemiesInRange, que já deduplica por natureza
@@ -172,7 +177,8 @@ public class MageFireball : MonoBehaviour
         // do próprio collider (já redimensionado acima) — mesmo motivo do fix da explosão.
         if (circleCollider != null)
         {
-            var results = new Collider2D[16];
+            // 128 (não 16) — mesmo motivo do fix em ApplyImpactExplosion acima.
+            var results = new Collider2D[128];
             int count = circleCollider.Overlap(ContactFilter2D.noFilter, results);
             for (int i = 0; i < count; i++)
             {

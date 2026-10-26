@@ -11478,7 +11478,7 @@ MonoBehaviour:
     prefab: {fileID: 7400000000000001, guid: aec77f0985bc4ff1b8fab202a1bccb7f, type: 3}
   - name: BloodMage
     prefab: {fileID: 7800000000000001, guid: e33d74b439ec4f15abb66dd4cad881af, type: 3}
-  heroToSpawn: Cleric
+  heroToSpawn: Barbarian
   herosContainer: {fileID: 990000002}
   cinemachineCamera: {fileID: 721605314}
 --- !u!114 &985211985
@@ -11553,8 +11553,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c77ce780b5d4e0da0982fc77695a006, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DayTimer
-  timeRemaining: 100
-  defaultDayDuration: 100
+  timeRemaining: 10000
+  defaultDayDuration: 10000
 --- !u!1 &990000001
 GameObject:
   m_ObjectHideFlags: 0

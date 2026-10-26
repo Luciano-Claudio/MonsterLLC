@@ -24,6 +24,12 @@ public class GoblinSapperController : EnemyController
     [SerializeField] private float dieExplosionRadius = 1.8f; // 🔢 ajustável
     [SerializeField] private float dieExplosionOffsetY = 0f; // 🔢 sobe a área de explosão em relação ao pivô
 
+    // Gizmo de debug (Editor) — mesmo raio real usado pelo Physics2D.OverlapCircle de
+    // AnimationDieExplodeEvent(). Antes desenhava sempre (OnDrawGizmosSelected sem guard) —
+    // agora opt-in, igual ao showAttackRadiusGizmo do EnemyController.
+    [Header("Debug — gizmo da explosão ao morrer (Editor)")]
+    [SerializeField] private bool showDieExplosionGizmo = false;
+
     private SapperPhase phase = SapperPhase.Armed;
     private float fleeElapsed;
     private PatrolAI fleeAI;
@@ -110,18 +116,16 @@ public class GoblinSapperController : EnemyController
     // ainda com a bomba em mãos). "die" normal (morreu fugindo, já sem bomba) não tem esse
     // evento. O guard de phase é rede de segurança — se o evento acabar entrando no clipe
     // errado por engano, não explode mesmo assim.
+    // 2026-10-26 — mesmo critério agora usado em EnemyProjectile/GoblinSapperBomb: distância
+    // direto contra o player (já disponível via `player`, herdado de EnemyController), não
+    // Physics2D.OverlapCircle — elimina o ponto de falha intermitente de dano 0.
     public void AnimationDieExplodeEvent()
     {
         if (phase != SapperPhase.Armed) return;
+        if (Vector2.Distance(DieExplosionCenter, player.position) > dieExplosionRadius) return;
 
-        var results = new Collider2D[4];
-        int count = Physics2D.OverlapCircle(DieExplosionCenter, dieExplosionRadius, ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Player")) continue;
-            var hero = results[i].GetComponent<HeroController>();
-            if (hero != null) hero.TakeDamage(stats.attackDamage * dieExplosionDamageMultiplier);
-        }
+        var hero = player.GetComponent<HeroController>();
+        if (hero != null) hero.TakeDamage(stats.attackDamage * dieExplosionDamageMultiplier);
     }
 
     private Vector3 DieExplosionCenter => transform.position + new Vector3(0f, dieExplosionOffsetY, 0f);
@@ -129,6 +133,7 @@ public class GoblinSapperController : EnemyController
     protected override void OnDrawGizmosSelected()
     {
         base.OnDrawGizmosSelected(); // gizmo do attackRadius (EnemyController), se ligado no Inspector
+        if (!showDieExplosionGizmo) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(DieExplosionCenter, dieExplosionRadius);
     }

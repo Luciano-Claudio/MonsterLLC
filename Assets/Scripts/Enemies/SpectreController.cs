@@ -25,7 +25,10 @@ public class SpectreController : MeleeEnemyController
 
         hero.TakeDamage(stats.attackDamage);
 
+        // Pedido do usuário (2026-10-26): nasce no pé do player de verdade, não no centro do
+        // trigger de ataque (que é uma posição fixa do prefab do Spectre, não de onde o player
+        // realmente estava quando foi acertado) — mesmo critério que o Lich já usa.
         if (iceSurfacePrefab != null)
-            Instantiate(iceSurfacePrefab, hitbox.transform.position, Quaternion.identity);
+            Instantiate(iceSurfacePrefab, player.position, Quaternion.identity);
     }
 }

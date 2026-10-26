@@ -22,7 +22,9 @@ public class AssassinDashProjectile : MonoBehaviour
     private LayerMask enemyLayerMask;
     private bool effectHitFired;
     private readonly List<EnemyController> hitTargets = new();
-    private static readonly Collider2D[] OverlapBuffer = new Collider2D[16];
+    // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
+    // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
+    private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
 
     public void Launch(Assassin dashOwner, Vector2 dashDirection, float dashDamage, float projectileSpeed,
         float dashKnockbackForce, float effectRadius, LayerMask layerMask)

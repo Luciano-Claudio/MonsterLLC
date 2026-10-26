@@ -60,6 +60,15 @@ public class EnemyProjectile : MonoBehaviour
     [SerializeField] private float groundedTickInterval = 1f; // 🔢 ajustável
     [SerializeField] private float groundedDamagePerSecond = 2f; // 🔢 ajustável
 
+    // Gizmo de debug (Editor) — mostra o círculo REAL usado pelo Physics2D.OverlapCircle de
+    // ApplyImpactExplosion()/BecomeGrounded() (explodesOnImpact/ImpactSurface), pra investigar
+    // casos onde o trigger de voo claramente encosta no player (anima impacto normalmente) mas
+    // o dano não sai — suspeita do usuário (2026-10-26) é que essa consulta separada, não o
+    // toque em si, é quem está falhando. OnDrawGizmos (não Selected) — mesmo critério do
+    // OrcShamanTotem: o projétil é transiente, não dá tempo de clicar nele em voo.
+    [Header("Debug — gizmo da área de dano/explosão (Editor)")]
+    [SerializeField] private bool showExplosionGizmo = true;
+
     private Animator animator;
     private Vector2 direction;
     private float timer;
@@ -68,9 +77,18 @@ public class EnemyProjectile : MonoBehaviour
     private AttackCooldown groundedTick;
     private HeroController heroInGroundedArea; // só existe 1 Player no jogo — referência única, sem lista
 
+    // Guard contra o 2º OnTriggerEnter2D do MESMO impacto — desde que o herói ganhou um 2º
+    // Collider2D (ProjectileHitbox, trigger, além do físico), a Unity entrega um evento de
+    // trigger POR COLLIDER que entra em overlap, não um por GameObject. O 1º evento já chama
+    // HitPlayer() (que pode só agendar Destroy(), não remove o objeto NA HORA) — sem este
+    // guard, o 2º evento (mesmo frame, outro collider do herói) processava o impacto de novo,
+    // dano duplo.
+    private bool hasImpacted;
+
     private void Awake()
     {
         animator = GetComponent<Animator>(); // pode não existir (ImpactMode.Simple não precisa de Animator)
+        PhysicsUtility.EnsureKinematicRigidbody2D(gameObject); // ver PhysicsUtility — sem isso, o trigger pode nunca disparar (tunelamento)
     }
 
     // minTravelDistance (opcional) — distância real até o player no instante do tiro
@@ -122,19 +140,23 @@ public class EnemyProjectile : MonoBehaviour
 
         if (phase == Phase.Flying)
         {
+            if (hasImpacted) return; // 2º collider do herói entrando no mesmo instante — já processado
+            hasImpacted = true;
+
+            var hero = other.GetComponent<HeroController>();
+
             // Se explode em área, o dano vem só do burst (ApplyImpactExplosion, chamado dentro
             // de HitPlayer) — não aplica dano direto aqui também, senão o player levaria hit
             // duplo (contato + explosão) no mesmo instante.
             if (!explodesOnImpact)
             {
-                var hero = other.GetComponent<HeroController>();
                 if (hero != null)
                 {
                     hero.TakeDamage(damage);
                     if (appliesStatusEffect) ApplyStatus(hero);
                 }
             }
-            HitPlayer();
+            HitPlayer(hero);
             return;
         }
 
@@ -167,15 +189,20 @@ public class EnemyProjectile : MonoBehaviour
     // Chegou no fim da trajetória (lifetime) sem acertar ninguém.
     private void ReachedLimit()
     {
-        if (explodesOnImpact) ApplyImpactExplosion();
+        if (hasImpacted) return; // já impactou (OnTriggerEnter2D) no mesmo frame — não processa de novo
+        hasImpacted = true;
+
+        // null = ninguém tocou de verdade (chegou no limite sozinho) — ApplyImpactExplosion()
+        // cai pro OverlapCircle, única opção aqui (não tem collider nenhum pra apontar).
+        if (explodesOnImpact) ApplyImpactExplosion(null);
         if (spawnsMonsterOnImpact) SpawnMonster();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
     }
 
-    private void HitPlayer()
+    private void HitPlayer(HeroController directHero)
     {
-        if (explodesOnImpact) ApplyImpactExplosion();
+        if (explodesOnImpact) ApplyImpactExplosion(directHero);
         if (spawnsMonsterOnImpact) SpawnMonster();
         if (impactMode == ImpactMode.Simple) { Destroy(gameObject); return; }
         StartImpact();
@@ -189,19 +216,35 @@ public class EnemyProjectile : MonoBehaviour
 
     // Burst instantâneo no ponto de impacto — dispara 1 vez só (via ReachedLimit/HitPlayer),
     // "ao contato ou na distância máxima", nunca as duas.
-    private void ApplyImpactExplosion()
+    //
+    // 2026-10-26 — bug crítico reportado pelo usuário, intermitente, confirmado NÃO resolvido
+    // só com Auto Sync Transforms (Fire/Air Elemental, entre outros): projétil com
+    // explodesOnImpact às vezes simplesmente não causava dano, mesmo acertando visivelmente.
+    // A causa exata dentro do motor de física da Unity nunca foi 100% confirmada apesar de
+    // várias tentativas — em vez de continuar caçando, a solução agora é parar de depender de
+    // QUALQUER consulta de física (OverlapCircle/Overlap) pra achar o player aqui. Só existe 1
+    // player no jogo e sua posição real (Transform) está sempre disponível — comparar
+    // distância direto não tem ponto de falha físico nenhum pra dar errado.
+    //
+    // directHero: quando o toque já é conhecido (veio de OnTriggerEnter2D — o caso mais
+    // comum), usa essa referência direto. null = ninguém tocou de verdade (ReachedLimit,
+    // chegou no limite da trajetória sozinho) — aí sim precisa achar o player via tag.
+    private void ApplyImpactExplosion(HeroController directHero)
     {
-        var results = new Collider2D[4];
-        int count = Physics2D.OverlapCircle(transform.position, explosionRadius, ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Player")) continue;
-            var hero = results[i].GetComponent<HeroController>();
-            if (hero == null) continue;
+        HeroController hero = directHero != null ? directHero : FindPlayer();
+        if (hero == null) return;
+        if (Vector2.Distance(transform.position, hero.transform.position) > explosionRadius) return;
 
-            hero.TakeDamage(damage);
-            if (appliesStatusEffect) ApplyStatus(hero);
-        }
+        hero.TakeDamage(damage);
+        if (appliesStatusEffect) ApplyStatus(hero);
+    }
+
+    // Único player do jogo — nunca via física, só pela tag. Usado pelos casos que não têm um
+    // Collider2D conhecido pra apontar (ver comentário de ApplyImpactExplosion acima).
+    private static HeroController FindPlayer()
+    {
+        var obj = GameObject.FindGameObjectWithTag("Player");
+        return obj != null ? obj.GetComponent<HeroController>() : null;
     }
 
     private void StartImpact()
@@ -230,15 +273,11 @@ public class EnemyProjectile : MonoBehaviour
 
         // Pega de graça quem já estava exatamente em cima do ponto de impacto — mudar o raio
         // do collider não reemite OnTriggerEnter2D pra quem já estava sobreposto (mesmo
-        // detalhe já resolvido em MageFireball).
-        var results = new Collider2D[4];
-        int count = Physics2D.OverlapCircle(transform.position, groundedRadius, ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Player")) continue;
-            var hero = results[i].GetComponent<HeroController>();
-            if (hero != null) heroInGroundedArea = hero;
-        }
+        // detalhe já resolvido em MageFireball). Distância direto, não OverlapCircle — mesmo
+        // critério de ApplyImpactExplosion acima.
+        var hero = FindPlayer();
+        if (hero != null && Vector2.Distance(transform.position, hero.transform.position) <= groundedRadius)
+            heroInGroundedArea = hero;
     }
 
     private void UpdateGrounded()
@@ -264,5 +303,26 @@ public class EnemyProjectile : MonoBehaviour
     public void AnimationDisappearEndEvent()
     {
         Destroy(gameObject);
+    }
+
+    // Só pra visualização em Editor — não afeta gameplay. Laranja = explosão de impacto
+    // (ApplyImpactExplosion, só desenha se explodesOnImpact estiver ligado); ciano = área
+    // persistente no chão (BecomeGrounded/UpdateGrounded, só em ImpactSurface — mesmo raio do
+    // circleCollider real, mas aqui pra bater exatamente com o que o OverlapCircle usa).
+    private void OnDrawGizmos()
+    {
+        if (!showExplosionGizmo) return;
+
+        if (explodesOnImpact)
+        {
+            Gizmos.color = new Color(1f, 0.55f, 0.1f);
+            Gizmos.DrawWireSphere(transform.position, explosionRadius);
+        }
+
+        if (impactMode == ImpactMode.ImpactSurface)
+        {
+            Gizmos.color = new Color(0.35f, 0.85f, 1f);
+            Gizmos.DrawWireSphere(transform.position, groundedRadius);
+        }
     }
 }

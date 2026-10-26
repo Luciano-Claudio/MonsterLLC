@@ -103,4 +103,19 @@ public class LootDrop : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    // Só pra debug/teste (isolamento de Tier, WorldPopulationManager/WorldBossSpawnManager) —
+    // pedido do usuário: ao resetar pra isolar um Tier, também limpa todo loot já no chão, por
+    // poluição visual e FPS (uma sessão de teste empilha loot rápido, sem ninguém vendendo de
+    // verdade). NUNCA chamado pelo fluxo normal do jogo (ChunkTerrainGenerator.RegenerateWorld
+    // continua sem tocar em loot nenhum — sumir com o loot do jogador no meio de uma run real
+    // seria um bug, não uma feature).
+    public static void DestroyAllOnGround()
+    {
+        var drops = Object.FindObjectsByType<LootDrop>(FindObjectsSortMode.None);
+        foreach (var drop in drops)
+        {
+            if (drop != null) Destroy(drop.gameObject);
+        }
+    }
 }

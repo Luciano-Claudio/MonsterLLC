@@ -684,7 +684,7 @@ MonoBehaviour:
     maxHealth: 60
     moveSpeed: 2.2
     observationRadius: 7
-    attackRadius: 1
+    attackRadius: 5
     attackDamage: 10
     attackAnimationCooldown: 2.5
   energyReward: 20
@@ -723,7 +723,7 @@ MonoBehaviour:
   staysDormantUntilDetected: 0
   hasAttackAnimation: 0
   maxAttackAnimationDuration: 5
-  maxDieDuration: 3
+  maxDieDuration: 6
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0.26
   attackSpeedStepPerHit: 0.5

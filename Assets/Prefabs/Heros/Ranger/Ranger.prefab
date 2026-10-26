@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 37793909542604560}
   - component: {fileID: 444590616563185323}
   - component: {fileID: 4441572447827230338}
+  - component: {fileID: 31999334496452101}
   m_Layer: 8
   m_Name: Ranger
   m_TagString: Player
@@ -265,8 +266,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.1}
-  m_Size: {x: 0.7, y: 0.25}
+  m_Offset: {x: 0, y: 0.15}
+  m_Size: {x: 0.0001, y: 0.3}
   m_Direction: 1
 --- !u!114 &444590616563185323
 MonoBehaviour:
@@ -290,14 +291,16 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
+  maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
   actionSpeedMultiplier: 1
   ultimateEnergyLockoutDuration: 5
   secondaryAbilityCooldownDuration: 8
+  basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  showPickupRadiusGizmo: 0
   arrowPrefab: {fileID: 3826008860373041601, guid: 06edcbb77a27b774b8bfb6bc5cc5e410, type: 3}
   arrowCount: 1
   attackDamageMultiplier: 2
@@ -336,6 +339,43 @@ MonoBehaviour:
   statusAnimator: {fileID: 4675318668843361967}
   tickInterval: 1
   immunities: 
+--- !u!70 &31999334496452101
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3145937769630261157}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Size: {x: 1, y: 1.5}
+  m_Direction: 0
 --- !u!1 &7074385494429796847
 GameObject:
   m_ObjectHideFlags: 0

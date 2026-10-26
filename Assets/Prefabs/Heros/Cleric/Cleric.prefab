@@ -266,6 +266,7 @@ GameObject:
   - component: {fileID: 1477846475461845475}
   - component: {fileID: 6029075868098700213}
   - component: {fileID: 508695712441454965}
+  - component: {fileID: -954174225308036004}
   m_Layer: 8
   m_Name: Cleric
   m_TagString: Player
@@ -433,8 +434,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.1}
-  m_Size: {x: 0.7, y: 0.25}
+  m_Offset: {x: 0, y: 0.15}
+  m_Size: {x: 0.0001, y: 0.3}
   m_Direction: 1
 --- !u!114 &6029075868098700213
 MonoBehaviour:
@@ -449,16 +450,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cleric
   stats:
-    health: 320
-    maxHealth: 320
-    damage: 17
+    health: 32
+    maxHealth: 32
+    damage: 7
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
+  maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -473,13 +474,13 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  projectileCount: 5
+  projectileCount: 10
   projectileSpeed: 7
   projectileMaxDistance: 12
   projectileKnockbackForce: 2
   maxActionDuration: 3
   prayerRadius: 13
-  prayerDuration: 2
+  prayerDuration: 10
   prayerTickDamageMultiplier: 0.5
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0
@@ -503,6 +504,43 @@ MonoBehaviour:
   statusAnimator: {fileID: 623095971231715402}
   tickInterval: 1
   immunities: 
+--- !u!70 &-954174225308036004
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657694654762816894}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Size: {x: 1, y: 1.5}
+  m_Direction: 0
 --- !u!1 &8512639936625217308
 GameObject:
   m_ObjectHideFlags: 0

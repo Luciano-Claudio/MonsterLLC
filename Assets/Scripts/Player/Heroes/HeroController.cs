@@ -3,6 +3,26 @@ using EasyTransition;
 
 public abstract class HeroController : MonoBehaviour, IDamageable
 {
+    // Mesmo problema/mesma solução de EnemyController.CollectDistinct, só que pro lado do
+    // herói: desde que o herói ganhou um 2º Collider2D (ProjectileHitbox, trigger, além do
+    // CapsuleCollider2D físico — achado real, 2026-10-25: Physics2D.OverlapCircle sem filtro
+    // agora acha o MESMO herói 2x, um por collider, e todo script que fazia
+    // "for each resultado tagged Player -> TakeDamage" dentro do loop estava dando dano
+    // duplo). Só existe 1 Player no jogo, então não precisa de lista — devolve o primeiro
+    // HeroController achado (ou null) e quem chamou já sabe que é seguro aplicar dano/efeito
+    // só 1 vez. Todo ataque em área de monstro/boss deve passar os resultados crus por aqui
+    // ANTES de aplicar dano, em vez de reimplementar esse dedup a cada script novo.
+    public static HeroController CollectDistinctPlayer(Collider2D[] results, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (!results[i].CompareTag("Player")) continue;
+            var hero = results[i].GetComponent<HeroController>();
+            if (hero != null) return hero;
+        }
+        return null;
+    }
+
     public HeroStats stats = new HeroStats();
     public TransitionSettings respawnTransition;
     protected PlayerControls controls;

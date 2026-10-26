@@ -76,6 +76,10 @@ public class LichController : RangedEnemyController
         if (enemy == null) return;
 
         enemy.dropsLoot = false; // Bestiário (Rat People Royalty, mesmo critério): summon não dropa loot
+        // Pedido do usuário (2026-10-26): o reanimado já nasce sabendo do player, sem esperar
+        // observationRadius — mesmo critério de todo summon "que nasce na cara do player" do
+        // projeto (Rat People arremessado, forma possuída do Dark Channeler).
+        enemy.ForceImmediateAggro();
         summons.Add(enemy);
     }
 

@@ -386,7 +386,7 @@ MonoBehaviour:
   staysDormantUntilDetected: 0
   hasAttackAnimation: 0
   maxAttackAnimationDuration: 5
-  maxDieDuration: 3
+  maxDieDuration: 6
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5
@@ -401,8 +401,10 @@ MonoBehaviour:
   reanimationPrefabs:
   - {fileID: -4345039364994221918, guid: a5a9ae8b49d8413bba4a3a82cc09610a, type: 3}
   - {fileID: -3770820086002431285, guid: 73a90889806a426ca25fc7cdd458d3ca, type: 3}
-  - {fileID: -3563963671638667515, guid: b54f2398e01d413cb4ed4ae89e9f20ab, type: 3}
-  - {fileID: -1005326714222301812, guid: 8b3ff5431cc246a3a549d9127bc130e7, type: 3}
+  - {fileID: -1641647802298432767, guid: 33b6b71a72544150a0093d9960a8b4b7, type: 3}
+  - {fileID: -2225405037753342510, guid: db9ec12d0b7945d98dcf9e0be982349e, type: 3}
+  - {fileID: 3524630713460395836, guid: 4d0c4ea4d66e44bca476632bc1f11e69, type: 3}
+  - {fileID: -423816594767626781, guid: 705dd25305714766a3f09262a52388de, type: 3}
   reanimationSpawnRadius: 2
 --- !u!70 &-1737404505899110105
 CapsuleCollider2D:

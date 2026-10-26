@@ -11,57 +11,16 @@ using UnityEngine;
 // TryStartAttackAnimation, herdado de EnemyController) — só InAttackRange() muda de critério:
 // em vez de medir distância do player, só libera o cast quando existe pelo menos 1 alvo
 // elegível no alcance (reflete "sempre que a transformação estiver disponível, prioriza...").
+// Movimento (2026-10-26, decisão do usuário): não sobrescreve mais Move() — o "puxão" extra
+// em direção aos aliados elegíveis (bias somado ao vetor aproximar/fugir) deixava a
+// movimentação com cara de indecisa mesmo com histerese. Agora é um Ranged comum de verdade,
+// herdado sem alteração de RangedEnemyController.Move(): foge se o player chegar perto, para
+// na distância que deseja, pronto.
 public class DarkChannelerController : RangedEnemyController
 {
     [Header("Transformação (Bestiário — 2 Acolyte/Hound/Zealot mais próximos)")]
     [SerializeField] private float allySeekRadius = 10f;
     [SerializeField] private int maxTransformTargets = 2;
-    [SerializeField] private float allySeekWeight = 1f; // 🔢 ajustável — peso do "puxão" pros aliados em relação a manter distância do player
-
-    // Mantém a distância do player (igual Ranged comum), mas com um puxão extra pra ficar
-    // perto de Acolyte/Hound/Zealot elegíveis — "procura permanecer próximo de... que possam
-    // ser transformados" (Bestiário).
-    protected override void Move(float deltaTime)
-    {
-        Vector2 toPlayer = player.position - transform.position;
-        float distance = toPlayer.magnitude;
-        Vector2 allyBias = ComputeAllySeekBias();
-
-        if (distance > stats.attackRadius)
-        {
-            SetMoving(true);
-            MoveInDirection((toPlayer + allyBias).normalized);
-        }
-        else if (distance < stats.attackRadius * 0.8f)
-        {
-            SetMoving(true);
-            MoveInDirection((-toPlayer + allyBias).normalized);
-        }
-        else if (allyBias.sqrMagnitude > 0.0001f)
-        {
-            SetMoving(true);
-            MoveInDirection(allyBias.normalized);
-        }
-        else
-        {
-            SetMoving(false); // dentro do alcance ideal e sem aliado pra buscar -> idle_combat
-        }
-    }
-
-    private Vector2 ComputeAllySeekBias()
-    {
-        Vector2 sum = Vector2.zero;
-        int count = 0;
-        foreach (var ally in FindObjectsByType<PossessableMeleeEnemyController>(FindObjectsSortMode.None))
-        {
-            if (ally == null || ally.IsPossessed) continue;
-            Vector2 offset = (Vector2)ally.transform.position - (Vector2)transform.position;
-            if (offset.sqrMagnitude > allySeekRadius * allySeekRadius) continue;
-            sum += offset;
-            count++;
-        }
-        return count == 0 ? Vector2.zero : (sum / count).normalized * allySeekWeight;
-    }
 
     private List<PossessableMeleeEnemyController> FindEligibleTargets()
     {

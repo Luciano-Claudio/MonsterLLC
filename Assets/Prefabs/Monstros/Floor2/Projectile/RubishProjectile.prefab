@@ -145,16 +145,18 @@ MonoBehaviour:
   speed: 6
   damage: 5
   lifetime: 3
-  ownerFloor: {fileID: 0}
   impactMode: 0
   appliesStatusEffect: 0
   statusEffectType: 0
   statusEffectDuration: 5
   statusEffectDamagePerSecond: 2
-  explodesOnImpact: 1
+  explodesOnImpact: 0
   explosionRadius: 1.5
+  spawnsMonsterOnImpact: 0
+  monsterPrefab: {fileID: 0}
   circleCollider: {fileID: 0}
   groundedRadius: 1.2
   groundedDuration: 4
   groundedTickInterval: 1
   groundedDamagePerSecond: 2
+  showExplosionGizmo: 1

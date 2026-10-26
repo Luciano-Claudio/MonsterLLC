@@ -87,7 +87,9 @@ public class Gunslinger : HeroController
     [SerializeField] private float lootMultiplier = 2f; // 🔢 GDD: "2x mais loot", ajustável
 
     private readonly System.Collections.Generic.List<EnemyController> hitTargets = new();
-    private static readonly Collider2D[] OverlapBuffer = new Collider2D[16];
+    // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
+    // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
+    private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
 
 #if UNITY_EDITOR
     private void OnValidate()

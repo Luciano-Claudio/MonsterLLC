@@ -60,10 +60,19 @@ public class WorldPopulationManager : MonoBehaviour
         testDayOverride = day;
     }
 
-    // Botão de contexto (clique direito no componente no Inspector) — mesmo padrão do
-    // "Regenerar Mundo" do ChunkTerrainGenerator, só que aqui não precisa sincronizar nada
-    // com outro manager: WorldBossSpawnManager tem seu próprio useTierIsolationOverride/
-    // testTierOverride independente, e os dois já escutam o mesmo GameEvents.ClearAllEnemies.
+    // Chamado pelo DebugResetForTierIsolation do OUTRO manager (ver lá embaixo) — sem isso,
+    // bug real reportado pelo usuário: isolar o Tier só em WorldPopulationManager (ou só em
+    // WorldBossSpawnManager) deixava o outro lado inteiro de fora, nascendo bosses/monstros de
+    // Tiers passados enquanto o lado "isolado" já estava certinho.
+    public void SyncTierIsolation(bool enabled, int tier)
+    {
+        useTierIsolationOverride = enabled;
+        testTierOverride = tier;
+    }
+
+    // Botão de contexto (clique direito no componente no Inspector) — espelha o bool/Tier pro
+    // WorldBossSpawnManager ANTES de limpar, então 1 clique em QUALQUER um dos dois já isola
+    // monstro comum E boss juntos, sempre no mesmo Tier.
     [ContextMenu("Debug: Resetar e isolar Tier")]
     public void DebugResetForTierIsolation()
     {
@@ -73,9 +82,11 @@ public class WorldPopulationManager : MonoBehaviour
             return;
         }
 
+        WorldBossSpawnManager.Instance?.SyncTierIsolation(useTierIsolationOverride, testTierOverride);
         GameEvents.ClearAllEnemies();
+        LootDrop.DestroyAllOnGround(); // só debug — poluição visual/FPS numa sessão de teste, nunca no fluxo normal
         Debug.Log(useTierIsolationOverride
-            ? $"[WorldPopulationManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora."
+            ? $"[WorldPopulationManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora (monstro comum e boss)."
             : "[WorldPopulationManager] useTierIsolationOverride está desmarcado — resetou, mas a distribuição normal por % continua valendo.");
     }
 

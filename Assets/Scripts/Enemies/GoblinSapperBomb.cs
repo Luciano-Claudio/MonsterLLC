@@ -21,16 +21,19 @@ public class GoblinSapperBomb : MonoBehaviour
     // Animation Event, no frame exato da explosão — só aplica o dano. A destruição real
     // fica pro fim de verdade do clipe (AnimationBombEndEvent), depois do estouro visual
     // já ter tocado por completo (mesmo padrão de todo AnimationXEndEvent do projeto).
+    //
+    // 2026-10-26 — pendência antiga (bomba "parou de funcionar", dano 0 intermitente) fechada
+    // de vez: trocado Physics2D.OverlapCircle por distância direto contra o player (mesmo
+    // critério agora usado em EnemyProjectile.ApplyImpactExplosion) — só existe 1 player no
+    // jogo, não precisa de consulta de física nenhuma pra saber se ele está no raio.
     public void AnimationExplodeEvent()
     {
-        var results = new Collider2D[4];
-        int count = Physics2D.OverlapCircle(transform.position, explosionRadius, ContactFilter2D.noFilter, results);
-        for (int i = 0; i < count; i++)
-        {
-            if (!results[i].CompareTag("Player")) continue;
-            var hero = results[i].GetComponent<HeroController>();
-            if (hero != null) hero.TakeDamage(damage);
-        }
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null) return;
+        if (Vector2.Distance(transform.position, playerObj.transform.position) > explosionRadius) return;
+
+        var hero = playerObj.GetComponent<HeroController>();
+        if (hero != null) hero.TakeDamage(damage);
     }
 
     // Animation Event, no último frame do clipe — só agora o GameObject é destruído de

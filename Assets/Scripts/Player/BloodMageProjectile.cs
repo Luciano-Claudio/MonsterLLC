@@ -21,6 +21,10 @@ public class BloodMageProjectile : MonoBehaviour
     private bool impacted;
     private readonly HashSet<EnemyController> hitEnemies = new HashSet<EnemyController>();
 
+    // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca disparava
+    // (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
+    private void Awake() => PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
+
     public void Launch(Vector2 dir, float fullHitDamage, float reserve, LayerMask layerMask, float projectileSpeed, float maxTravelDistance)
     {
         direction = dir.normalized;

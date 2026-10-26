@@ -470,6 +470,7 @@ GameObject:
   - component: {fileID: 1281415004293993549}
   - component: {fileID: 5747829164707123993}
   - component: {fileID: 3565354531031999}
+  - component: {fileID: 543423415110610275}
   m_Layer: 8
   m_Name: Barbarian
   m_TagString: Player
@@ -618,8 +619,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.1}
-  m_Size: {x: 0.7, y: 0.25}
+  m_Offset: {x: 0, y: 0.15}
+  m_Size: {x: 0.0001, y: 0.3}
   m_Direction: 1
 --- !u!95 &1281415004293993549
 Animator:
@@ -656,16 +657,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Barbarian
   stats:
-    health: 4200
-    maxHealth: 4200
-    damage: 200
+    health: 4.2e+11
+    maxHealth: 4.2e+11
+    damage: 2e+10
     critChance: 0.1
     moveSpeed: 20
     attackSpeed: 3
     energy: 0
     maxEnergy: 100
   respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
-  maxDieDuration: 3
+  maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -691,7 +692,7 @@ MonoBehaviour:
   secondaryAbilitySpeedMultiplier: 1.5
   secondaryAbilityDuration: 5
   maxActionDuration: 3
-  sizeMultiplier: 2
+  sizeMultiplier: 1
 --- !u!114 &3565354531031999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -707,6 +708,43 @@ MonoBehaviour:
   statusAnimator: {fileID: 5410142816328932043}
   tickInterval: 1
   immunities: 
+--- !u!70 &543423415110610275
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7333212314175848863}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Size: {x: 1, y: 1.5}
+  m_Direction: 0
 --- !u!1 &8256355451532891382
 GameObject:
   m_ObjectHideFlags: 0
