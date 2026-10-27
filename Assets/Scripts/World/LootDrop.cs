@@ -90,14 +90,10 @@ public class LootDrop : MonoBehaviour
 
         long added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
 
-        if (added > 0)
-            Debug.Log($"[LootDrop] Coletado: {added}x {loot.itemName}");
-
         if (added < loot.quantity)
         {
             loot.quantity -= added;
             RefreshSprite();
-            Debug.Log($"[LootDrop] Bag cheia — {loot.quantity}x {loot.itemName} continuam no chão.");
             return; // não destrói — a pilha remanescente continua existindo, com a quantidade reduzida
         }
 

@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.Collections.Generic;
 
 public static class ProgressTracker
@@ -17,7 +16,6 @@ public static class ProgressTracker
     {
         if (!counters.ContainsKey(key)) counters[key] = 0;
         counters[key]++;
-        Debug.Log($"[ProgressTracker] {key} = {counters[key]}");
     }
 
     public static int Get(string key) => counters.TryGetValue(key, out var v) ? v : 0;

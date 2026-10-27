@@ -136,6 +136,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     private bool hasAimParam;
     private bool hasDiagonalAimParam;
     private bool hasCardinalAimParam;
+    // Mesmo achado, parâmetros diferentes (2026-10-27, Divine God — Animator Controller
+    // totalmente customizado, boss híbrido que não usa o fluxo genérico de patrulha/combate,
+    // nunca teve IsMoving/InCombat cadastrados): SetMoving()/SetInCombat() chamavam
+    // animator.SetBool() sem guarda nenhuma, gerando o mesmo spam de "Parameter does not
+    // exist" já corrigido pros outros parâmetros (ver comentário acima).
+    private bool hasIsMovingParam;
+    private bool hasInCombatParam;
+    private bool hasAttackSpeedParam;
 
     private const float DamageFlashDuration = 0.08f;
 
@@ -161,6 +169,9 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         hasAimParam = HasParameter("AimX");
         hasDiagonalAimParam = HasParameter("DiagonalAimX");
         hasCardinalAimParam = HasParameter("CardinalAimX");
+        hasIsMovingParam = HasParameter("IsMoving");
+        hasInCombatParam = HasParameter("InCombat");
+        hasAttackSpeedParam = HasParameter("AttackSpeedMultiplier");
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         spawnOrigin = transform.position;
@@ -544,7 +555,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // Não confiar no valor default do parâmetro no Animator (Unity cria Float novo
         // com default 0, não 1) — sem isso, o primeiro ataque de cada instância tocaria
         // a 0x de velocidade e travaria parado pra sempre.
-        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", 1f);
+        if (animator != null && hasAttackSpeedParam) animator.SetFloat("AttackSpeedMultiplier", 1f);
         AnimatorTrigger("AttackTrigger");
     }
 
@@ -589,7 +600,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     {
         attackAnimState = AttackAnimState.Idle;
         attackSpeedMultiplier = 1f;
-        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", 1f);
+        if (animator != null && hasAttackSpeedParam) animator.SetFloat("AttackSpeedMultiplier", 1f);
     }
 
     // Cada hit recebido durante o próprio golpe acelera a animação em vez de só piscar —
@@ -606,12 +617,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
-        if (animator != null) animator.SetFloat("AttackSpeedMultiplier", attackSpeedMultiplier);
+        if (animator != null && hasAttackSpeedParam) animator.SetFloat("AttackSpeedMultiplier", attackSpeedMultiplier);
     }
 
     protected void SetMoving(bool isMoving)
     {
-        if (animator != null) animator.SetBool("IsMoving", isMoving);
+        if (animator != null && hasIsMovingParam) animator.SetBool("IsMoving", isMoving);
         // Cobre todo estado "parado de propósito" que nunca chama MoveInDirection de novo
         // depois (colado em attackRadius, emboscada dormente, etc.) — sem isso o AIPath
         // ficaria tentando alcançar o último destino projetado pra sempre, mesmo com o
@@ -624,7 +635,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // IdleCombat em vez do Idle de patrulha.
     protected void SetInCombat(bool inCombat)
     {
-        if (animator != null) animator.SetBool("InCombat", inCombat);
+        if (animator != null && hasInCombatParam) animator.SetBool("InCombat", inCombat);
     }
 
     // Última direção de mira não-nula (rumo ao player) — o GameObject nunca vira, só a
@@ -739,7 +750,6 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         isInCombat = true;
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
-        Debug.Log($"[{GetType().Name}] Recebeu {amount} de dano. HP = {stats.health}/{stats.maxHealth}");
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: false, isDirectPlayerHit);
 
         if (HealthSystem.IsDead(stats.health))
@@ -839,7 +849,6 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected virtual void Die()
     {
         isDead = true;
-        Debug.Log($"[{GetType().Name}] Morreu — aguardando Animation Event de fim do die...");
 
         var collider = GetComponent<Collider2D>();
         if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca

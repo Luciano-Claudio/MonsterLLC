@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: -7677754275112046524}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.5, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -67,7 +67,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 4, y: 2}
+  m_Size: {x: 5, y: 4}
   m_Direction: 1
 --- !u!1 &-6258441069968416081
 GameObject:
@@ -95,7 +95,7 @@ Transform:
   m_GameObject: {fileID: -6258441069968416081}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: -0.5, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -136,7 +136,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 4, y: 2}
+  m_Size: {x: 5, y: 4}
   m_Direction: 1
 --- !u!1 &3349092065962185210
 GameObject:
@@ -164,7 +164,7 @@ Transform:
   m_GameObject: {fileID: 3349092065962185210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.5, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -205,7 +205,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 4, y: 2}
+  m_Size: {x: 5, y: 4}
   m_Direction: 1
 --- !u!1 &4495560064022041171
 GameObject:
@@ -233,7 +233,7 @@ Transform:
   m_GameObject: {fileID: 4495560064022041171}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalPosition: {x: 0.5, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -274,7 +274,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 4, y: 2}
+  m_Size: {x: 5, y: 4}
   m_Direction: 1
 --- !u!1 &4506327777738051532
 GameObject:
@@ -660,9 +660,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5417788253073823597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f9c4e7b1a6d4883b9c0d1e2f3a4b5c6, type: 3}
+  m_Script: {fileID: 11500000, guid: 60f4c6de9b234967b43b47559300a8dc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AmbusterController
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
     health: 3.6e+13
     maxHealth: 3.6e+13
@@ -734,7 +734,7 @@ MonoBehaviour:
   patrolRadius: 3
   staysDormantUntilDetected: 0
   hasAttackAnimation: 1
-  maxAttackAnimationDuration: 30
+  maxAttackAnimationDuration: 5
   maxDieDuration: 6
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0.35
@@ -743,14 +743,16 @@ MonoBehaviour:
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
   floatingTextHeightAdjust: -0.5
-  projectilePrefab: {fileID: 5492614139077973971, guid: fb7cc26d8d1e46cdb373a3a2aecc6dbe, type: 3}
-  projectileSpeed: 10
-  projectileTouchRadius: 0.6
-  ambusterSpriteRenderer: {fileID: 4375305059414145097}
   attackHitboxNE: {fileID: 91119936004803658}
   attackHitboxNW: {fileID: -2171879685866838794}
   attackHitboxSE: {fileID: -6124926837516705405}
   attackHitboxSW: {fileID: -9089169542634756921}
+  orthogonalAttack: 0
+  minFlankIdleDuration: 1
+  maxFlankIdleDuration: 2.5
+  minFlankWalkDuration: 1
+  maxFlankWalkDuration: 2
+  flankArcDegrees: 60
 --- !u!114 &6303290218606704057
 MonoBehaviour:
   m_ObjectHideFlags: 0

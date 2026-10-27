@@ -2266,7 +2266,7 @@ Estas não são unidades separadas com spawn próprio — **é o mesmo Acolyte/H
 - **Tipo:** Melee
 - **Movimentação:** Persegue diretamente o jogador.
 - **Comportamento:** Ele detecta automaticamente o jogador, aproxima-se agressivamente e tenta permanecer em alcance de contato.
-- **Ataque:** Golpe real via animação de ataque, com Animation Event — um trigger direcional na frente do monstro aplica o dano só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo.
+- **Ataque:** Golpe real via animação de ataque, com 2 Animation Events dentro do mesmo clipe (golpe duplo) — um trigger direcional na frente do monstro aplica o dano em cada um dos 2 momentos, só se o player estiver dentro dele no frame exato do evento. Cooldown próprio da animação, sem dano de contato passivo. *(Revisão 2026-10-27: arquitetura antiga de "se transformar em projétil" removida — virou um Melee comum de verdade, só com 2 hits em vez de 1.)*
 - **Função no combate:** Inimigo de pressão, criado para obrigar o jogador a continuar se movimentando.
 - **Drops:**
   - Monster Essence: 27.500.000.000-275.000.000.000 | Chance: 100%

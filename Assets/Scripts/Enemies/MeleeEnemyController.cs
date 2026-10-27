@@ -171,7 +171,6 @@ public class MeleeEnemyController : EnemyController
         var hero = player.GetComponent<HeroController>();
         if (hero == null) return;
 
-        Debug.Log($"[MeleeEnemyController] Golpe real conecta: {stats.attackDamage}.");
         hero.TakeDamage(stats.attackDamage);
     }
 

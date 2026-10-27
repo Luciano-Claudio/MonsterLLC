@@ -15,18 +15,6 @@ MonoBehaviour:
   id: 2
   baseTerrain: {fileID: 11400000, guid: 1d4e7e0f82254e2bbbaa0b3ef3af3eff, type: 2}
   patchTerrains:
-  - terrain: {fileID: 11400000, guid: 3b022f127a6445bd9883591b95d16193, type: 2}
-    coverageTarget: 0.1
-    noiseScale: 0.025
-    nestedPatches: []
-    blockedInSafeZone: 1
-    requiresFilledQuad: 0
-  - terrain: {fileID: 11400000, guid: 3b022f127a6445bd9883591b95d16193, type: 2}
-    coverageTarget: 0.15
-    noiseScale: 0.09
-    nestedPatches: []
-    blockedInSafeZone: 1
-    requiresFilledQuad: 0
   - terrain: {fileID: 11400000, guid: 2774ad96d4b14fbaa5d894ba0027cabe, type: 2}
     coverageTarget: 0.2
     noiseScale: 0.07
@@ -42,6 +30,18 @@ MonoBehaviour:
     - rid: 3
     - rid: 4
     blockedInSafeZone: 0
+    requiresFilledQuad: 0
+  - terrain: {fileID: 11400000, guid: 3b022f127a6445bd9883591b95d16193, type: 2}
+    coverageTarget: 0.1
+    noiseScale: 0.025
+    nestedPatches: []
+    blockedInSafeZone: 1
+    requiresFilledQuad: 0
+  - terrain: {fileID: 11400000, guid: 3b022f127a6445bd9883591b95d16193, type: 2}
+    coverageTarget: 0.15
+    noiseScale: 0.09
+    nestedPatches: []
+    blockedInSafeZone: 1
     requiresFilledQuad: 0
   baseVariants: []
   props:

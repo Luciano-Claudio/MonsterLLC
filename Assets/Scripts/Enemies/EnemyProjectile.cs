@@ -231,9 +231,21 @@ public class EnemyProjectile : MonoBehaviour
     // chegou no limite da trajetória sozinho) — aí sim precisa achar o player via tag.
     private void ApplyImpactExplosion(HeroController directHero)
     {
-        HeroController hero = directHero != null ? directHero : FindPlayer();
-        if (hero == null) return;
-        if (Vector2.Distance(transform.position, hero.transform.position) > explosionRadius) return;
+        HeroController hero = directHero;
+        if (hero == null)
+        {
+            // Só cai aqui sem um toque confirmado (ReachedLimit) — aí sim precisa checar
+            // distância, já que FindPlayer() não prova contato nenhum.
+            hero = FindPlayer();
+            if (hero == null) return;
+            if (Vector2.Distance(transform.position, hero.transform.position) > explosionRadius) return;
+        }
+        // directHero != null: o toque já é um fato confirmado por OnTriggerEnter2D — os
+        // colliders genuinamente se tocaram. Bug real encontrado (2026-10-27, log confirmou):
+        // uma checagem de distância pivô-a-pivô aqui rejeitava o dano mesmo com o toque
+        // confirmado, porque o ProjectileHitbox do herói tem offset (não fica exatamente no
+        // pivô) — a distância entre os 2 PIVÔS passava do explosionRadius com frequência,
+        // mesmo com os colliders de verdade se tocando. Nunca re-valida um toque já provado.
 
         hero.TakeDamage(damage);
         if (appliesStatusEffect) ApplyStatus(hero);
