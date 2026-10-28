@@ -10,6 +10,8 @@ public class AttackCooldown
     }
 
     public bool IsReady => timeRemaining <= 0f;
+    public float TimeRemaining => timeRemaining;
+    public float Duration => cooldownDuration;
 
     public void Tick(float deltaTime)
     {

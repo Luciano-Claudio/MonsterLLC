@@ -27,6 +27,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     public EnemyStats stats = new EnemyStats();
     public int energyReward = 20;
 
+    // Por instância (ao contrário de GameEvents.OnHealthChanged, que é global/do herói) — a
+    // healthbar de cada monstro escuta só a própria, nunca a de outro monstro vizinho.
+    public event System.Action<float, float> OnHealthChanged;
+
     // Drop table do monstro (GDD Seção 38/39, valores reais já no Bestiário por ficha) —
     // substitui o antigo monsterEssenceDropAmount (1 item fixo). Cada entrada rola sua própria
     // chance de forma independente das demais — um abate pode dropar várias ao mesmo tempo.
@@ -750,6 +754,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         isInCombat = true;
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
+        OnHealthChanged?.Invoke(stats.health, stats.maxHealth);
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: false, isDirectPlayerHit);
 
         if (HealthSystem.IsDead(stats.health))
@@ -787,6 +792,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (isDead) return;
 
         stats.health = HealthSystem.ApplyHeal(stats.health, amount, stats.maxHealth);
+        OnHealthChanged?.Invoke(stats.health, stats.maxHealth);
         GameEvents.HealReceived(GetFloatingTextSpawnPosition(), amount);
     }
 

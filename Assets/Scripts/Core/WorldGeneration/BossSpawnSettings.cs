@@ -15,6 +15,9 @@ public class BossSpawnSettings : ScriptableObject
     [Tooltip("Intervalo do Boss Timer global (doc: ~20-30s, substitui os 10s fixos do BossSpawnManager antigo). Reinicia a cada spawn — despawn por distância NÃO reinicia (ver bossReplacementCooldown).")]
     public float bossSpawnInterval = 30f;
 
+    [Tooltip("Janela final do dia (em segundos restantes) em que NENHUM boss novo nasce — nem o Boss Timer periódico, nem replacement por distância (decisão do usuário: evita um boss nascer bem na virada do dia, sem tempo de combate de verdade). O Time_Bar (UI) usa o mesmo valor pra não desenhar Boss Sign nenhum nessa janela.")]
+    public float noSpawnWindowBeforeDayEnd = 10f;
+
     [Tooltip("Distância do jogador em que um Boss é removido sem loot/kill (Distance Despawn) e substituído — maior que o enemyDespawnDistance do monstro comum, de propósito (Boss é mais raro/importante, dá mais folga antes de desistir dele).")]
     public float bossDespawnDistance = 45f;
 

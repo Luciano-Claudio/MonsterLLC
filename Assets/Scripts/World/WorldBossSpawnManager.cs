@@ -45,8 +45,21 @@ public class WorldBossSpawnManager : MonoBehaviour
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
     private readonly bool[] tierVisitedScratch = new bool[WorldTierSelector.MonsterTierCount]; // ordem de predominância em TryPickBossDefinition
 
-    private float bossTimer;
+    // Tempo decorrido do dia (dayDuration - DayTimer.timeRemaining) no último Boss Timer
+    // periódico — substitui o antigo "bossTimer += Time.deltaTime" próprio. Os dois contadores
+    // incrementavam de forma independente (cada um no seu Update()), sem ordem de execução
+    // garantida entre scripts diferentes — na borda exata de noSpawnWindowBeforeDayEnd, dava pra
+    // ler um timeRemaining de 1 frame atrás e deixar passar um spawn por uma fração de segundo
+    // (bug real reportado pelo usuário). Lendo tudo direto de DayTimer.timeRemaining dentro do
+    // mesmo Update() elimina essa fresta — só existe 1 fonte de verdade agora.
+    private float lastSpawnElapsedTime;
     private float replacementCooldownTimer; // proteção contra reroll por distância (doc, Seção 17) — andar de um lado pro outro na borda do bossDespawnDistance não gera replacement repetido
+
+    // Pro Time_Bar (UI) conseguir prever a posição exata dos Boss Signs desde o início do dia
+    // (decisão do usuário) — único lugar que lê o intervalo de verdade, então mudar
+    // bossSpawnInterval no BossSpawnSettings já atualiza a UI junto, sem duplicar o valor.
+    public float BossSpawnInterval => bossSettings != null ? bossSettings.bossSpawnInterval : 0f;
+    public float NoSpawnWindowBeforeDayEnd => bossSettings != null ? bossSettings.noSpawnWindowBeforeDayEnd : 0f;
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
@@ -112,12 +125,20 @@ public class WorldBossSpawnManager : MonoBehaviour
 
     // Novo ActualDay -> UsedBossIdsToday.Clear() (doc, Seção 17.3) — mesmo gatilho que
     // DayTimer.ResetForNewDay() já usa pra avisar o resto do jogo (ShopHandler/MainMenuUI).
-    private void HandleDayStart() => usedBossIdsToday.Clear();
+    // lastSpawnElapsedTime também reseta aqui agora (decisão do usuário) — o Boss Timer
+    // periódico passa a ser 100% previsível desde o segundo 0 de cada dia (sempre em interval,
+    // 2×interval, ...), o que a Time_Bar (UI) precisa pra desenhar os Boss Signs com a posição
+    // exata.
+    private void HandleDayStart()
+    {
+        usedBossIdsToday.Clear();
+        lastSpawnElapsedTime = 0f;
+    }
 
     // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill). Não mexe
-    // em usedBossIdsToday nem em bossTimer de propósito — a identidade diária e o timer
-    // continuam contando normal, só os bosses vivos agora são removidos (o próximo Boss Timer
-    // já respeita Tier Suppression sozinho, via TryPickBossDefinition).
+    // em usedBossIdsToday nem em lastSpawnElapsedTime de propósito — a identidade diária e o
+    // timer continuam contando normal, só os bosses vivos agora são removidos (o próximo Boss
+    // Timer já respeita Tier Suppression sozinho, via TryPickBossDefinition).
     private void HandleClearAllEnemies()
     {
         foreach (var boss in aliveBosses)
@@ -133,11 +154,23 @@ public class WorldBossSpawnManager : MonoBehaviour
 
         aliveBosses.RemoveAll(b => b == null); // null = morreu (EnemyController.Die()) — sem replacement automático, só o Boss Timer normal repõe
 
+        // 1 leitura só de DayTimer.timeRemaining pro frame inteiro — tanto o gate de "últimos N
+        // segundos" quanto o Boss Timer periódico (abaixo) usam essa MESMA leitura, então nunca
+        // dessincronizam entre si dentro do mesmo Update().
+        float timeRemaining = DayTimer.Instance != null ? DayTimer.Instance.timeRemaining : 0f;
+        float dayDuration = DayTimer.Instance != null ? DayTimer.Instance.CurrentDayDuration : 0f;
+
+        // Últimos N segundos do dia (BossSpawnSettings.noSpawnWindowBeforeDayEnd) — nenhum boss
+        // novo nasce, nem replacement nem o Boss Timer periódico (decisão do usuário: evita um
+        // boss nascer bem na virada do dia, sem tempo de combate de verdade).
+        bool bossSpawningBlocked = DayTimer.Instance != null
+            && timeRemaining <= bossSettings.noSpawnWindowBeforeDayEnd;
+
         if (replacementCooldownTimer > 0f)
         {
             replacementCooldownTimer -= Time.deltaTime;
         }
-        else
+        else if (!bossSpawningBlocked)
         {
             for (int i = aliveBosses.Count - 1; i >= 0; i--)
             {
@@ -157,9 +190,9 @@ public class WorldBossSpawnManager : MonoBehaviour
             }
         }
 
-        bossTimer += Time.deltaTime;
-        if (bossTimer < bossSettings.bossSpawnInterval) return;
-        bossTimer = 0f;
+        float elapsed = dayDuration - timeRemaining;
+        if (bossSpawningBlocked || elapsed - lastSpawnElapsedTime < bossSettings.bossSpawnInterval) return;
+        lastSpawnElapsedTime = elapsed;
 
         // Boss Timer periódico — spawna bossesPerSpawnCycle bosses juntos (hoje, 1 de novo) e
         // dispara UM reveal só com o grupo inteiro (o reveal em si continua funcionando pra

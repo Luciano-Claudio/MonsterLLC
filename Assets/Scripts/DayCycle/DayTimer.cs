@@ -15,6 +15,7 @@ public class DayTimer : MonoBehaviour
     // Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md, Seção 3) proporcional à
     // duração de verdade do dia, não a um valor fixo.
     private float currentDayDuration = 100f;
+    public float CurrentDayDuration => currentDayDuration;
 
     // Fase atual (false = Dia, true = Noite) — 50% da duração do dia é Dia, os outros 50% são
     // Noite, nunca quebra essa proporção (doc, Seção 3: "Nenhum bônus de tempo poderá quebrar

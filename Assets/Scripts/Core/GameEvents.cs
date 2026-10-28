@@ -12,6 +12,26 @@ public static class GameEvents
     public static event Action<float, float> OnEnergyChanged;
     public static void EnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
 
+    // UI de Skills (Primary_Attack/Shift) — (timeRemaining, duration) do próprio AttackCooldown
+    // do HeroController, disparado todo frame junto com o Tick(). timeRemaining=0 -> pronto.
+    public static event Action<float, float> OnPrimaryAttackCooldownChanged;
+    public static void PrimaryAttackCooldownChanged(float timeRemaining, float duration) => OnPrimaryAttackCooldownChanged?.Invoke(timeRemaining, duration);
+
+    public static event Action<float, float> OnSecondaryAbilityCooldownChanged;
+    public static void SecondaryAbilityCooldownChanged(float timeRemaining, float duration) => OnSecondaryAbilityCooldownChanged?.Invoke(timeRemaining, duration);
+
+    // Estado "em uso agora" (isAttacking/isUsingSecondaryAbility do HeroController) —
+    // Ussage (UI de Skills) precisa disso, não só "fora de cooldown": enquanto a habilidade
+    // está ativa ela tem prioridade visual sobre o Cooldown, mesmo que o cooldown técnico já
+    // tenha começado a contar por baixo (decisão do usuário — o início real do cooldown só
+    // depois do fim de verdade da habilidade é mudança futura, documentada em docs/gdd/index.md
+    // Seção 53, ainda não implementada).
+    public static event Action<bool> OnPrimaryAttackActiveChanged;
+    public static void PrimaryAttackActiveChanged(bool isActive) => OnPrimaryAttackActiveChanged?.Invoke(isActive);
+
+    public static event Action<bool> OnSecondaryAbilityActiveChanged;
+    public static void SecondaryAbilityActiveChanged(bool isActive) => OnSecondaryAbilityActiveChanged?.Invoke(isActive);
+
     public static event Action<float, float> OnHealthChanged;
     public static void HealthChanged(float current, float max) => OnHealthChanged?.Invoke(current, max);
 

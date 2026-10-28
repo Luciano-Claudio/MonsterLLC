@@ -452,7 +452,7 @@ MonoBehaviour:
   stats:
     health: 32
     maxHealth: 32
-    damage: 7
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -474,7 +474,7 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  projectileCount: 10
+  projectileCount: 5
   projectileSpeed: 7
   projectileMaxDistance: 12
   projectileKnockbackForce: 2

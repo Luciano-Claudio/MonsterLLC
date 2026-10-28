@@ -362,14 +362,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         secondaryAbilityCooldown.Tick(Time.deltaTime);
         attackCooldown.Tick(Time.deltaTime);
+        GameEvents.PrimaryAttackCooldownChanged(attackCooldown.TimeRemaining, attackCooldown.Duration);
+        GameEvents.SecondaryAbilityCooldownChanged(secondaryAbilityCooldown.TimeRemaining, secondaryAbilityCooldown.Duration);
+        GameEvents.PrimaryAttackActiveChanged(isAttacking);
+        GameEvents.SecondaryAbilityActiveChanged(isUsingSecondaryAbility);
         // !isAttacking aqui é o que impede um attackSpeed alto de disparar um novo ataque
         // por cima de uma animação ainda tocando (ex.: attackSpeed maior que a duração do
         // próprio golpe) — cooldown cuida do ritmo, isAttacking cuida de nunca sobrepor.
         // ShouldConsumeCooldownOnAttack() vem ANTES do TryConsume() de propósito — sem isso,
         // o Cleric (primeiro herói cujo clique pode "não fazer nada" por falta de alvo no
         // raio) gastava o cooldown inteiro num clique que nem chegou a lançar o projétil.
-        if (attackHeld && !isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.TryConsume()))
-            PrimaryAttack();
+        if (attackHeld) TryPrimaryAttack();
 
         bool wantsToMove = moveInput.sqrMagnitude > 0.0001f;
         if (animator != null) animator.SetBool("IsMoving", wantsToMove);
@@ -457,7 +460,19 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
 
-    private void TryUseUltimate()
+    // Extraído do Update() (que só chama isto enquanto attackHeld) pra também poder ser
+    // chamado 1x só por um clique de UI (Right_Button_Mouse em Primary_Attack) — mesmos gates,
+    // mesmo consumo de cooldown, sem duplicar a lógica.
+    public bool TryPrimaryAttack()
+    {
+        if (!(!isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.TryConsume())))
+            return false;
+
+        PrimaryAttack();
+        return true;
+    }
+
+    public void TryUseUltimate()
     {
         // Sprint 21 (Druid) — só o Alce tem Ultimate com duração até hoje, então só ele
         // sobrescreve IsUltimateActive/CancelUltimate (default false/no-op, sem efeito nos
@@ -480,7 +495,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         ultimateEnergyLockoutRemaining = ultimateEnergyLockoutDuration;
     }
 
-    private void TryUseSecondaryAbility()
+    public void TryUseSecondaryAbility()
     {
         // Mesma trava que PrimaryAttack()/UseUltimate() já tinham e a Habilidade Secundária
         // não tinha — sem isso, apertar Shift em cima do fim de outra ação (Attack, Ultimate,
