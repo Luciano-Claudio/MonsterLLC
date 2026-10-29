@@ -361,10 +361,10 @@ public class MonsterAnimationGeneratorWindow : EditorWindow
 
         EditorGUILayout.HelpBox(
             "Diagonal:\n" +
-            "1ª linha = NE\n" +
-            "2ª linha = NW\n" +
-            "3ª linha = SE\n" +
-            "4ª linha = SW\n\n" +
+            "1ª linha = SE\n" +
+            "2ª linha = SW\n" +
+            "3ª linha = NE\n" +
+            "4ª linha = NW\n\n" +
 
             "Orthogonal:\n" +
             "1ª linha = E\n" +
