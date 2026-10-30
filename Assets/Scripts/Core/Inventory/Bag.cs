@@ -64,7 +64,9 @@ public class Bag
     }
 
     // Reposicionamento no TAB (GDD Seção 37: "swap, nunca bloqueio") — troca o conteúdo dos
-    // 2 slots, incluindo quando um dos dois está vazio (equivale a "mover").
+    // 2 slots, incluindo quando um dos dois está vazio (equivale a "mover"). Só usado quando
+    // os 2 slots NÃO têm o mesmo item — mesmo item cai em MergeStacks() (ver
+    // InventoryTabUI.DropOnto), resolvido 2026-10-31.
     public void Swap(int indexA, int indexB)
     {
         if (indexA == indexB) return;
@@ -74,6 +76,29 @@ public class Bag
         var slotB = Slots[indexB];
         (slotA.itemName, slotB.itemName) = (slotB.itemName, slotA.itemName);
         (slotA.quantity, slotB.quantity) = (slotB.quantity, slotA.quantity);
+    }
+
+    // Drag entre 2 stacks do MESMO item (GDD Seção 37, resolvido 2026-10-31) — move o MÁXIMO
+    // possível de indexFrom pra indexTo (até o espaço livre do destino, stackSize - quantity).
+    // Se não couber tudo, o resto fica no slot de origem (merge PARCIAL, nunca perde item).
+    // Destino já cheio = nada se move (não vira Swap por acidente). Chamado só quando os 2
+    // slots já têm o mesmo itemName — ver InventoryTabUI.DropOnto.
+    public void MergeStacks(int indexFrom, int indexTo)
+    {
+        if (indexFrom == indexTo) return;
+        if (indexFrom < 0 || indexFrom >= Slots.Count || indexTo < 0 || indexTo >= Slots.Count) return;
+
+        var from = Slots[indexFrom];
+        var to = Slots[indexTo];
+        if (from.IsEmpty || to.IsEmpty || from.itemName != to.itemName) return;
+
+        long space = stackSize - to.quantity;
+        if (space <= 0) return; // destino já cheio — nada se move
+
+        long moved = System.Math.Min(space, from.quantity);
+        to.quantity += moved;
+        from.quantity -= moved;
+        if (from.quantity <= 0) { from.itemName = null; from.quantity = 0; }
     }
 
     public void Clear()

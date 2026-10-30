@@ -18,6 +18,14 @@ public class RangerKnife : MonoBehaviour
 
     [SerializeField] private string groundedStateName = "Grounded"; // nome do 9º estado no Animator
 
+    // Simulation Rings (Seção 24 do GDD, resolvido 2026-10-31) — sem jogador por perto pra se
+    // importar com quem está pisando na faca fincada, não tem motivo pra ticar dano em
+    // ninguém. A duração continua contando normal enquanto suspenso (a faca ainda some no
+    // tempo certo) — só o tick de dano fica pausado. Mesmo raio padrão do anel próximo dos
+    // monstros (EnemyController.simulationNearRingRadius), duplicado aqui de propósito (não é
+    // um singleton compartilhado, cada efeito calibra o próprio).
+    [SerializeField] private float simulationRingRadius = 15f; // 🔢 ajustável
+
     private float flightSpeed;
     private float maxDistance;
     private float flightKnockbackForce;
@@ -152,6 +160,11 @@ public class RangerKnife : MonoBehaviour
             return;
         }
 
+        // Simulation Rings — sem jogador por perto, suspende só o tick de dano (ver campo
+        // simulationRingRadius acima); a contagem de groundedDuration já aconteceu antes
+        // deste if, então a faca continua desaparecendo no tempo certo mesmo abandonada.
+        if (!IsPlayerNearby()) return;
+
         groundedTick.Tick(Time.deltaTime);
         if (!groundedTick.TryConsume()) return;
 
@@ -164,5 +177,13 @@ public class RangerKnife : MonoBehaviour
             enemy.ApplyKnockback(away, groundedKnockbackForce);
             ApplyBleeding(enemy);
         }
+    }
+
+    // Único player do jogo — nunca via física, só pela tag (mesmo critério do EnemyProjectile/
+    // OrcShamanTotem/MageFireball).
+    private bool IsPlayerNearby()
+    {
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        return playerObj != null && Vector2.Distance(transform.position, playerObj.transform.position) <= simulationRingRadius;
     }
 }

@@ -23,6 +23,14 @@ public class MageFireball : MonoBehaviour
     private float groundedRadius;
     private float fireStatusDuration;
 
+    // Simulation Rings (Seção 24 do GDD, resolvido 2026-10-31) — sem jogador por perto pra se
+    // importar com quem está pegando fogo aqui, não tem motivo pra ticar dano em ninguém. A
+    // duração continua contando normal enquanto suspenso (o rastro ainda desaparece no tempo
+    // certo) — só o tick de dano fica pausado. Mesmo raio padrão do anel próximo dos monstros
+    // (EnemyController.simulationNearRingRadius), duplicado aqui de propósito (não é um
+    // singleton compartilhado, cada efeito calibra o próprio).
+    [SerializeField] private float simulationRingRadius = 15f; // 🔢 ajustável
+
     private Animator animator;
     private CircleCollider2D circleCollider;
     private Vector2 direction;
@@ -199,6 +207,11 @@ public class MageFireball : MonoBehaviour
             return;
         }
 
+        // Simulation Rings — sem jogador por perto, suspende só o tick de dano (ver campo
+        // simulationRingRadius acima); a contagem de groundedDuration já aconteceu antes
+        // deste if, então o rastro continua desaparecendo no tempo certo mesmo abandonado.
+        if (!IsPlayerNearby()) return;
+
         groundedTick.Tick(Time.deltaTime);
         if (!groundedTick.TryConsume()) return;
 
@@ -231,6 +244,14 @@ public class MageFireball : MonoBehaviour
     public void AnimationDisappearEndEvent()
     {
         Destroy(gameObject);
+    }
+
+    // Único player do jogo — nunca via física, só pela tag (mesmo critério do EnemyProjectile/
+    // OrcShamanTotem).
+    private bool IsPlayerNearby()
+    {
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        return playerObj != null && Vector2.Distance(transform.position, playerObj.transform.position) <= simulationRingRadius;
     }
 
     // Visualiza no Editor o raio real dos 2 círculos (impacto e área no chão) — pra montar o

@@ -77,18 +77,19 @@ public class OrcShamanTotem : MonoBehaviour
 
     private void ApplyTick()
     {
-        var hits = Physics2D.OverlapCircleAll(transform.position, radius);
-
         switch (kind)
         {
             case TotemKind.Heal:
+                // Aliados (N monstros, quantidade desconhecida) — physics query continua certa
+                // aqui, não é o padrão de risco do Player (ver ApplyPlayerTick abaixo).
+                var hits = Physics2D.OverlapCircleAll(transform.position, radius);
                 ApplyHealTick(hits);
                 break;
             case TotemKind.Fire:
-                ApplyPlayerTick(hits, isFire: true);
+                ApplyPlayerTick(isFire: true);
                 break;
             case TotemKind.Ice:
-                ApplyPlayerTick(hits, isFire: false);
+                ApplyPlayerTick(isFire: false);
                 break;
         }
     }
@@ -108,30 +109,40 @@ public class OrcShamanTotem : MonoBehaviour
     }
 
     // Fire/Ice só afetam o jogador (totens ofensivos, plantados nos pés dele) — nunca os
-    // próprios aliados do Shaman, mesmo que um deles cruze o raio por acaso.
-    private void ApplyPlayerTick(Collider2D[] hits, bool isFire)
+    // próprios aliados do Shaman.
+    //
+    // Correção (Seção 53 do GDD, 2026-10-31) — mesmo padrão de risco já confirmado e corrigido
+    // no EnemyProjectile (ApplyImpactExplosion): parar de depender de Physics2D.OverlapCircle
+    // pra achar o player aqui. Só existe 1 player no jogo e sua posição real (Transform) está
+    // sempre disponível — comparar distância direto não tem ponto de falha físico nenhum pra
+    // dar errado.
+    private void ApplyPlayerTick(bool isFire)
     {
-        foreach (var hit in hits)
+        var hero = FindPlayer();
+        if (hero == null) return;
+        if (Vector2.Distance(transform.position, hero.transform.position) > radius) return;
+
+        if (isFire)
         {
-            if (!hit.CompareTag("Player")) continue;
-
-            if (isFire)
-            {
-                var damageable = hit.GetComponent<IDamageable>();
-                // false: dano em área por tick, não é hit direto — mesmo critério de qualquer
-                // outro DoT/rastro do jogo (MageFireball.UpdateGrounded, etc.).
-                damageable?.TakeDamage(damagePerTick, isDirectPlayerHit: false);
-            }
-            else
-            {
-                var status = hit.GetComponent<StatusEffectController>();
-                // damagePerSecond 0 — Ice aqui é só incapacitação, mesmo critério da teia da
-                // Spider Queen.
-                status?.ApplyStatusEffect(StatusEffectType.Ice, iceStunDuration, 0f);
-            }
-
-            return; // só 1 jogador
+            var damageable = hero.GetComponent<IDamageable>();
+            // false: dano em área por tick, não é hit direto — mesmo critério de qualquer
+            // outro DoT/rastro do jogo (MageFireball.UpdateGrounded, etc.).
+            damageable?.TakeDamage(damagePerTick, isDirectPlayerHit: false);
         }
+        else
+        {
+            var status = hero.GetComponent<StatusEffectController>();
+            // damagePerSecond 0 — Ice aqui é só incapacitação, mesmo critério da teia da
+            // Spider Queen.
+            status?.ApplyStatusEffect(StatusEffectType.Ice, iceStunDuration, 0f);
+        }
+    }
+
+    // Único player do jogo — nunca via física, só pela tag (mesmo critério do EnemyProjectile).
+    private static HeroController FindPlayer()
+    {
+        var obj = GameObject.FindGameObjectWithTag("Player");
+        return obj != null ? obj.GetComponent<HeroController>() : null;
     }
 
     // Animation Event, no fim do clipe totem_disappear.

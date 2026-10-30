@@ -115,6 +115,9 @@ public class InventoryTabUI : MonoBehaviour
 
     // GDD Seção 37 (resolvido 2026-10-18): swap, nunca bloqueio — exceto contra slot travado,
     // que nunca pode receber item (índice >= maxSlots não é "ocupável", é inexistente ainda).
+    // Resolvido 2026-10-31: se os 2 slots têm o MESMO item, mescla em vez de trocar de posição
+    // (merge parcial se o destino não couber tudo — ver Bag.MergeStacks) — itens diferentes
+    // (ou slot vazio) continuam como Swap normal.
     public void DropOnto(int targetIndex)
     {
         if (dragSourceIndex < 0) return;
@@ -122,7 +125,14 @@ public class InventoryTabUI : MonoBehaviour
         var bag = CurrentBag;
         if (targetIndex < bag.maxSlots && targetIndex != dragSourceIndex)
         {
-            bag.Swap(dragSourceIndex, targetIndex);
+            var source = bag.Slots[dragSourceIndex];
+            var target = bag.Slots[targetIndex];
+
+            if (!source.IsEmpty && !target.IsEmpty && source.itemName == target.itemName)
+                bag.MergeStacks(dragSourceIndex, targetIndex);
+            else
+                bag.Swap(dragSourceIndex, targetIndex);
+
             GameEvents.BagChanged(bag);
         }
     }
