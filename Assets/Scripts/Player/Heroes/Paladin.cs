@@ -105,6 +105,7 @@ public class Paladin : HeroController
             {
                 Debug.LogWarning("[Paladin] Animation Event de fim do martelo nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
 
@@ -187,10 +188,12 @@ public class Paladin : HeroController
         return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
     }
 
-    // Animation Event, no fim do clipe de ataque.
+    // Animation Event, no fim do clipe de ataque — só aqui o cooldown real começa a contar
+    // (Seção 53 do GDD; o martelo pode continuar voando depois disso, sem efeito aqui).
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // ===================== Ultimate =====================

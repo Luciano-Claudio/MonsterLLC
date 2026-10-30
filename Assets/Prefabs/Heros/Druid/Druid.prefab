@@ -42,6 +42,7 @@ Transform:
   - {fileID: 5091119232184641183}
   - {fileID: 2608222949384019325}
   - {fileID: 8197228767603511384}
+  - {fileID: 8277373546542456642}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8721858585653963459
@@ -204,7 +205,7 @@ MonoBehaviour:
   stats:
     health: 36
     maxHealth: 36
-    damage: 2
+    damage: 5
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -222,7 +223,7 @@ MonoBehaviour:
   floatingTextHeightAdjust: -0.5
   showPickupRadiusGizmo: 0
   vinePrefab: {fileID: 3357894662126226428, guid: 426548f72525c1944bbd91558d85032d, type: 3}
-  vineCount: 1
+  vineCount: 5
   vineSearchRadius: 15
   enemyLayerMask:
     serializedVersion: 2
@@ -246,6 +247,13 @@ MonoBehaviour:
   elkColliderOffset: {x: -0.61, y: 0.2}
   elkColliderSize: {x: 2.27, y: 0.37}
   owlDuration: 10
+  elkHeadbuttHitbox: {fileID: 967585088228262325}
+  elkHeadbuttLaunchSpeed: 24
+  elkHeadbuttMaxRange: 12
+  elkHeadbuttDamageMultiplier: 2
+  elkHeadbuttKnockbackForce: 8
+  elkClawIcon: {fileID: -7165401095265530750, guid: 89b2f019e54c99946b979d40220d56f6, type: 3}
+  elkHeadbuttIcon: {fileID: -3875127785539040624, guid: 531e973501d21de49b649ab10d829480, type: 3}
 --- !u!114 &4459035152162319188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,6 +306,74 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.5}
   m_Size: {x: 1, y: 1.5}
   m_Direction: 0
+--- !u!1 &3748230497974651865
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8277373546542456642}
+  - component: {fileID: 967585088228262325}
+  m_Layer: 8
+  m_Name: ElkHeadbuttHitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8277373546542456642
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3748230497974651865}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 268514587420522925}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &967585088228262325
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3748230497974651865}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.5}
+  m_Radius: 2.5
 --- !u!1 &4303514786307196137
 GameObject:
   m_ObjectHideFlags: 0

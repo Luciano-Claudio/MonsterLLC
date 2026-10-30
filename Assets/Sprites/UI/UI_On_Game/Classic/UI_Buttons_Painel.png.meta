@@ -499,9 +499,9 @@ TextureImporter:
       name: UI_Buttons_Painel_13
       rect:
         serializedVersion: 2
-        x: 210
+        x: 218
         y: 356
-        width: 44
+        width: 28
         height: 9
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -1098,7 +1098,7 @@ TextureImporter:
         width: 9
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1120,7 +1120,7 @@ TextureImporter:
         width: 9
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1129,6 +1129,94 @@ TextureImporter:
       bones: []
       spriteID: 9407bc372ad3de14cb79a0599e7dc3ec
       internalID: 286712002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Buttons_Painel_42
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 205
+        width: 54
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c795c76e1b67a14f91c3844b865f82d
+      internalID: 1270596631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Buttons_Painel_43
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 76
+        width: 160
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c6f6e00ac371c04ab16bc7ef0850cc0
+      internalID: 176001278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Buttons_Painel_44
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 356
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a298c83319673f84186483a8cee44513
+      internalID: -462596110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Buttons_Painel_45
+      rect:
+        serializedVersion: 2
+        x: 246
+        y: 356
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e7a61cd2f9a2ee47940dd2a23a9e717
+      internalID: -1119075693
       vertices: []
       indices: 
       edges: []
@@ -1184,6 +1272,10 @@ TextureImporter:
       UI_Buttons_Painel_4: 1900821801220254280
       UI_Buttons_Painel_40: 982294435
       UI_Buttons_Painel_41: 286712002
+      UI_Buttons_Painel_42: 1270596631
+      UI_Buttons_Painel_43: 176001278
+      UI_Buttons_Painel_44: -462596110
+      UI_Buttons_Painel_45: -1119075693
       UI_Buttons_Painel_5: -8383253621358311472
       UI_Buttons_Painel_6: 6840128403182310359
       UI_Buttons_Painel_7: 8680701288471741367

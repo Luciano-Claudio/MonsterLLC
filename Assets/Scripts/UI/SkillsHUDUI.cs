@@ -30,8 +30,23 @@ public class SkillsHUDUI : MonoBehaviour
     [SerializeField] private Button shiftButton;
     [SerializeField] private Button ultimateButton;
 
-    private void OnEnable() => GameEvents.OnHeroSpawned += HandleHeroSpawned;
-    private void OnDisable() => GameEvents.OnHeroSpawned -= HandleHeroSpawned;
+    // Ícone "de fábrica" de cada slot (Attack.png/Shift.png do herói atual) — guardado assim
+    // que o herói spawna, pra GameEvents.ActionIconOverrideChanged(slot, null) saber pra onde
+    // voltar (ex.: Alce do Druid saindo da forma).
+    private Sprite defaultPrimaryIcon;
+    private Sprite defaultShiftIcon;
+
+    private void OnEnable()
+    {
+        GameEvents.OnHeroSpawned += HandleHeroSpawned;
+        GameEvents.OnActionIconOverrideChanged += HandleActionIconOverrideChanged;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnHeroSpawned -= HandleHeroSpawned;
+        GameEvents.OnActionIconOverrideChanged -= HandleActionIconOverrideChanged;
+    }
 
     private void HandleHeroSpawned(Transform heroTransform)
     {
@@ -62,7 +77,24 @@ public class SkillsHUDUI : MonoBehaviour
             if (primaryIcon != null) primaryIcon.sprite = set.primary;
             if (shiftIcon != null) shiftIcon.sprite = set.shift;
             if (ultimateIcon != null) ultimateIcon.sprite = set.ultimate;
+            defaultPrimaryIcon = set.primary;
+            defaultShiftIcon = set.shift;
             return;
+        }
+    }
+
+    // slot: 0 = Primary_Attack, 1 = Shift (ver GameEvents.ActionIconOverrideChanged). icon
+    // null = volta pro ícone de fábrica guardado em ApplyIcons().
+    private void HandleActionIconOverrideChanged(int slot, Sprite icon)
+    {
+        switch (slot)
+        {
+            case 0:
+                if (primaryIcon != null) primaryIcon.sprite = icon != null ? icon : defaultPrimaryIcon;
+                break;
+            case 1:
+                if (shiftIcon != null) shiftIcon.sprite = icon != null ? icon : defaultShiftIcon;
+                break;
         }
     }
 }

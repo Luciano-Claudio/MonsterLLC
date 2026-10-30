@@ -111,6 +111,7 @@ public class BloodMage : HeroController
             {
                 Debug.LogWarning("[BloodMage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
                 isUsingSecondaryAbility = false;
             }
         }
@@ -188,10 +189,12 @@ public class BloodMage : HeroController
         return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
     }
 
-    // Animation Event, no fim do clipe de ataque.
+    // Animation Event, no fim do clipe de ataque — só aqui o cooldown real começa a contar
+    // (Seção 53 do GDD).
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // ===================== Ultimate =====================

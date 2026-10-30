@@ -62,6 +62,9 @@ public class ChunkTerrainGenerator : MonoBehaviour
     [Tooltip("Se marcado, ignora a seed real da run (RunState.worldSeed, sorteada em RunCreation.CreateNewRun) e usa settings.worldSeed no lugar — só pra testar a mesma seed sempre, sem depender de qual run começou.")]
     public bool useTestWorldSeedOverride;
 
+    [Tooltip("Se >= 0, força TODA célula pintada a usar esse grupo de tier (0=Tier1, 1=Tier2-3, 2=Tier4-5, 3=Tier6-8, 4=Tier9, 5=Tier10), ignorando completamente a seleção normal por distância/dia/ruído — sem isso, qualquer área pintada pode cair numa fronteira de tier (mesmo longe da origem, o ruído de blend ainda varia). Usado pela ferramenta de exportação de PNG de fundo de menu (Editor/MenuBackgroundExporter), pra garantir um bioma 100% puro, sem fronteira nenhuma. -1 = comportamento normal do jogo.")]
+    public int forcedTierGroupOverride = -1;
+
     [Header("Performance / Streaming (Sprint P4)")]
     [Tooltip("Orçamento de tempo real (milissegundos) de trabalho por frame durante o streaming NORMAL (chunk entrando no raio enquanto o jogador anda) — passado esse tempo, devolve o frame e continua no próximo. Início de jogo/Continuar e o botão \"Regenerar Mundo\" NÃO usam isso — continuam síncronos/rápidos de propósito (eventos pontuais, não streaming contínuo). docs/new/Plano_Performance_Streaming_Chunks.md, item 4.")]
     public float streamingMsBudgetPerFrame = 2f;
@@ -710,6 +713,8 @@ public class ChunkTerrainGenerator : MonoBehaviour
     // saber de qual tier puxar os assets certos naquela posição específica).
     private int ActiveTierGroupAt(int cellX, int cellY, int actualDay)
     {
+        if (forcedTierGroupOverride >= 0) return forcedTierGroupOverride;
+
         float distanceFromCenter = Mathf.Sqrt((float)cellX * cellX + (float)cellY * cellY);
         int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
             distanceFromCenter, settings.safeZoneRadius, settings.distancePerSpawnDay, actualDay);
@@ -736,6 +741,8 @@ public class ChunkTerrainGenerator : MonoBehaviour
     // entre chamadas, só é seguro em sequência single-threaded dentro de 1 chunk).
     private int ActiveTierGroupAtCached(int cellX, int cellY, int actualDay)
     {
+        if (forcedTierGroupOverride >= 0) return forcedTierGroupOverride;
+
         float distanceFromCenter = Mathf.Sqrt((float)cellX * cellX + (float)cellY * cellY);
         int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
             distanceFromCenter, settings.safeZoneRadius, settings.distancePerSpawnDay, actualDay);
@@ -1009,6 +1016,18 @@ public class ChunkTerrainGenerator : MonoBehaviour
 
         SyncPathfindingForChunk(coord); // [P4 prep] terreno/props deste chunk no estado final — grafo pode sincronizar
         paintedChunks.Add(coord);
+    }
+
+    // Usado só pela ferramenta de exportação de PNG de fundo de menu (Editor/
+    // MenuBackgroundExporter) — mesmo caminho síncrono que RegenerateWorld já usa, só exposto
+    // pra pintar/limpar uma área fora do fluxo normal de streaming/spawn de herói (combinado
+    // com forcedTierGroupOverride, nunca interfere com o resto do mundo numa sessão de teste).
+    public void PaintChunkForExport(ChunkCoord coord) => PaintChunkImmediate(coord);
+
+    public void ClearChunkForExport(ChunkCoord coord)
+    {
+        ClearChunkImmediate(coord);
+        paintedChunks.Remove(coord);
     }
 
     // Checa TODA célula do footprint do prop (não só o ponto onde ele nasce) contra o tier

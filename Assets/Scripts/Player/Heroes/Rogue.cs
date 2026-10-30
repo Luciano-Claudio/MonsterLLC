@@ -88,6 +88,7 @@ public class Rogue : HeroController
             {
                 Debug.LogWarning("[Rogue] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
 
@@ -162,9 +163,14 @@ public class Rogue : HeroController
     }
 
     // Animation Event, no fim do clipe "attack_end" (4 diagonais) — fecha o primário de verdade.
+    // isAttackResolving (diferente de isAttacking) fica true a sequência INTEIRA
+    // attack_start+pulso+attack_end — só aqui, no fim de verdade, é que o cooldown real
+    // começa a contar (Seção 53 do GDD); AnimationAttackStartEndEvent só solta isAttacking
+    // (pro Rogue poder se mover durante o pulso), de propósito NÃO toca isAttackResolving.
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // ===================== ULTIMATE — BOMBA =====================

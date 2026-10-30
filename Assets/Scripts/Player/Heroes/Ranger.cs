@@ -89,6 +89,7 @@ public class Ranger : HeroController
             {
                 Debug.LogWarning("[Ranger] Animation Event de fim de ataque nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
 
@@ -139,10 +140,12 @@ public class Ranger : HeroController
         }
     }
 
-    // Animation Event, no fim do clipe de ataque.
+    // Animation Event, no fim do clipe de ataque — só aqui o cooldown real começa a contar
+    // (Seção 53 do GDD).
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar

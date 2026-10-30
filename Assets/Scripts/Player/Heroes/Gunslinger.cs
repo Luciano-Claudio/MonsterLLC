@@ -2,94 +2,75 @@ using UnityEngine;
 
 public class Gunslinger : HeroController
 {
+    // Rework (2026-10-30) — Primário, Ultimate e Shift agora compartilham a MESMA sequência de
+    // 3 estados no Animator (Attack_Start -> Attack_Shoot (loop) -> Attack_End, cada um um Blend
+    // Tree de 8 direções), em vez de 15 clipes de Attack bakeados + giro fixo de 8 direções na
+    // Ultimate + chicote dedicado no Shift. activeAction decide qual lógica os 2 Animation Events
+    // compartilhados (AnimationShotFireEvent/AnimationAttackEndEvent) devem executar.
+    private enum ActiveAction { None, Primary, Ultimate, Shift }
+    private ActiveAction activeAction = ActiveAction.None;
+
     // ===================== Primário — rajada Hitscan (GDD Seção 17.8) =====================
     [Header("Ataque primário — rajada Hitscan (mira em 1 das 8 direções)")]
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private float hitscanMaxRange = 10f; // 🔢 ajustável
-    [SerializeField] private GameObject impactVfxPrefab; // Projectile_Impact — instanciado a cada tiro, não 1x por rajada (GDD)
+    [SerializeField] private GameObject impactVfxPrefab; // Projectile_Impact — instanciado a cada tiro
     [SerializeField] private float impactVfxDuration = 0.5f; // 🔢 ajustável
 
-    // Upgrade futuro — tiros por rajada, presos ao Tier de Arma na GDD (Básica=1, Iron=2,
-    // Silver=3, Emerald=4, Gold=5, Diamond=6), mas aqui é só um campo upgradable comum, mesmo
-    // critério de hammerCount/bladeCount/arrowCount (Seção 0, item 8 do breakdown). Teto de
-    // código em 15 (Animator Controller tem Attack_1..Attack_15 prontos) — bem acima do Tier
-    // máximo da GDD (6) de propósito, pra já existir margem pronta se um upgrade futuro quebrar
-    // esse teto sem precisar gerar mais animação depois.
+    // Quantos tiros o primário dispara por ativação — agora é só um contador de repetições do
+    // loop de Attack_Shoot (ver AnimationShotFireEvent), não mais uma seleção de clipe bakeado
+    // (Attack_1..Attack_15 não existem mais).
     [SerializeField] private int shotCount = 1; // 🔢 upgradable — 1 a 15 (ver OnValidate)
 
-    // Cone de imprecisão (redesenhado a pedido do usuário) — cada tiro da rajada sorteia o
-    // PRÓPRIO desvio, independente dos outros: magnitude entre MinShotDeviationAngle (nunca
-    // exatamente 0 — sempre um pouco impreciso) e shotMaxDeviationAngle (o teto que o usuário
-    // calibra olhando o Gizmo), sinal (esquerda/direita da mira) sorteado 50/50. Só entra em
-    // jogo com shotCount > 1 — com 1 tiro só, sai sempre reto (sem rajada não existe o que
-    // comparar/espalhar). shotMaxDeviationAngle é o desvio de CADA tiro, não o espalhamento
-    // total: o ângulo que o usuário de fato vê entre as 2 linhas mais distantes entre si (o
-    // que ele decide olhando o Gizmo) pode chegar a 2x esse valor, no caso extremo de um tiro
-    // sair em +max e outro em -max.
+    // Cone de imprecisão — cada tiro da rajada sorteia o próprio desvio, independente dos
+    // outros. Só entra em jogo com shotCount > 1 (ou no Shift, sempre > 1). Compartilhado entre
+    // Primário e Shift.
     [SerializeField] private float shotMaxDeviationAngle = 15f; // 🔢 ajustável — teto do desvio por tiro
     private const float MinShotDeviationAngle = 0.1f;
 
     [Header("Debug — linhas de tiro no Gizmo (Scene, objeto selecionado), não afeta gameplay")]
     [SerializeField] private bool showShotLinesGizmo = false;
 
-    // Mesma rede de segurança do Barbarian/Paladin — Animation Event de fim nunca disparar não
-    // pode travar o herói pra sempre em isAttacking.
+    // Rede de segurança genérica — cobre Primário, Ultimate e Shift (os 3 agora passam pela
+    // mesma sequência Attack_Start/Attack_Shoot/Attack_End).
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
     private float actionElapsed;
 
-    // Guarda contra o disparo duplo do Blend Tree 2D (2 clipes com peso > 0 no mesmo frame) —
-    // diferente do bool "já disparei" de outros heróis, porque aqui o MESMO evento precisa
-    // disparar várias vezes (1 por tiro da rajada), só nunca 2x no mesmo frame (Seção 0, item 3
-    // do breakdown — parte mais nova/arriscada desta sprint, validar em Play Mode).
+    // Contador compartilhado do loop de Attack_Shoot — usado pelo Primário e pela Ultimate (o
+    // Shift dispara 1x só, sem loop).
+    private int shotsFiredThisAction;
+    private int shotsRequiredThisAction;
+
+    // Guarda contra o disparo duplo do Blend Tree 2D (Attack_Shoot ainda mistura 2 clipes com
+    // peso > 0 quando a mira cai entre 2 das 8 direções) — mesmo bug de sempre (ver Barbarian/
+    // Ranger/EnemyController), agora compartilhado pelos 3 usos do Animation Event.
     private int lastShotFireFrame = -1;
 
-    // ===================== Ultimate — giro disparando nas 8 direções =====================
-    [Header("Ultimate — giro, 8 tiros Hitscan fixos")]
-    [SerializeField] private float ultimateDamageMultiplier = 1f; // 🔢 GDD não especifica bônus — placeholder neutro (Seção 0, item 10)
+    // ===================== Ultimate — tiro teleguiado no monstro mais próximo (rework 2026-10-30) =====================
+    // Sempre acerta — não é mais hitscan (sem chance de errar), e não gira mais em 8 direções
+    // fixas. A cada tiro, busca de novo o monstro vivo mais próximo (pode repetir o mesmo alvo
+    // se ele continuar sendo o mais próximo) e vira a pose (GunAimX/Y) pra direção dele.
+    [Header("Ultimate — tiro teleguiado (sempre acerta o monstro mais próximo; sem animação própria, reaproveita Attack_Start/Shoot/End)")]
+    [SerializeField] private int ultimateHitCount = 5; // 🔢 ajustável — contador PRÓPRIO, independente do shotCount do primário
+    [SerializeField] private float ultimateDamageMultiplier = 1f; // 🔢 ajustável
+    [SerializeField] private float ultimateSearchRadius = 20f; // 🔢 ajustável — raio de busca do monstro mais próximo
+    private Vector2 currentUltimateDirection;
 
-    // Pedido do usuário — a animação da Ultimate só tem 1 frame de disparo por direção, mas
-    // cada Animation Event (AnimationShoot_N/NE/etc.) solta uma RAJADA instantânea de N tiros
-    // nessa direção (mesmo critério de desvio do primário — RandomShotDeviation, reaproveitado
-    // tal e qual), não 1 tiro só. É uma forma de "fingir" que a arma da Ultimate é mais forte
-    // sem precisar desenhar mais frames: visualmente é 1 disparo, mas o resultado é como se
-    // fossem shotCount = ultimateShotsPerDirection tiros do attack normal, instantâneos, em
-    // cada uma das 8 direções fixas.
-    [SerializeField] private int ultimateShotsPerDirection = 15; // 🔢 ajustável
-
-    private static readonly Vector2[] EightDirections =
-    {
-        Vector2.up,
-        new Vector2(0.7071f, 0.7071f),
-        Vector2.right,
-        new Vector2(0.7071f, -0.7071f),
-        Vector2.down,
-        new Vector2(-0.7071f, -0.7071f),
-        Vector2.left,
-        new Vector2(-0.7071f, 0.7071f),
-    };
-
-    // ===================== Secundária (Shift) — chicote =====================
-    // Mesmo mecanismo do shield bash do Paladin (4 triggers cardeais simultâneos) — GDD Seção
-    // 17.8 explícita. SEM a imunidade a dano que o Paladin tem (Seção 0, item 7 do breakdown).
-    [Header("Habilidade Secundária (Shift) — chicote (4 triggers cardeais simultâneos)")]
-    [SerializeField] private Collider2D whipHitboxN;
-    [SerializeField] private Collider2D whipHitboxS;
-    [SerializeField] private Collider2D whipHitboxE;
-    [SerializeField] private Collider2D whipHitboxW;
-    [SerializeField] private float whipDamageMultiplier = 1f; // 🔢 ajustável
-    [SerializeField] private float whipKnockbackForce = 4f; // 🔢 ajustável
-    [SerializeField] private float maxWhipDuration = 2f; // 🔢 rede de segurança
-    private float whipElapsed;
-    private bool whipHitFired;
+    // ===================== Habilidade Secundária (Shift) — rajada de pelotas + recuo (rework 2026-10-30) =====================
+    // Substitui o chicote antigo. 1 tiro visual só (attack_shoot roda 1x, sem loop), mas solta
+    // shiftPelletCount tiros de uma vez (mesmo cone de imprecisão do primário) e empurra o
+    // próprio Gunslinger pra trás (impulso físico real, respeita colisão — ver UpdateRecoil).
+    [Header("Habilidade Secundária (Shift) — rajada de pelotas + recuo")]
+    [SerializeField] private int shiftPelletCount = 5; // 🔢 ajustável — fixo, independente do shotCount/ultimateHitCount
+    [SerializeField] private float shiftDamageMultiplier = 1f; // 🔢 ajustável
+    [SerializeField] private float shiftRecoilSpeed = 8f; // 🔢 ajustável — velocidade do impulso pra trás
+    [SerializeField] private float shiftRecoilDuration = 0.15f; // 🔢 ajustável — por quanto tempo o impulso dura
+    private float recoilRemaining;
+    private Vector2 recoilVelocity;
 
     // ===================== Passiva — monstros dropam 2x mais loot =====================
-    [Header("Passiva — loot em dobro (requer patch em HeroController.cs/EnemyController.cs — ver Seção 0, item 11)")]
+    [Header("Passiva — loot em dobro (requer patch em HeroController.cs/EnemyController.cs)")]
     [SerializeField] private float lootMultiplier = 2f; // 🔢 GDD: "2x mais loot", ajustável
-
-    private readonly System.Collections.Generic.List<EnemyController> hitTargets = new();
-    // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
-    // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
-    private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
 
 #if UNITY_EDITOR
     private void OnValidate()
@@ -99,13 +80,10 @@ public class Gunslinger : HeroController
     }
 
     // Gizmo de debug — vermelho: 1 linha por tiro da rajada do primário (nº = shotCount)
-    // saindo da posição atual na direção da mira; amarelo: ultimateShotsPerDirection linhas
-    // por direção fixa da Ultimate (nº = EightDirections.Length × ultimateShotsPerDirection).
-    // As duas usam a MESMA fórmula de desvio (RandomShotDeviation) e o MESMO hitscanMaxRange
-    // do real FireHitscanShot/FireUltimateShot — é literalmente o cálculo real, não uma cópia
-    // aproximada. Sorteia de novo a cada repaint da Scene view, de propósito: olhando por
-    // alguns segundos dá pra ver o espalhamento completo entre as linhas mais distantes e
-    // calibrar shotMaxDeviationAngle por cima disso.
+    // saindo da posição atual na direção da mira. Sorteia de novo a cada repaint da Scene view,
+    // de propósito: olhando por alguns segundos dá pra ver o espalhamento completo entre as
+    // linhas mais distantes e calibrar shotMaxDeviationAngle por cima disso. A Ultimate não tem
+    // mais gizmo aqui — a direção real depende dos monstros vivos em campo, só visível em Play Mode.
     protected override void OnDrawGizmosSelected()
     {
         base.OnDrawGizmosSelected(); // gizmo do Pickup Radius (HeroController), se ligado no Inspector
@@ -124,16 +102,6 @@ public class Gunslinger : HeroController
             for (int i = 0; i < shotCount; i++)
             {
                 Vector2 dir = RotateDegrees(RawAimDirection, RandomShotDeviation());
-                Gizmos.DrawLine(origin, origin + dir * hitscanMaxRange);
-            }
-        }
-
-        Gizmos.color = Color.yellow;
-        foreach (Vector2 baseDir in EightDirections)
-        {
-            for (int i = 0; i < ultimateShotsPerDirection; i++)
-            {
-                Vector2 dir = RotateDegrees(baseDir, RandomShotDeviation());
                 Gizmos.DrawLine(origin, origin + dir * hitscanMaxRange);
             }
         }
@@ -157,83 +125,60 @@ public class Gunslinger : HeroController
         if (isAttacking)
         {
             actionElapsed += Time.deltaTime;
-            if (actionElapsed >= maxActionDuration)
-            {
-                Debug.LogWarning("[Gunslinger] Animation Event de fim de ação (rajada ou ultimate) nunca chegou — forçando fim (verifique o Animator Controller).");
-                isAttacking = false;
-            }
+            if (actionElapsed >= maxActionDuration) ForceEndAction();
         }
 
-        if (isUsingSecondaryAbility)
+        // Recuo do Shift — velocidade real no Rigidbody2D, reaplicada todo frame enquanto durar
+        // (base.Update() já zera rb.linearVelocity neste mesmo frame por não estar em "Walk" —
+        // mesmo critério da Cambalhota do Rogue — então sobrescreve aqui, depois do base).
+        if (recoilRemaining > 0f)
         {
-            whipElapsed += Time.deltaTime;
-            if (whipElapsed >= maxWhipDuration)
-            {
-                Debug.LogWarning("[Gunslinger] Animation Event de fim do chicote nunca chegou — forçando fim (verifique o Animator Controller).");
-                isUsingSecondaryAbility = false;
-            }
+            recoilRemaining -= Time.deltaTime;
+            if (rb != null) rb.linearVelocity = recoilVelocity;
         }
+    }
+
+    // Rede de segurança genérica — se o Animation Event de fim nunca chegar (Primário/Ultimate/
+    // Shift), força o fim da ação em vez de travar isAttacking pra sempre.
+    private void ForceEndAction()
+    {
+        Debug.LogWarning("[Gunslinger] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
+        isAttacking = false;
+        isAttackResolving = false;
+        isUsingSecondaryAbility = false;
+        activeAction = ActiveAction.None;
+    }
+
+    private void SetGunAimDirection(Vector2 dir)
+    {
+        if (animator == null) return;
+        animator.SetFloat("GunAimX", dir.x);
+        animator.SetFloat("GunAimY", dir.y);
     }
 
     // ===================== Primário =====================
 
     protected override void PrimaryAttack()
     {
+        if (isAttacking) return;
+
         isAttacking = true;
         actionElapsed = 0f;
-        if (animator != null)
-        {
-            // ShotCount decide qual Attack_N o AnyState resolve (ver Gunslinger.controller) —
-            // precisa ser setado ANTES do AttackTrigger, já que os dois são lidos juntos na
-            // próxima avaliação do Animator.
-            animator.SetInteger("ShotCount", shotCount);
-            animator.SetBool("IsOrthogonalAim", IsAimOrthogonal());
-        }
-        AnimatorTrigger("AttackTrigger");
+        activeAction = ActiveAction.Primary;
+        shotsFiredThisAction = 0;
+        shotsRequiredThisAction = shotCount;
+        lastShotFireFrame = -1;
+
+        SetGunAimDirection(RawAimDirection);
+        AnimatorTrigger("AttackTrigger"); // AnyState -> Attack_Start (compartilhado com Ultimate/Shift)
     }
 
-    private bool IsAimOrthogonal() =>
-        Mathf.Approximately(AimDirection.x, 0f) || Mathf.Approximately(AimDirection.y, 0f);
-
-    // Animation Event, embutido 1x por repetição de 2 frames (disparo+recuo) dentro do clipe —
-    // precisa disparar exatamente shotCount vezes por clipe correspondente (Seção 0, item 1).
-    public void AnimationShotFireEvent()
-    {
-        // Guarda só contra o MESMO frame (Blend Tree com 2 clipes de peso > 0) — ver Seção 0,
-        // item 3. Chamadas em frames diferentes (repetições seguintes da rajada) disparam normal.
-        if (Time.frameCount == lastShotFireFrame) return;
-        lastShotFireFrame = Time.frameCount;
-
-        Vector2 dir = GetBurstShotDirection();
-        FireHitscanShot(dir, stats.damage);
-    }
-
-    // Desvio angular aleatório, independente por tiro — Seção 0, item 0. Com 1 tiro só, sempre
-    // reto (sem rajada não existe imprecisão pra calcular). RawAimDirection (mira exata, não
-    // travada nas 8 direções), mesmo critério do voo da flecha do Ranger
-    // (Ranger.AnimationShootEvent) — AimDirection é só pra pose do Animator; usar ela aqui
-    // fazia o raycast só acertar quando o monstro estivesse exatamente alinhado a um dos 8
-    // ângulos fixos, errando "no range certo" sempre que a mira real estivesse num ângulo
-    // intermediário (bug relatado em teste).
+    // Direção de CADA tiro da rajada — desvio aleatório independente, em torno da mira travada
+    // no início da ação. Com 1 tiro só, sempre reto.
     private Vector2 GetBurstShotDirection()
     {
         if (shotCount <= 1) return RawAimDirection;
         return RotateDegrees(RawAimDirection, RandomShotDeviation());
-    }
-
-    // Magnitude sorteada entre MinShotDeviationAngle (nunca 0 — sempre algum desvio) e
-    // shotMaxDeviationAngle (teto ajustável, calibrado pelo Gizmo — ver OnDrawGizmosSelected);
-    // sinal sorteado 50/50 entre esquerda e direita da mira.
-    private float RandomShotDeviation()
-    {
-        float magnitude = Random.Range(MinShotDeviationAngle, shotMaxDeviationAngle);
-        return Random.value < 0.5f ? magnitude : -magnitude;
-    }
-
-    // Animation Event, no fim do clipe de ataque (seja qual for o Shot_N correspondente).
-    public void AnimationAttackEndEvent()
-    {
-        isAttacking = false;
     }
 
     // ===================== Ultimate =====================
@@ -242,34 +187,129 @@ public class Gunslinger : HeroController
     {
         isAttacking = true;
         actionElapsed = 0f;
-        AnimatorTrigger("UltimateTrigger");
+        activeAction = ActiveAction.Ultimate;
+        shotsFiredThisAction = 0;
+        shotsRequiredThisAction = ultimateHitCount;
+        lastShotFireFrame = -1;
+
+        var firstTarget = FindNearestLivingEnemy();
+        currentUltimateDirection = firstTarget != null
+            ? ((Vector2)firstTarget.transform.position - (Vector2)transform.position).normalized
+            : RawAimDirection; // sem monstro nenhum no raio — cai pra mira atual, mesmo assim toca a sequência
+        SetGunAimDirection(currentUltimateDirection);
+
+        AnimatorTrigger("UltimateTrigger"); // AnyState -> Attack_Start (compartilhado com Primário/Shift)
     }
 
-    // 8 Animation Events distintos, um por frame-chave do giro — mesma convenção das facas do
-    // Ranger (Seção 0, item 9). Direção FIXA no mundo, não a mira do jogador.
-    public void AnimationShoot_N() => FireUltimateShot(EightDirections[0]);
-    public void AnimationShoot_NE() => FireUltimateShot(EightDirections[1]);
-    public void AnimationShoot_E() => FireUltimateShot(EightDirections[2]);
-    public void AnimationShoot_SE() => FireUltimateShot(EightDirections[3]);
-    public void AnimationShoot_S() => FireUltimateShot(EightDirections[4]);
-    public void AnimationShoot_SW() => FireUltimateShot(EightDirections[5]);
-    public void AnimationShoot_W() => FireUltimateShot(EightDirections[6]);
-    public void AnimationShoot_NW() => FireUltimateShot(EightDirections[7]);
-
-    private void FireUltimateShot(Vector2 direction)
+    // Monstro vivo mais próximo dentro de ultimateSearchRadius — reavaliado a CADA tiro (não uma
+    // lista fixa no início), pra sempre perseguir o mais próximo NO MOMENTO; naturalmente pode
+    // repetir o mesmo alvo várias vezes se ele continuar sendo o mais próximo e ainda não tiver
+    // morrido.
+    private EnemyController FindNearestLivingEnemy()
     {
-        float damage = stats.damage * ultimateDamageMultiplier;
-        for (int i = 0; i < ultimateShotsPerDirection; i++)
+        var hits = Physics2D.OverlapCircleAll(transform.position, ultimateSearchRadius, enemyLayerMask);
+        EnemyController nearest = null;
+        float nearestSqrDistance = float.MaxValue;
+        foreach (var hit in hits)
         {
-            Vector2 dir = RotateDegrees(direction, RandomShotDeviation());
-            FireHitscanShot(dir, damage);
+            var enemy = hit.GetComponent<EnemyController>();
+            if (enemy == null || HealthSystem.IsDead(enemy.stats.health)) continue;
+
+            float sqrDistance = ((Vector2)enemy.transform.position - (Vector2)transform.position).sqrMagnitude;
+            if (sqrDistance < nearestSqrDistance)
+            {
+                nearestSqrDistance = sqrDistance;
+                nearest = enemy;
+            }
+        }
+        return nearest;
+    }
+
+    private void FireUltimateHomingShot()
+    {
+        var target = FindNearestLivingEnemy();
+        if (target == null) return; // sem monstro nenhum no raio — este tiro específico não acerta nada
+
+        currentUltimateDirection = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
+        SetGunAimDirection(currentUltimateDirection); // Attack_End vai terminar nesta direção, se for o último tiro
+
+        target.TakeDamage(stats.damage * ultimateDamageMultiplier);
+
+        if (impactVfxPrefab != null)
+        {
+            var vfx = Instantiate(impactVfxPrefab, target.transform.position, Quaternion.identity);
+            Destroy(vfx, impactVfxDuration);
         }
     }
 
-    // Animation Event, no fim do clipe de giro.
-    public void AnimationUltimateEndEvent()
+    // ===================== Secundária (Shift) — rajada de pelotas + recuo =====================
+
+    protected override void UseSecondaryAbility()
+    {
+        isAttacking = true; // trava tudo durante start+shoot+end (mesmo padrão do shield bash do Paladin)
+        actionElapsed = 0f;
+        activeAction = ActiveAction.Shift;
+        lastShotFireFrame = -1;
+
+        SetGunAimDirection(RawAimDirection);
+        AnimatorTrigger("SecondaryAbilityTrigger"); // AnyState -> Attack_Start (compartilhado com Primário/Ultimate)
+    }
+
+    private void FireShiftBurst()
+    {
+        Vector2 baseDirection = RawAimDirection;
+
+        for (int i = 0; i < shiftPelletCount; i++)
+        {
+            Vector2 dir = shiftPelletCount <= 1 ? baseDirection : RotateDegrees(baseDirection, RandomShotDeviation());
+            FireHitscanShot(dir, stats.damage * shiftDamageMultiplier);
+        }
+
+        // Impulso pra trás — velocidade real (não um Impulse único, que seria zerado no próximo
+        // frame por base.Update()); ver UpdateRecoil em Update().
+        recoilVelocity = -baseDirection * shiftRecoilSpeed;
+        recoilRemaining = shiftRecoilDuration;
+    }
+
+    // ===================== Animation Events compartilhados (Primário + Ultimate + Shift) =====================
+
+    // Chamado 1x por repetição do loop de Attack_Shoot (Primário/Ultimate) OU 1x só (Shift, sem
+    // loop). Guard de frame necessário — Attack_Shoot ainda é um Blend Tree 2D de 8 direções,
+    // então mirando entre 2 direções o Animator mistura 2 clipes e dispara o evento 2x no mesmo
+    // frame (mesmo bug de sempre, ver Barbarian/Ranger/EnemyController).
+    public void AnimationShotFireEvent()
+    {
+        if (Time.frameCount == lastShotFireFrame) return;
+        lastShotFireFrame = Time.frameCount;
+
+        switch (activeAction)
+        {
+            case ActiveAction.Primary:
+                FireHitscanShot(GetBurstShotDirection(), stats.damage);
+                shotsFiredThisAction++;
+                if (shotsFiredThisAction >= shotsRequiredThisAction) AnimatorTrigger("AttackEndTrigger");
+                break;
+
+            case ActiveAction.Ultimate:
+                FireUltimateHomingShot();
+                shotsFiredThisAction++;
+                if (shotsFiredThisAction >= shotsRequiredThisAction) AnimatorTrigger("AttackEndTrigger");
+                break;
+
+            case ActiveAction.Shift:
+                FireShiftBurst();
+                AnimatorTrigger("AttackEndTrigger"); // sempre 1 tiro só — corta o loop na hora
+                break;
+        }
+    }
+
+    // Chamado no fim do clipe attack_end — fecha a ação atual, seja ela qual for.
+    public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false; // só tem efeito real se activeAction era Primary — nos outros já estava false (Seção 53 do GDD)
+        if (activeAction == ActiveAction.Shift) isUsingSecondaryAbility = false; // arma o cooldown no próximo Update() da base
+        activeAction = ActiveAction.None;
     }
 
     private static readonly RaycastHit2D[] HitscanBuffer = new RaycastHit2D[8];
@@ -284,20 +324,16 @@ public class Gunslinger : HeroController
         useLayerMask = true,
     };
 
-    // ===================== Hitscan compartilhado (primário + ultimate) =====================
+    // ===================== Hitscan compartilhado (Primário + Shift) =====================
 
-    // Raycast único, sem perfuração — para no primeiro MONSTRO DE VERDADE ou no fim da linha
-    // (Seção 0, item 4). Sem knockback em nenhum dos dois casos (Seção 0, item 6).
+    // Raycast único, sem perfuração — para no primeiro MONSTRO DE VERDADE ou no fim da linha.
+    // Sem knockback em nenhum dos dois casos. A Ultimate NÃO usa mais isso — sempre acerta via
+    // FireUltimateHomingShot (sem raycast, sem chance de errar).
     //
     // Usa RaycastAll (via ContactFilter2D + buffer) em vez do Raycast de 1 resultado só: todo
     // monstro tem, no MESMO layer "Enemy", os próprios AttackHitbox_N/S/E/W/NE/etc. — hitboxes
-    // Untagged do ATAQUE do monstro (ver Goblin.prefab e similares), sem EnemyController
-    // nenhum. Com monstro em melee, essas hitboxes costumam estar bem na frente dele, exatamente
-    // no caminho do raycast — Raycast de 1 resultado só parava ali (sem GetComponent<EnemyController>,
-    // sem dano), mas o VFX de impacto ainda nascia em cima do hit.point, perto o bastante do
-    // monstro pra "parecer" que acertou (bug relatado em teste: "vfx sai nos pés do monstro, mas
-    // não dá dano"). Os resultados já vêm ordenados por distância — o primeiro collider marcado
-    // "Enemy" (mesmo critério de EnemyController.CollectDistinct) é o alvo de verdade.
+    // Untagged do ATAQUE do monstro, sem EnemyController nenhum. Os resultados já vêm ordenados
+    // por distância — o primeiro collider marcado "Enemy" é o alvo de verdade.
     private void FireHitscanShot(Vector2 direction, float damage)
     {
         Vector2 origin = transform.position;
@@ -333,56 +369,21 @@ public class Gunslinger : HeroController
         }
     }
 
+    // Desvio angular aleatório, independente por tiro. Magnitude sorteada entre
+    // MinShotDeviationAngle (nunca 0 — sempre algum desvio) e shotMaxDeviationAngle (teto
+    // ajustável, calibrado pelo Gizmo); sinal sorteado 50/50 entre esquerda e direita da mira.
+    // Compartilhado entre o Primário e o Shift.
+    private float RandomShotDeviation()
+    {
+        float magnitude = Random.Range(MinShotDeviationAngle, shotMaxDeviationAngle);
+        return Random.value < 0.5f ? magnitude : -magnitude;
+    }
+
     private static Vector2 RotateDegrees(Vector2 v, float degrees)
     {
         float rad = degrees * Mathf.Deg2Rad;
         float cos = Mathf.Cos(rad);
         float sin = Mathf.Sin(rad);
         return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
-    }
-
-    // ===================== Secundária (Shift) — chicote =====================
-
-    protected override void UseSecondaryAbility()
-    {
-        whipElapsed = 0f;
-        whipHitFired = false;
-        AnimatorTrigger("SecondaryAbilityTrigger");
-    }
-
-    // Sem override de IsDamageImmune de propósito — Seção 0, item 7.
-
-    // Animation Event único — os 4 triggers disparam juntos (mesmo critério do shield bash do
-    // Paladin), não escolhido pela mira.
-    public void AnimationWhipHitEvent()
-    {
-        if (whipHitFired) return;
-        whipHitFired = true;
-
-        float damage = stats.damage * whipDamageMultiplier;
-        ApplyWhipHit(whipHitboxN, damage);
-        ApplyWhipHit(whipHitboxS, damage);
-        ApplyWhipHit(whipHitboxE, damage);
-        ApplyWhipHit(whipHitboxW, damage);
-    }
-
-    private void ApplyWhipHit(Collider2D hitbox, float damage)
-    {
-        if (hitbox == null) return;
-
-        int count = hitbox.Overlap(ContactFilter2D.noFilter, OverlapBuffer);
-        EnemyController.CollectDistinct(OverlapBuffer, count, hitTargets);
-        foreach (var enemy in hitTargets)
-        {
-            enemy.TakeDamage(damage);
-            Vector2 direction = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
-            enemy.ApplyKnockback(direction, whipKnockbackForce);
-        }
-    }
-
-    // Animation Event, no fim do clipe de chicote.
-    public void AnimationWhipEndEvent()
-    {
-        isUsingSecondaryAbility = false;
     }
 }

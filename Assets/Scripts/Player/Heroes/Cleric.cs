@@ -81,6 +81,7 @@ public class Cleric : HeroController
             {
                 Debug.LogWarning("[Cleric] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
     }
@@ -144,7 +145,7 @@ public class Cleric : HeroController
     // pendingTargets (ver projectileCount).
     public void AnimationProjectileLaunchEvent()
     {
-        if (projectilePrefab == null || pendingTargets.Count == 0) { isAttacking = false; return; }
+        if (projectilePrefab == null || pendingTargets.Count == 0) { isAttacking = false; isAttackResolving = false; return; }
 
         foreach (var target in pendingTargets)
         {
@@ -163,6 +164,7 @@ public class Cleric : HeroController
     public void AnimationProjectileEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false; // só aqui o cooldown real começa a contar (Seção 53 do GDD)
     }
 
     // ===================== ULTIMATE — ORAÇÃO =====================

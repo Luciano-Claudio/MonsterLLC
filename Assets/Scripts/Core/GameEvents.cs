@@ -32,6 +32,19 @@ public static class GameEvents
     public static event Action<bool> OnSecondaryAbilityActiveChanged;
     public static void SecondaryAbilityActiveChanged(bool isActive) => OnSecondaryAbilityActiveChanged?.Invoke(isActive);
 
+    // Mesma ideia, pra Ultimate — só importa pra heróis cuja Ultimate tem forma/duração
+    // própria (Alce do Druid, forma sombria do Assassin — IsUltimateActive de cada um). UI de
+    // Skills usa isso pra manter Ultimate_Active aceso o tempo todo que ela estiver em uso, não
+    // só quando a energia enche (rework 2026-10-30).
+    public static event Action<bool> OnUltimateActiveChanged;
+    public static void UltimateActiveChanged(bool isActive) => OnUltimateActiveChanged?.Invoke(isActive);
+
+    // Troca temporária do ícone de uma skill na UI (ex.: Alce do Druid trocando a garra/
+    // cabeçada no lugar da vinha/Coruja enquanto transformado) — slot: 0 = Primary_Attack,
+    // 1 = Shift. icon null = volta pro ícone normal do herói (rework 2026-10-30).
+    public static event Action<int, Sprite> OnActionIconOverrideChanged;
+    public static void ActionIconOverrideChanged(int slot, Sprite icon) => OnActionIconOverrideChanged?.Invoke(slot, icon);
+
     public static event Action<float, float> OnHealthChanged;
     public static void HealthChanged(float current, float max) => OnHealthChanged?.Invoke(current, max);
 

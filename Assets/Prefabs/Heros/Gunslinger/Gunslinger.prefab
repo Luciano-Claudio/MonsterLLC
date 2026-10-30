@@ -227,19 +227,17 @@ MonoBehaviour:
   hitscanMaxRange: 10
   impactVfxPrefab: {fileID: 7300000000000001, guid: 1e2dd23190894addbf461bc2d57419ea, type: 3}
   impactVfxDuration: 0.5
-  shotCount: 1
+  shotCount: 3
   shotMaxDeviationAngle: 10
   showShotLinesGizmo: 1
   maxActionDuration: 3
-  ultimateDamageMultiplier: 1
-  ultimateShotsPerDirection: 15
-  whipHitboxN: {fileID: 7200000000000023}
-  whipHitboxS: {fileID: 7200000000000026}
-  whipHitboxE: {fileID: 7200000000000029}
-  whipHitboxW: {fileID: 7200000000000032}
-  whipDamageMultiplier: 1
-  whipKnockbackForce: 4
-  maxWhipDuration: 2
+  ultimateHitCount: 5
+  ultimateDamageMultiplier: 10
+  ultimateSearchRadius: 20
+  shiftPelletCount: 5
+  shiftDamageMultiplier: 1
+  shiftRecoilSpeed: 20
+  shiftRecoilDuration: 0.15
   lootMultiplier: 2
 --- !u!114 &7200000000000008
 MonoBehaviour:

@@ -94,6 +94,7 @@ public class Barbarian : HeroController
             {
                 Debug.LogWarning("[Barbarian] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
 
@@ -154,10 +155,12 @@ public class Barbarian : HeroController
         }
     }
 
-    // Animation Event, no fim do clipe de ataque.
+    // Animation Event, no fim do clipe de ataque — só aqui o cooldown real começa a contar
+    // (ver AttackCooldown.Start()/HeroController.Update(), Seção 53 do GDD).
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar

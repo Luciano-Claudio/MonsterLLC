@@ -133,6 +133,7 @@ public class Mage : HeroController
             {
                 Debug.LogWarning("[Mage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
             }
         }
     }
@@ -156,10 +157,12 @@ public class Mage : HeroController
         if (attackHitbox != null) attackHitbox.Fire(stats.damage * attackDamageMultiplier, ActionSpeedMultiplier);
     }
 
-    // Animation Event, no fim do clipe de cast.
+    // Animation Event, no fim do clipe de cast — só aqui o cooldown real começa a contar
+    // (Seção 53 do GDD).
     public void AnimationAttackEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // isAttacking agora é checado por CanUseUltimate() (HeroController), antes de gastar
@@ -253,6 +256,9 @@ public class Mage : HeroController
         }
 
         float distance = Mathf.Min(RawAimDistance, secondaryAbilityMaxRange);
+        // Nunca pousa dentro de água/parede/prop (Collider2D sólido) — o projétil não checa
+        // colisão nenhuma durante o voo (ver MageTeleportProjectile), só reporta onde parou.
+        distance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, distance, transform);
         var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
         var projectile = obj.GetComponent<MageTeleportProjectile>();
         if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived, teleportProjectileSpeed);

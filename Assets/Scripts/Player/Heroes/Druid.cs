@@ -81,6 +81,33 @@ public class Druid : HeroController
     private bool isOwlForm; // só true na fase "during"
     private float owlElapsed;
 
+    // ---------- Habilidade Secundária (Shift) EM FORMA ALCE — Cabeçada (rework 2026-10-30) ----------
+    // Mutuamente exclusiva com a Coruja (só existe enquanto isElkForm) — mesmo botão/cooldown
+    // de Shift de sempre, só muda o comportamento (ver UseSecondaryAbility). Pose trava numa
+    // das 4 diagonais (DiagonalAimX/Y, já travado pela base antes de chamar este método — mesmo
+    // critério do StartElkClawAttack, que também não precisa setar pose manual), mas a
+    // trajetória real da carga segue a mira livre (RawAimDirection), mesmo critério da
+    // Cambalhota do Rogue.
+    [Header("Habilidade Secundária (Shift, Alce) — Cabeçada: impulso forte + freada + dano em área")]
+    [SerializeField] private CircleCollider2D elkHeadbuttHitbox; // trigger circular dedicado — ver AnimationElkHeadbuttHitEvent
+    [SerializeField] private float elkHeadbuttLaunchSpeed = 32f; // 🔢 ajustável — rápido o bastante pra cobrir elkHeadbuttMaxRange inteiro antes do frame de freio da animação
+    // Rework (2026-10-30, pedido do usuário) — não é mais distância fixa: vai até a posição do
+    // mouse (RawAimDistance), com este teto — mesmo critério do teleporte do Assassin/Mage. Mouse
+    // perto = o Alce para logo ali; mouse longe = vai até o teto na direção dele.
+    [SerializeField] private float elkHeadbuttMaxRange = 12f; // 🔢 ajustável
+    [SerializeField] private float elkHeadbuttDamageMultiplier = 2f; // 🔢 ajustável
+    [SerializeField] private float elkHeadbuttKnockbackForce = 8f; // 🔢 ajustável
+    private bool isHeadbuttCharging; // true do Launch até chegar no destino (ou até o Stop, rede de segurança) — Update() reaplica a velocidade todo frame (base já zera por não estar em "Walk")
+    private Vector2 headbuttDirection;
+    private Vector3 headbuttTargetPosition;
+    private bool elkHeadbuttHitFired;
+    private readonly List<EnemyController> elkHeadbuttTargets = new();
+
+    // ---------- Ícones alternativos (Primary_Attack/Shift) durante a forma Alce — Skills HUD ----------
+    [Header("Ícones alternativos (Skills HUD) — Primary_Attack/Shift durante a forma Alce")]
+    [SerializeField] private Sprite elkClawIcon;
+    [SerializeField] private Sprite elkHeadbuttIcon;
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
@@ -131,6 +158,7 @@ public class Druid : HeroController
             {
                 Debug.LogWarning("[Druid] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
+                isAttackResolving = false;
                 isTransformImmune = false; // não deixa imune pra sempre se o evento de transformação falhar
             }
         }
@@ -147,6 +175,8 @@ public class Druid : HeroController
             elkFormElapsed += Time.deltaTime;
             if (elkFormElapsed >= elkFormMaxDuration) EndElkForm();
         }
+
+        if (isHeadbuttCharging) UpdateHeadbuttCharge();
     }
 
     // ===================== PRIMÁRIO =====================
@@ -218,10 +248,12 @@ public class Druid : HeroController
         }
     }
 
-    // Animation Event, no fim do clipe de vinhas.
+    // Animation Event, no fim do clipe de vinhas — só aqui o cooldown real começa a contar
+    // (Seção 53 do GDD).
     public void AnimationVineEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // ===================== ULTIMATE — ALCE =====================
@@ -249,6 +281,11 @@ public class Druid : HeroController
     }
 
     protected override bool IsUltimateActive => isElkForm;
+
+    // Rework 2026-10-30 — a Energia da próxima Ultimate não pode carregar enquanto a atual
+    // ainda está rolando (senão matar monstro DURANTE o Alce já paga a próxima de graça).
+    // Cobre a forma inteira + as 2 transições (isTransformImmune), não só o "during".
+    protected override bool CanGainUltimateEnergy => !isElkForm && !isTransformImmune;
 
     protected override void CancelUltimate()
     {
@@ -279,6 +316,8 @@ public class Druid : HeroController
 
         ApplyColliderShape(elkColliderOffset, elkColliderSize);
         transform.localScale = Vector3.one * elkSizeMultiplier;
+
+        ApplyElkActionIcons();
     }
 
     private void StartElkClawAttack()
@@ -311,10 +350,13 @@ public class Druid : HeroController
         }
     }
 
-    // Animation Event, no fim do clipe de garra.
+    // Animation Event, no fim do clipe de garra — é o Primário em forma Alce (mesmo gate/
+    // cooldown da vinha, só muda a animação), então o cooldown real também só começa a
+    // contar aqui (Seção 53 do GDD).
     public void AnimationElkClawEndEvent()
     {
         isAttacking = false;
+        isAttackResolving = false;
     }
 
     // Mesmo critério de quadrante do Barbarian.GetHitboxForFacing — duplicado de propósito
@@ -362,6 +404,8 @@ public class Druid : HeroController
         transform.localScale = Vector3.one; // volta ao tamanho humano normal — size do Alce só vale durante ele
         isTransformImmune = false;
         isAttacking = false;
+
+        ClearElkActionIcons();
     }
 
     // isTransformImmune cobre só as 2 animações de transição do Alce (durante o "during" em
@@ -379,6 +423,15 @@ public class Druid : HeroController
     protected override void OnHeroDeath()
     {
         if (!isElkForm) return;
+
+        // Mesmo critério do EndRoll do Rogue — morrer no meio da cabeçada não pode deixar o
+        // Druid pra sempre sem colisão com monstro depois do respawn.
+        if (isHeadbuttCharging)
+        {
+            isHeadbuttCharging = false;
+            Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), false);
+        }
+        ClearElkActionIcons();
 
         stats.maxHealth = humanMaxHealth;
         stats.damage = humanDamage;
@@ -408,7 +461,7 @@ public class Druid : HeroController
 
     protected override void UseSecondaryAbility()
     {
-        if (isElkForm) return; // mutuamente exclusivo com o Alce (Seção 0, item 6)
+        if (isElkForm) { StartHeadbutt(); return; } // forma Alce usa a Cabeçada, não a Coruja
 
         // Ao contrário do Alce, aqui isAttacking fica true a viagem INTEIRA (start+during+end)
         // — a Coruja bloqueia SÓ ataque (GDD), então isAttacking nunca vira false até o fim;
@@ -470,5 +523,119 @@ public class Druid : HeroController
         isAttacking = false;
         isUsingSecondaryAbility = false;
         Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), false);
+    }
+
+    // ===================== SECUNDÁRIA (SHIFT) EM FORMA ALCE — CABEÇADA =====================
+
+    private void StartHeadbutt()
+    {
+        isAttacking = true; // trava primário/ultimate a sequência inteira, mesmo critério da Coruja
+        actionElapsed = 0f;
+        elkHeadbuttHitFired = false;
+
+        // Trajetória real livre (mira exata) — só a pose (DiagonalAimX/Y) trava numa das 4
+        // diagonais, e essa já está travada pela base (TryUseSecondaryAbility força a
+        // releitura da mira antes de chamar este método) — mesmo critério da Cambalhota do
+        // Rogue, sem precisar setar nenhum parâmetro de Animator manual aqui (igual o próprio
+        // StartElkClawAttack já faz).
+        headbuttDirection = RawAimDirection;
+
+        // Vai até onde o mouse estiver, com teto em elkHeadbuttMaxRange — mesmo critério do
+        // teleporte do Assassin/Mage (Mathf.Min(RawAimDistance, teto)).
+        float distance = Mathf.Min(RawAimDistance, elkHeadbuttMaxRange);
+        headbuttTargetPosition = transform.position + (Vector3)(headbuttDirection * distance);
+
+        AnimatorTrigger("SecondaryAbilityTrigger");
+    }
+
+    // Animation Event — só LIGA a carga; o movimento de verdade (e a parada exatamente no
+    // destino) é todo feito em UpdateHeadbuttCharge(), chamado todo frame enquanto
+    // isHeadbuttCharging. Ignora colisão com monstro durante a carga inteira (atravessa, mesmo
+    // critério da Coruja/Cambalhota) — parede continua bloqueando normal.
+    public void AnimationElkHeadbuttLaunchEvent()
+    {
+        isHeadbuttCharging = true;
+        Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), true);
+    }
+
+    // Rede de segurança — NÃO é mais quem decide a parada normal (isso já aconteceu em
+    // UpdateHeadbuttCharge no instante exato em que o Alce chegou no destino, podendo ser bem
+    // antes deste frame se o mouse estava próximo). Só age se, por algum motivo, a carga ainda
+    // não tiver chegado (ex.: parede no meio do caminho) — aí força a parada aqui mesmo, no
+    // meio do clipe (não é o último frame).
+    public void AnimationElkHeadbuttStopEvent()
+    {
+        if (!isHeadbuttCharging) return;
+        isHeadbuttCharging = false;
+        if (rb != null) rb.linearVelocity = Vector2.zero;
+        Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), false);
+    }
+
+    // Animation Event, no MESMO frame do Stop (evento separado de propósito — mesmo critério
+    // do rework do Gunslinger) — dano e knockback em área pelo CircleCollider2D dedicado.
+    public void AnimationElkHeadbuttHitEvent()
+    {
+        if (elkHeadbuttHitFired) return;
+        elkHeadbuttHitFired = true;
+
+        if (elkHeadbuttHitbox == null) return;
+
+        // 128 (não 16) — mesmo bug real já corrigido no golpe do Barbarian/garra do Alce
+        // (monstro aglomerado tem 2 Collider2D cada, 16 satura rápido).
+        var results = new Collider2D[128];
+        int count = elkHeadbuttHitbox.Overlap(ContactFilter2D.noFilter, results);
+        EnemyController.CollectDistinct(results, count, elkHeadbuttTargets);
+        foreach (var enemy in elkHeadbuttTargets)
+        {
+            enemy.TakeDamage(stats.damage * elkHeadbuttDamageMultiplier); // já é o dano do Alce (multiplicado em AnimationElkTransformInEndEvent)
+            Vector2 direction = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
+            enemy.ApplyKnockback(direction, elkHeadbuttKnockbackForce);
+        }
+    }
+
+    // Animation Event, no último frame do clipe de verdade — fecha a ação.
+    public void AnimationElkHeadbuttEndEvent()
+    {
+        isAttacking = false;
+        isUsingSecondaryAbility = false; // arma o cooldown no próximo Update() da base
+    }
+
+    // Move em direção a headbuttTargetPosition todo frame (base.Update() já zera
+    // rb.linearVelocity neste mesmo frame por não estar em "Walk", mesmo critério do
+    // UpdateRoll do Rogue) e para EXATAMENTE nele assim que chegar — pode ser bem antes do
+    // AnimationElkHeadbuttStopEvent se o mouse estava próximo (ele "fica ali" esperando o
+    // frame de dano), ou ser interrompido mais tarde pela rede de segurança se algo bloquear
+    // o caminho (ex.: parede).
+    private void UpdateHeadbuttCharge()
+    {
+        if (rb == null) { isHeadbuttCharging = false; return; }
+
+        Vector2 toTarget = (Vector2)headbuttTargetPosition - rb.position;
+        float step = elkHeadbuttLaunchSpeed * Time.deltaTime;
+
+        if (toTarget.magnitude <= step)
+        {
+            rb.position = headbuttTargetPosition;
+            rb.linearVelocity = Vector2.zero;
+            isHeadbuttCharging = false;
+            Physics2D.IgnoreLayerCollision(gameObject.layer, LayerMask.NameToLayer("Enemy"), false);
+            return;
+        }
+
+        rb.linearVelocity = headbuttDirection * elkHeadbuttLaunchSpeed;
+    }
+
+    // ===================== Ícones alternativos (Skills HUD) durante a forma Alce =====================
+
+    private void ApplyElkActionIcons()
+    {
+        GameEvents.ActionIconOverrideChanged(0, elkClawIcon);
+        GameEvents.ActionIconOverrideChanged(1, elkHeadbuttIcon);
+    }
+
+    private void ClearElkActionIcons()
+    {
+        GameEvents.ActionIconOverrideChanged(0, null);
+        GameEvents.ActionIconOverrideChanged(1, null);
     }
 }

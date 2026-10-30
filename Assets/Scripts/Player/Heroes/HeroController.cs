@@ -59,6 +59,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // vez de trocar de estado no Animator (não existe transição Attack -> Damage).
     protected bool isAttacking;
 
+    // Rework 2026-10-30 (Seção 53 do GDD, pendência "Início do cooldown de habilidade") —
+    // dedicado só ao Ataque Primário, nunca reaproveitado por Ultimate/Shift (ao contrário de
+    // isAttacking, que é um "ocupado" compartilhado por qualquer ação do herói). Fica true do
+    // clique até o fim de verdade da animação de ataque primário (o hero decide onde, chamando
+    // isAttackResolving = false no próprio Animation Event de fim — ver cada HeroXxx.cs), e só
+    // nesse instante o cooldown real começa a contar (ver Update()), mesmo critério que o
+    // isUsingSecondaryAbility já usava pro Shift. Herói com fase "during" que libera isAttacking
+    // no meio (ex.: Rogue) mantém isAttackResolving true até o fim de VERDADE, não até o meio.
+    protected bool isAttackResolving;
+    private bool wasAttackResolving; // detecta a transição true -> false no Update(), ver comentário lá
+
     // Movimento só é permitido durante "Walk" (Seção 16) — sem isso, tomar dano de várias
     // fontes seguidas prende o herói na animação de "Damage" indefinidamente (cada hit
     // reativa o Trigger antes do anterior terminar), impedindo ele de sair da posição e
@@ -305,6 +316,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (wasUsingSecondaryAbility && !isUsingSecondaryAbility) secondaryAbilityCooldown.Start();
         wasUsingSecondaryAbility = isUsingSecondaryAbility;
 
+        if (wasAttackResolving && !isAttackResolving) attackCooldown.Start();
+        wasAttackResolving = isAttackResolving;
+
         UpdateDamageFlash();
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         if (AutoFlipBodyCollider) ApplyBodyColliderFlip();
@@ -364,8 +378,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         attackCooldown.Tick(Time.deltaTime);
         GameEvents.PrimaryAttackCooldownChanged(attackCooldown.TimeRemaining, attackCooldown.Duration);
         GameEvents.SecondaryAbilityCooldownChanged(secondaryAbilityCooldown.TimeRemaining, secondaryAbilityCooldown.Duration);
-        GameEvents.PrimaryAttackActiveChanged(isAttacking);
+        GameEvents.PrimaryAttackActiveChanged(isAttackResolving);
         GameEvents.SecondaryAbilityActiveChanged(isUsingSecondaryAbility);
+        // Heróis cuja Ultimate tem duração própria (Alce do Druid, forma sombria do Assassin)
+        // já sobrescrevem IsUltimateActive pra cancelamento — reaproveitado aqui pra UI
+        // (Ultimate_Active fica aceso o tempo todo que ela estiver em uso, não só quando a
+        // energia enche). Sem efeito em heróis sem Ultimate com duração (default false).
+        GameEvents.UltimateActiveChanged(IsUltimateActive);
         // !isAttacking aqui é o que impede um attackSpeed alto de disparar um novo ataque
         // por cima de uma animação ainda tocando (ex.: attackSpeed maior que a duração do
         // próprio golpe) — cooldown cuida do ritmo, isAttacking cuida de nunca sobrepor.
@@ -448,12 +467,19 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // de Ultimate por kill").
     protected virtual float UltimateEnergyMultiplier => 1f;
 
+    // Rework 2026-10-30 (Druid — Alce) — heróis cuja Ultimate tem uma forma/duração própria
+    // podem bloquear o próprio ganho de Energia enquanto ela estiver ativa (senão o jogador
+    // sairia da forma já com a próxima Ultimate pronta de graça, só de matar monstro durante
+    // ela). Default true, sem efeito em nenhum herói que não sobrescrever isso.
+    protected virtual bool CanGainUltimateEnergy => true;
+
     private void HandleEnemyKilled(int energyValue)
     {
         // Janela de bloqueio pós-ultimate — sem isso, uma ultimate boa (que geralmente
         // limpa a área ou salva o jogador) já paga a energia da próxima sozinha, virando
         // ultimate infinita. Energia é recurso escasso de propósito.
         if (ultimateEnergyLockoutRemaining > 0f) return;
+        if (!CanGainUltimateEnergy) return;
 
         int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier);
         stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, adjustedEnergy);
@@ -465,9 +491,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // mesmo consumo de cooldown, sem duplicar a lógica.
     public bool TryPrimaryAttack()
     {
-        if (!(!isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.TryConsume())))
+        // TryConsume() virou IsReady (só checa, não arma mais o timer na hora do clique) —
+        // o timer real só começa em Update(), quando isAttackResolving volta a false de
+        // verdade (ver comentário no campo e AttackCooldown.Start()).
+        if (!(!isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.IsReady)))
             return false;
 
+        isAttackResolving = true;
         PrimaryAttack();
         return true;
     }
@@ -524,6 +554,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (trapped)
         {
             isAttacking = false;
+            isAttackResolving = false;
             isReactingToDamage = false;
             damageSpeedMultiplier = 1f;
             if (animator != null) animator.SetFloat("DamageSpeedMultiplier", 1f);
@@ -653,6 +684,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     {
         isDead = true;
         isAttacking = false; // sem isso, um herói morto no meio de uma ação renasceria sem poder agir de novo (PrimaryAttack/UseUltimate ignoram clique enquanto isAttacking)
+        isAttackResolving = false;
         isReactingToDamage = false;
         damageSpeedMultiplier = 1f;
         isTrapped = false; // mesmo motivo — morrer preso não pode renascer incapaz de agir

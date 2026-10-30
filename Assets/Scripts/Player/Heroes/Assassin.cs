@@ -145,6 +145,7 @@ public class Assassin : HeroController
         isThousandBladesVariant = false;
         isTransformImmune = false;
         isAttacking = false;
+        isAttackResolving = false;
         isUsingSecondaryAbility = false;
     }
 
@@ -254,6 +255,7 @@ public class Assassin : HeroController
         lastDashEndFrame = Time.frameCount;
 
         isAttacking = false;
+        isAttackResolving = false; // só aqui o cooldown real começa a contar (Seção 53 do GDD) — sem efeito durante a Ultimate, que já ignora o cooldown (IsAttackCooldownBypassed)
         isThousandBladesVariant = false;
     }
 
@@ -382,6 +384,9 @@ public class Assassin : HeroController
     public void AnimationTeleportDisappearEvent()
     {
         float distance = Mathf.Min(RawAimDistance, teleportMaxRange);
+        // Nunca pousa dentro de água/parede/prop (Collider2D sólido) — teleporte seta a
+        // posição direto, sem passar pela física normal que já evitaria isso andando.
+        distance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, distance, transform);
         transform.position += (Vector3)(RawAimDirection * distance);
     }
 
