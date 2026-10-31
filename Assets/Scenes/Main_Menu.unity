@@ -2299,6 +2299,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LoadingScreenUI
   root: {fileID: 100000200}
   progressFill: {fileID: 100000222}
+  statusText: {fileID: 100000232}
   minimumDuration: 0.5
 --- !u!114 &100000205
 MonoBehaviour:
@@ -28987,9 +28988,9 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1664165128}
   - {fileID: 1851857410}
   - {fileID: 1822895236}
-  - {fileID: 1664165128}
   - {fileID: 1100810348}
   - {fileID: 837557644}
   - {fileID: 123486522}

@@ -5,6 +5,10 @@ using UnityEngine;
 // porque sobrevivem à troca de cena via DontDestroyOnLoad (GameObject "Systems", nascido na
 // cena Main_Menu — ver SystemsBootstrap). CurrentState ainda reflete de que botão o jogador
 // veio (MapSelect = New Game, Shop = Continue Game), decidido lá antes do SceneManager.LoadScene.
+//
+// LoadingScreenUI.Instance (se existir) continua visível desde a Main_Menu até aqui — este
+// script reporta o status de cada etapa nela e só chama Hide() no fim de verdade, cobrindo
+// também o Awake/Start desta cena (não só o carregamento bruto do asset da cena).
 public class GameplayBootstrap : MonoBehaviour
 {
     [System.Serializable]
@@ -28,14 +32,17 @@ public class GameplayBootstrap : MonoBehaviour
         switch (GameStateManager.Instance.CurrentState)
         {
             case GameState.MapSelect: // acabou de vir de um New Game
+                LoadingScreenUI.Instance?.SetStatus("Gerando o mundo...");
                 SpawnHero(MainMenuUI.CurrentRun.hero);
 
+                LoadingScreenUI.Instance?.SetStatus("Carregando entidades...");
                 DayTimer.Instance.ResetForNewDay();
                 DemandTracker.Instance.StartDay(MainMenuUI.CurrentRun.day);
                 GameStateManager.Instance.SetState(GameState.Gameplay);
                 break;
 
             case GameState.Shop: // acabou de vir de um Continue Game
+                LoadingScreenUI.Instance?.SetStatus("Reabrindo a loja...");
                 // Reemite o evento pra quem só assinou GameEvents.OnGameStateChanged nesta cena
                 // nova (uma UI de Loja que more só na cena de gameplay, por exemplo) — o primeiro
                 // SetState (feito no MainMenuUI, antes do LoadScene) já passou sem ninguém aqui
@@ -43,6 +50,8 @@ public class GameplayBootstrap : MonoBehaviour
                 GameEvents.GameStateChanged(GameState.Shop);
                 break;
         }
+
+        LoadingScreenUI.Instance?.Hide();
     }
 
     // Instancia o herói escolhido em (0,0,0) dentro do GameObject "//HEROS" e aponta a câmera do

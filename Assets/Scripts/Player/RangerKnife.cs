@@ -45,6 +45,7 @@ public class RangerKnife : MonoBehaviour
     private float groundedElapsed;
     private AttackCooldown groundedTick;
     private readonly HashSet<EnemyController> enemiesInRange = new();
+    private readonly List<EnemyController> groundedTickTargets = new();
 
     private void Awake()
     {
@@ -170,7 +171,16 @@ public class RangerKnife : MonoBehaviour
 
         enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu desde o último tick
 
-        foreach (var enemy in enemiesInRange)
+        // Cópia pro foreach — TakeDamage() pode matar o monstro e ApplyKnockback() pode empurrar
+        // outro pra fora do raio, e os dois desligam/tiram o Collider2D de cima da faca, o que
+        // dispara OnTriggerExit2D NESTA MESMA RangerKnife de volta, fazendo
+        // enemiesInRange.Remove() enquanto o foreach original ainda estava rodando nele
+        // (InvalidOperationException: "Collection was modified" — mesmo bug já corrigido no
+        // rastro "Grounded" do MageFireball e na área do Rogue).
+        groundedTickTargets.Clear();
+        groundedTickTargets.AddRange(enemiesInRange);
+
+        foreach (var enemy in groundedTickTargets)
         {
             enemy.TakeDamage(groundedDamagePerTick, isDirectPlayerHit: false); // tick da faca fincada, sem Game Feel — só o hit de voo (linha ~101) aciona
             Vector2 away = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;

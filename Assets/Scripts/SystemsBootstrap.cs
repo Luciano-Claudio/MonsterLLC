@@ -19,9 +19,9 @@ public class SystemsBootstrap : MonoBehaviour
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
         // agora tem dono de verdade (BagController), que já pausa/despausa sozinho.
         controls.Gameplay.RemoteControl.performed += ctx => TimeManager.Instance.TogglePause();
-        // ESC — mesmo TogglePause do Q. O menu clássico (sair/configurações) em si ainda não
-        // existe (peça de UI própria, sem escopo definido ainda) — só a pausa já funciona.
-        controls.Gameplay.Pause.performed += ctx => TimeManager.Instance.TogglePause();
+        // ESC deixou de ser placeholder de pausa nesta sprint — agora tem dono de verdade
+        // (PauseMenuUI, na cena de gameplay), que pausa/despausa junto com abrir/fechar o
+        // próprio menu (inclusive clicando em "Resume", não só via Esc).
         // Interact (E) deixou de ser placeholder de EnemyKilled na Sprint 6 —
         // agora aciona interações reais via InteractionManager (escadas, baús no futuro).
     }

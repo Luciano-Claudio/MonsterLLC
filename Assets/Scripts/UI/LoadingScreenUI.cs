@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -7,12 +9,22 @@ using UnityEngine.UI;
 // o frame) e só libera a cena nova quando ela estiver pronta pra ativar. Fica num GameObject
 // próprio, DontDestroyOnLoad (igual ao "Systems"), porque é chamado pelo MainMenuUI ANTES da
 // troca de cena e precisa sobreviver a ela pra conseguir reportar o progresso até o fim.
+//
+// Importante (bug real, 2026-10-31): mostrar a tela e SÓ DEPOIS fazer trabalho pesado no mesmo
+// frame não adianta nada — o Unity não desenha nada na tela até o frame inteiro terminar, então
+// a tela de loading "aparecia" só depois do trabalho pesado já ter travado o jogo por um tempo.
+// Por isso LoadSceneRoutine cede 2 frames (yield null + WaitForEndOfFrame) logo depois de ativar
+// a tela, ANTES de chamar preLoadSetup ou SceneManager.LoadSceneAsync — garante que o jogador
+// VÊ a tela antes de qualquer coisa pesada começar. E ela só se esconde quando alguém chama
+// Hide() de fora (GameplayBootstrap, na cena nova) — cobre o Awake/Start da cena nova também,
+// não só o carregamento bruto do asset da cena.
 public class LoadingScreenUI : MonoBehaviour
 {
     public static LoadingScreenUI Instance { get; private set; }
 
     [SerializeField] private GameObject root; // painel cheio de tela, começa desativado
     [SerializeField] private Image progressFill; // Image.Type = Filled / Horizontal — fillAmount 0..1
+    [SerializeField] private TMP_Text statusText; // "Carregando...", "Gerando o mundo...", etc.
     [SerializeField] private float minimumDuration = 0.5f; // evita "flash" em loads muito rápidos — 🔢 ajustável
 
     private void Awake()
@@ -28,15 +40,43 @@ public class LoadingScreenUI : MonoBehaviour
         if (root != null) root.SetActive(false);
     }
 
-    public void LoadScene(string sceneName)
+    // preLoadSetup roda DEPOIS da tela já estar visível (e renderizada) — é onde quem chamou
+    // deve colocar qualquer trabalho síncrono pesado (ex.: MainMenuUI.StartRun criando a
+    // RunState), pra nunca travar o jogo antes do jogador ver que algo está acontecendo.
+    public void LoadScene(string sceneName, Action preLoadSetup = null)
     {
+        // Precisa ativar o GameObject AQUI, antes do StartCoroutine — uma coroutine não começa
+        // em GameObject inativo (erro real: "Coroutine couldn't be started because the game
+        // object is inactive"). O resto (os 2 frames de espera) fica dentro da coroutine.
         if (root != null) root.SetActive(true);
         if (progressFill != null) progressFill.fillAmount = 0f;
-        StartCoroutine(LoadSceneRoutine(sceneName));
+        SetStatus("Carregando...");
+
+        StartCoroutine(LoadSceneRoutine(sceneName, preLoadSetup));
     }
 
-    private IEnumerator LoadSceneRoutine(string sceneName)
+    public void SetStatus(string message)
     {
+        if (statusText != null) statusText.text = message;
+    }
+
+    // Chamado de fora (GameplayBootstrap, já na cena nova) quando o setup pós-load termina de
+    // verdade — herói spawnado, dia iniciado, etc. Não é a Routine abaixo que decide isso.
+    public void Hide()
+    {
+        if (root != null) root.SetActive(false);
+    }
+
+    private IEnumerator LoadSceneRoutine(string sceneName, Action preLoadSetup)
+    {
+        // Cede 2 frames pro Unity realmente desenhar a tela acima antes de seguir — sem isso,
+        // o SetActive(true) fica "pendurado" sem nunca chegar à tela enquanto o resto deste
+        // método roda tudo no mesmo frame.
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
+        preLoadSetup?.Invoke();
+
         float startTime = Time.unscaledTime;
 
         var operation = SceneManager.LoadSceneAsync(sceneName);
@@ -51,6 +91,7 @@ public class LoadingScreenUI : MonoBehaviour
         }
 
         if (progressFill != null) progressFill.fillAmount = 1f;
+        SetStatus("Entrando no mundo...");
 
         // Tempo mínimo de tela de loading, pra não "flashar" em cenas pequenas — puramente
         // cosmético, ajustável/removível depois (minimumDuration acima).
@@ -60,6 +101,7 @@ public class LoadingScreenUI : MonoBehaviour
         operation.allowSceneActivation = true;
         while (!operation.isDone) yield return null;
 
-        if (root != null) root.SetActive(false);
+        // Não chama Hide() aqui de propósito — GameplayBootstrap, já rodando na cena nova,
+        // chama quando o setup pós-load (spawn do herói, início do dia) realmente terminar.
     }
 }

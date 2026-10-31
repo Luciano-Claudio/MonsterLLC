@@ -21,6 +21,7 @@ public class RoguePulseArea : MonoBehaviour
     private float damagePerTick;
     private AttackCooldown tick;
     private readonly HashSet<EnemyController> enemiesInRange = new();
+    private readonly List<EnemyController> tickTargets = new();
     // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
     // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
     private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
@@ -66,7 +67,15 @@ public class RoguePulseArea : MonoBehaviour
         if (!tick.TryConsume()) return;
 
         enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu desde o último tick
-        foreach (var enemy in enemiesInRange) enemy.TakeDamage(damagePerTick, isDirectPlayerHit: false); // área pulsante, sem Game Feel — mesmo critério do rastro do MageFireball
+
+        // Cópia pro foreach — TakeDamage() pode matar o monstro, o que desliga o Collider2D dele
+        // e dispara OnTriggerExit2D NESTA MESMA RoguePulseArea de volta, que faz
+        // enemiesInRange.Remove() enquanto o foreach original ainda estava rodando nele
+        // (InvalidOperationException: "Collection was modified" — bug real, 2026-10-31, mesmo
+        // já corrigido no rastro "Grounded" do MageFireball).
+        tickTargets.Clear();
+        tickTargets.AddRange(enemiesInRange);
+        foreach (var enemy in tickTargets) enemy.TakeDamage(damagePerTick, isDirectPlayerHit: false); // área pulsante, sem Game Feel — mesmo critério do rastro do MageFireball
     }
 
     private void OnTriggerEnter2D(Collider2D other)
