@@ -24,8 +24,16 @@ public class LoadingScreenUI : MonoBehaviour
 
     [SerializeField] private GameObject root; // painel cheio de tela, começa desativado
     [SerializeField] private Image progressFill; // Image.Type = Filled / Horizontal — fillAmount 0..1
+    [SerializeField] private RectTransform headBar; // ProgressBar_Head_Fill — acompanha a ponta do preenchimento
     [SerializeField] private TMP_Text statusText; // "Carregando...", "Gerando o mundo...", etc.
     [SerializeField] private float minimumDuration = 0.5f; // evita "flash" em loads muito rápidos — 🔢 ajustável
+
+    // Mesma lógica de HealthBarVisuals usada no Health_Bar/Time_Bar (Seção de UI) — a sprite do
+    // Loading_Bar.png reaproveita o mesmo canvas de 112px do Time_Bar (86px de conteúdo opaco
+    // centralizado), por isso as mesmas frações 13/112 e 99/112.
+    [Header("Conteúdo visível dentro do canvas da sprite (padrão Health/Time_Bar)")]
+    [SerializeField] private float contentLeftFraction = 13f / 112f;
+    [SerializeField] private float contentRightFraction = 99f / 112f;
 
     private void Awake()
     {
@@ -49,7 +57,7 @@ public class LoadingScreenUI : MonoBehaviour
         // em GameObject inativo (erro real: "Coroutine couldn't be started because the game
         // object is inactive"). O resto (os 2 frames de espera) fica dentro da coroutine.
         if (root != null) root.SetActive(true);
-        if (progressFill != null) progressFill.fillAmount = 0f;
+        SetFill(0f);
         SetStatus("Carregando...");
 
         StartCoroutine(LoadSceneRoutine(sceneName, preLoadSetup));
@@ -58,6 +66,15 @@ public class LoadingScreenUI : MonoBehaviour
     public void SetStatus(string message)
     {
         if (statusText != null) statusText.text = message;
+    }
+
+    // Mesmo remapeamento de conteúdo do Health_Bar/Time_Bar (HealthBarVisuals) — sem isso, o
+    // fillAmount nativo ficaria "parado" em 100%/0% antes de cruzar a margem transparente da
+    // sprite, e o Head_Fill não acompanharia a ponta visível do preenchimento.
+    private void SetFill(float fillAmount01)
+    {
+        if (progressFill == null) return;
+        HealthBarVisuals.Apply(progressFill, headBar, fillAmount01, contentLeftFraction, contentRightFraction);
     }
 
     // Chamado de fora (GameplayBootstrap, já na cena nova) quando o setup pós-load termina de
@@ -86,11 +103,11 @@ public class LoadingScreenUI : MonoBehaviour
         // normaliza isso pra 0..1 "de verdade" em vez de parar visualmente em 90%.
         while (operation.progress < 0.9f)
         {
-            if (progressFill != null) progressFill.fillAmount = Mathf.Clamp01(operation.progress / 0.9f);
+            SetFill(Mathf.Clamp01(operation.progress / 0.9f));
             yield return null;
         }
 
-        if (progressFill != null) progressFill.fillAmount = 1f;
+        SetFill(1f);
         SetStatus("Entrando no mundo...");
 
         // Tempo mínimo de tela de loading, pra não "flashar" em cenas pequenas — puramente
