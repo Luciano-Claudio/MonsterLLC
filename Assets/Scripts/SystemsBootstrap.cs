@@ -6,6 +6,13 @@ public class SystemsBootstrap : MonoBehaviour
 
     private void Awake()
     {
+        // Este GameObject ("Systems") carrega junto GameStateManager/TimeManager/BagController/
+        // DemandTracker/DayTimer/ShopHandler/ResultsHandler/GameOverHandler — tudo que precisa
+        // existir desde o boot do jogo (cena Main_Menu) e sobreviver a qualquer troca de cena
+        // depois (ex.: carregar a cena de gameplay). DontDestroyOnLoad aqui protege o grupo
+        // inteiro de uma vez, já que todos vivem no mesmo GameObject.
+        DontDestroyOnLoad(gameObject);
+
         ProgressTracker.Init();
         controls = new PlayerControls();
 

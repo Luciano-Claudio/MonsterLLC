@@ -1,92 +1,48 @@
 using UnityEngine;
-using Unity.Cinemachine;
+using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour
 {
+    public static MainMenuUI Instance { get; private set; }
     public static RunState CurrentRun { get; private set; }
 
-    // Registro de heróis prontos — 1 entrada por herói, nome igual ao usado em RunState.hero.
-    // Adicionar um herói novo (quando a sprint dele fechar) é só arrastar o prefab aqui, sem
-    // mexer em mais nada deste script.
-    [System.Serializable]
-    private class HeroEntry
-    {
-        public string name;
-        public GameObject prefab;
-    }
-
-    [Header("Heróis disponíveis")]
-    [SerializeField] private HeroEntry[] availableHeroes;
+    private void Awake() => Instance = this;
 
     [SerializeField] private string heroToSpawn = "Barbarian";
 
-    [Header("Onde o herói nasce / câmera que o segue")]
-    [SerializeField] private Transform herosContainer; // GameObject "//HEROS" na cena — criado na hora se ninguém atribuir um aqui
-    [SerializeField] private CinemachineCamera cinemachineCamera;
+    // Cena de gameplay (mundo/Tower) — GameplayBootstrap, lá dentro, termina o fluxo (spawna o
+    // herói ou reabre a Loja) usando os singletons persistentes (GameStateManager/
+    // BagController/DayTimer/DemandTracker/SystemsBootstrap), que sobrevivem à troca de cena via
+    // DontDestroyOnLoad (GameObject "Systems", nascido aqui na cena Main_Menu).
+    private const string GameplaySceneName = "_TestScene";
 
     [ContextMenu("New Game (Standard / heroToSpawn / Tower)")]
-    public void NewGame()
+    public void NewGame() => StartRun(heroToSpawn);
+
+    // Chamado pela UI (MainMenuNavigationUI) com o herói escolhido no Heros_Painel — NewGame()
+    // acima continua existindo só pro ContextMenu de teste manual, usando o heroToSpawn fixo.
+    public void StartRun(string heroName)
     {
         GameStateManager.Instance.SetState(GameState.ModeSelect);
         Debug.Log("[MainMenu] Mode selecionado: Standard");
 
         GameStateManager.Instance.SetState(GameState.HeroSelect);
-        Debug.Log($"[MainMenu] Hero selecionado: {heroToSpawn}");
+        Debug.Log($"[MainMenu] Hero selecionado: {heroName}");
 
         GameStateManager.Instance.SetState(GameState.MapSelect);
         Debug.Log("[MainMenu] Map selecionado: Tower");
 
-        CurrentRun = RunCreation.CreateNewRun("Standard", heroToSpawn, "Tower");
+        CurrentRun = RunCreation.CreateNewRun("Standard", heroName, "Tower");
         Debug.Log($"[MainMenu] RunState criado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}");
 
         BagController.Instance.Bag.Clear();
         GameEvents.GoldChanged(CurrentRun.gold);
         GameEvents.BagChanged(BagController.Instance.Bag);
 
-        // SpawnHero ANTES do ResetForNewDay, de propósito — ResetForNewDay dispara
-        // GameEvents.DayStarted(), e o Mage (e futuramente o Blood Mage) só sumona o pet
-        // reagindo a esse evento (OnEnable -> GameEvents.OnDayStart += SummonPet). Se o dia
-        // começasse antes do herói existir, o evento já teria passado quando o Mage se
-        // inscrevesse, e o pet nunca nasceria no Dia 1 (bug real, encontrado em playtest).
-        SpawnHero(heroToSpawn);
-
-        DayTimer.Instance.ResetForNewDay();
-        DemandTracker.Instance.StartDay(CurrentRun.day);
-
-        GameStateManager.Instance.SetState(GameState.Gameplay);
-    }
-
-    // Instancia o herói escolhido em (0,0,0) dentro do GameObject "//HEROS" e aponta a câmera do
-    // Cinemachine pra ele — sem isso, a câmera continuaria seguindo qualquer herói antigo que
-    // já estivesse na cena antes (ou nenhum).
-    private void SpawnHero(string heroName)
-    {
-        // HeroController.IsPlayerUntargetable é static (camuflagem do Ranger, Coruja do
-        // Druid) — se ficou travado em true de uma sessão de Play anterior (Reload Domain
-        // desligado no Enter Play Mode Settings não reseta static entre Stop/Play), todo
-        // monstro ficava cego pro herói novo. Começar uma run do zero sempre garante
-        // "visível" de novo, independente do que sobrou de testes anteriores.
-        HeroController.IsPlayerUntargetable = false;
-
-        HeroEntry entry = System.Array.Find(availableHeroes, h => h.name == heroName);
-        if (entry == null || entry.prefab == null)
-        {
-            Debug.LogWarning($"[MainMenu] Nenhum prefab configurado pra '{heroName}' em availableHeroes.");
-            return;
-        }
-
-        if (herosContainer == null)
-        {
-            var existing = GameObject.Find("//HEROS");
-            herosContainer = existing != null ? existing.transform : new GameObject("//HEROS").transform;
-        }
-
-        GameObject heroObj = Instantiate(entry.prefab, Vector3.zero, Quaternion.identity, herosContainer);
-
-        if (cinemachineCamera != null) cinemachineCamera.Target.TrackingTarget = heroObj.transform;
-        else Debug.LogWarning("[MainMenu] CinemachineCamera não atribuída no Inspector — câmera não vai seguir o herói.");
-
-        GameEvents.HeroSpawned(heroObj.transform);
+        // Fica em GameState.MapSelect de propósito — é o sinal que o GameplayBootstrap usa, na
+        // cena de gameplay, pra saber que acabou de vir de um New Game (e não de um Continue) e
+        // só então spawnar o herói, resetar o dia e avançar pra GameState.Gameplay.
+        LoadGameplayScene();
     }
 
     [ContextMenu("Continue Game")]
@@ -105,13 +61,23 @@ public class MainMenuUI : MonoBehaviour
         GameEvents.GoldChanged(CurrentRun.gold);
         GameEvents.BagChanged(BagController.Instance.Bag);
 
-        // GDD Seção 8/43: o checkpoint é a Loja que precede o próximo dia — Continue Game
-        // abre essa Loja, não o Gameplay direto. Não chama SaveManager.Save() — só carrega.
+        // GDD Seção 8/43: o checkpoint é a Loja que precede o próximo dia — Continue Game abre
+        // essa Loja, não o Gameplay direto. Não chama SaveManager.Save() — só carrega.
         GameStateManager.Instance.SetState(GameState.Shop);
 
-        // 🟡 PENDÊNCIA (Sprint P2, Pré-Deadline Mundo Único): diferente de NewGame(), este
-        // fluxo não chama SpawnHero — hoje o herói pode não ser reinstanciado ao voltar de um
-        // save. Registrado aqui de propósito pra resolver junto da UI final do Menu
-        // (Deadline 8), não agora — decisão do usuário, fora de escopo da Pré-Deadline.
+        // 🟡 PENDÊNCIA (Sprint P2, Pré-Deadline Mundo Único): diferente do StartRun(), o
+        // GameplayBootstrap não spawna o herói neste caminho — hoje ele pode não ser
+        // reinstanciado ao voltar de um save. Registrado de propósito pra resolver junto da UI
+        // final do Menu (Deadline 8), não agora — decisão do usuário, fora de escopo.
+        LoadGameplayScene();
+    }
+
+    // Passa pela tela de loading (LoadingScreenUI, viva desde o boot via DontDestroyOnLoad) —
+    // só cai no SceneManager.LoadScene direto (sem tela de loading) se ela não existir por algum
+    // motivo, pra nunca travar a troca de cena por falta dela.
+    private static void LoadGameplayScene()
+    {
+        if (LoadingScreenUI.Instance != null) LoadingScreenUI.Instance.LoadScene(GameplaySceneName);
+        else SceneManager.LoadScene(GameplaySceneName);
     }
 }
