@@ -9,8 +9,10 @@ Mage — Esquerda (Seção 15), Direita (Seção 16) e Cima (Seção 17) —, e 
 — Esquerda (Seção 18), Direita (Seção 19) e Cima (Seção 20) —, e as 3 abas bespoke do Rogue —
 Esquerda (Seção 21), Direita (Seção 22) e Cima (Seção 23) —, e as 3 abas bespoke do Cleric —
 Esquerda (Seção 24), Direita (Seção 25) e Cima (Seção 26) —, 120 perks completos pra cada um dos
-6 primeiros heróis. A Loja nova (3 abas) e o restante das abas bespoke (Paladin, Gunslinger,
-Assassin, Blood Mage) ainda estão em debate — ver Seção 28._
+6 primeiros heróis, e o Paladin (Seções 27-29) e o Gunslinger (Seções 30-32) 100% completos, e
+o Assassin (Seções 33-35) 100% completo. A Loja nova (3 abas) e o restante das abas bespoke
+e o Blood Mage (Seções 36-38) 100% completo — **os 10 heróis estão fechados**. A Loja nova (3
+abas) ainda está em debate — ver Seção 40._
 
 ## 0. Diagnóstico que motivou o redesign
 
@@ -189,6 +191,24 @@ planejamento própria antes de implementar.
 
 ---
 
+## 4.2 — Bosses (e summons de boss) ignoram invisibilidade/untargetable
+
+**Decisão nova:** bosses e qualquer summon gerado por um boss continuam escolhendo o jogador
+como alvo normalmente mesmo que ele esteja em qualquer estado de invisibilidade/untargetable
+concedido por kit de herói hoje — Camuflagem do Ranger, Coruja do Druid, forma sombria do
+Assassin (`IsPlayerUntargetable`). Afeta só a ESCOLHA DE ALVO (aggro/target); não remove a
+imunidade a dano desses estados — se o boss ainda acertar o jogador por algum outro meio, o dano
+é bloqueado normalmente do mesmo jeito que já é hoje.
+
+**Motivo:** um boss não pode ficar preso perseguindo um alvo "impossível de alcançar"
+indefinidamente — isso travaria a luta.
+
+**Implementação (pendente, igual todo o resto desta fase):** o check de `IsPlayerUntargetable`
+em `EnemyController` precisa de uma exceção pra quando `IsBoss` (ou o monstro for um summon de
+boss) for true — nesse caso, a busca de alvo ignora a flag e trata o jogador como alvo normal.
+
+---
+
 ## 5. Marco de Validação — Loja Fake ("Day X")
 
 Antes de construir a Loja de verdade, criar uma versão mínima só com um botão "Day X" — serve pra
@@ -348,7 +368,7 @@ Mage (já construídos) e em todos os heróis futuros, desde o início.
 ## 8. Perks de Baixo (Mundo/Economia) — 30 perks, fechado
 
 Diferente de Cima/Esquerda/Direita (100% bespoke por herói, ainda em debate pros outros heróis —
-ver Seção 28), a
+ver Seção 40), a
 árvore de Baixo é **compartilhada entre os 10 heróis**, sem exceção, e seu conteúdo está **fechado
 em 30 perks**. Regras que valem só aqui:
 
@@ -410,7 +430,7 @@ Vivo, Baú Extra, Baú Duplo, Mais Espaço de Bag, Stack Maior, Reroll de Talent
 
 ## 9. Perks de Esquerda (Ataque Primário) — Barbarian, 30 perks, fechado
 
-Primeira das 3 abas bespoke por herói (Cima/Esquerda/Direita — ver Seção 28) a ser fechada. Serve
+Primeira das 3 abas bespoke por herói (Cima/Esquerda/Direita — ver Seção 40) a ser fechada. Serve
 de referência de formato pras próximas 29 abas (10 heróis × 3, Baixo já é compartilhada — Seção
 8).
 
@@ -1545,7 +1565,7 @@ Grounded na Oração real: `prayerRadius` (6, raio de visão do Cleric), `prayer
 duração do Efeito WordOfPain), `prayerTickDamageMultiplier` (0.5, fração do dano normal aplicada
 por tick) e `ApplyHealWave` (reaproveitada por um dos perks). 2 mudanças de kit base, pré-
 requisito pra esta árvore fazer sentido (ainda sem código — mesma pendência de implementação de
-toda a árvore de Perks, ver Seção 28):
+toda a árvore de Perks, ver Seção 40):
 
 - A Oração deixa de paralisar por padrão — sem comprar **Grilhões da Fé**, ela só aplica o DoT
   espaçado; os monstros continuam andando/atacando normais entre os ticks.
@@ -1624,7 +1644,861 @@ toda a árvore de Perks, ver Seção 28):
 
 ---
 
-## 27. Mudança de código já aplicada fora de escopo (exceção pontual)
+## 27. Perks de Esquerda (Ataque Primário) — Paladin, 30 perks, fechado
+
+Sétimo herói na ordem do GDD. Grounded no martelo arremessado real: `hammerCount` (1 a 5, travado
+pelo `OnValidate`), `hammerSpeed`, `hammerMaxRange`, `hammerExplosionRadius`, e a explosão do
+`PaladinHammer` (hoje fixa em 50% do dano direto recebido em `Launch`, sem nenhum knockback). Usa
+o mesmo `HeroStats.critChance` compartilhado que a Esquerda do Cleric já usa.
+
+**Dano**
+1. Golpe Sagrado — 0/5 · 10/80/640/5.120/40.960 · +8%/rank no dano direto (`stats.damage`).
+2. Fervor do Martelo — 0/3 · 1M/12M/144M · +15%/rank.
+3. Justiça Divina — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Ira Sagrada — 0/2 · 5B/100B · +30%/rank.
+5. Punho de Ferro — 0/1 · 50T · +40%.
+
+**Explosão** (fração do dano direto aplicada em área — hoje fixa em 50%)
+6. Onda de Impacto — 0/5 · 10/80/640/5.120/40.960 · +5%/rank (50% → 75%).
+7. Estrondo Sagrado — 0/3 · 1M/12M/144M · +5%/rank adicional.
+
+**Raio da explosão** (`hammerExplosionRadius`)
+8. Área Consagrada — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+9. Zona Sagrada — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Quantidade de martelos** (`hammerCount`, teto hoje = 5)
+10. Segundo Martelo Sagrado — 0/1 · 1M · 1 → 2.
+11. Terceiro Martelo Sagrado — 0/1 · 12M · 2 → 3.
+12. Quarto Martelo Sagrado — 0/1 · 100M · 3 → 4.
+13. Quinto Martelo Sagrado — 0/1 · 1,5B · 4 → 5 (teto atual do kit).
+
+**Velocidade / alcance**
+14. Lançamento Veloz — 0/5 · 10/80/640/5.120/40.960 · +10%/rank na velocidade do martelo
+    (`hammerSpeed`).
+15. Alcance Consagrado — 0/5 · 10/80/640/5.120/40.960 · +10%/rank no alcance máximo
+    (`hammerMaxRange`).
+16. Força Sagrada — 0/3 · 1M/12M/144M · +10%/rank em velocidade E alcance juntos.
+
+**Cooldown real**
+17. Fé Rápida — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+18. Devoção Ágil — 0/3 · 1M/12M/144M · -8%/rank.
+19. Reflexo Sagrado — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Crítico**
+20. Golpe Certeiro — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+21. Precisão Divina — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+22. Impulso Sagrado — 0/3 · 1M/12M/144M · o hit direto passa a empurrar o monstro atingido (hoje
+    o martelo não empurra nada), %/rank de força.
+23. Onda de Choque Sagrada — 0/3 · 1M/12M/144M · a explosão também empurra os monstros
+    atingidos, mesma base de força do Impulso Sagrado, %/rank.
+24. Martelo Vampírico — 0/3 · 1M/12M/144M · cura o Paladin em %/rank do dano total causado pelo
+    martelo (direto + explosão).
+25. Punho Atordoante — 0/2 · 100M/1,5B · requer Impulso Sagrado maxado; %/rank de chance do hit
+    direto atordoar o monstro por 1s (Efeito Nocivo novo — Stun, nenhum outro herói usa essa
+    incapacitação hoje).
+26. Marca Sagrada — 0/3 · 1M/12M/144M · o monstro atingido recebe %/rank mais dano de qualquer
+    fonte por alguns segundos.
+27. Segundo Fôlego Sagrado — 0/1 · 100M · 20% de chance de lançar um martelo extra, em direção
+    aleatória, sem custo.
+
+**Gates finais**
+28. **Martelo do Trovão** — 0/1 · 50T · o martelo perfura: não impacta mais no primeiro acerto,
+    continua voando até o alcance máximo, aplicando o dano direto em todo monstro no caminho.
+29. **Martelo Ressurgente** — 0/1 · 500T · requer Quinto Martelo Sagrado comprado; remove o teto
+    de 5 martelos do `OnValidate` — `hammerCount` pode continuar subindo.
+30. **Martelo do Juízo** — 0/1 · **1 quadrilhão** · requer Martelo do Trovão; se chegar ao
+    alcance máximo sem impactar ninguém, o martelo volta voando até o Paladin, acertando de novo
+    tudo no caminho de volta.
+
+---
+
+## 28. Perks de Direita (Shift/Survival) — Paladin, 30 perks, fechado
+
+Junta Shift (shield bash) e Passiva (bolha periódica) na mesma aba — mesmo critério do Mage
+(Direita dele junta Shift e Pet). Grounded no shield bash real (`shieldBashHitboxN/S/E/W`,
+`shieldBashDamageMultiplier`, `shieldBashKnockbackForce`, `IsDamageImmune => isUsingSecondaryAbility`
+durante toda a animação) e na bolha passiva (`shieldMaxHealth`, `shieldRecoverInterval`,
+`ActivateShield`/`BreakShield`, reativação instantânea em `OnHeroDeath`).
+
+**Shift — Dano do golpe**
+1. Impacto do Escudo — 0/5 · 10/80/640/5.120/40.960 · +8%/rank (`shieldBashDamageMultiplier`).
+2. Força Consagrada — 0/3 · 1M/12M/144M · +15%/rank.
+3. Golpe Protetor — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Fúria do Escudo — 0/2 · 5B/100B · +30%/rank.
+5. Golpe Final — 0/1 · 50T · +40%.
+
+**Shift — Empurrão**
+6. Empurrão Sagrado — 0/5 · 10/80/640/5.120/40.960 · +10%/rank (`shieldBashKnockbackForce`).
+7. Onda Protetora — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Shift — Cooldown real**
+8. Reflexo Rápido — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+9. Guarda Ágil — 0/3 · 1M/12M/144M · -8%/rank.
+10. Escudo Veloz — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Shift — mecânicas novas**
+11. Guarda Prolongada — 0/3 · 1M/12M/144M · a imunidade do Shift continua por +0,2s/rank
+    depois da animação acabar.
+12. Escudo Recarregado — 0/3 · 1M/12M/144M · usar o Shift recupera %/rank da vida da bolha
+    passiva.
+13. Escudo Repelente — 0/2 · 100M/1,5B · reaproveita o Efeito Nocivo novo de Stun (mesmo da
+    Esquerda); monstros empurrados pelo Shift ficam atordoados: 2s no rank 1, +1s adicional no
+    rank 2 (total 3s).
+
+**Passiva (bolha) — Vida do escudo**
+14. Escudo Reforçado — 0/5 · 10/80/640/5.120/40.960 · +15%/rank (`shieldMaxHealth`).
+15. Bastião Sagrado — 0/3 · 1M/12M/144M · +20%/rank.
+16. Fortaleza Divina — 0/3 · 100M/1,5B/22,5B · +25%/rank.
+17. Muralha Eterna — 0/2 · 5B/100B · +30%/rank.
+18. Escudo Impenetrável — 0/1 · 50T · +50%.
+
+**Passiva — Recarga**
+19. Recuperação Rápida — 0/5 · 10/80/640/5.120/40.960 · -8%/rank (`shieldRecoverInterval`).
+20. Renascer Protetor — 0/3 · 1M/12M/144M · -10%/rank.
+21. Vigília Constante — 0/3 · 100M/1,5B/22,5B · -12%/rank.
+
+**Passiva — mecânicas novas**
+22. Vigilância Sagrada — 0/3 · 1M/12M/144M · usar o Shift reduz o cooldown atual da recarga da
+    bolha em %/rank (sinergia Shift→Passiva).
+23. Escudo Reativo — 0/2 · 100M/1,5B · ao quebrar, a bolha empurra todos os monstros próximos.
+24. Renascimento Protegido — 0/2 · 100M/1,5B · o escudo reativado ao reviver (`OnHeroDeath`)
+    nasce com %/rank de vida extra sobre o normal.
+25. Escudo Residual — 0/3 · 1M/12M/144M · depois que a bolha quebra, o Paladin mantém %/rank de
+    redução de dano por 2s (decaindo até lá).
+26. Fé Inabalável — 0/2 · 100M/1,5B · enquanto a bolha estiver ativa, ela também bloqueia 1
+    Efeito Nocivo/rank sem gastar a própria vida.
+27. Guardião Sagrado — 0/1 · 100B · a cada 3 quebras da bolha, a próxima recarrega
+    instantaneamente.
+
+**Gates finais**
+28. **Guardião Eterno** — 0/1 · 50T · requer Guardião Sagrado; remove a trava de "a cada 3
+    quebras" — toda quebra recarrega a bolha na hora (ainda limitado pela vida máxima dela, não
+    é imunidade de graça).
+29. **Escudo Absoluto** — 0/1 · 500T · requer Guardião Eterno; cada recarga instantânea já nasce
+    com 50% de vida extra sobre o `shieldMaxHealth` atual.
+30. **Juízo Protetor** — 0/1 · **1 quadrilhão** · requer Vigilância Sagrada maxada; usar o Shift
+    quando a bolha estiver quebrada a reativa na hora, já com 100% de vida.
+
+---
+
+## 29. Perks de Cima (Ultimate) — Paladin, 30 perks, fechado
+
+Grounded nas espadas orbitantes reais: `bladeCount` (só 2/4/8, nunca ímpar), `orbitSpeedDegreesPerSecond`
+(360°/s), `ultimateDuration` (5s), `ultimateDamageMultiplier` (2x), dano por hit sem dedup entre
+voltas (cada volta que passar por cima do monstro conta hit novo) e sem knockback nenhum hoje. A
+Ultimate não trava o Paladin — ele continua livre pra andar/atacar enquanto as lâminas orbitam.
+
+**Dano por hit**
+1. Fio Sagrado — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Lâmina Zelota — 0/3 · 1M/12M/144M · +15%/rank.
+3. Fúria das Lâminas — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Julgamento Cortante — 0/2 · 5B/100B · +30%/rank.
+5. Lâmina Divina — 0/1 · 50T · +40%.
+
+**Duração** (`ultimateDuration`)
+6. Fé Prolongada — 0/5 · 10/80/640/5.120/40.960 · +15%/rank.
+7. Vigília Eterna — 0/3 · 1M/12M/144M · +20%/rank.
+8. Devoção Sem Fim — 0/3 · 100M/1,5B/22,5B · +25%/rank.
+
+**Velocidade de órbita** (mais rápido = mais hits/segundo, cada volta conta hit novo)
+9. Giro Sagrado — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+10. Redemoinho Divino — 0/3 · 1M/12M/144M · +15%/rank.
+11. Vórtice Celestial — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Quantidade de lâminas** (`bladeCount`, só 2/4/8)
+12. Quatro Lâminas — 0/1 · 1M · 2 → 4.
+13. Oito Lâminas — 0/1 · 100M · 4 → 8 (teto atual do kit).
+
+**Cooldown real / recarga da Ultimate**
+14. Zelo Rápido — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+15. Fervor Sagrado — 0/3 · 1M/12M/144M · +12%/rank.
+16. Devoção Ágil — 0/3 · 100M/1,5B/22,5B · +15%/rank.
+
+**Mecânicas novas**
+17. Alcance Sagrado — 0/3 · 1M/12M/144M · +10%/rank no raio de órbita das lâminas.
+18. Lâminas Pesadas — 0/3 · 1M/12M/144M · cada hit passa a empurrar o monstro (hoje não empurra
+    nada), %/rank de força.
+19. Lâminas Atordoantes — 0/2 · 100M/1,5B · %/rank de chance de cada hit atordoar o monstro por
+    1s (reaproveita o Efeito Nocivo Stun da Esquerda, sem exigir o perk de lá).
+20. Fio Vampírico — 0/3 · 1M/12M/144M · cura o Paladin em %/rank do dano total causado pelas
+    lâminas.
+21. Lâminas Crescentes — 0/3 · 1M/12M/144M · o dano por hit aumenta %/rank a cada 1s de Ultimate
+    ativa (reinicia a cada novo cast).
+22. Dança Sagrada — 0/2 · 100M/1,5B · enquanto ativa, reduz o cooldown do Shift em %/rank
+    (sinergia Cima→Direita).
+23. Círculo Protetor — 0/2 · 100M/1,5B · enquanto a Ultimate estiver ativa, a bolha passiva
+    regenera 5%/rank da própria vida máxima por segundo — ainda quebra normalmente se o dano
+    recebido for maior que a regeneração, só ajuda a sustentar.
+24. Chamado Final — 0/1 · 100B · 15% de chance de recomeçar a Ultimate automaticamente ao fim,
+    sem gastar recarga.
+
+**Crítico**
+25. Lâmina Certeira — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+26. Precisão Sagrada — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Gates finais**
+27. **Lâminas Infinitas** — 0/1 · 50T · requer Oito Lâminas; remove o teto de 8 — `bladeCount`
+    pode continuar subindo (sempre par).
+28. **Círculo Eterno** — 0/1 · 500T · requer Vigília Eterna e Devoção Sem Fim maxadas; a Ultimate
+    nunca termina sozinha por tempo — só para se for recomeçada ou o Paladin morrer.
+29. Juízo das Lâminas — 0/2 · 5B/100B · requer Lâminas Crescentes maxada; o ramping de dano não
+    reinicia mais ao recast — continua de onde parou.
+30. **Lâminas do Apocalipse** — 0/1 · **1 quadrilhão** · requer Lâminas Infinitas; a cada volta
+    completa, dispara uma onda de dano na tela toda igual a 50% do dano atual por hit.
+
+---
+
+## 30. Perks de Esquerda (Ataque Primário) — Gunslinger, 30 perks, fechado
+
+Oitavo herói na ordem do GDD. Grounded na rajada Hitscan real: `hitscanMaxRange`, `shotCount`
+(1 a 15, travado pelo `OnValidate`), `shotMaxDeviationAngle` (cone de imprecisão, nunca 0), dano
+direto via `stats.damage`, sem knockback e sem perfuração hoje (raycast único, para no primeiro
+monstro de verdade). Usa o mesmo `HeroStats.critChance` compartilhado.
+
+**Dano por tiro**
+1. Mira Afiada — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Pontaria Mortal — 0/3 · 1M/12M/144M · +15%/rank.
+3. Tiro Certeiro — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Chumbo Pesado — 0/2 · 5B/100B · +30%/rank.
+5. Bala de Prata — 0/1 · 50T · +40%.
+
+**Alcance** (`hitscanMaxRange`)
+6. Olho de Águia — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+7. Visão de Atirador — 0/3 · 1M/12M/144M · +15%/rank.
+8. Alcance Letal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Precisão** (reduz `shotMaxDeviationAngle`)
+9. Mão Firme — 0/5 · 10/80/640/5.120/40.960 · -10%/rank.
+10. Pulso de Aço — 0/3 · 1M/12M/144M · -15%/rank.
+11. Precisão Absoluta — 0/3 · 100M/1,5B/22,5B · -20%/rank.
+
+**Quantidade de tiros por rajada** (`shotCount`, teto hoje = 15)
+12. Disparo Rápido — 0/5 · 10/80/640/5.120/40.960 · +1 tiro/rank (1 → 6).
+13. Rajada Dupla — 0/3 · 1M/12M/144M · +1 tiro/rank (→ 9).
+14. Chuva de Balas — 0/3 · 100M/1,5B/22,5B · +1 tiro/rank (→ 12).
+15. Tempestade de Chumbo — 0/2 · 5B/100B · +1 tiro/rank (→ 14).
+
+**Velocidade de disparo** (introduz: acelera o loop de `Attack_Shoot`, hoje fixo)
+16. Dedo Leve — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+17. Cadência Mortal — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Cooldown real**
+18. Recarga Rápida — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+19. Mãos Ágeis — 0/3 · 1M/12M/144M · -8%/rank.
+20. Tambor Veloz — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Crítico**
+21. Tiro na Cabeça — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+22. Instinto Assassino — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+23. Bala Pesada — 0/3 · 1M/12M/144M · cada tiro passa a empurrar o monstro atingido (hoje não
+    empurra nada), %/rank de força.
+24. Bala Perfurante — 0/3 · 1M/12M/144M · o tiro continua depois do 1º monstro, acertando
+    %/rank de monstros adicionais na mesma linha, sempre com dano cheio.
+25. Tiro de Misericórdia — 0/2 · 100M/1,5B · o último tiro da rajada causa %/rank mais dano que
+    os anteriores.
+26. Sangue Frio — 0/3 · 1M/12M/144M · cura o Gunslinger em %/rank do dano total causado pela
+    rajada.
+27. Bala Ricocheteante — 0/2 · 100M/1,5B · se o tiro matar o monstro, ricocheteia pro próximo
+    monstro vivo mais próximo, %/rank de chance.
+
+**Gates finais**
+28. **Tiro Sem Fim** — 0/1 · 50T · requer Tempestade de Chumbo maxada; remove o teto de 15
+    tiros do `OnValidate` — `shotCount` pode continuar subindo.
+29. **Bala do Juízo** — 0/1 · 500T · requer Bala Perfurante maxada; o tiro perfura TODOS os
+    monstros na linha, sem limite, sempre com dano cheio.
+30. **Chumbo Divino** — 0/1 · **1 quadrilhão** · requer Bala Ricocheteante maxada; o
+    ricocheteio nunca erra (100% de chance) e pode continuar em cadeia enquanto matar monstros
+    em sequência.
+
+---
+
+## 31. Perks de Direita (Shift/Survival) — Gunslinger, 30 perks, fechado
+
+Junta Shift (rajada de pelotas + recuo) e Passiva (loot em dobro) na mesma aba — mesmo critério
+do Mage/Paladin. Grounded no real: `shiftPelletCount`, `shiftDamageMultiplier`,
+`shiftRecoilSpeed`, `shiftRecoilDuration`, mesmo raycast sem perfuração/knockback do Primário, e
+**sem nenhuma imunidade hoje** (diferente de Paladin/Ranger/Druid/Rogue) — e `lootMultiplier`
+(hoje fixo em 2x, setado uma vez em `Awake`).
+
+**Shift — Dano dos pelotas**
+1. Pelotas Mortais — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Chumbo Grosso — 0/3 · 1M/12M/144M · +15%/rank.
+3. Estilhaço Fatal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Carga Explosiva — 0/2 · 5B/100B · +30%/rank.
+5. Última Bala — 0/1 · 50T · +40%.
+
+**Shift — Quantidade de pelotas** (hoje fixo em 5)
+6. Mais Pelotas — 0/5 · 10/80/640/5.120/40.960 · +1 pelota/rank (5 → 10).
+7. Carga Dupla — 0/3 · 1M/12M/144M · +1 pelota/rank (→ 13).
+8. Saraivada — 0/3 · 100M/1,5B/22,5B · +1 pelota/rank (→ 16).
+
+**Shift — Recuo**
+9. Impulso Forte — 0/5 · 10/80/640/5.120/40.960 · +10%/rank na velocidade do recuo.
+10. Recuo Protegido — 0/3 · 1M/12M/144M · durante o recuo, o Gunslinger recebe %/rank de
+    redução de dano (o impulso vira uma janela de esquiva, não só deslocamento).
+
+**Shift — Cooldown real**
+11. Reflexo Veloz — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+12. Mãos Firmes — 0/3 · 1M/12M/144M · -8%/rank.
+13. Gatilho Leve — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Shift — mecânicas novas**
+14. Blindagem de Combate — 0/3 · 1M/12M/144M · concede imunidade a dano durante o Shift
+    (mecânica nova): rank 1 só no disparo, rank 2 inclui o recuo, rank 3 cobre a sequência
+    inteira.
+15. Pelotas Perfurantes — 0/3 · 1M/12M/144M · cada pelota passa a acertar %/rank de monstros
+    adicionais na mesma linha.
+16. Recuo Ofensivo — 0/2 · 100M/1,5B · durante o recuo, qualquer monstro tocado pelo corpo do
+    Gunslinger recebe dano e empurrão, %/rank de força.
+17. Fôlego de Combate — 0/2 · 100M/1,5B · usar o Shift recupera %/rank de Energia da Ultimate.
+
+**Passiva — Loot em dobro**
+18. Bolsos Fundos — 0/5 · 10/80/640/5.120/40.960 · +10%/rank no `lootMultiplier` (hoje fixo 2x).
+19. Sorte do Pistoleiro — 0/3 · 1M/12M/144M · +15%/rank.
+20. Fortuna Sem Lei — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+21. Saque Dourado — 0/2 · 5B/100B · +30%/rank.
+22. Último Saque — 0/1 · 50T · +40%.
+
+**Passiva — mecânicas novas**
+23. Pistoleiro Rico — 0/3 · 1M/12M/144M · monstros mortos durante o Shift soltam %/rank mais
+    ouro, além do loot em dobro normal.
+24. Instinto de Sobrevivência — 0/3 · 1M/12M/144M · abaixo de 30% de vida, o cooldown do Shift
+    é reduzido em %/rank.
+25. Recompensa Dupla — 0/2 · 100M/1,5B · %/rank de chance de dropar 1 item adicional de
+    qualquer monstro morto.
+
+**Gates finais**
+26. **Gatilho Sem Fim** — 0/1 · 50T · requer Saraivada maxada; remove o teto de pelotas.
+27. **Blindagem Absoluta** — 0/1 · 500T · requer Blindagem de Combate maxada; a imunidade
+    continua por +1s depois da animação acabar.
+28. Fortuna Infinita — 0/2 · 5B/100B · requer Fortuna Sem Lei maxada; +15%/rank adicional no
+    `lootMultiplier`.
+29. **Pelotas do Juízo** — 0/1 · 500T · requer Pelotas Perfurantes maxada; perfuram TODOS os
+    monstros na linha, sem limite.
+30. **Saque do Destino** — 0/1 · **1 quadrilhão** · requer Recompensa Dupla maxada; todo
+    monstro morto enquanto o Shift estiver em cooldown solta um item garantido extra (não só
+    chance).
+
+---
+
+## 32. Perks de Cima (Ultimate) — Gunslinger, 30 perks, fechado
+
+Grounded no tiro teleguiado real: `ultimateHitCount` (sempre acerta, reavalia o alvo mais
+próximo a cada tiro), `ultimateDamageMultiplier`, `ultimateSearchRadius`, sem knockback hoje. A
+Ultimate **não usa cooldown por tempo** — ela é carregada por Energia (`stats.energy`/
+`stats.maxEnergy`, ganha por kill via `UltimateEnergyMultiplier` × `EnergyGainMultiplier`), com
+uma janela de bloqueio pós-uso (`ultimateEnergyLockoutDuration`) pra ela não se realimentar
+sozinha. **Pendência:** os grupos "Cooldown real"/"recarga da Ultimate" das Cima de Barbarian,
+Ranger, Mage, Druid, Rogue, Cleric e Paladin (Seções 11, 14, 17, 20, 23, 26 e 29) foram escritos
+como se existisse um timer de cooldown — não existe, é o mesmo sistema de Energia. Ainda sem
+auditoria/correção.
+
+**Dano por tiro**
+1. Precisão Letal — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Tiro Perfeito — 0/3 · 1M/12M/144M · +15%/rank.
+3. Execução Garantida — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Sentença Final — 0/2 · 5B/100B · +30%/rank.
+5. Juízo Implacável — 0/1 · 50T · +40%.
+
+**Quantidade de tiros** (`ultimateHitCount`)
+6. Rajada Teleguiada — 0/5 · 10/80/640/5.120/40.960 · +1 tiro/rank (5 → 10).
+7. Saraivada Guiada — 0/3 · 1M/12M/144M · +1 tiro/rank (→ 13).
+8. Tempestade Guiada — 0/3 · 100M/1,5B/22,5B · +1 tiro/rank (→ 16).
+
+**Raio de busca** (`ultimateSearchRadius`)
+9. Olhos no Alvo — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+10. Visão Ampliada — 0/3 · 1M/12M/144M · +15%/rank.
+11. Alcance Absoluto — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Energia da Ultimate** (`UltimateEnergyMultiplier` próprio do Gunslinger +
+`ultimateEnergyLockoutDuration`)
+12. Instinto Rápido — 0/5 · 10/80/640/5.120/40.960 · +8%/rank na Energia ganha por kill.
+13. Fôlego de Caçador — 0/3 · 1M/12M/144M · +12%/rank adicional.
+14. Instinto Certeiro — 0/3 · 100M/1,5B/22,5B · -10%/rank na janela de bloqueio pós-Ultimate.
+
+**Velocidade de disparo**
+15. Gatilho Guiado — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+16. Disparo Instantâneo — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Crítico**
+17. Tiro Fatal — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+18. Instinto de Caçador — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+19. Impacto Teleguiado — 0/3 · 1M/12M/144M · cada tiro passa a empurrar o monstro atingido
+    (hoje não empurra nada), %/rank de força.
+20. Marca da Morte — 0/3 · 1M/12M/144M · o alvo atingido recebe %/rank mais dano de qualquer
+    fonte por alguns segundos.
+21. Sangue Frio Absoluto — 0/3 · 1M/12M/144M · cura o Gunslinger em %/rank do dano total
+    causado pela Ultimate.
+22. Tiro Duplo Guiado — 0/2 · 100M/1,5B · %/rank de chance de cada tiro mirar e acertar 2
+    monstros próximos em vez de 1.
+23. Prioridade de Alvo — 0/2 · 100M/1,5B · requer Marca da Morte maxada; a Ultimate prioriza
+    monstros com mais vida acima de um limiar %/rank.
+24. Fim de Linha — 0/1 · 100B · se um tiro matar o alvo, o próximo tiro desta Ultimate sai
+    imediatamente, sem esperar o próximo ciclo do loop.
+
+**Gates finais**
+25. **Tiro Sem Limite** — 0/1 · 50T · requer Tempestade Guiada maxada; remove o teto de tiros.
+26. **Alcance Total** — 0/1 · 500T · requer Alcance Absoluto maxada; a busca passa a cobrir
+    TODA a tela, sem limite de raio.
+27. Vingança Guiada — 0/2 · 5B/100B · requer Sangue Frio Absoluto maxada; +15%/rank adicional
+    de cura.
+28. **Nunca Erra Duas Vezes** — 0/1 · 500T · requer Tiro Duplo Guiado maxada; o acerto duplo
+    passa a ser garantido (100%) sempre que houver 2 monstros próximos o suficiente.
+29. Fúria Sem Fim — 0/2 · 100M/1,5B · requer Fim de Linha; toda morte durante a Ultimate reduz
+    a janela de bloqueio pós-Ultimate (`ultimateEnergyLockoutDuration`) em %/rank.
+30. **Juízo Absoluto** — 0/1 · **1 quadrilhão** · requer Tiro Sem Limite e Alcance Total; ao
+    terminar, a Ultimate dispara automaticamente mais 1 tiro teleguiado por monstro vivo na
+    tela, até um teto de 20 tiros extras, sem gastar recarga — não recomeça de novo depois
+    disso.
+
+---
+
+## 33. Perks de Esquerda (Ataque Primário) — Assassin, 30 perks, fechado
+
+Nono herói na ordem do GDD. Grounded no Deadly Dash real: `dashProjectileSpeed`, `dashHitRadius`,
+`dashKnockbackForce`, `dashProjectileCount` (1 a 5, travado pelo `OnValidate`), `dashFanAngleStep`,
+dano cheio por projétil (`stats.damage`, sem split). A invisibilidade/imunidade do dash
+(`isDashInvisible`/`IsDamageImmune`) já existe de graça no kit base, mas nenhum perk aqui a
+estende — decisão do usuário: nada de mais imunidade/invisibilidade nos perks do Assassin (a
+imunidade de 10s da Ultimate já foi nerfada e documentada na Seção 35 — tempo OU orçamento de
+ações, o que acabar primeiro). A variante sombria (Thousand Blades) é exclusiva da forma da
+Ultimate e fica de fora desta aba, mas 2 perks abaixo criam sinergia direta com o orçamento de
+ações dela.
+
+**Dano**
+1. Lâmina Sombria — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Corte Fatal — 0/3 · 1M/12M/144M · +15%/rank.
+3. Ataque Mortal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Fúria das Sombras — 0/2 · 5B/100B · +30%/rank.
+5. Golpe Final — 0/1 · 50T · +40%.
+
+**Velocidade do projétil**
+6. Passos Velozes — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+7. Lâmina Veloz — 0/3 · 1M/12M/144M · +15%/rank.
+8. Sombra Rápida — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Raio de impacto**
+9. Alcance da Lâmina — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+10. Corte Amplo — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Knockback**
+11. Empurrão Sombrio — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+12. Impacto Brutal — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Quantidade de projéteis** (teto hoje = 5)
+13. Segunda Lâmina — 0/1 · 1M · 1 → 2.
+14. Terceira Lâmina — 0/1 · 12M · 2 → 3.
+15. Quarta Lâmina — 0/1 · 100M · 3 → 4.
+16. Quinta Lâmina — 0/1 · 1,5B · 4 → 5 (teto atual do kit).
+
+**Cooldown real**
+17. Reflexo Sombrio — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+18. Passos Silenciosos — 0/3 · 1M/12M/144M · -8%/rank.
+19. Instinto Assassino — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Crítico**
+20. Golpe Certeiro — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+21. Precisão Mortal — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+22. Golpe Inicial — 0/3 · 1M/12M/144M · o PRIMEIRO monstro atingido em cada ativação do dash
+    recebe %/rank mais dano que os demais do mesmo leque.
+23. Lâmina Sedenta — 0/3 · 1M/12M/144M · cura o Assassin em %/rank do dano total causado pelo
+    dash.
+24. **Ataque Silencioso** — 0/3 · 1M/12M/144M · requer estar na forma sombria da Ultimate;
+    %/rank de chance do Attack (Thousand Blades) não consumir 1 ação do orçamento da forma
+    (`stealthActionsRemaining`).
+25. Corte Perfurante — 0/3 · 1M/12M/144M · cada projétil passa a acertar %/rank de monstros
+    adicionais na mesma linha.
+26. **Golpe Decisivo** — 0/3 · 1M/12M/144M · requer estar na forma sombria; Thousand Blades
+    causa %/rank mais dano por cima do multiplicador fixo (2x) — incentiva gastar as ações da
+    forma atacando, não só reposicionando.
+27. Fôlego das Sombras — 0/2 · 100M/1,5B · %/rank de chance do dash não gastar o cooldown
+    real.
+
+**Gates finais**
+28. **Lâminas Sem Fim** — 0/1 · 50T · requer Quinta Lâmina; remove o teto de 5 projéteis.
+29. **Dança das Lâminas** — 0/1 · 500T · requer Quinta Lâmina comprada; cada projétil, na
+    VOLTA (não só na ida), atravessa de novo todos os monstros no caminho — segunda passada,
+    mesmo dano cheio.
+30. **Corte Absoluto** — 0/1 · **1 quadrilhão** · requer Corte Perfurante maxada; os projéteis
+    perfuram TODOS os monstros na linha, sem limite, sempre com dano cheio.
+
+---
+
+## 34. Perks de Direita (Shift/Survival) — Assassin, 30 perks, fechado
+
+Grounded no Teleporte real: `teleportMaxRange` (teto, não "sempre pula o máximo"), pose travada
+em 4 diagonais só visual (`TeleportAimX/Y`), distância real = `min(RawAimDistance,
+teleportMaxRange)` com `TeleportUtility.ClampDistance` (nunca cai dentro de parede/água), hoje
+sem dano nem knockback nenhum. **Decisão do usuário: nenhum perk aqui toca duração de
+imunidade/invisibilidade** — mesmo critério aplicado na Esquerda.
+
+**Alcance**
+1. Salto Sombrio — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+2. Passo Rápido — 0/3 · 1M/12M/144M · +15%/rank.
+3. Salto Longo — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Distância Final — 0/2 · 5B/100B · +30%/rank.
+5. Salto Absoluto — 0/1 · 50T · +40%.
+
+**Cooldown real**
+6. Reflexo Veloz — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+7. Passos Ágeis — 0/3 · 1M/12M/144M · -8%/rank.
+8. Instinto Rápido — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Velocidade da animação** (menos tempo travado do início ao fim, não imunidade)
+9. Dobra Rápida — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+10. Passo Instantâneo — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Dano no ponto de chegada** (hoje o teleporte não causa dano nenhum)
+11. Chegada Mortal — 0/5 · 10/80/640/5.120/40.960 · ao reaparecer, causa dano em área igual a
+    %/rank do dano normal em todos os monstros próximos.
+12. Impacto das Sombras — 0/3 · 1M/12M/144M · +15%/rank adicional.
+13. Eco Sombrio — 0/3 · 100M/1,5B/22,5B · +20%/rank adicional.
+
+**Na partida**
+14. Marca de Fumaça — 0/3 · 1M/12M/144M · deixa uma marca no ponto de PARTIDA que atrai os
+    monstros próximos por alguns segundos (decoy).
+15. Retalhos de Sombra — 0/2 · 100M/1,5B · monstros perto da marca de partida recebem %/rank
+    de lentidão por 2s.
+
+**Utilidade**
+16. Fôlego Sombrio — 0/3 · 1M/12M/144M · o teleporte recupera %/rank de Energia da Ultimate.
+17. Golpe de Chegada — 0/2 · 100M/1,5B · o dano de chegada passa a empurrar os monstros
+    atingidos, %/rank de força.
+18. Salto Certeiro — 0/2 · 100M/1,5B · %/rank de chance do teleporte não gastar o cooldown
+    real.
+19. Ricochete Sombrio — 0/2 · 100M/1,5B · requer Chegada Mortal maxada; se o dano de chegada
+    matar um monstro, reaplica o mesmo dano em área no ponto da morte.
+
+**Crítico** (no dano de chegada)
+20. Chegada Certeira — 0/3 · 1M/12M/144M · requer Chegada Mortal; +5% chance de crítico/rank.
+21. Precisão Sombria — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mais mecânicas**
+22. Salto Duplo — 0/2 · 100M/1,5B · %/rank de chance de teleportar de novo imediatamente, sem
+    gastar cooldown (só 1x por ativação).
+23. Trilha Sombria — 0/3 · 1M/12M/144M · monstros no CAMINHO do teleporte (não só na chegada)
+    recebem %/rank de dano.
+24. Precisão de Pouso — 0/3 · 1M/12M/144M · +%/rank de chance de pousar na distância máxima
+    mesmo perto de obstáculos.
+
+**Gates finais**
+25. **Salto Sem Limite** — 0/1 · 50T · requer Distância Final maxada; remove o teto de alcance.
+26. **Eco Fatal** — 0/1 · 500T · requer Ricochete Sombrio; a reação em cadeia nunca para
+    enquanto matar um monstro por vez.
+27. Fúria Sombria — 0/2 · 5B/100B · requer Eco Sombrio maxada; +15%/rank adicional no dano de
+    chegada.
+28. **Trilha Mortal** — 0/1 · 500T · requer Trilha Sombria maxada; o caminho do teleporte
+    perfura e aplica dano CHEIO em TODOS os monstros na linha.
+29. Instinto Final — 0/2 · 100M/1,5B · requer Salto Duplo; +10%/rank adicional na chance de
+    teleporte extra.
+30. **Juízo das Sombras** — 0/1 · **1 quadrilhão** · requer Trilha Mortal; todo monstro morto
+    pelo dano do teleporte concede Energia total da Ultimate instantaneamente.
+
+---
+
+## 35. Perks de Cima (Ultimate) — Assassin, 30 perks, fechado
+
+Grounded na forma sombria real, já com a mudança de kit base decidida: `stealthDuration` (cai
+pra ~4s base), `stealthActionsRemaining` (começa em 2, -1 por Attack ou Shift usado na forma) —
+a forma termina no que acontecer primeiro entre os dois. Thousand Blades usa
+`thousandBladesDamageMultiplier` (2x) e `thousandBladesHitRadius` (1f), compartilhando
+velocidade/knockback/contagem/ângulo do leque com o Deadly Dash normal (Seção 33).
+`isTransformImmune` cobre só as 2 transições (entrar/sair). Energia por kill, sem cooldown
+(mesma correção já aplicada no Gunslinger, Seção 32).
+
+**Duração**
+1. Sombra Prolongada — 0/5 · 10/80/640/5.120/40.960 · +15%/rank.
+2. Noite Eterna — 0/3 · 1M/12M/144M · +20%/rank.
+3. Véu Perpétuo — 0/3 · 100M/1,5B/22,5B · +25%/rank.
+
+**Orçamento de ações** (base 2)
+4. Fôlego Extra — 0/1 · 1M · +1 ação (2 → 3).
+5. Segundo Fôlego — 0/1 · 100M · +1 ação (3 → 4).
+6. Terceiro Fôlego — 0/1 · 1,5B · +1 ação (4 → 5).
+
+**Thousand Blades — Dano**
+7. Lâminas Sombrias — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+8. Mil Cortes — 0/3 · 1M/12M/144M · +15%/rank.
+9. Fúria das Mil Lâminas — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+10. Massacre Sombrio — 0/2 · 5B/100B · +30%/rank.
+11. Juízo das Lâminas — 0/1 · 50T · +40%.
+
+**Thousand Blades — Raio**
+12. Área Sombria — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+13. Alcance das Lâminas — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Transição**
+14. Entrada Veloz — 0/3 · 1M/12M/144M · +15%/rank na velocidade da animação de entrar na
+    forma.
+15. Saída Veloz — 0/3 · 1M/12M/144M · +15%/rank na velocidade da animação de sair.
+
+**Energia da Ultimate**
+16. Instinto Sombrio — 0/5 · 10/80/640/5.120/40.960 · +8%/rank na Energia ganha por kill.
+17. Fome das Sombras — 0/3 · 1M/12M/144M · +12%/rank adicional.
+18. Vazio Sombrio — 0/2 · 100M/1,5B · ao terminar a forma, devolve %/rank da Energia gasta em
+    vez de zerar tudo.
+
+**Crítico**
+19. Golpe Mortal — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+20. Precisão Absoluta — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+21. Sangue das Sombras — 0/3 · 1M/12M/144M · cura o Assassin em %/rank do dano causado pelo
+    Thousand Blades.
+22. Marca da Noite — 0/3 · 1M/12M/144M · o monstro atingido recebe %/rank mais dano de
+    qualquer fonte por alguns segundos.
+23. Golpe Final — 0/2 · 100M/1,5B · requer Terceiro Fôlego comprado; a ÚLTIMA ação do
+    orçamento causa %/rank mais dano que as anteriores.
+24. Vigília Sombria — 0/2 · 100M/1,5B · %/rank de chance de recuperar 1 ação do orçamento ao
+    matar um monstro durante a forma.
+25. Fúria Contida — 0/3 · 1M/12M/144M · cada monstro morto durante a forma concede %/rank de
+    Energia extra pra PRÓXIMA Ultimate.
+
+**Gates finais**
+26. **Sombra Sem Fim** — 0/1 · 50T · requer Véu Perpétuo maxada; remove o teto de DURAÇÃO — a
+    forma só termina pelo orçamento de ações.
+27. Orçamento Ampliado — 0/2 · 5B/100B · requer Terceiro Fôlego; +2 ações adicionais (teto
+    sobe, mas sempre finito).
+28. Vazio Absoluto — 0/2 · 5B/100B · requer Vazio Sombrio maxada; +20%/rank adicional na
+    devolução de Energia.
+29. **Juízo Eterno** — 0/1 · 500T · requer Vigília Sombria maxada; todo monstro morto durante
+    a forma SEMPRE devolve 1 ação (100%, garantido).
+30. **Noite Sem Fim** — 0/1 · **1 quadrilhão** · requer Sombra Sem Fim e Juízo Eterno; todo
+    monstro morto durante a forma reseta o orçamento de ações pro máximo (não só +1) — a forma
+    dura enquanto o jogador continuar matando, nunca de graça parado.
+
+---
+
+## 36. Perks de Esquerda (Ataque Primário) — Blood Mage, 30 perks, fechado
+
+Décimo e último herói na ordem do GDD. Grounded no projétil real: `projectileSpeed`,
+`projectileMaxDistance`, `damageReserveMultiplier` (hoje = exatamente 1 hit cheio por padrão —
+`hitDamage` fica fixo, só a reserva controla quantos monstros consecutivos o MESMO projétil
+consegue atingir antes de se esgotar, inclusive hits parciais quando a reserva restante é menor
+que `hitDamage`), `projectileCount` (1 a 5, travado pelo `OnValidate`), leque igual ao martelo do
+Paladin, sem knockback nenhum hoje.
+
+**Dano**
+1. Sangue Fervente — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Fúria Sanguínea — 0/3 · 1M/12M/144M · +15%/rank.
+3. Golpe Carmesim — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Ira do Sangue — 0/2 · 5B/100B · +30%/rank.
+5. Sangue Absoluto — 0/1 · 50T · +40%.
+
+**Reserva de dano (perfuração)**
+6. Lâmina Viva — 0/5 · 10/80/640/5.120/40.960 · +15%/rank.
+7. Sangue Espesso — 0/3 · 1M/12M/144M · +20%/rank.
+8. Essência Vital — 0/3 · 100M/1,5B/22,5B · +25%/rank.
+
+**Velocidade do projétil**
+9. Fluxo Rápido — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+10. Corrente Veloz — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Alcance máximo**
+11. Alcance Carmesim — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+12. Trajeto Sombrio — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Quantidade de projéteis** (teto hoje = 5)
+13. Segundo Projétil — 0/1 · 1M · 1 → 2.
+14. Terceiro Projétil — 0/1 · 12M · 2 → 3.
+15. Quarto Projétil — 0/1 · 100M · 3 → 4.
+16. Quinto Projétil — 0/1 · 1,5B · 4 → 5 (teto atual do kit).
+
+**Cooldown real**
+17. Pulso Rápido — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+18. Fluxo Ágil — 0/3 · 1M/12M/144M · -8%/rank.
+19. Instinto Sanguíneo — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Crítico**
+20. Golpe Certeiro — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+21. Precisão Carmesim — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+22. Impacto Sanguíneo — 0/3 · 1M/12M/144M · cada hit passa a empurrar o monstro atingido
+    (hoje não empurra nada), %/rank de força.
+23. Sede de Sangue — 0/3 · 1M/12M/144M · cura o Blood Mage em %/rank do dano total causado
+    pelo primário.
+24. Marca Sanguínea — 0/3 · 1M/12M/144M · o monstro atingido recebe %/rank mais dano de
+    qualquer fonte por alguns segundos.
+25. Último Suspiro — 0/2 · 100M/1,5B · %/rank de chance do hit que mataria o monstro não
+    gastar reserva nenhuma (sobra pra atingir mais alguém na sequência).
+26. Fluxo Reverso — 0/2 · 100M/1,5B · requer Lâmina Viva maxada; a reserva que sobrar no fim
+    do trajeto vira cura, %/rank do restante.
+27. Projétil Sangrento — 0/3 · 1M/12M/144M · cada monstro atingido fica com um sangramento
+    leve (DoT curto), %/rank de dano por segundo.
+
+**Gates finais**
+28. **Projéteis Sem Fim** — 0/1 · 50T · requer Quinto Projétil; remove o teto de 5 projéteis.
+29. **Sangue Infinito** — 0/1 · 500T · requer Essência Vital maxada; a reserva nunca se
+    esgota — o projétil perfura até o alcance máximo, sempre com dano cheio em todos.
+30. **Juízo de Sangue** — 0/1 · **1 quadrilhão** · requer Sede de Sangue maxada; todo monstro
+    morto pelo primário devolve 100% do dano causado como cura e concede Energia extra da
+    Ultimate.
+
+---
+
+## 37. Perks de Direita (Shift/Survival) — Blood Mage, 30 perks, fechado
+
+Junta Shift (extração de sangue) e Pet (Elemental de Sangue) na mesma aba — mesmo critério do
+Mage. Grounded na extração real: `extractDamageMultiplier`, `extractHealMultiplier` (cura =
+dano REAL causado × este valor, hoje 1x = exatamente o dano, nunca passa da vida que o alvo
+tinha), `extractTargetCount` (teto 15), `extractSearchRadius`, `orbSpeed`, `consumeBloodCooldown`
+(debounce entre consumos). E no Pet (mesma classe `PetController` do Phoenix do Mage): `damage`
+(flat 2f), `attackCooldownDuration`, `chaseRadius`, `petSizeMultiplier`/`petActionSpeedMultiplier`
+(upgradáveis, sem teto definido no kit base).
+
+**Shift — Dano da extração**
+1. Sangue Fervente — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Extração Violenta — 0/3 · 1M/12M/144M · +15%/rank.
+3. Drenagem Mortal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Sangue Absoluto — 0/2 · 5B/100B · +30%/rank.
+5. Extração Final — 0/1 · 50T · +40%.
+
+**Shift — Cura** (hoje 1x = exatamente o dano causado)
+6. Vínculo Vital — 0/5 · 10/80/640/5.120/40.960 · +10%/rank (a cura passa a exceder o dano
+   causado).
+7. Pacto de Sangue — 0/3 · 1M/12M/144M · +15%/rank.
+8. Comunhão Sombria — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Shift — Quantidade de alvos** (teto hoje = 15)
+9. Extração Dupla — 0/5 · 10/80/640/5.120/40.960 · +1 alvo/rank (1 → 6).
+10. Sangue em Massa — 0/3 · 1M/12M/144M · +1 alvo/rank (→ 9).
+11. Drenagem Coletiva — 0/3 · 100M/1,5B/22,5B · +1 alvo/rank (→ 12).
+
+**Shift — Raio de busca / velocidade da orb**
+12. Alcance Sombrio — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+13. Orb Veloz — 0/3 · 1M/12M/144M · +15%/rank.
+
+**Shift — Cooldown real**
+14. Pulso Rápido — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
+15. Fluxo Ágil — 0/3 · 1M/12M/144M · -8%/rank.
+16. Instinto Sanguíneo — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+
+**Shift — mecânicas novas**
+17. Consumo Suave — 0/3 · 1M/12M/144M · +15%/rank na janela de debounce (`consumeBloodCooldown`)
+    — menos interrupções quando várias orbs chegam juntas.
+18. Vínculo Protetor — 0/2 · 100M/1,5B · concede imunidade a dano durante a animação de
+    extração.
+19. Sangue Explosivo — 0/3 · 1M/12M/144M · ao chegar, cada orb também causa dano em área
+    (igual a %/rank da cura que vai aplicar) nos monstros próximos do Blood Mage.
+
+**Pet — Dano**
+20. Fúria Elemental — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+21. Garras de Sangue — 0/3 · 1M/12M/144M · +15%/rank.
+22. Elemental Enfurecido — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Pet — Velocidade / tamanho**
+23. Elemental Ágil — 0/5 · 10/80/640/5.120/40.960 · +10%/rank na velocidade de ataque.
+24. Elemental Maior — 0/3 · 1M/12M/144M · +15%/rank no tamanho.
+
+**Pet — mecânicas novas**
+25. Vínculo Elemental — 0/3 · 1M/12M/144M · cada hit do pet também cura o Blood Mage em
+    %/rank do dano causado.
+26. Elemental Voraz — 0/2 · 100M/1,5B · +15%/rank no raio de perseguição do pet.
+27. Cadência de Sangue — 0/3 · 1M/12M/144M · -10%/rank no cooldown de ataque do pet.
+
+**Gates finais**
+28. **Sangue Sem Fim** — 0/1 · 50T · requer Drenagem Coletiva maxada; remove o teto de 15
+    alvos da extração.
+29. **Elemental Gêmeo** — 0/1 · 500T · requer Elemental Enfurecido maxada; invoca um 2º
+    Elemental de Sangue, idêntico e independente.
+30. **Pacto Eterno** — 0/1 · **1 quadrilhão** · requer Vínculo Elemental maxada; todo monstro
+    morto pelo pet também gera 1 orb de sangue, igual à extração do Shift.
+
+---
+
+## 38. Perks de Cima (Ultimate) — Blood Mage, 30 perks, fechado
+
+Grounded na onda de choque real: anel circular em 3 estágios (diâmetro 2 → 4 → 8 por padrão),
+dano igual em cada estágio via `shockwaveDamageMultiplier` (5x base), "zona segura dinâmica" —
+quem já foi atingido por um estágio menor nunca é atingido de novo pelos estágios maiores —,
+`shockwaveSizeMultiplier` escala os 3 estágios juntos (teto 3x), sem knockback hoje. Energia por
+kill, sem cooldown (mesma correção do Gunslinger/Assassin). **Nenhum perk aqui adiciona estágio
+novo nem efeito de tela toda** — decisão do usuário: envolveria arte extra e complicaria a
+entrega. Em vez disso, a escalada de poder vem de reiniciar a MESMA animação/prefab em sequência
+(2, 3, depois 4 ondas encadeadas).
+
+**Dano por estágio**
+1. Onda Sangrenta — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
+2. Pulso Mortal — 0/3 · 1M/12M/144M · +15%/rank.
+3. Anel Carmesim — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+4. Fúria do Sangue — 0/2 · 5B/100B · +30%/rank.
+5. Juízo Sanguíneo — 0/1 · 50T · +40%.
+
+**Tamanho do anel** (teto hoje = 3x)
+6. Onda Expandida — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
+7. Anel Ampliado — 0/3 · 1M/12M/144M · +15%/rank.
+8. Explosão Total — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+
+**Energia da Ultimate**
+9. Instinto Sanguíneo — 0/5 · 10/80/640/5.120/40.960 · +8%/rank na Energia ganha por kill.
+10. Fome de Sangue — 0/3 · 1M/12M/144M · +12%/rank adicional.
+
+**Velocidade da animação**
+11. Explosão Rápida — 0/5 · 10/80/640/5.120/40.960 · +10%/rank na velocidade do crescimento
+    do anel.
+
+**Crítico**
+12. Golpe Certeiro — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
+13. Precisão Sanguínea — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+
+**Mecânicas novas**
+14. Onda de Impacto — 0/3 · 1M/12M/144M · cada estágio passa a empurrar os monstros
+    atingidos, %/rank de força.
+15. Sede Ritual — 0/3 · 1M/12M/144M · cura o Blood Mage em %/rank do dano total causado pela
+    Ultimate.
+16. Marca do Anel — 0/3 · 1M/12M/144M · monstros atingidos recebem %/rank mais dano de
+    qualquer fonte por alguns segundos.
+17. Zona Instável — 0/2 · 100M/1,5B · %/rank de chance da zona segura de um estágio NÃO
+    proteger — o monstro pode ser atingido de novo por um estágio maior.
+18. Ressonância Sangrenta — 0/3 · 1M/12M/144M · %/rank de chance de cada monstro atingido
+    gerar 1 orb de sangue (igual à extração do Shift).
+19. Onda Gélida — 0/2 · 100M/1,5B · monstros atingidos por qualquer estágio ficam %/rank mais
+    lentos por alguns segundos (efeito novo — hoje a onda não aplica lentidão nenhuma).
+
+**Mais mecânicas**
+20. Onda Vital — 0/2 · 100M/1,5B · requer Sede Ritual maxada; a cura também recupera %/rank
+    de Energia pra próxima Ultimate.
+21. Sangue Fervente — 0/3 · 1M/12M/144M · monstros atingidos ficam com sangramento leve (DoT
+    curto), %/rank de dano por segundo.
+22. Vínculo Ritual — 0/2 · 100M/1,5B · requer Ressonância Sangrenta maxada; o pet também
+    recebe a cura quando a Ultimate acerta alguém.
+23. Onda Dupla — 0/2 · 100M/1,5B · %/rank de chance de disparar uma segunda Ultimate
+    automaticamente ao fim, sem gastar Energia.
+24. Fúria Contida — 0/3 · 1M/12M/144M · cada monstro morto pela Ultimate concede %/rank de
+    Energia extra pra próxima.
+
+**Gates finais**
+25. **Anel Sem Fim** — 0/1 · 50T · requer Explosão Total maxada; remove o teto de 3x do
+    tamanho.
+26. **Onda Tripla** — 0/1 · 500T · ao terminar a onda, nascem automaticamente mais 2 ondas
+    completas em sequência, na mesma posição (3 no total por Ultimate) — reaproveita a mesma
+    animação, sem gastar Energia extra.
+27. Onda Imediata — 0/1 · 5B · requer Onda Tripla comprada; a próxima onda encadeada nasce
+    assim que o 1º pulso da onda atual aparecer na tela — cresce em paralelo, em vez de
+    esperar a animação toda (3 estágios) terminar antes de começar a próxima.
+28. **Pulso do Sangue** — 0/1 · 500T · requer Sede Ritual maxada; a cura passa a ser 100% do
+    dano causado (não só %/rank).
+29. Juízo Final — 0/2 · 100M/1,5B · requer Onda Dupla; +15%/rank adicional na chance de
+    segunda Ultimate.
+30. **Pulso Eterno** — 0/1 · **1 quadrilhão** · requer Onda Tripla comprada; nasce ainda mais
+    1 onda em sequência na mesma posição (4 no total por Ultimate).
+
+---
+
+Com isso, os 10 heróis estão 100% completos — 1.200 perks no total (120 por herói × 10).
+
+---
+
+## 39. Mudança de código já aplicada fora de escopo (exceção pontual)
 
 `HeroController.EnergyGainMultiplier` (static, default `0.1f`) — nerf de propósito na Energia de
 Ultimate recebida por kill (20 → 2 de base, sem nenhum perk comprado), multiplicando por cima do
@@ -1635,19 +2509,20 @@ sem implementação ainda.
 
 ---
 
-## 28. Explicitamente fora deste documento (próxima fase)
+## 40. Explicitamente fora deste documento (próxima fase)
 
 - **Loja real** — as 3 abas (Resumo do Dia / Árvore de Perks / Talentos) e como o desmonte do Shop
-  antigo entra em cada uma.
-- **Árvore de Perks — restante** (Barbarian, Ranger, Mage, Druid, Rogue e Cleric 100% completos,
-  120 perks cada — Seções 9-11, 12-14, 15-17, 18-20, 21-23 e 24-26; faltam os 4 heróis
-  restantes: Paladin, Gunslinger, Assassin, Blood Mage). Esqueleto de 4 direções já decidido
-  (Cima = Ultimate, Esquerda = Primário, Baixo = Mundo/Economia, Direita = Shift/Survival);
-  Cima/Esquerda/Direita são 100% únicos por herói (sem template genérico de stats — cada um
-  nasce do que aquele herói realmente faz; Baixo é o único compartilhado, já fechado pra todos).
-  Regra de preço "0/5 reaparece mais caro depois" e incrementos pequenos (ex.: `+0.05` por rank)
-  já validados como padrão. **Tamanho travado: 30 perks por aba** — 120 perks por herói no
-  total. **Próxima aba a debater: Esquerda do Paladin (Ataque Primário).**
+  antigo entra em cada uma. **Próxima etapa a debater.**
+- **Árvore de Perks — COMPLETA** (os 10 heróis 100% fechados — Seções 9-11, 12-14, 15-17,
+  18-20, 21-23, 24-26, 27-29, 30-32, 33-35 e 36-38 — mais o Baixo compartilhado, Seção 8, e os
+  30 Talentos, Seção 7. 1.200 perks de herói + 30 de Baixo + 30 Talentos).
+- **Bosses ignoram invisibilidade/untargetable** — decisão nova documentada na Seção 4.2;
+  afeta Camuflagem do Ranger, Coruja do Druid e forma sombria do Assassin. Ainda sem
+  implementação (mesma pendência de todo o resto deste documento).
+- **Auditoria pendente** — grupos "Cooldown real"/"recarga da Ultimate" nas Cima de Barbarian,
+  Ranger, Mage, Druid, Rogue, Cleric e Paladin (Seções 11, 14, 17, 20, 23, 26 e 29) foram
+  escritos como timer — a Ultimate de todo herói usa Energia por kill, não cooldown (ver Seção
+  32). Precisam ser revistos pro mecanismo real antes de fechar o documento.
 - **Critério de desbloqueio dos heróis** ainda travados (Assassin e os futuros Demonologist/
   Necromancer/Gambler/Plague Doctor) — fica para o final, placeholder "Em breve" até lá.
 - **Sistema de HP de Boss** (ver Seção 4.1) — ainda sem decisão de UI: posição da barra (embaixo
