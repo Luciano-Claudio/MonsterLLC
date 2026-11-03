@@ -81,7 +81,9 @@ public class RatPeopleThrowProjectile : MonoBehaviour
     {
         if (ratPeoplePrefab != null)
         {
-            var obj = Instantiate(ratPeoplePrefab, transform.position, Quaternion.identity);
+            // Esse Rat People só nasce do arremesso da Rat People Royalty — que é um boss, não
+            // um monstro comum — então o "pai" dele é BossesContainer, não EnemysContainer.
+            var obj = Instantiate(ratPeoplePrefab, transform.position, Quaternion.identity, EnemyController.BossesContainer);
             var enemy = obj.GetComponent<EnemyController>();
             if (enemy != null)
             {

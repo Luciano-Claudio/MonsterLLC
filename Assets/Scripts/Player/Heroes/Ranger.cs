@@ -135,7 +135,7 @@ public class Ranger : HeroController
         foreach (var offset in offsets)
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
-            var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity);
+            var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
             arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow, arrowSpeed, arrowLifetime, arrowKnockbackForce);
         }
     }
@@ -183,7 +183,7 @@ public class Ranger : HeroController
         float groundedDamage = stats.damage;
         float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier;
 
-        var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity);
+        var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,
             knifeFlightSpeed, knifeMaxDistance, knifeFlightKnockbackForce, knifeGroundedDuration, knifeGroundedTickInterval, knifeGroundedRadius, knifeGroundedKnockbackForce, knifeBleedDuration);
     }

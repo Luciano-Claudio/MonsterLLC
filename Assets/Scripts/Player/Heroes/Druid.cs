@@ -241,7 +241,7 @@ public class Druid : HeroController
         {
             if (vinePrefab == null) continue;
 
-            var vineObj = Instantiate(vinePrefab, enemies[i].transform.position, Quaternion.identity);
+            var vineObj = Instantiate(vinePrefab, enemies[i].transform.position, Quaternion.identity, HeroController.HerosContainer);
             var vine = vineObj.GetComponent<Vine>();
             // SUPOSIÇÃO (Seção 0, item 4) — dano direto = stats.damage, um hit cheio por vinha.
             if (vine != null) vine.Launch(stats.damage, enemyLayerMask, hitThisActivation, vineLifetime, vineHitRadius);

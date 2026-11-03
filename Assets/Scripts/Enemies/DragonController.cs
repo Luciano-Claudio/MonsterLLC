@@ -91,6 +91,6 @@ public class DragonController : MeleeEnemyController
     {
         var hitbox = GetHitboxForFacing();
         if (hitbox == null || fireHazardPrefab == null) return;
-        Instantiate(fireHazardPrefab, hitbox.transform.position, Quaternion.identity);
+        Instantiate(fireHazardPrefab, hitbox.transform.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
     }
 }

@@ -237,7 +237,7 @@ public class Gunslinger : HeroController
 
         if (impactVfxPrefab != null)
         {
-            var vfx = Instantiate(impactVfxPrefab, target.transform.position, Quaternion.identity);
+            var vfx = Instantiate(impactVfxPrefab, target.transform.position, Quaternion.identity, HeroController.HerosContainer);
             Destroy(vfx, impactVfxDuration);
         }
     }
@@ -364,7 +364,7 @@ public class Gunslinger : HeroController
 
         if (impactVfxPrefab != null)
         {
-            var vfx = Instantiate(impactVfxPrefab, impactPoint, Quaternion.identity);
+            var vfx = Instantiate(impactVfxPrefab, impactPoint, Quaternion.identity, HeroController.HerosContainer);
             Destroy(vfx, impactVfxDuration);
         }
     }

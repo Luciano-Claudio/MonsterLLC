@@ -148,7 +148,7 @@ public class Paladin : HeroController
         foreach (float angle in hammerAngles)
         {
             Vector2 dir = RotateDegrees(RawAimDirection, angle);
-            var obj = Instantiate(hammerProjectilePrefab, transform.position, Quaternion.identity);
+            var obj = Instantiate(hammerProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             var hammer = obj.GetComponent<PaladinHammer>();
             // Dano cheio por martelo, sem dividir reserva — mesmo critério dos 8 projéteis da
             // Ultimate do Barbarian (mais martelos = mais dano total, não o mesmo dano mais fraco).

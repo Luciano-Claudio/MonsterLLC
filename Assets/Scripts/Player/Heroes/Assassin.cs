@@ -190,7 +190,7 @@ public class Assassin : HeroController
         foreach (float angle in dashAngles)
         {
             Vector2 dir = RotateDegrees(dashDirection, angle);
-            var obj = Instantiate(prefab, transform.position, Quaternion.identity);
+            var obj = Instantiate(prefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             var projectile = obj.GetComponent<AssassinDashProjectile>();
             // Dano CHEIO por projétil, sem dividir entre eles — mesmo critério do martelo do
             // Paladin/leque do Blood Mage.

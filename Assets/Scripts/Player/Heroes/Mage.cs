@@ -199,7 +199,7 @@ public class Mage : HeroController
         // sobre circleCollider.radius precisar compensar a escala do GameObject).
         float explosionRadius = fireballExplosionRadius * ultimateSizeMultiplier;
         float groundedRadius = fireballGroundedRadius * ultimateSizeMultiplier;
-        var obj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity);
+        var obj = Instantiate(fireballPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
         obj.transform.localScale = Vector3.one * ultimateSizeMultiplier;
         var fireball = obj.GetComponent<MageFireball>();
         if (fireball != null) fireball.Launch(RawAimDirection, impactDamage, trailDamagePerTick, fireStatusDamagePerSecond,
@@ -259,7 +259,7 @@ public class Mage : HeroController
         // Nunca pousa dentro de água/parede/prop (Collider2D sólido) — o projétil não checa
         // colisão nenhuma durante o voo (ver MageTeleportProjectile), só reporta onde parou.
         distance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, distance, transform);
-        var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity);
+        var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         var projectile = obj.GetComponent<MageTeleportProjectile>();
         if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived, teleportProjectileSpeed);
         else OnTeleportProjectileArrived(transform.position); // prefab sem o script — mesma rede de segurança
@@ -305,7 +305,7 @@ public class Mage : HeroController
         if (petPrefab == null) return;
 
         Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
-        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity);
+        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
         currentPet = obj.GetComponent<PetController>();
         if (currentPet != null) currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier);
     }

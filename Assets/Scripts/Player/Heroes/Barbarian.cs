@@ -14,6 +14,8 @@ public class Barbarian : HeroController
     [SerializeField] private Collider2D attackHitboxSW;
     [SerializeField] private GameObject groundCrackPrefab;
     [SerializeField] private float groundCrackDuration = 3f; // 🔢 ajustável
+    [SerializeField] private float groundCrackDamagePerSecond = 5f; // 🔢 ajustável — perks de Esquerda mexem aqui, nunca no prefab
+    [SerializeField] private float groundCrackTickInterval = 0.5f; // 🔢 ajustável
     [SerializeField] private float knockbackForce = 4f; // 🔢 ajustável
 
     [Header("Ultimate — salto + 8 projéteis retos")]
@@ -124,7 +126,7 @@ public class Barbarian : HeroController
         if (attackHitFired) return;
         attackHitFired = true;
 
-        Collider2D hitbox = GetHitboxForFacing();
+        var (hitbox, facingDirection) = GetHitboxForFacing();
         if (hitbox == null) return;
 
         float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier();
@@ -150,8 +152,13 @@ public class Barbarian : HeroController
 
         if (groundCrackPrefab != null)
         {
-            var crack = Instantiate(groundCrackPrefab, hitbox.bounds.center, Quaternion.identity);
-            Destroy(crack, groundCrackDuration);
+            // Sempre no pé do Barbarian (transform.position — pivot do sprite já fica na base),
+            // nunca no centro da hitbox diagonal (que fica deslocada pra longe dele). Só a
+            // ANIMAÇÃO muda conforme a direção do golpe, não a posição de nascimento.
+            var crackObj = Instantiate(groundCrackPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+            var crack = crackObj.GetComponent<GroundCrack>();
+            if (crack != null) crack.Initialize(facingDirection, sizeMultiplier, groundCrackDamagePerSecond, groundCrackTickInterval);
+            Destroy(crackObj, groundCrackDuration);
         }
     }
 
@@ -187,7 +194,7 @@ public class Barbarian : HeroController
         float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier() * ultimateDamageMultiplier;
         foreach (Vector2 dir in EightDirections)
         {
-            var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity);
+            var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
             obj.transform.localScale = Vector3.one * sizeMultiplier;
             var projectile = obj.GetComponent<HeroProjectile>();
@@ -216,13 +223,15 @@ public class Barbarian : HeroController
 
     // Classifica AimDirection (congelada em isAttacking) num dos 4 quadrantes diagonais —
     // mesmo critério que o Blend Tree 2D do Animator usa pra escolher entre atk_ne/nw/se/sw.
-    private Collider2D GetHitboxForFacing()
+    // Devolve também a direção (não só o hitbox) — GroundCrack precisa saber qual das 4
+    // animações (NE/NW/SE/SW) tocar.
+    private (Collider2D hitbox, GroundCrack.Direction direction) GetHitboxForFacing()
     {
         bool east = AimDirection.x >= 0f;
         bool north = AimDirection.y >= 0f;
 
-        if (north) return east ? attackHitboxNE : attackHitboxNW;
-        return east ? attackHitboxSE : attackHitboxSW;
+        if (north) return east ? (attackHitboxNE, GroundCrack.Direction.NE) : (attackHitboxNW, GroundCrack.Direction.NW);
+        return east ? (attackHitboxSE, GroundCrack.Direction.SE) : (attackHitboxSW, GroundCrack.Direction.SW);
     }
 
     // GDD Seção 17.1 — passiva: a cada 10% de Vida Máxima perdida, +25% de dano, até +200%

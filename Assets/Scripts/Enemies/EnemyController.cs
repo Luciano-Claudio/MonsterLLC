@@ -165,6 +165,182 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // próprio ponto atual a cada frame.
     private const float AiDestinationLookahead = 4f;
 
+    // 2026-11-01 — Deadline 8.1, IA de perseguição inteligente (planejamento prévio no chat,
+    // não é mais o flanco antigo que só ligava com o player parado e vaga cheia — ver
+    // GetSmartApproachPoint). 2 ideias por cima do que foi debatido: leadTime escala com
+    // distância/velocidade própria em vez de fixo (longe prevê mais, colado quase não prevê,
+    // evita "overshoot" quando já está em cima do player); troca de ângulo só quando a opção
+    // nova está CLARAMENTE menos cheia que a comitada (histerese — sem isso, o ângulo
+    // escolhido oscilaria a cada reavaliação e o monstro "tremeria" em vez de decidir).
+    [Header("Perseguição inteligente (predição + anti-aglomeração local)")]
+    [SerializeField] private float leadTimeMax = 1.5f; // 🔢 segundos de antecipação máxima, ajustável
+    [SerializeField] private float crowdCheckRadius = 2.5f; // 🔢 raio pra contar "vizinho" perto de um ângulo candidato
+    private static readonly float[] ApproachAngleOffsetsDeg = { 0f, 60f, -60f, 120f, -120f };
+    private readonly Collider2D[] crowdOverlapBuffer = new Collider2D[16];
+    private readonly List<EnemyController> crowdResultsBuffer = new List<EnemyController>(16);
+    private float committedApproachAngleDeg;
+    private bool approachAngleCommitted;
+    private float nextApproachReevalTime;
+    private const float ApproachReevalInterval = 0.3f; // mesmo ritmo do RepathInterval abaixo — já é o throttle de decisão do resto do arquivo
+
+    // 2026-11-01 — Deadline 8.1, 2ª rodada de IA (3 ideias pedidas depois do teste do aggro
+    // global): corte de frente, coesão de bando e checagem de alcançabilidade. Documentadas
+    // cada uma no ponto de uso abaixo, não aqui, pra não duplicar comentário.
+    [Header("Corte de frente (fração dos monstros mira NA FRENTE do movimento, não na posição previsão)")]
+    [SerializeField] private float frontCutterChance = 0.3f; // 🔢 ajustável
+    [SerializeField] private float frontCutterMinDistance = 6f; // 🔢 só compensa reposicionar quando ainda há tempo/espaço
+    private bool isFrontCutter;
+
+    [Header("Coesão de bando (mesma espécie, puxa levemente pra perto de quem é igual)")]
+    [SerializeField] private float packCohesionRadius = 5f; // 🔢 ajustável
+    [SerializeField] private float packCohesionStrength = 0.3f; // 🔢 0 desliga, 1 pesa igual ao próprio approach
+
+    private const float ReachabilityToleranceSqr = 1f; // 🔢 ponto a mais de 1 unidade do nó caminhável mais próximo = fora do grafo
+
+    // Ponto que Melee/Ranged devem perseguir no lugar de player.position cru (ver Move() de
+    // cada um). ringRadius = 0 (ex.: Melee bem colado) devolve o ponto previsto puro, sem
+    // desvio de ângulo — quem chama decide o quanto de "anel" faz sentido pro próprio alcance.
+    protected Vector2 GetSmartApproachPoint(float ringRadius)
+    {
+        Vector2 playerPos = player.position;
+        float distance = Vector2.Distance(transform.position, playerPos);
+        float leadTime = Mathf.Clamp(distance / Mathf.Max(stats.moveSpeed, 0.01f), 0f, leadTimeMax)
+            * Mathf.Clamp01(stats.predictionSkill);
+        Vector2 predicted = playerPos + HeroController.Velocity * leadTime;
+
+        if (ringRadius <= 0f) return predicted;
+
+        if (Time.time >= nextApproachReevalTime)
+        {
+            nextApproachReevalTime = Time.time + ApproachReevalInterval;
+
+            // Corte de frente: em vez de "de onde eu já estou em relação ao ponto previsto"
+            // (comportamento normal), uma fração dos monstros — só os que ainda têm distância
+            // de sobra pra valer a pena reposicionar — mira o ângulo da PRÓPRIA velocidade do
+            // player, ou seja, tenta chegar pela frente de pra onde ele está correndo, não
+            // só seguir por trás.
+            Vector2 selfFromPredicted = (Vector2)transform.position - predicted;
+            float baseAngleDeg;
+            if (isFrontCutter && distance > frontCutterMinDistance && HeroController.Velocity.sqrMagnitude > 0.01f)
+                baseAngleDeg = Vector2.SignedAngle(Vector2.right, HeroController.Velocity);
+            else
+                baseAngleDeg = Vector2.SignedAngle(Vector2.right, selfFromPredicted);
+
+            PickLeastCrowdedAngle(predicted, ringRadius, baseAngleDeg);
+        }
+
+        return predicted + AngleToOffset(committedApproachAngleDeg) * ringRadius;
+    }
+
+    private void PickLeastCrowdedAngle(Vector2 predicted, float ringRadius, float baseAngleDeg)
+    {
+        Vector2 committedPoint = predicted + AngleToOffset(committedApproachAngleDeg) * ringRadius;
+        bool committedStillValid = approachAngleCommitted && IsReachable(committedPoint);
+        int committedCount = committedStillValid ? CountNeighbors(committedPoint) : int.MaxValue;
+
+        int bestCount = int.MaxValue;
+        float bestAngle = baseAngleDeg;
+        bool foundReachable = false;
+        for (int i = 0; i < ApproachAngleOffsetsDeg.Length; i++)
+        {
+            float candidateDeg = baseAngleDeg + ApproachAngleOffsetsDeg[i];
+            Vector2 point = predicted + AngleToOffset(candidateDeg) * ringRadius;
+            if (!IsReachable(point)) continue; // ex.: ângulo cairia do outro lado de uma parede — descarta antes de comitar
+
+            int count = CountNeighbors(point);
+            if (count < bestCount)
+            {
+                bestCount = count;
+                bestAngle = candidateDeg;
+                foundReachable = true;
+            }
+        }
+
+        if (!foundReachable) return; // todos os candidatos fora do grafo caminhável — mantém o ângulo comitado anterior
+
+        // Histerese: só troca se a melhor opção nova tiver claramente menos gente que a
+        // comitada atual (ou se a comitada deixou de ser alcançável) — evita trocar de ângulo
+        // a cada 0,3s por 1 vizinho de diferença que vai e volta.
+        if (!committedStillValid || bestCount < committedCount - 1)
+        {
+            committedApproachAngleDeg = bestAngle;
+            approachAngleCommitted = true;
+        }
+    }
+
+    private int CountNeighbors(Vector2 point)
+    {
+        int hitCount = Physics2D.OverlapCircle(point, crowdCheckRadius, ContactFilter2D.noFilter, crowdOverlapBuffer);
+        CollectDistinct(crowdOverlapBuffer, hitCount, crowdResultsBuffer);
+        int count = 0;
+        for (int i = 0; i < crowdResultsBuffer.Count; i++)
+            if (crowdResultsBuffer[i] != this) count++;
+        return count;
+    }
+
+    // A* Pathfinding Project: GetNearest(position) ignora walkability por padrão (NNConstraint
+    // None) — por isso o check explícito de node.Walkable aqui, não só node != null. A
+    // tolerância cobre o caso do ponto cair fora do grafo de vez (ex.: do outro lado de uma
+    // parede, ou fora dos limites do mapa).
+    private static bool IsReachable(Vector2 point)
+    {
+        if (AstarPath.active == null) return true; // sem grafo carregado (cena de teste sem A* configurado) — não bloqueia nada
+        var info = AstarPath.active.GetNearest(point);
+        if (info.node == null || !info.node.Walkable) return false;
+        return ((Vector2)info.position - point).sqrMagnitude <= ReachabilityToleranceSqr;
+    }
+
+    // Coesão de bando: puxa levemente a direção final pra perto do centro de massa de
+    // vizinhos da MESMA espécie (mesmo prefab — ver SpeciesKey) dentro de packCohesionRadius.
+    // Reaproveita a mesma varredura/dedup de CountNeighbors, com raio e propósito diferentes
+    // (aqui é "ficar junto", lá é "evitar lotação"). packCohesionStrength=0 sai antes de
+    // qualquer OverlapCircle — desliga de graça, sem custo.
+    protected Vector2 ApplyPackCohesion(Vector2 baseDirection)
+    {
+        if (packCohesionStrength <= 0f) return baseDirection;
+
+        int hitCount = Physics2D.OverlapCircle(transform.position, packCohesionRadius, ContactFilter2D.noFilter, crowdOverlapBuffer);
+        CollectDistinct(crowdOverlapBuffer, hitCount, crowdResultsBuffer);
+
+        Vector2 centroid = Vector2.zero;
+        int sameSpeciesCount = 0;
+        for (int i = 0; i < crowdResultsBuffer.Count; i++)
+        {
+            var other = crowdResultsBuffer[i];
+            if (other == this) continue;
+            if (SpeciesKey(other.gameObject) != SpeciesKey(gameObject)) continue;
+            centroid += (Vector2)other.transform.position;
+            sameSpeciesCount++;
+        }
+
+        if (sameSpeciesCount == 0) return baseDirection;
+        centroid /= sameSpeciesCount;
+
+        Vector2 towardPack = centroid - (Vector2)transform.position;
+        if (towardPack.sqrMagnitude < 0.0001f) return baseDirection;
+
+        return (baseDirection.normalized + towardPack.normalized * packCohesionStrength).normalized;
+    }
+
+    // Heurística: o projeto não tem um campo de "espécie" dedicado — Rat/Wolf/Bat etc. são
+    // todos a mesma classe (MeleeEnemyController/RangedEnemyController), só prefabs
+    // diferentes. O nome do GameObject instanciado é "NomeDoPrefab(Clone)", então tirar o
+    // sufixo já separa espécies corretamente sem precisar adicionar um campo novo em todo
+    // prefab do Bestiário. Se algum dia um prefab for renomeado sem bater com a espécie
+    // real, isso para de funcionar — trocar por um campo explícito nesse caso.
+    private static string SpeciesKey(GameObject go)
+    {
+        const string cloneSuffix = "(Clone)";
+        string n = go.name;
+        return n.EndsWith(cloneSuffix) ? n.Substring(0, n.Length - cloneSuffix.Length) : n;
+    }
+
+    private static Vector2 AngleToOffset(float angleDeg)
+    {
+        float rad = angleDeg * Mathf.Deg2Rad;
+        return new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+    }
+
     protected virtual void Awake()
     {
         animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving/SetInCombat/SetMoveDirection)
@@ -183,6 +359,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         attackAnimationCooldown = new AttackCooldown(stats.attackAnimationCooldown);
         SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move(), deixando o Blend Tree de Idle indefinido por alguns frames
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
+        isFrontCutter = Random.value < frontCutterChance; // sorteado 1x por instância — fixo pela vida do monstro, não reavaliado a cada frame
 
         ai = GetComponent<IAstarAI>();
         if (ai != null)
@@ -388,6 +565,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (distanceToPlayer <= stats.observationRadius && !HeroController.IsPlayerUntargetable)
         {
             isInCombat = true;
+            HeroController.GlobalAggroActive = true; // teste descartável (Deadline 8.1, Seção 4) — 1 detectou, todos perseguem
+            return;
+        }
+
+        // Teste descartável do aggro global — o bloco acima liga o flag no 1º monstro que
+        // detectar de verdade; a partir daí, todo o resto do mundo também persegue, inclusive
+        // quem normalmente ficaria dormente esperando (bloco staysDormantUntilDetected abaixo).
+        if (HeroController.GlobalAggroActive && !HeroController.IsPlayerUntargetable)
+        {
+            ForceImmediateAggro();
             return;
         }
 
@@ -829,6 +1016,13 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Sprint 24 (Boss Spawn System) — permite ao BossSpawnManager marcar o boss sem
     // depender do Inspector de cada prefab já vir configurado certo.
     public void SetIsBoss(bool value) => isBoss = value;
+    public bool IsBoss => isBoss;
+
+    // Regra do usuário: quem spawna decide o container — monstro comum manda pra ENEMYS,
+    // boss manda pra BOSSES, independente do que está sendo spawnado (summon, projétil,
+    // bomba etc.). Resolve pelo IsBoss REAL da instância que está spawnando, não por
+    // suposição de qual andar/ficha do Bestiário ela pertence.
+    public static Transform ContainerFor(bool fromBoss) => fromBoss ? BossesContainer : EnemysContainer;
 
     // Sprint 24 (Boss Spawn System) — decisão do usuário: todo boss nasce já em combate,
     // mesmo longe do jogador, sem fase de patrulha/idle esperando observationRadius
@@ -905,6 +1099,44 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // prefab em Assets/Resources/Loot/LootDrop.prefab. static: mesmo prefab serve pra qualquer
     // monstro/boss, não precisa de 1 referência serializada em cada um dos 21 prefabs.
     private static GameObject lootDropPrefab;
+    private static Transform lootContainer; // GameObject "//LOOT" na cena — criado na hora se ninguém atribuir um aqui, mesmo padrão de GameplayBootstrap.herosContainer
+
+    // GameObject "//ENEMYS" na cena — container único pra TODO spawn de monstro comum,
+    // inclusive os que nascem de outro monstro morrendo (Mother Slime, Rat People Royalty,
+    // EnemyProjectile) e não só o spawn normal do WorldPopulationManager. Mesmo padrão
+    // find-or-create de GameplayBootstrap.herosContainer/lootContainer acima, centralizado
+    // aqui pra não duplicar a mesma lógica em cada script que sumona monstro.
+    private static Transform enemysContainer;
+    public static Transform EnemysContainer
+    {
+        get
+        {
+            if (enemysContainer == null)
+            {
+                var existing = GameObject.Find("//ENEMYS");
+                enemysContainer = existing != null ? existing.transform : new GameObject("//ENEMYS").transform;
+            }
+            return enemysContainer;
+        }
+    }
+
+    // GameObject "//BOSSES" na cena — mesmo container onde o boss normal já nasce
+    // (WorldBossSpawnManager.SpawnOneBoss). Summon de boss nasce aqui também (nasce no mesmo
+    // lugar do "pai") — ex.: os Rat People arremessados pela Rat People Royalty (um boss),
+    // diferente dos Rat People que nascem de um monstro comum, que vão pra EnemysContainer.
+    private static Transform bossesContainer;
+    public static Transform BossesContainer
+    {
+        get
+        {
+            if (bossesContainer == null)
+            {
+                var existing = GameObject.Find("//BOSSES");
+                bossesContainer = existing != null ? existing.transform : new GameObject("//BOSSES").transform;
+            }
+            return bossesContainer;
+        }
+    }
 
     // "Cada tipo de loot realiza sua própria rolagem de chance, independentemente das demais"
     // (GDD Seção 38) — testa CADA entrada do drop table separadamente, nunca escolhe só 1 item
@@ -914,6 +1146,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     private void DropLoot()
     {
         if (lootDropPrefab == null) lootDropPrefab = Resources.Load<GameObject>("Loot/LootDrop");
+        if (lootContainer == null)
+        {
+            var existing = GameObject.Find("//LOOT");
+            lootContainer = existing != null ? existing.transform : new GameObject("//LOOT").transform;
+        }
 
         foreach (var entry in lootDrops)
         {
@@ -932,7 +1169,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             long quantity = (long)System.Math.Round(baseQuantity * (double)HeroController.LootMultiplier);
             if (quantity <= 0) continue;
 
-            var lootObj = Instantiate(lootDropPrefab, transform.position, Quaternion.identity);
+            var lootObj = Instantiate(lootDropPrefab, transform.position, Quaternion.identity, lootContainer);
             lootObj.name = $"Loot_{entry.itemName}";
             var drop = lootObj.GetComponent<LootDrop>();
             drop.loot = new LootDefinition { itemName = entry.itemName, quantity = quantity };

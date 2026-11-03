@@ -149,7 +149,7 @@ public class BloodMage : HeroController
         foreach (float angle in projectileAngles)
         {
             Vector2 dir = RotateDegrees(RawAimDirection, angle);
-            var obj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+            var obj = Instantiate(projectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             var projectile = obj.GetComponent<BloodMageProjectile>();
             // Reserva CHEIA por projétil, sem dividir entre eles — mesmo critério do martelo
             // do Paladin/flechas do Ranger/balas do Gunslinger.
@@ -220,7 +220,7 @@ public class BloodMage : HeroController
         if (shockwavePrefab == null) return;
 
         float damagePerStage = stats.damage * shockwaveDamageMultiplier;
-        var wave = Instantiate(shockwavePrefab, transform.position, Quaternion.identity);
+        var wave = Instantiate(shockwavePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         // Escala o GameObject — BloodMageShockwave já lê transform.localScale sozinho pra
         // calcular o raio real (dano) e o gizmo, então os 3 tamanhos base passam sem
         // pré-multiplicar (1 único lugar aplicando o multiplicador, não 2 desalinháveis).
@@ -285,7 +285,7 @@ public class BloodMage : HeroController
             target.TakeDamage(actualDamage);
             float healAmount = actualDamage * extractHealMultiplier;
 
-            var obj = Instantiate(bloodOrbPrefab, target.transform.position, Quaternion.identity);
+            var obj = Instantiate(bloodOrbPrefab, target.transform.position, Quaternion.identity, HeroController.HerosContainer);
             var orb = obj.GetComponent<BloodOrb>();
             if (orb != null) orb.Launch(transform, orbSpeed, healAmount, OnBloodOrbArrived);
         }
@@ -370,7 +370,7 @@ public class BloodMage : HeroController
         if (petPrefab == null) return;
 
         Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
-        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity);
+        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
         currentPet = obj.GetComponent<PetController>();
         if (currentPet != null) currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier);
     }

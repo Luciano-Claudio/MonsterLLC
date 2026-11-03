@@ -84,6 +84,7 @@ public class EnemyProjectile : MonoBehaviour
     // guard, o 2º evento (mesmo frame, outro collider do herói) processava o impacto de novo,
     // dano duplo.
     private bool hasImpacted;
+    private bool firedByBoss; // setado em Launch() — decide o container de SpawnMonster() (EnemyController.ContainerFor)
 
     private void Awake()
     {
@@ -100,10 +101,11 @@ public class EnemyProjectile : MonoBehaviour
     // bem antes de alcançar o player, mesmo mirado certinho — bug real reportado: o projétil
     // caía extremamente próximo do player, sem acertar. Aqui só ESTENDE o lifetime quando
     // necessário (nunca encurta), então nenhum prefab já calibrado perde alcance.
-    public void Launch(Vector2 dir, float dmg, float minTravelDistance = 0f)
+    public void Launch(Vector2 dir, float dmg, float minTravelDistance = 0f, bool firedByBoss = false)
     {
         direction = dir.normalized;
         damage = dmg;
+        this.firedByBoss = firedByBoss;
 
         const float travelMargin = 1f; // 🔢 cobre o raio do próprio player + folga de movimento residual
         float requiredLifetime = (minTravelDistance + travelMargin) / Mathf.Max(speed, 0.01f);
@@ -211,7 +213,7 @@ public class EnemyProjectile : MonoBehaviour
     private void SpawnMonster()
     {
         if (monsterPrefab == null) return;
-        Instantiate(monsterPrefab, transform.position, Quaternion.identity);
+        Instantiate(monsterPrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(firedByBoss));
     }
 
     // Burst instantâneo no ponto de impacto — dispara 1 vez só (via ReachedLimit/HitPlayer),

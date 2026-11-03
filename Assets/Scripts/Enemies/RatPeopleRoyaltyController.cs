@@ -129,7 +129,7 @@ public class RatPeopleRoyaltyController : EnemyController
     {
         if (throwProjectilePrefab == null || player == null) return;
 
-        var obj = Instantiate(throwProjectilePrefab, transform.position, Quaternion.identity);
+        var obj = Instantiate(throwProjectilePrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var proj = obj.GetComponent<RatPeopleThrowProjectile>();
         if (proj != null) proj.Launch((player.position - transform.position).normalized, stats.attackDamage);
     }

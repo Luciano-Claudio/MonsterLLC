@@ -25,6 +25,6 @@ public class AncientDangerLeaderController : MeleeEnemyController
         hero.TakeDamage(stats.attackDamage);
 
         if (impactEffectPrefab != null)
-            Instantiate(impactEffectPrefab, hitbox.transform.position, Quaternion.identity);
+            Instantiate(impactEffectPrefab, hitbox.transform.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
     }
 }

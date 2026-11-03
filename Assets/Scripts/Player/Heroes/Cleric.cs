@@ -151,7 +151,7 @@ public class Cleric : HeroController
         {
             if (target == null) continue; // pode ter morrido entre o clique e o Animation Event
 
-            var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+            var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             var proj = projObj.GetComponent<ClericProjectile>();
             if (proj != null) proj.Launch(target, stats.damage * ClericDamageMultiplier, enemyLayerMask, projectileSpeed, projectileMaxDistance, projectileKnockbackForce);
         }

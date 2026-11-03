@@ -137,10 +137,10 @@ public class SlugController : EnemyController
             return;
         }
 
-        var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+        var projObj = Instantiate(projectilePrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var proj = projObj.GetComponent<EnemyProjectile>() ?? projObj.AddComponent<EnemyProjectile>();
         proj.speed = projectileSpeed;
         Vector2 toPlayer = player.position - transform.position;
-        proj.Launch(toPlayer.normalized, grownAttackDamage, toPlayer.magnitude);
+        proj.Launch(toPlayer.normalized, grownAttackDamage, toPlayer.magnitude, IsBoss);
     }
 }

@@ -143,7 +143,7 @@ public class OrcShamanController : RangedEnemyController
     // sabe qual totem plantar (decidido em StartCast, não aqui).
     public void AnimationCastEvent()
     {
-        if (pendingTotemPrefab != null) Instantiate(pendingTotemPrefab, pendingTotemPosition, Quaternion.identity);
+        if (pendingTotemPrefab != null) Instantiate(pendingTotemPrefab, pendingTotemPosition, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
     }
 
     // Animation Event, no fim de qualquer um dos 3 clipes de cast.

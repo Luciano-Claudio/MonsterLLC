@@ -29,6 +29,6 @@ public class SpectreController : MeleeEnemyController
         // trigger de ataque (que é uma posição fixa do prefab do Spectre, não de onde o player
         // realmente estava quando foi acertado) — mesmo critério que o Lich já usa.
         if (iceSurfacePrefab != null)
-            Instantiate(iceSurfacePrefab, player.position, Quaternion.identity);
+            Instantiate(iceSurfacePrefab, player.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
     }
 }

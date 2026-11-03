@@ -42,6 +42,13 @@ public class MeleeEnemyController : EnemyController
     [SerializeField] private float maxFlankWalkDuration = 2f;
     [SerializeField] private float flankArcDegrees = 60f; // o quanto o próximo ponto do anel pode variar em relação ao atual
 
+    // 2026-11-01 — Deadline 8.1, IA de perseguição inteligente. Raio de desvio da abordagem
+    // (GetSmartApproachPoint) enquanto ainda está se aproximando (antes de chegar no
+    // FlankRadius) — pequeno de propósito, só o bastante pra não empilhar todo Melee no
+    // mesmo pixel ao perseguir o mesmo ponto previsto, sem virar uma órbita de verdade (isso
+    // já é o UpdateFlanking abaixo, intocado).
+    [SerializeField] private float approachSpreadRadius = 2f; // 🔢 ajustável
+
     private PatrolAI flankAI;
     private bool hasAttackSlot;
     private float flankAngle;
@@ -91,9 +98,13 @@ public class MeleeEnemyController : EnemyController
 
         if (hasAttackSlot || distance > FlankRadius)
         {
-            // já garantiu vaga, ou ainda está longe demais até pra flanquear -> aproxima normalmente
+            // já garantiu vaga, ou ainda está longe demais até pra flanquear -> aproxima
+            // inteligente: prevê pra onde o player vai, desviando se o ângulo direto já
+            // estiver cheio de outro Melee (GetSmartApproachPoint).
             SetMoving(true);
-            MoveInDirection(toPlayer.normalized, WalkStateName);
+            Vector2 approachPoint = GetSmartApproachPoint(approachSpreadRadius);
+            Vector2 dir = ApplyPackCohesion((approachPoint - (Vector2)transform.position).normalized);
+            MoveInDirection(dir, WalkStateName);
             return;
         }
 
@@ -102,7 +113,9 @@ public class MeleeEnemyController : EnemyController
         {
             hasAttackSlot = true;
             SetMoving(true);
-            MoveInDirection(toPlayer.normalized, WalkStateName);
+            Vector2 approachPoint = GetSmartApproachPoint(approachSpreadRadius);
+            Vector2 dir = ApplyPackCohesion((approachPoint - (Vector2)transform.position).normalized);
+            MoveInDirection(dir, WalkStateName);
             return;
         }
 

@@ -88,7 +88,7 @@ public class DivineGodController : EnemyController
             // Posição fresca a cada chamada (não um snapshot único no início do ataque) —
             // cada um dos 5 raios usa a posição ATUAL do player naquele instante + espalhamento.
             Vector2 target = (Vector2)player.position + Random.insideUnitCircle * rayScatterRadius;
-            var obj = Instantiate(rayStrikePrefab, target, Quaternion.identity);
+            var obj = Instantiate(rayStrikePrefab, target, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
             var ray = obj.GetComponent<DivineRayStrike>();
             if (ray != null) ray.Initialize(stats.attackDamage, player);
         }

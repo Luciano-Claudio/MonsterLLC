@@ -194,7 +194,7 @@ public class Rogue : HeroController
     {
         if (bombPrefab == null) return;
 
-        var bombObj = Instantiate(bombPrefab, transform.position, Quaternion.identity);
+        var bombObj = Instantiate(bombPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         var bomb = bombObj.GetComponent<RogueBomb>();
         if (bomb != null) bomb.Launch(RawAimDirection, stats.damage * bombDamageMultiplier, enemyLayerMask, bombSpeed, bombMaxDistance, bombExplosionRadius);
     }

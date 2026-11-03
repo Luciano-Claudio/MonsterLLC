@@ -222,7 +222,7 @@ public class WorldBossSpawnManager : MonoBehaviour
             return null; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
         }
 
-        var bossObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity);
+        var bossObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity, EnemyController.BossesContainer);
         WorldSpawnUtility.RestrictToOpenWorldGraph(bossObj);
 
         // Todo boss nasce já em combate, mesmo longe do jogador (doc, Seção 17.6: "Immediate

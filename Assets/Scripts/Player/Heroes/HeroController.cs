@@ -134,6 +134,38 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
     public static bool IsPlayerUntargetable;
 
+    // 2026-10-31 — Deadline 8.1, TESTE DESCARTÁVEL (não é a versão final da Seção 4 do doc de
+    // redesign incremental). Assim que qualquer EnemyController detectar o player por conta
+    // própria (proximidade — ver EnemyController.UpdatePatrol), liga este flag e todo o resto
+    // do mundo passa a perseguir ao mesmo tempo, inclusive quem normalmente ficaria dormente
+    // esperando. Static pelo mesmo motivo de IsPlayerUntargetable (só existe 1 herói jogável
+    // por vez). Sem reset automático aqui de propósito — é só pra validar o enxame.
+    public static bool GlobalAggroActive;
+
+    // 2026-11-01 — Deadline 8.1, IA de perseguição inteligente (planejamento prévio no chat).
+    // Velocidade real do herói, pro monstro prever ONDE ele vai estar em vez de só perseguir
+    // onde ele ESTÁ agora (EnemyController.GetSmartApproachPoint). Static pelo mesmo motivo de
+    // IsPlayerUntargetable/PickupRadius (só existe 1 herói jogável por vez). Atualizado no
+    // mesmo lugar onde rb.linearVelocity é escrito de verdade (ver Update()).
+    public static Vector2 Velocity;
+
+    // GameObject "//HEROS" na cena — mesmo container onde o próprio herói nasce
+    // (GameplayBootstrap.SpawnHero). Pets (Mage/Blood Mage) nascem aqui também: nascem no
+    // mesmo lugar do "pai", mesmo padrão find-or-create do EnemyController.EnemysContainer.
+    private static Transform herosContainer;
+    public static Transform HerosContainer
+    {
+        get
+        {
+            if (herosContainer == null)
+            {
+                var existing = GameObject.Find("//HEROS");
+                herosContainer = existing != null ? existing.transform : new GameObject("//HEROS").transform;
+            }
+            return herosContainer;
+        }
+    }
+
     // Sprint 28 (Gunslinger) — passiva de sorte/loot (GDD Seção 17.8): multiplica a
     // quantidade de Monster Essence dropada por qualquer abate, não só os do próprio
     // Gunslinger. Static pelo mesmo motivo de IsPlayerUntargetable (só existe 1 herói
@@ -147,6 +179,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // detecta o loot (pickupRadius, abaixo — HeroPickupRadius, num GameObject filho) lê ele
     // todo frame.
     public static float PickupRadius = 1f;
+
+    // 2026-10-31 — Deadline 8.1 (redesign incremental): nerf de propósito na Energia de
+    // Ultimate recebida por kill, pra abrir espaço pra um perk de Baixo ("mundo") ou de Cima
+    // (ultimate específica) que devolva esse valor aos poucos. Static pelo mesmo motivo de
+    // LootMultiplier/PickupRadius (só existe 1 herói jogável por vez). Multiplica POR CIMA de
+    // UltimateEnergyMultiplier (passiva por-herói, ex.: 4× do Rogue) em HandleEnemyKilled —
+    // os dois efeitos se acumulam, não se substituem. Default 0.1 = herói começa recebendo só
+    // 10% da Energia que o monstro largaria num mundo sem este nerf (hoje 20 por kill — ver
+    // EnemyController.energyReward — vira 2 de verdade sem nenhum perk comprado).
+    public static float EnergyGainMultiplier = 0.1f;
 
     // Exposto no Inspector só pra ajustar o valor BASE acima sem precisar editar código — campo
     // comum de instância (não static), igual qualquer outro 🔢 pendente de balanceamento
@@ -409,10 +451,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             // diferente de Translate (que simplesmente não faz nada), velocity persiste entre
             // frames até ser trocada.
             rb.linearVelocity = canMove ? moveInput * stats.moveSpeed : Vector2.zero;
+            Velocity = rb.linearVelocity;
         }
         else if (canMove)
         {
             transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
+            Velocity = moveInput * stats.moveSpeed;
+        }
+        else
+        {
+            Velocity = Vector2.zero;
         }
     }
 
@@ -481,7 +529,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (ultimateEnergyLockoutRemaining > 0f) return;
         if (!CanGainUltimateEnergy) return;
 
-        int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier);
+        int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier * EnergyGainMultiplier);
         stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, adjustedEnergy);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
@@ -690,6 +738,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         isTrapped = false; // mesmo motivo — morrer preso não pode renascer incapaz de agir
         isUsingSecondaryAbility = false;
         IsPlayerUntargetable = false; // sem isso, morrer camuflado deixaria os monstros cegos pro respawn inteiro
+        Velocity = Vector2.zero; // sem isso, o herói morto em movimento deixaria todo monstro prevendo um ponto fantasma até o respawn mexer de novo
         if (animator != null)
         {
             animator.SetFloat("DamageSpeedMultiplier", 1f);

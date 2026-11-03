@@ -100,7 +100,7 @@ public class GoblinSapperController : EnemyController
     {
         if (bombPrefab != null)
         {
-            var bombObj = Instantiate(bombPrefab, player.position, Quaternion.identity);
+            var bombObj = Instantiate(bombPrefab, player.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
             var bomb = bombObj.GetComponent<GoblinSapperBomb>();
             if (bomb != null) bomb.Initialize(stats.attackDamage * bombExplosionDamageMultiplier);
         }

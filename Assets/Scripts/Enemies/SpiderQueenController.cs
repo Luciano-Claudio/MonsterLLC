@@ -126,7 +126,7 @@ public class SpiderQueenController : EnemyController
         if (webProjectilePrefab == null || player == null) return;
 
         Vector2 dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
-        var obj = Instantiate(webProjectilePrefab, transform.position, Quaternion.identity);
+        var obj = Instantiate(webProjectilePrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var web = obj.GetComponent<SpiderWebProjectile>();
         if (web != null) web.Launch(dir);
     }

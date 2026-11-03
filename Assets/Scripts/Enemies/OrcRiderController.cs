@@ -28,7 +28,7 @@ public class OrcRiderController : MeleeEnemyController
     {
         if (prefab == null || point == null) return;
 
-        var childObj = Instantiate(prefab, point.position, Quaternion.identity);
+        var childObj = Instantiate(prefab, point.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var childController = childObj.GetComponent<EnemyController>();
         if (childController == null) return;
 

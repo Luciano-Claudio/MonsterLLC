@@ -20,7 +20,7 @@ public class GroundCasterEnemyController : RangedEnemyController
 
         // Nasce na posição atual do player no instante exato do Animation Event de cast —
         // não segue ele depois, e não é mirado (não é um projétil).
-        var hazardObj = Instantiate(groundHazardPrefab, player.position, Quaternion.identity);
+        var hazardObj = Instantiate(groundHazardPrefab, player.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var hazard = hazardObj.GetComponent<GroundTargetHazard>() ?? hazardObj.AddComponent<GroundTargetHazard>();
         hazard.damage = stats.attackDamage;
     }

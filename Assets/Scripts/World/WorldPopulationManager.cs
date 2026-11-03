@@ -211,7 +211,7 @@ public class WorldPopulationManager : MonoBehaviour
             return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
         }
 
-        var enemyObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity);
+        var enemyObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity, EnemyController.EnemysContainer);
         // ownerFloor fica null (default) — EnemyController/FloorActivationCheck já tratam
         // null como "sempre ativo", sem precisar de nenhuma mudança nesses scripts.
         WorldSpawnUtility.RestrictToOpenWorldGraph(enemyObj);

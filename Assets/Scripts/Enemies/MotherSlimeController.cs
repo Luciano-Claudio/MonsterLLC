@@ -30,7 +30,10 @@ public class MotherSlimeController : SlimeEnemyController
         {
             if (point == null) continue;
 
-            var childObj = Instantiate(childSlimePrefab, point.position, Quaternion.identity);
+            // IsBoss real desta instância decide o container (EnemyController.ContainerFor) —
+            // nasce no mesmo container do "pai", sem precisar saber de antemão se este script
+            // está rodando num boss ou num comum.
+            var childObj = Instantiate(childSlimePrefab, point.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
             var childController = childObj.GetComponent<EnemyController>();
             if (childController == null) continue;
 

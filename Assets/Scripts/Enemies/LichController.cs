@@ -59,7 +59,7 @@ public class LichController : RangedEnemyController
     public void AnimationIceClawsEvent()
     {
         if (iceHazardPrefab == null || player == null) return;
-        Instantiate(iceHazardPrefab, player.position, Quaternion.identity);
+        Instantiate(iceHazardPrefab, player.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
     }
 
     // Animation Event, no frame certo do clipe Spellcast_reanimation (4 direções).
@@ -71,7 +71,7 @@ public class LichController : RangedEnemyController
         if (prefab == null) return;
 
         Vector2 spawnPos = (Vector2)transform.position + Random.insideUnitCircle * reanimationSpawnRadius;
-        var obj = Instantiate(prefab, spawnPos, Quaternion.identity);
+        var obj = Instantiate(prefab, spawnPos, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var enemy = obj.GetComponent<EnemyController>();
         if (enemy == null) return;
 
