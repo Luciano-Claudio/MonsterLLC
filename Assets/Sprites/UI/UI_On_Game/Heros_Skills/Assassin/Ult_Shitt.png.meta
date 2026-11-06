@@ -1,22 +1,10 @@
 fileFormatVersion: 2
-guid: 5551770c0c0c37849b4edd1d30574cba
+guid: 1c97804d5ea8f1b46ac9784493ac66bc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1553417594477803671
-    second: Card_Back_40x56_0
-  - first:
-      213: -8103755737271354060
-    second: Card_Back_40x56_1
-  - first:
-      213: -6963543053601790704
-    second: Card_Back_40x56_2
-  - first:
-      213: 6899064842022588135
-    second: Card_Back_40x56_3
-  - first:
-      213: 4640749360231426436
-    second: Card_Back_40x56_4
+      213: 4037517563857934031
+    second: Ult_Shitt_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -138,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Card_Back_40x56_0
+      name: Ult_Shitt_0
       rect:
         serializedVersion: 2
-        x: 83
-        y: 58
-        width: 33
-        height: 50
+        x: 0
+        y: 0
+        width: 16
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9670f4d9de6217ae0800000000000000
-      internalID: -1553417594477803671
+      spriteID: fc6172825d4280830800000000000000
+      internalID: 4037517563857934031
       vertices: []
       indices: 
       edges: []
@@ -163,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c59fae66e9596374e8d2110a7a32721c
+    spriteID: 51134dd5266f4744d990574629b1de2b
     internalID: 0
     vertices: []
     indices: 
@@ -171,13 +159,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Card_Back_40x56_0: -1553417594477803671
-      Card_Back_40x56_1: -8103755737271354060
-      Card_Back_40x56_2: -6963543053601790704
-      Card_Back_40x56_3: 6899064842022588135
-      Card_Back_40x56_4: 4640749360231426436
+      Ult_Shitt_0: 4037517563857934031
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
