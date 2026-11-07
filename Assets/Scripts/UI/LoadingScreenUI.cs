@@ -58,7 +58,7 @@ public class LoadingScreenUI : MonoBehaviour
         // object is inactive"). O resto (os 2 frames de espera) fica dentro da coroutine.
         if (root != null) root.SetActive(true);
         SetFill(0f);
-        SetStatus("Carregando...");
+        SetStatus("Loading...");
 
         StartCoroutine(LoadSceneRoutine(sceneName, preLoadSetup));
     }
@@ -108,7 +108,7 @@ public class LoadingScreenUI : MonoBehaviour
         }
 
         SetFill(1f);
-        SetStatus("Entrando no mundo...");
+        SetStatus("Entering world...");
 
         // Tempo mínimo de tela de loading, pra não "flashar" em cenas pequenas — puramente
         // cosmético, ajustável/removível depois (minimumDuration acima).

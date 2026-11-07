@@ -570,7 +570,7 @@ TextureImporter:
         width: 64
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -579,6 +579,28 @@ TextureImporter:
       bones: []
       spriteID: df145d27471f27d4d8d20c6e304a76d3
       internalID: 2066557303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shop_UI_20
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 32
+        width: 48
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39ce97b888119c44fbb97a84dcb53497
+      internalID: 715684113
       vertices: []
       indices: 
       edges: []
@@ -610,6 +632,7 @@ TextureImporter:
       Shop_UI_18: -176349571
       Shop_UI_19: 2066557303
       Shop_UI_2: -9182180573630231502
+      Shop_UI_20: 715684113
       Shop_UI_3: 5234571788005026344
       Shop_UI_4: -5813301330243382171
       Shop_UI_5: 5606261799168028937

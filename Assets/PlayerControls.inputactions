@@ -60,15 +60,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "RemoteControl",
-                    "type": "Button",
-                    "id": "fff16e56-d890-4e11-9b97-f1e8b2dbb2d1",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "SecondaryAbility",
                     "type": "Button",
                     "id": "1a2b3c4d-5e6f-4789-a1b2-c3d4e5f60789",
@@ -195,17 +186,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "Inventory",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "754e745e-83e9-42cc-886f-4505720ca495",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RemoteControl",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

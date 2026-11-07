@@ -17,7 +17,6 @@ public class PlayerInputTest : MonoBehaviour
         controls.Gameplay.Ultimate.performed += ctx => Debug.Log("Ultimate (RMB)");
         controls.Gameplay.Interact.performed += ctx => Debug.Log("Interact (E)");
         controls.Gameplay.Inventory.performed += ctx => Debug.Log("Inventory (TAB)");
-        controls.Gameplay.RemoteControl.performed += ctx => Debug.Log("RemoteControl (Q)");
     }
 
     private void OnEnable() => controls.Enable();

@@ -32,17 +32,17 @@ public class GameplayBootstrap : MonoBehaviour
         switch (GameStateManager.Instance.CurrentState)
         {
             case GameState.MapSelect: // acabou de vir de um New Game
-                LoadingScreenUI.Instance?.SetStatus("Gerando o mundo...");
+                LoadingScreenUI.Instance?.SetStatus("Generating world...");
                 SpawnHero(MainMenuUI.CurrentRun.hero);
 
-                LoadingScreenUI.Instance?.SetStatus("Carregando entidades...");
+                LoadingScreenUI.Instance?.SetStatus("Loading entities...");
                 DayTimer.Instance.ResetForNewDay();
                 DemandTracker.Instance.StartDay(MainMenuUI.CurrentRun.day);
                 GameStateManager.Instance.SetState(GameState.Gameplay);
                 break;
 
             case GameState.Shop: // acabou de vir de um Continue Game
-                LoadingScreenUI.Instance?.SetStatus("Reabrindo a loja...");
+                LoadingScreenUI.Instance?.SetStatus("Reopening shop...");
                 // Reemite o evento pra quem só assinou GameEvents.OnGameStateChanged nesta cena
                 // nova (uma UI de Loja que more só na cena de gameplay, por exemplo) — o primeiro
                 // SetState (feito no MainMenuUI, antes do LoadScene) já passou sem ninguém aqui

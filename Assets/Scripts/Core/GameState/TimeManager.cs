@@ -9,5 +9,4 @@ public class TimeManager : MonoBehaviour
 
     public void Pause() => IsPaused = true;
     public void Resume() => IsPaused = false;
-    public void TogglePause() => IsPaused = !IsPaused;
 }

@@ -2,14 +2,17 @@
 
 _Decisões fechadas em sessão de planejamento pós-Deadline 8 (fechada em 2026-10-31). Cobre as
 mecânicas que já existem e só precisam de ajuste, o sistema de popups/tooltips, o pool de 30
-Talentos (fechado — Seção 7), os 30 Perks de Baixo (fechado — Seção 8), as 3 abas bespoke do
+Talentos (fechado — Seção 7), os 30 perks de "Mundo" (fechado — Seção 8; **mudança de escopo
+pós-fechamento**: deixou de ser compartilhado entre os 10 heróis — ver nota na própria Seção 8),
+as 3 abas bespoke do
 Barbarian — Esquerda (Seção 9), Direita (Seção 10) e Cima (Seção 11) —, as 3 abas bespoke do
 Ranger — Esquerda (Seção 12), Direita (Seção 13) e Cima (Seção 14) —, e as 3 abas bespoke do
 Mage — Esquerda (Seção 15), Direita (Seção 16) e Cima (Seção 17) —, e as 3 abas bespoke do Druid
 — Esquerda (Seção 18), Direita (Seção 19) e Cima (Seção 20) —, e as 3 abas bespoke do Rogue —
 Esquerda (Seção 21), Direita (Seção 22) e Cima (Seção 23) —, e as 3 abas bespoke do Cleric —
-Esquerda (Seção 24), Direita (Seção 25) e Cima (Seção 26) —, 120 perks completos pra cada um dos
-6 primeiros heróis, e o Paladin (Seções 27-29) e o Gunslinger (Seções 30-32) 100% completos, e
+Esquerda (Seção 24), Direita (Seção 25) e Cima (Seção 26) —, 121 perks completos pra cada um dos
+6 primeiros heróis (1 central + 4 áreas de 30), e o Paladin (Seções 27-29) e o Gunslinger (Seções
+30-32) 100% completos, e
 o Assassin (Seções 33-35) 100% completo. A Loja nova (3 abas) e o restante das abas bespoke
 e o Blood Mage (Seções 36-38) 100% completo — **os 10 heróis estão fechados**. A Loja nova (3
 abas) ainda está em debate — ver Seção 40._
@@ -28,10 +31,20 @@ já existia.
 
 ---
 
-## 1. Sistema de Tradução (Localização)
+## 1. Sistema de Tradução (Localização) — ADIADO PÓS-MVP
 
-Decisão: começar a localização AGORA, enquanto a superfície de texto ainda é pequena — adiar isso
-viraria bola de neve conforme a Loja/Perks/Talentos forem crescendo.
+**Decisão revertida:** o R1 chegou a ser implementado por completo (pacote `com.unity.localization`,
+Locales en/pt-BR, String Table "UI Text" com 58 chaves, `LocalizeStringEvent` ligado em ~90 labels
+nas 2 cenas + Loja, dropdown de idioma funcional) — mas foi **desfeito** ao testar: o locale do
+sistema do usuário assumiu pt-BR sozinho ao abrir o jogo, e a fonte TMP atual não tem glifos
+acentuados (ç, ã, é...), quebrando o texto em pt-BR visualmente. Corrigir a fonte agora não compensa
+pro tamanho do MVP.
+
+**Estado atual:** jogo 100% em inglês, texto fixo direto nos componentes (sem `LocalizeStringEvent`).
+O pacote, os Locales, a String Table Collection e os scripts (`L10nSetup.cs`/`LanguageSelector.cs`/
+`LocalizationTest.cs`) continuam no projeto, **parados** (não usados em runtime) — a ideia é retomar
+tradução depois do MVP, sem precisar refazer o levantamento de chaves. `L10nSetup.cs` ganhou um
+3º menu (`Tools/Localization/Revert R1+R1b`) que desliga tudo isso de uma vez quando foi preciso.
 
 ### 1.1 — Cena Main_Menu
 
@@ -41,8 +54,9 @@ viraria bola de neve conforme a Loja/Perks/Talentos forem crescendo.
 - **Settings — aba Display:** Theme, Brightness, Contrast, Saturation, Max FPS, Camera Max Zoom
   Out, Reset Default.
 - **Settings — aba Controls:** Action, Input1, Input2, Primary Attack, Ultimate, Survival Skill,
-  Move Up, Move Down, Move Left, Move Right, Interact, Open Inventory, Use TP, Menu, Pick Up
-  Magnet, Reset Default.
+  Move Up, Move Down, Move Left, Move Right, Interact, Open Inventory, Menu, Pick Up Magnet,
+  Reset Default. (Use TP saiu da lista — mecânica de Controle Remoto/tecla Q removida inteira,
+  ver Seção 3.)
 
 ### 1.2 — Cena _TestScene (gameplay)
 
@@ -50,6 +64,31 @@ viraria bola de neve conforme a Loja/Perks/Talentos forem crescendo.
   precisa traduzir os 2).
 - **Menu_Esc (pause):** Resume, Settings, Main Menu, Exit.
 - **Settings:** mesmo escopo exato do item 1.1 (estrutura idêntica à da Main_Menu).
+
+### 1.3 — Loja (Perks/Talentos/Resumo)
+
+Escopo descoberto depois do 1.1/1.2 (a Loja foi montada manualmente pelo usuário já em cima da
+estrutura de 121 perks/herói — ver Seção 8). Só o chrome ESTÁTICO entra aqui; conteúdo de run
+(nome/valor dos 121 nós de perk, dos 14 itens de Loot_Sold, das cartas de Talento sorteadas) fica
+de fora — é dado dinâmico, não texto fixo pra traduzir.
+
+- **Perk_Painel:** botões de troca de aba (Resume, Talents), Redefine, e os 4 cabeçalhos de área
+  do mapa de perks (World, Primary Attack, Survival, Ultimate). `Start_Day` e `Hero_Perks_x/120`
+  ficam de fora — texto composto com número dinâmico já embutido no mesmo componente (precisa de
+  Smart String/troca em runtime, pendência pro sprint que ligar os dados de verdade).
+- **Resume_Painel (aba Resumo do Dia):** cabeçalhos Day Summary, Combat Summary, Loot Sold; as 4
+  labels do Combat Summary (Creatures Slain/Bosses Defeated/Gold From Monsters/Gold From Bosses);
+  as 4 colunas do cabeçalho de Loot Sold (Item/QTY/Unit/Subtotal); as 3 labels de Totals (Kill
+  Gold/Loot Gold/Total); "+1 Talent Point"; botões de troca de aba (Perks, Talents). `Day_X` e
+  `Survival_Time` ficam de fora pelo mesmo motivo do Start_Day (dia atual/estado "Survived"/tempo
+  decorrido já embutidos no texto). `New_Hero` ainda não tem popup de hover implementado.
+- **Talent_Painel:** cabeçalho "Talents", texto de instrução ("Choose 1 talent for the game"),
+  botões Choose/Reroll, cabeçalho "Owned Talents", botões de troca de aba (Resume, Perks). As 3
+  cartas sorteadas (nome/ícone/descrição do talento) ficam de fora — conteúdo de run.
+- **Correções de inglês feitas direto na cena** (erros reais, não só tradução): "Day Sumary" →
+  "Day Summary", "Combat Sumary" → "Combat Summary", "Choose 1 talent fot the game" → "...for the
+  game", "Incress your damage..." (placeholder das 3 cartas de Talento) → "Increase your
+  damage...".
 
 ---
 
@@ -120,7 +159,7 @@ forma geral (gradual, pico à noite) está fechada.
 - **Controle Remoto (tecla Q) é removido inteiro** — GDD Seção 26: hoje é a mesma feature que (1)
   pausa o jogo e (2) abre o popup de TP de volta pro centro/Safe Zone. As duas coisas somem
   juntas: **não existe mais pausar com Q, nem TP de volta pra Safe Zone.** Não entra como ideia
-  reaproveitável nos Perks de Baixo (ver Seção 8) — é remoção pura, não upgrade de algo que
+  reaproveitável nos Perks de Mundo (ver Seção 8) — é remoção pura, não upgrade de algo que
   continua existindo.
 
 **Exemplo — a progressão de dia nunca retrocede, só o dia atual reinicia:**
@@ -365,19 +404,34 @@ Mage (já construídos) e em todos os heróis futuros, desde o início.
 
 ---
 
-## 8. Perks de Baixo (Mundo/Economia) — 30 perks, fechado
+## 8. Perks de "Mundo" (ex-Baixo) — 30 perks, fechado
+
+> **Mudança de escopo (pós-fechamento, decisão do usuário)**: esta árvore **não é mais
+> compartilhada entre os 10 heróis**. Ela virou a área "Mundo" — 1 das 4 áreas de 30 perks dentro
+> da nova estrutura de **121 perks por herói** (1 perk central + 4 áreas × 30: Mundo, Ataque
+> Primário, Survival, Ultimate). Cada herói agora tem sua **própria cópia independente** destes 30
+> perks de Mundo, do mesmo jeito que já tinha sua própria cópia de Esquerda/Direita/Cima. Não existe
+> mais um pool global único de "Baixo". Ver Seção 0-bis (estrutura de desbloqueio por linha) e o
+> total revisado no fechamento do documento.
+>
+> **Pendência aberta**: os 30 perks listados abaixo ainda estão organizados como lista única
+> "deliberadamente bagunçada" (ver bullet abaixo) — isso contradiz a nova regra de desbloqueio por
+> linha (6 linhas de 2/5/7/9/5/2, comprar 1 da linha libera a próxima). Os perks em si (conteúdo e
+> preço) continuam valendo, mas **faltam ser redistribuídos nas 6 linhas** — não foi feito aqui de
+> propósito, pra não inventar essa divisão sem o usuário validar quais 2 ficam na linha 0, quais 5
+> na linha 1, etc.
 
 Diferente de Cima/Esquerda/Direita (100% bespoke por herói, ainda em debate pros outros heróis —
 ver Seção 40), a
-árvore de Baixo é **compartilhada entre os 10 heróis**, sem exceção, e seu conteúdo está **fechado
-em 30 perks**. Regras que valem só aqui:
+árvore de Mundo tem seu conteúdo **fechado em 30 perks** (ainda sem divisão em linhas — ver
+pendência acima). Regras que valem só aqui:
 
 - **Nada de energia, dano (ofensivo), Ultimate, Shift ou Ataque Primário** — isso é território das
-  outras 3 abas. Baixo é só mundo/economia/sobrevivência passiva.
-- **Árvore deliberadamente "bagunçada"**, não dividida em ramos temáticos visíveis — um perk pode
+  outras 3 áreas. Mundo é só economia/sobrevivência passiva.
+- **Lista "bagunçada" por família, não por linha de desbloqueio** (pendência acima) — um perk pode
   liberar outro sem relação nenhuma de tema (ex.: `Vigor` pode liberar `Baú Extra` e `Negociante
-  Nato`). O agrupamento por família na lista abaixo é só pra leitura; a posição real no grafo da
-  árvore (quando ela for desenhada) vai ser embaralhada de propósito.
+  Nato`). O agrupamento por família na lista abaixo é só pra leitura; a posição real nas 6 linhas
+  (quando forem definidas) não segue essa ordem.
 - **Cruzamento com a aba Bonuses antiga** (GDD Seção 41): absorveu `Increase Inventory Slots` →
   `Mais Espaço de Bag`, `Increase Inventory Stack Size` → `Stack Maior`, e `Reroll de pergaminho`
   → `Reroll de Talento`. **Não absorveu:** `Add Time` (compra de tempo de dia — já removida do
@@ -431,8 +485,8 @@ Vivo, Baú Extra, Baú Duplo, Mais Espaço de Bag, Stack Maior, Reroll de Talent
 ## 9. Perks de Esquerda (Ataque Primário) — Barbarian, 30 perks, fechado
 
 Primeira das 3 abas bespoke por herói (Cima/Esquerda/Direita — ver Seção 40) a ser fechada. Serve
-de referência de formato pras próximas 29 abas (10 heróis × 3, Baixo já é compartilhada — Seção
-8).
+de referência de formato pras próximas 29 abas (10 heróis × 3; Mundo, Seção 8, é a 4ª área de cada
+herói, não mais compartilhada entre eles).
 
 ### 9.1 — Mecânica nova: Ground Crack
 
@@ -571,8 +625,8 @@ Grounded nos campos reais do Shift (`secondaryAbilityDamageMultiplier`, `seconda
 
 ## 11. Perks de Cima (Ultimate) — Barbarian, 30 perks, fechado
 
-Fecha as 4 abas do Barbarian (Baixo compartilhado + Esquerda/Direita/Cima bespoke = 120 perks
-completos pro 1º herói). Grounded em `ultimateDamageMultiplier`, `projectileSpeed`,
+Fecha as 4 áreas do Barbarian (Mundo própria do herói + Esquerda/Direita/Cima bespoke = 121 perks
+completos pro 1º herói, incluindo o central). Grounded em `ultimateDamageMultiplier`, `projectileSpeed`,
 `projectileMaxDistance`, `projectileKnockbackForce`, os 8 projéteis fixos, e a carga/energia
 específica da Ultimate (pendência citada na Seção 12 — resolvida aqui, Cima ganha um
 multiplicador de ganho de energia próprio, separado do `EnergyGainMultiplier` geral de Baixo).
@@ -768,8 +822,8 @@ si, mantendo os efeitos já comprados.
 
 ## 14. Perks de Cima (Ultimate) — Ranger, 30 perks, fechado
 
-Fecha as 4 abas do Ranger (Baixo compartilhado + Esquerda/Direita/Cima bespoke = 120 perks
-completos pro 2º herói). Grounded nos campos reais da faca (`RangerKnife`): dano em voo
+Fecha as 4 áreas do Ranger (Mundo própria do herói + Esquerda/Direita/Cima bespoke = 121 perks
+completos pro 2º herói, incluindo o central). Grounded nos campos reais da faca (`RangerKnife`): dano em voo
 (`ultimateDamageMultiplier`), dano no chão (hoje fixo em 1x `stats.damage`, ganha multiplicador
 próprio aqui), `bleedDamageMultiplier`, `knifeFlightSpeed`, `knifeMaxDistance`,
 `knifeFlightKnockbackForce`, `knifeGroundedDuration`, `knifeGroundedRadius`,
@@ -974,8 +1028,8 @@ nos campos que já existem no Mage (`petSizeMultiplier`, `petActionSpeedMultipli
 
 ## 17. Perks de Cima (Ultimate) — Mage, 30 perks, fechado
 
-Fecha as 4 abas do Mage (Baixo compartilhado + Esquerda/Direita/Cima bespoke = 120 perks
-completos pro 3º herói). Grounded na bola de fogo real (`MageFireball`): dano de impacto
+Fecha as 4 áreas do Mage (Mundo própria do herói + Esquerda/Direita/Cima bespoke = 121 perks
+completos pro 3º herói, incluindo o central). Grounded na bola de fogo real (`MageFireball`): dano de impacto
 (`ultimateDamageMultiplier`), dano/duração do rastro no chão (`ultimateTrailDamageMultiplier`/
 `fireballGroundedDuration`), dano/duração do status Fire (`fireStatusDamageMultiplier`/
 `fireballFireStatusDuration`), velocidade/alcance de voo, tamanho geral (`ultimateSizeMultiplier`,
@@ -1175,8 +1229,8 @@ o voo fazem sentido aqui).
 
 ## 20. Perks de Cima (Ultimate) — Druid, 30 perks, fechado
 
-Fecha as 4 abas do Druid (Baixo compartilhado + Esquerda/Direita/Cima bespoke = 120 perks
-completos pro 4º herói). Cobre a forma Alce inteira — transformação, Garra e Cabeçada — já que
+Fecha as 4 áreas do Druid (Mundo própria do herói + Esquerda/Direita/Cima bespoke = 121 perks
+completos pro 4º herói, incluindo o central). Cobre a forma Alce inteira — transformação, Garra e Cabeçada — já que
 tudo isso É a Ultimate. Grounded em `elkDamageMultiplier`, `elkMaxHealthMultiplier`,
 `elkMoveSpeedMultiplier`, `elkFormMaxDuration`, `elkSizeMultiplier`, `elkKnockbackForce` (Garra),
 e os campos próprios da Cabeçada (`elkHeadbuttLaunchSpeed`, `elkHeadbuttMaxRange`,
@@ -1373,8 +1427,8 @@ atravessa colisão — bastante espaço pra mecânica nova.
 
 ## 23. Perks de Cima (Ultimate) — Rogue, 30 perks, fechado
 
-Fecha as 4 abas do Rogue (Baixo compartilhado + Esquerda/Direita/Cima bespoke = 120 perks
-completos pro 5º herói). Grounded na Bomba real (`bombDamageMultiplier`, `bombSpeed`,
+Fecha as 4 áreas do Rogue (Mundo própria do herói + Esquerda/Direita/Cima bespoke = 121 perks
+completos pro 5º herói, incluindo o central). Grounded na Bomba real (`bombDamageMultiplier`, `bombSpeed`,
 `bombMaxDistance`, `bombExplosionRadius`) e na carga/energia específica (soma com a passiva já
 existente de 4x energia do Rogue). "Mais bombas por lançamento" reaproveita o mesmo critério já
 validado do `hammerCount` do Paladin — leque de ângulos, dano cheio por bomba, sem sistema novo.
@@ -2494,7 +2548,8 @@ entrega. Em vez disso, a escalada de poder vem de reiniciar a MESMA animação/p
 
 ---
 
-Com isso, os 10 heróis estão 100% completos — 1.200 perks no total (120 por herói × 10).
+Com isso, os 10 heróis estão 100% completos — 1.210 perks no total (121 por herói × 10: 1 central +
+4 áreas de 30, incluindo a área de Mundo que deixou de ser compartilhada — ver Seção 8).
 
 ---
 
@@ -2503,7 +2558,7 @@ Com isso, os 10 heróis estão 100% completos — 1.200 perks no total (120 por 
 `HeroController.EnergyGainMultiplier` (static, default `0.1f`) — nerf de propósito na Energia de
 Ultimate recebida por kill (20 → 2 de base, sem nenhum perk comprado), multiplicando por cima do
 `UltimateEnergyMultiplier` já existente (passiva por-herói, ex.: 4× do Rogue). Abre espaço pra um
-perk de Baixo (mundo) ou de Cima (ultimate específica) devolver esse valor aos poucos. Única
+perk de Mundo ou de Cima (ultimate específica) devolver esse valor aos poucos. Única
 exceção de código feita durante esta fase de planejamento — o resto deste documento é só decisão,
 sem implementação ainda.
 
@@ -2514,8 +2569,10 @@ sem implementação ainda.
 - **Loja real** — as 3 abas (Resumo do Dia / Árvore de Perks / Talentos) e como o desmonte do Shop
   antigo entra em cada uma. **Próxima etapa a debater.**
 - **Árvore de Perks — COMPLETA** (os 10 heróis 100% fechados — Seções 9-11, 12-14, 15-17,
-  18-20, 21-23, 24-26, 27-29, 30-32, 33-35 e 36-38 — mais o Baixo compartilhado, Seção 8, e os
-  30 Talentos, Seção 7. 1.200 perks de herói + 30 de Baixo + 30 Talentos).
+  18-20, 21-23, 24-26, 27-29, 30-32, 33-35 e 36-38 — cada um incluindo sua própria área de Mundo,
+  Seção 8, que deixou de ser compartilhada. 1.210 perks de herói (121 × 10) + 30 Talentos, Seção 7.
+  **Pendência nova**: os 30 perks de Mundo de cada herói ainda precisam ser redistribuídos nas 6
+  linhas de 2/5/7/9/5/2 — ver nota na Seção 8).
 - **Bosses ignoram invisibilidade/untargetable** — decisão nova documentada na Seção 4.2;
   afeta Camuflagem do Ranger, Coruja do Druid e forma sombria do Assassin. Ainda sem
   implementação (mesma pendência de todo o resto deste documento).

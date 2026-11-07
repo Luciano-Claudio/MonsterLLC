@@ -18,7 +18,6 @@ public class SystemsBootstrap : MonoBehaviour
 
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
         // agora tem dono de verdade (BagController), que já pausa/despausa sozinho.
-        controls.Gameplay.RemoteControl.performed += ctx => TimeManager.Instance.TogglePause();
         // ESC deixou de ser placeholder de pausa nesta sprint — agora tem dono de verdade
         // (PauseMenuUI, na cena de gameplay), que pausa/despausa junto com abrir/fechar o
         // próprio menu (inclusive clicando em "Resume", não só via Esc).

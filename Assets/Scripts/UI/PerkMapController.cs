@@ -31,8 +31,20 @@ public class PerkMapController : MonoBehaviour, IDragHandler, IScrollHandler
     {
         if (content == null) return;
         content.localScale = Vector3.one * defaultZoom;
-        content.anchoredPosition = Vector2.zero;
+        // anchoredPosition = 0 só centraliza o Content se o pivot dele for (0.5, 0.5). O Content
+        // real usa pivot (0, 1) (canto superior esquerdo, pra facilitar posicionar os 121 nós em
+        // coordenadas positivas) — por isso o cálculo via PivotOffset() em vez de Vector2.zero
+        // (achado real, usuário reportou o Content pulando pro canto ao entrar em Play).
+        content.anchoredPosition = -PivotToCenterOffset();
         ClampContentPosition();
+    }
+
+    // Vetor do PIVOT até o CENTRO visual do Content (ex.: pivot (0,1) = canto superior esquerdo →
+    // centro fica à direita e pra baixo, por isso width positivo e height negativo). Somar isso ao
+    // anchoredPosition dá a posição do centro no espaço do pai; zero quando o pivot já é (0.5, 0.5).
+    private Vector2 PivotToCenterOffset()
+    {
+        return (new Vector2(0.5f, 0.5f) - content.pivot) * content.rect.size * content.localScale.x;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -69,19 +81,22 @@ public class PerkMapController : MonoBehaviour, IDragHandler, IScrollHandler
         ClampContentPosition();
     }
 
-    // Trava o Content pra nunca sobrar espaço vazio dentro do Viewport — assume Content ancorado e
-    // com pivot no centro (0.5, 0.5), igual ao Viewport (convenção padrão de scroll area em uGUI).
+    // Trava o Content pra nunca sobrar espaço vazio dentro do Viewport. Funciona com QUALQUER
+    // pivot: converte anchoredPosition pro centro visual do Content, clampa o centro, e converte
+    // de volta — em vez de assumir pivot (0.5, 0.5) como antes.
     private void ClampContentPosition()
     {
+        Vector2 offsetToCenter = PivotToCenterOffset();
+        Vector2 centerPos = content.anchoredPosition + offsetToCenter;
+
         Vector2 contentSize = content.rect.size * content.localScale.x;
         Vector2 viewportSize = viewport.rect.size;
 
         float maxX = Mathf.Max(0f, (contentSize.x - viewportSize.x) * 0.5f);
         float maxY = Mathf.Max(0f, (contentSize.y - viewportSize.y) * 0.5f);
 
-        Vector2 pos = content.anchoredPosition;
-        pos.x = Mathf.Clamp(pos.x, -maxX, maxX);
-        pos.y = Mathf.Clamp(pos.y, -maxY, maxY);
-        content.anchoredPosition = pos;
+        centerPos.x = Mathf.Clamp(centerPos.x, -maxX, maxX);
+        centerPos.y = Mathf.Clamp(centerPos.y, -maxY, maxY);
+        content.anchoredPosition = centerPos - offsetToCenter;
     }
 }

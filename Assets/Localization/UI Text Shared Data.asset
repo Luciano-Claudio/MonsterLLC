@@ -19,6 +19,254 @@ MonoBehaviour:
     m_Key: test.hello
     m_Metadata:
       m_Items: []
+  - m_Id: 24559742394077184
+    m_Key: menu.new_game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742503129088
+    m_Key: menu.continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742507323392
+    m_Key: menu.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742511517696
+    m_Key: menu.credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742511517697
+    m_Key: menu.exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742515712000
+    m_Key: settings.tab.sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742515712001
+    m_Key: settings.tab.display
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742515712002
+    m_Key: settings.tab.controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742519906304
+    m_Key: settings.sound.master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742519906305
+    m_Key: settings.sound.music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742519906306
+    m_Key: settings.sound.sfx
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742519906307
+    m_Key: settings.reset_default
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742519906308
+    m_Key: settings.display.theme
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100608
+    m_Key: settings.display.brightness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100609
+    m_Key: settings.display.contrast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100610
+    m_Key: settings.display.saturation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100611
+    m_Key: settings.display.max_fps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100612
+    m_Key: settings.display.camera_max_zoom_out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100613
+    m_Key: settings.display.fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742524100614
+    m_Key: settings.controls.action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294912
+    m_Key: settings.controls.primary_attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294913
+    m_Key: settings.controls.ultimate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294914
+    m_Key: settings.controls.survival_skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294915
+    m_Key: settings.controls.move_up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294916
+    m_Key: settings.controls.move_down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294917
+    m_Key: settings.controls.move_left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294918
+    m_Key: settings.controls.move_right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294919
+    m_Key: settings.controls.interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294920
+    m_Key: settings.controls.open_inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294921
+    m_Key: settings.controls.menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559742528294922
+    m_Key: settings.controls.pick_up_magnet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559766700068864
+    m_Key: inventory.tab.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559766700068865
+    m_Key: inventory.tab.stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559766708457472
+    m_Key: pause.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24559766708457473
+    m_Key: pause.main_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005544710144
+    m_Key: shop.tab.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005553098752
+    m_Key: shop.tab.talents
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005557293056
+    m_Key: shop.perks.redefine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005565681664
+    m_Key: shop.perks.area.world
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005569875968
+    m_Key: shop.perks.area.primary_attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005574070272
+    m_Key: shop.perks.area.survival
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005582458880
+    m_Key: shop.perks.area.ultimate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005607624704
+    m_Key: resume.day_summary_header
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005607624705
+    m_Key: resume.combat_summary_header
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005607624706
+    m_Key: resume.row.creatures_slain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005611819008
+    m_Key: resume.row.bosses_defeated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005611819009
+    m_Key: resume.row.gold_from_monsters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005611819010
+    m_Key: resume.row.gold_from_bosses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005616013312
+    m_Key: resume.loot_sold_header
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005620207616
+    m_Key: resume.loot.col_item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005620207617
+    m_Key: resume.loot.col_qty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005620207618
+    m_Key: resume.loot.col_unit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005624401920
+    m_Key: resume.loot.col_subtotal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005624401921
+    m_Key: resume.totals.kill_gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005624401922
+    m_Key: resume.totals.loot_gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005628596224
+    m_Key: resume.totals.total
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005628596225
+    m_Key: resume.talent_point_gained
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005632790528
+    m_Key: shop.tab.perks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005653762048
+    m_Key: shop.talents.instruction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005653762049
+    m_Key: shop.talents.choose_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005653762050
+    m_Key: shop.talents.reroll_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24560005653762051
+    m_Key: shop.talents.owned_header
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
