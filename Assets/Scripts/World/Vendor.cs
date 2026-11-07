@@ -51,7 +51,9 @@ public class Vendor : Interactable
             var slot = bag.Slots[i];
             if (!pricingSettings.TryGetPrice(slot.itemName, out long sellValue)) continue;
 
-            goldEarned += slot.quantity * sellValue;
+            long subtotal = slot.quantity * sellValue;
+            goldEarned += subtotal;
+            DayStatsTracker.RegisterItemSold(slot.itemName, slot.quantity, subtotal); // Resumo do Dia — Loot_Sold
             if (cart != null) cart.AcceptSale(slot.itemName, slot.quantity, interactor.position);
             bag.RemoveSlot(i);
         }

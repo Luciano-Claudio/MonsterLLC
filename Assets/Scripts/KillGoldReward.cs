@@ -34,5 +34,6 @@ public static class KillGoldReward
 
         MainMenuUI.CurrentRun.gold += finalGold;
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
+        DayStatsTracker.RegisterKillGold(finalGold, isBoss); // Resumo do Dia — Gold_From_Monsters/Gold_From_Bosses
     }
 }

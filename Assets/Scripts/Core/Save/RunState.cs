@@ -23,4 +23,11 @@ public class RunState
     // suprimido ainda (default de save novo/antigo). Stub de loja em ShopHandler.
     // BuyNextTierSuppression.
     public int suppressedTierCount;
+
+    // Resumo do Dia (DayStatsTracker/Vendor.Interact) — itens cujo nome já foi revelado (1ª
+    // venda) viram conhecidos PRA SEMPRE no resto da run, mesmo em dias seguintes sem vender de
+    // novo aquele item específico (confirmado com o usuário). Lista de nome exato (LootPricingSettings.itemName),
+    // não índice — mais fácil de ler/debugar, e sobrevive a qualquer reordenação futura da
+    // tabela de preços sem quebrar o save.
+    public System.Collections.Generic.List<string> knownLootItems = new();
 }

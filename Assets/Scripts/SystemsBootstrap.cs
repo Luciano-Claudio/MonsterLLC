@@ -18,6 +18,7 @@ public class SystemsBootstrap : MonoBehaviour
 
         ProgressTracker.Init();
         KillGoldReward.Init(goldTable); // GDD Deadline 8.1, Seção 3.1 — gold fixo por kill/boss, por dia
+        DayStatsTracker.Init(); // Resumo do Dia — contadores/gold/loot vendido, por dia
         controls = new PlayerControls();
 
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
