@@ -28,7 +28,7 @@ public class WorldBossSpawnManager : MonoBehaviour
     [Header("Debug / Teste")]
     [Tooltip("Mesmo padrão de WorldPopulationManager/ChunkTerrainGenerator — ignora o Dia real da run e usa testDayOverride no lugar.")]
     public bool useTestDayOverride;
-    [Range(1, 30)]
+    [Range(1, 10)]
     public int testDayOverride = 1;
 
     [Header("Debug / Teste — Isolamento de Tier (só teste, não existe no jogo real)")]

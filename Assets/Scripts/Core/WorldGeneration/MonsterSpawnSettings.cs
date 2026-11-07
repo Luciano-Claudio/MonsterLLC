@@ -24,9 +24,6 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Cooldown do repovoamento normal (1 por vez) — igual FloorPopulationManager, ignorado nos preenchimentos instantâneos (entrada/crise).")]
     public float respawnInterval = 3f;
 
-    [Tooltip("Quantas crises seguidas (caiu até o mínimo) até o patamar min/target/max escalar permanentemente — mesmo modelo do FloorPopulationManager, agora 1 população só pro mundo inteiro.")]
-    public int crisisStreakToEscalate = 3;
-
     [Header("Distância (doc de design, Seção 2.1.3 / 11)")]
     [Tooltip("Somado a WorldGenerationSettings.safeZoneRadius pra decidir a distância mínima de spawn: MinimumSpawnDistanceFromCenter = safeZoneRadius + spawnSafetyPadding.")]
     public float spawnSafetyPadding = 0f;

@@ -32,7 +32,8 @@ public static class WorldTierSelector
     };
 
     // EffectiveSpawnDay (Seção 8.2): DistanceDayOffset = floor(DistanceBeyondSafeZone /
-    // DistancePerSpawnDay); EffectiveSpawnDay = clamp(ActualDay + DistanceDayOffset, 1, 30).
+    // DistancePerSpawnDay); EffectiveSpawnDay = clamp(ActualDay + DistanceDayOffset, 1, 10) — teto
+    // fixo de 10 dias (GDD Deadline 8.1, Seção 2; substitui o antigo teto de 30).
     // A Safe Zone não muda pesos (Seção 6.3) — só desloca de onde a distância começa a contar.
     public static int ComputeEffectiveSpawnDay(
         float distanceFromCenter, float safeZoneRadius, float distancePerSpawnDay, int actualDay)
@@ -43,7 +44,7 @@ public static class WorldTierSelector
             ? Mathf.FloorToInt(distanceBeyondSafeZone / distancePerSpawnDay)
             : 0;
 
-        return Mathf.Clamp(actualDay + distanceDayOffset, 1, 30);
+        return Mathf.Clamp(actualDay + distanceDayOffset, 1, 10);
     }
 
     // % finais dos 6 grupos (soma sempre 1 = 100%, já com o piso de 20% aplicado e

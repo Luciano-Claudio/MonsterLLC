@@ -1,54 +1,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// "A tabela não é hardcoded" (docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_
-// V2.md, Seção 6.1) — fica num asset editável, não espalhada pelo código. `days` já nasce
-// preenchido com a Seção 5 inteira (os 30 dias) quando o asset é criado pelo menu — editável
-// depois no Inspector pra balanceamento, sem precisar mexer em código.
+// Tabela fixa de 10 dias (docs/new/Mudanca_Estrutural_Jogo_Incremental_Deadline_8_1.md, Seção 2 —
+// substitui a tabela antiga de 30 dias da doc do Mapa Único) — fica num asset editável, não
+// espalhada pelo código. `days` já nasce preenchido com a Seção 2 inteira quando o asset é criado
+// pelo menu — editável depois no Inspector pra balanceamento, sem precisar mexer em código. Dias
+// 8-10 são 100% de 1 Tier só, de propósito (sem blend de transição — reta final "seca").
 [CreateAssetMenu(fileName = "DaySpawnTable", menuName = "MonsterLLC/World Generation/Day Spawn Table")]
 public class DaySpawnTableSO : ScriptableObject
 {
     public List<DaySpawnDefinition> days = new()
     {
-        new DaySpawnDefinition(1,  new float[] { 100, 0, 0, 0, 0, 0, 0, 0, 0, 0 },   new float[] { 70, 30, 0, 0, 0, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(2,  new float[] { 70, 30, 0, 0, 0, 0, 0, 0, 0, 0 },   new float[] { 50, 50, 0, 0, 0, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(3,  new float[] { 35, 50, 15, 0, 0, 0, 0, 0, 0, 0 },  new float[] { 10, 60, 30, 0, 0, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(4,  new float[] { 10, 25, 50, 15, 0, 0, 0, 0, 0, 0 }, new float[] { 10, 15, 50, 25, 0, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(5,  new float[] { 10, 25, 30, 35, 0, 0, 0, 0, 0, 0 }, new float[] { 5, 15, 20, 45, 15, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(6,  new float[] { 5, 20, 25, 35, 15, 0, 0, 0, 0, 0 }, new float[] { 5, 15, 20, 35, 25, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(7,  new float[] { 5, 15, 20, 30, 30, 0, 0, 0, 0, 0 }, new float[] { 5, 10, 15, 30, 40, 0, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(8,  new float[] { 5, 10, 15, 30, 40, 0, 0, 0, 0, 0 }, new float[] { 5, 10, 15, 25, 35, 10, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(9,  new float[] { 5, 10, 15, 25, 35, 10, 0, 0, 0, 0 }, new float[] { 5, 5, 10, 20, 35, 25, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(10, new float[] { 5, 5, 10, 20, 35, 25, 0, 0, 0, 0 }, new float[] { 5, 5, 10, 15, 30, 35, 0, 0, 0, 0 }),
-        new DaySpawnDefinition(11, new float[] { 5, 5, 10, 15, 30, 35, 0, 0, 0, 0 }, new float[] { 5, 5, 5, 10, 25, 40, 10, 0, 0, 0 }),
-        new DaySpawnDefinition(12, new float[] { 5, 5, 5, 10, 25, 40, 10, 0, 0, 0 }, new float[] { 5, 5, 5, 10, 20, 35, 20, 0, 0, 0 }),
-        new DaySpawnDefinition(13, new float[] { 5, 5, 5, 10, 20, 35, 20, 0, 0, 0 }, new float[] { 5, 5, 5, 10, 15, 30, 30, 0, 0, 0 }),
-        new DaySpawnDefinition(14, new float[] { 5, 5, 5, 10, 15, 30, 30, 0, 0, 0 }, new float[] { 5, 5, 5, 5, 15, 25, 30, 10, 0, 0 }),
-        new DaySpawnDefinition(15, new float[] { 5, 5, 5, 5, 15, 25, 30, 10, 0, 0 }, new float[] { 5, 5, 5, 5, 10, 20, 30, 20, 0, 0 }),
-        new DaySpawnDefinition(16, new float[] { 5, 5, 5, 5, 10, 20, 30, 20, 0, 0 }, new float[] { 5, 5, 5, 5, 10, 15, 25, 30, 0, 0 }),
-        new DaySpawnDefinition(17, new float[] { 5, 5, 5, 5, 10, 15, 25, 30, 0, 0 }, new float[] { 5, 5, 5, 5, 5, 15, 20, 30, 10, 0 }),
-        new DaySpawnDefinition(18, new float[] { 5, 5, 5, 5, 5, 15, 20, 30, 10, 0 }, new float[] { 5, 5, 5, 5, 5, 10, 20, 25, 20, 0 }),
-        new DaySpawnDefinition(19, new float[] { 5, 5, 5, 5, 5, 10, 20, 25, 20, 0 }, new float[] { 5, 5, 5, 5, 5, 10, 15, 25, 25, 0 }),
-        new DaySpawnDefinition(20, new float[] { 5, 5, 5, 5, 5, 10, 15, 20, 25, 5 }, new float[] { 5, 5, 5, 5, 5, 5, 10, 20, 25, 15 }),
-        new DaySpawnDefinition(21, new float[] { 5, 5, 5, 5, 5, 5, 10, 20, 25, 15 }, new float[] { 5, 5, 5, 5, 5, 5, 10, 15, 25, 20 }),
-        new DaySpawnDefinition(22, new float[] { 5, 5, 5, 5, 5, 5, 10, 15, 25, 20 }, new float[] { 5, 5, 5, 5, 5, 5, 10, 15, 20, 25 }),
-        new DaySpawnDefinition(23, new float[] { 5, 5, 5, 5, 5, 5, 10, 15, 20, 25 }, new float[] { 5, 5, 5, 5, 5, 5, 5, 15, 20, 30 }),
-        new DaySpawnDefinition(24, new float[] { 5, 5, 5, 5, 5, 5, 5, 15, 20, 30 }, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 20, 35 }),
-        new DaySpawnDefinition(25, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 20, 35 }, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 15, 40 }),
-        new DaySpawnDefinition(26, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 15, 40 }, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 10, 45 }),
-        new DaySpawnDefinition(27, new float[] { 5, 5, 5, 5, 5, 5, 5, 10, 10, 45 }, new float[] { 4, 4, 4, 4, 4, 5, 5, 10, 10, 50 }),
-        new DaySpawnDefinition(28, new float[] { 4, 4, 4, 4, 4, 5, 5, 10, 10, 50 }, new float[] { 4, 4, 4, 4, 4, 5, 5, 5, 10, 55 }),
-        new DaySpawnDefinition(29, new float[] { 4, 4, 4, 4, 4, 5, 5, 5, 10, 55 }, new float[] { 3, 3, 3, 3, 3, 5, 5, 5, 10, 60 }),
-        new DaySpawnDefinition(30, new float[] { 3, 3, 3, 3, 3, 5, 5, 5, 10, 60 }, new float[] { 2, 2, 2, 2, 2, 5, 5, 5, 10, 65 }),
+        new DaySpawnDefinition(1,  new float[] { 100, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  new float[] { 80, 20, 0, 0, 0, 0, 0, 0, 0, 0 }),
+        new DaySpawnDefinition(2,  new float[] { 20, 80, 0, 0, 0, 0, 0, 0, 0, 0 },  new float[] { 0, 80, 20, 0, 0, 0, 0, 0, 0, 0 }),
+        new DaySpawnDefinition(3,  new float[] { 0, 20, 80, 0, 0, 0, 0, 0, 0, 0 },  new float[] { 0, 0, 80, 20, 0, 0, 0, 0, 0, 0 }),
+        new DaySpawnDefinition(4,  new float[] { 0, 0, 20, 80, 0, 0, 0, 0, 0, 0 },  new float[] { 0, 0, 0, 80, 20, 0, 0, 0, 0, 0 }),
+        new DaySpawnDefinition(5,  new float[] { 0, 0, 0, 20, 80, 0, 0, 0, 0, 0 },  new float[] { 0, 0, 0, 0, 80, 20, 0, 0, 0, 0 }),
+        new DaySpawnDefinition(6,  new float[] { 0, 0, 0, 0, 20, 80, 0, 0, 0, 0 },  new float[] { 0, 0, 0, 0, 0, 80, 20, 0, 0, 0 }),
+        new DaySpawnDefinition(7,  new float[] { 0, 0, 0, 0, 0, 20, 80, 0, 0, 0 },  new float[] { 0, 0, 0, 0, 0, 0, 80, 20, 0, 0 }),
+        new DaySpawnDefinition(8,  new float[] { 0, 0, 0, 0, 0, 0, 0, 100, 0, 0 },  new float[] { 0, 0, 0, 0, 0, 0, 0, 100, 0, 0 }),
+        new DaySpawnDefinition(9,  new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 100, 0 },  new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 100, 0 }),
+        new DaySpawnDefinition(10, new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 100 },  new float[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 100 }),
     };
 
-    // `dayNumber` fora de 1..30 usa o dia mais próximo (clamp) — "Dia 30 pra sempre" depois do
-    // fim da tabela, confirmado com o usuário (não existe mapa/sprint além do Dia 30 ainda).
+    // `dayNumber` fora de 1..10 usa o dia mais próximo (clamp) — Dia 10 "pra sempre" depois do
+    // fim da tabela (teto fixo da Seção 2, substitui o antigo "Dia 30 pra sempre").
     public DaySpawnDefinition GetDay(int dayNumber)
     {
         if (days == null || days.Count == 0) return null;
 
-        int clamped = Mathf.Clamp(dayNumber, 1, 30);
+        int clamped = Mathf.Clamp(dayNumber, 1, 10);
         foreach (var entry in days)
         {
             if (entry != null && entry.dayNumber == clamped) return entry;

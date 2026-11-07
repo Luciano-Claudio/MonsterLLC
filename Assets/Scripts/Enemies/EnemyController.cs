@@ -940,6 +940,15 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // Ranger) deixavam o player "pokar" um monstro parado sem ele nunca vir de verdade.
         isInCombat = true;
 
+        // Achado real (usuário testando com o Cleric): isInCombat acima só agroa ESTE monstro —
+        // o gatilho GLOBAL (Deadline 8.1, Seção 4, "qualquer trigger agrega todos de uma vez")
+        // só existia no caminho de detecção por proximidade do Update() abaixo, nunca aqui. Com
+        // herói corpo-a-corpo isso passava despercebido (atacar de perto também cai dentro do
+        // observationRadius de algum monstro por acidente) — com alcance/AoE que acerta monstro
+        // de longe, nada disparava o global. Levar um hit de qualquer herói agora conta como
+        // gatilho também, igual já valia pra proximidade.
+        HeroController.GlobalAggroActive = true;
+
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
         OnHealthChanged?.Invoke(stats.health, stats.maxHealth);
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: false, isDirectPlayerHit);

@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 public class WorldTierSelectorTests
 {
-    // ---- ComputeEffectiveSpawnDay (Seção 8.2: DistanceDayOffset + clamp 1..30) ----
+    // ---- ComputeEffectiveSpawnDay (Seção 8.2: DistanceDayOffset + clamp 1..10) ----
 
     [Test]
     public void ComputeEffectiveSpawnDay_WithinSafeZone_ReturnsActualDayUnchanged()
@@ -34,12 +34,12 @@ public class WorldTierSelectorTests
     }
 
     [Test]
-    public void ComputeEffectiveSpawnDay_ClampsAtMax30()
+    public void ComputeEffectiveSpawnDay_ClampsAtMax10()
     {
         int day = WorldTierSelector.ComputeEffectiveSpawnDay(
             distanceFromCenter: 100000f, safeZoneRadius: 0f, distancePerSpawnDay: 100f, actualDay: 1);
 
-        Assert.AreEqual(30, day);
+        Assert.AreEqual(10, day);
     }
 
     [Test]

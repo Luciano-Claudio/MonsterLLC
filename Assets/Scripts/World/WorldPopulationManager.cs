@@ -12,9 +12,14 @@ using UnityEngine;
 // Fase A (escopo original desta rodada, decisão do usuário): sem Boss (implementado depois,
 // Sprint P7, ver WorldBossSpawnManager), sem Simulation Rings (todo monstro comum sempre
 // simula em full — aceitável porque a população é pequena, Min/Target/Max, e o despawn por
-// distância já limita o total de monstros vivos ao mesmo tempo). Ciclo Dia/Noite real
-// (DaySpawnDefinition.nightWeights) implementado depois também — ver DayTimer.IsNight, lido
-// abaixo em SpawnOne().
+// distância já limita o total de monstros vivos ao mesmo tempo).
+//
+// População gradativa (GDD Deadline 8.1, Seção 2.1): Min/Target/Max deixam de ser um degrau
+// permanente disparado por crisisStreak e passam a ser uma RAMPA linear amarrada a
+// DayTimer.ElapsedFraction01 — Minimum/Target do Inspector valem no início do dia (fração 0),
+// Target/Maximum valem a partir do instante em que vira noite (fração 0.5) e ficam platôs o
+// resto da noite inteira (fração 1 nunca passa de Maximum). "A população máxima é sempre à
+// noite, todo dia" deixa de ser uma emergência rara e vira o ritmo normal de qualquer dia.
 public class WorldPopulationManager : MonoBehaviour
 {
     public static WorldPopulationManager Instance { get; private set; }
@@ -25,7 +30,7 @@ public class WorldPopulationManager : MonoBehaviour
     [Header("Debug / Teste")]
     [Tooltip("Se marcado, ignora o Dia real da run (MainMenuUI.CurrentRun.day) e usa testDayOverride no lugar — mesmo padrão de ChunkTerrainGenerator.")]
     public bool useTestDayOverride;
-    [Range(1, 30)]
+    [Range(1, 10)]
     public int testDayOverride = 1;
 
     [Header("Debug / Teste — Isolamento de Tier (só teste, não existe no jogo real)")]
@@ -40,11 +45,16 @@ public class WorldPopulationManager : MonoBehaviour
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 
     private float respawnTimer;
-    private bool escalated; // true depois que minimum virou o antigo target e target virou o antigo maximum — só 1 vez, maximum é teto
-    private int crisisStreak;
 
-    private int ActiveMinimum => escalated ? spawnSettings.populationTarget : spawnSettings.populationMinimum;
-    private int ActiveTarget => escalated ? spawnSettings.populationMaximum : spawnSettings.populationTarget;
+    // 0 no início do dia -> 1 no instante exato que vira noite (metade do dia) -> continua 1
+    // (platô) pelo resto da noite. Mesma curva pros 2 pares Min->Target e Target->Max, então a
+    // "escalada" de antes (minimum := target, target := maximum) acontece sozinha, suave, em vez
+    // de precisar de crisisStreak contando crises.
+    private float PopulationCurve01() =>
+        DayTimer.Instance != null ? Mathf.Clamp01(DayTimer.Instance.ElapsedFraction01 / 0.5f) : 0f;
+
+    private int ActiveMinimum => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationMinimum, spawnSettings.populationTarget, PopulationCurve01()));
+    private int ActiveTarget => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationTarget, spawnSettings.populationMaximum, PopulationCurve01()));
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
@@ -153,22 +163,15 @@ public class WorldPopulationManager : MonoBehaviour
     }
 
     // Mesmo modelo do FloorPopulationManager: crise = caiu até o mínimo (ou abaixo), reabastece
-    // na hora (sem cooldown) e conta mais 1 na sequência; `crisisStreakToEscalate` crises
-    // seguidas sobem o patamar PERMANENTEMENTE (minimum := target antigo, target := maximum
-    // antigo). Só escala 1 vez — maximum é teto. Também cobre o preenchimento inicial: a
-    // população começa em 0, que já é <= ActiveMinimum, então a primeira crise acontece
-    // sozinha no primeiro Update() depois do herói nascer, sem precisar de um gatilho de
-    // "entrada" separado (diferente do FloorPopulationManager, que precisava detectar a
-    // borda de "Floor ativou agora").
+    // na hora (sem cooldown) direto até o ActiveTarget do instante — que já reflete a curva de
+    // população (Seção 2.1), então reabastecer "até o alvo" de dia é bem menos monstro do que à
+    // noite, sem precisar de nenhum contador de crise. Também cobre o preenchimento inicial: a
+    // população começa em 0, que já é <= ActiveMinimum, então a primeira crise acontece sozinha
+    // no primeiro Update() depois do herói nascer, sem precisar de um gatilho de "entrada"
+    // separado (diferente do FloorPopulationManager, que precisava detectar a borda de "Floor
+    // ativou agora").
     private void HandleCrisis()
     {
-        crisisStreak++;
-        if (!escalated && crisisStreak >= spawnSettings.crisisStreakToEscalate)
-        {
-            escalated = true;
-            crisisStreak = 0;
-        }
-
         int missing = ActiveTarget - aliveEnemies.Count;
         for (int i = 0; i < missing; i++) SpawnOne();
     }

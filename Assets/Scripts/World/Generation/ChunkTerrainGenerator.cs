@@ -56,7 +56,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
     [Header("Debug / Teste (Sprint P3)")]
     [Tooltip("Se marcado, ignora o Dia real da run (MainMenuUI.CurrentRun.day) e usa testDayOverride no lugar — só pra testar a geração de qualquer dia sem precisar jogar até lá.")]
     public bool useTestDayOverride;
-    [Range(1, 30)]
+    [Range(1, 10)]
     public int testDayOverride = 1;
 
     [Tooltip("Se marcado, ignora a seed real da run (RunState.worldSeed, sorteada em RunCreation.CreateNewRun) e usa settings.worldSeed no lugar — só pra testar a mesma seed sempre, sem depender de qual run começou.")]

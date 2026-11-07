@@ -104,7 +104,7 @@ tabela de peso por dia.
 
 | Dia | Bioma (dia) | Monstros — Dia | Monstros — Noite |
 |---|---|---|---|
-| 1 | 100% Tier1 | — | 80% T1 / 20% T2 |
+| 1 | 100% Tier1 | 100% T1 | 80% T1 / 20% T2 |
 | 2 | 80% Tier2-3 / 20% Tier1 | 80% T2 / 20% T1 | 80% T2 / 20% T3 |
 | 3 | 100% Tier2-3 | 80% T3 / 20% T2 | 80% T3 / 20% T4 |
 | 4 | 80% Tier4-5 / 20% Tier2-3 | 80% T4 / 20% T3 | 80% T4 / 20% T5 |
@@ -136,10 +136,15 @@ qualquer dia). Isso dá ao jogador uma janela real no começo do dia pra farmar 
 gold e ir até o Vendor vender sem risco de morte instantânea — o perigo de verdade (o enxame
 cheio) chega só perto da noite.
 
-**Em aberto:** a curva exata de crescimento (linear? por etapas, amarrada ao mesmo blend dia/
-noite da tabela acima? reaproveita `populationMinimum/Target/Maximum` do `WorldPopulationManager`,
-só agora amarrados ao tempo do dia em vez de só ao `crisisStreak`?) — ainda não decidido, só a
-forma geral (gradual, pico à noite) está fechada.
+**Fechado (R2):** rampa linear, reaproveitando os mesmos 3 campos que já existiam
+(`populationMinimum/Target/Maximum`), sem nenhum campo novo. No início do dia vale o par
+Minimum→Target; a partir do instante exato que vira noite (metade do dia) o par passa a ser
+Target→Maximum e **fica platô** (sustentado) o resto da noite inteira — nunca mais um degrau único
+disparado por `crisisStreak` (removido do código e do `MonsterSpawnSettings`). **Sem exceção pro
+Dia 1** (revisado — a ideia de "Dia 1 de dia sem monstro" tinha entrado na Seção 2 numa sessão
+anterior sem confirmação explícita do usuário; removida): Dia 1 usa a curva normal desde o começo,
+100% Tier1 o dia inteiro (dia e noite). A regra do Dia 10 (Divine God após 50s) fica de fora do R2
+— depende do sistema de World Boss (`WorldBossSpawnManager`), vira sprint própria mais pra frente.
 
 ---
 

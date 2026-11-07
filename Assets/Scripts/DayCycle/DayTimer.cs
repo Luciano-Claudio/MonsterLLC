@@ -22,6 +22,13 @@ public class DayTimer : MonoBehaviour
     // essa proporção"). Todo dia novo começa em Dia (ver ResetForNewDay).
     public bool IsNight { get; private set; }
 
+    // Fração 0..1 do dia já decorrida — usada pela curva de população (WorldPopulationManager,
+    // GDD Deadline 8.1 Seção 2.1): 0 no início do dia, 0.5 no instante exato que vira noite, 1 no
+    // fim do dia. Mesma conta de UpdateDayNightPhase abaixo, centralizada aqui pra não duplicar.
+    public float ElapsedFraction01 => currentDayDuration > 0f
+        ? Mathf.Clamp01((currentDayDuration - timeRemaining) / currentDayDuration)
+        : 0f;
+
     private void Awake() => Instance = this;
     private void Start() => GameEvents.TimeChanged(timeRemaining);
 
