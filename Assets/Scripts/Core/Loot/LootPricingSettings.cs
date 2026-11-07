@@ -7,6 +7,9 @@ public class LootPriceEntry
 {
     public string itemName;
     public long sellValue;
+
+    [TextArea]
+    public string description; // Flavor text pro popup de hover do Inventory (GDD Deadline 8.1, Seção 6)
 }
 
 // Valor de venda dos 15 materiais econômicos (GDD Seção 39/`economy-balance.md` Seção 5) — vive
@@ -29,6 +32,19 @@ public class LootPricingSettings : ScriptableObject
         }
 
         sellValue = 0;
+        return false;
+    }
+
+    public bool TryGetDescription(string itemName, out string description)
+    {
+        foreach (var entry in prices)
+        {
+            if (entry.itemName != itemName) continue;
+            description = entry.description;
+            return !string.IsNullOrEmpty(description);
+        }
+
+        description = null;
         return false;
     }
 }

@@ -22,7 +22,7 @@ public class HeroCardHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         string description = table != null && table.TryGetEntry(heroKey, out var entry)
             ? $"HP Base: {entry.baseHp} | Ataque Base: {entry.baseDamage}\n\n{entry.story}"
             : "???";
-        PopupController.Instance?.ShowSimple(heroKey, description);
+        PopupController.Instance?.ShowSimple(gameObject, heroKey, description);
     }
 
     public void OnPointerExit(PointerEventData eventData) => PopupController.Instance?.Hide();

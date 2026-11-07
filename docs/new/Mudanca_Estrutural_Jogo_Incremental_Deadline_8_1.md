@@ -2685,3 +2685,12 @@ sem implementação ainda.
 - **Sistema de HP de Boss** (ver Seção 4.1) — ainda sem decisão de UI: posição da barra (embaixo
   do timer do dia?), e o que acontece visualmente quando mais de 1 boss está na tela ao mesmo
   tempo. Precisa de sessão própria antes de implementar.
+- **Nova ideia de passiva do Ranger** — dano aumenta conforme a distância/tempo de voo da flecha
+  antes de acertar (quanto mais longe viajou, mais dano causa). Por hora só anotada na descrição
+  do Hero Select (popup de hover) como pendência; nada implementado, decidir junto com os Perks
+  do Ranger (Seções 15-17).
+- **Druid e Cleric devem alvejar o monstro mais próximo do MOUSE, não do próprio herói** —
+  comportamento atual dos dois (vinhas do Druid, projétil homing do Cleric) escolhe por
+  proximidade ao herói; ainda não mudado.
+- **Monstros mortos com body damage continuam causando dano durante a própria animação de
+  morte** — bug real encontrado pelo usuário, ainda não corrigido.

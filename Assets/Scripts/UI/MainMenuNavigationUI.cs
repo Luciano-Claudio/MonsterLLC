@@ -17,6 +17,9 @@ public class MainMenuNavigationUI : MonoBehaviour
     [Tooltip("Vida base/ataque base/história por herói, pro popup de hover do Hero Select (GDD Deadline 8.1, Seção 6).")]
     [SerializeField] private HeroDisplayTableSO heroDisplayTable;
 
+    [Tooltip("Descrição por mundo/mapa, pro popup de hover do Map Select.")]
+    [SerializeField] private WorldDisplayTableSO worldDisplayTable;
+
     private GameObject menuButtons;
     private GameObject creditsPanel;
     private GameObject settingsPanel;
@@ -79,12 +82,22 @@ public class MainMenuNavigationUI : MonoBehaviour
     }
 
     // Só existe 1 mundo (Tower) por hora — qualquer card aqui dentro dispara o mesmo início
-    // de run, sem precisar de chave por nome (ver MainMenuUI.StartRun).
+    // de run, sem precisar de chave por nome pro clique (ver MainMenuUI.StartRun). A chave só
+    // serve pro popup de hover (worldKey). Regex tira qualquer sufixo " (N)" que o Unity deixa
+    // em nomes de GameObject duplicados (ex.: "World1_Card (1)") antes de extrair a chave.
     private void WireWorldCards()
     {
         var content = mapPanel.transform.Find("Map_Scroll_View/Viewport/Content");
         foreach (var button in content.GetComponentsInChildren<Button>(true))
+        {
             button.onClick.AddListener(OnWorldChosen);
+
+            string cardName = System.Text.RegularExpressions.Regex.Replace(button.transform.parent.name, @"\s*\(\d+\)$", "");
+            string worldKey = cardName.Replace("_Card", "").Replace("_", "");
+
+            var hover = button.gameObject.AddComponent<WorldCardHoverUI>();
+            hover.Setup(worldKey, worldDisplayTable);
+        }
     }
 
     private void ShowOnly(GameObject active)

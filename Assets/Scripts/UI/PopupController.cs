@@ -27,8 +27,10 @@ public class PopupController : MonoBehaviour
     private CanvasGroup canvasGroup;
     private TMP_Text titleLabel;
     private TMP_Text descriptionLabel;
-    private TMP_Text valueLabel;
+    private GameObject valuePrefixGO; // "Text" — rótulo estático "Value:", criado pelo usuário
+    private TMP_Text valueLabel; // "Value" — número dinâmico (ex. "50g"), ao lado do rótulo
     private Coroutine animRoutine;
+    private GameObject currentSource;
 
     private void Awake()
     {
@@ -44,7 +46,8 @@ public class PopupController : MonoBehaviour
 
         titleLabel = popupInstance.Find("Title_Text")?.GetComponent<TMP_Text>();
         descriptionLabel = popupInstance.Find("Description_Text")?.GetComponent<TMP_Text>();
-        valueLabel = popupInstance.Find("Value_Text")?.GetComponent<TMP_Text>(); // opcional — ainda não existe em todo prefab já criado
+        valuePrefixGO = popupInstance.Find("Text")?.gameObject; // opcional — só existe no Popup_Box
+        valueLabel = popupInstance.Find("Value")?.GetComponent<TMP_Text>(); // opcional
 
         popupInstance.gameObject.SetActive(false);
     }
@@ -52,6 +55,17 @@ public class PopupController : MonoBehaviour
     private void Update()
     {
         if (!popupInstance.gameObject.activeSelf) return;
+
+        // Rede de segurança (achado real do usuário): clicar num botão que desativa o próprio
+        // painel na hora (ex.: trocar de tela) nunca dispara OnPointerExit nele — o Unity só
+        // detecta "saiu do elemento" comparando o raycast de frame em frame, não quando o
+        // elemento é desativado no meio do clique. Sem isto, o popup ficava preso pra sempre.
+        if (currentSource == null || !currentSource.activeInHierarchy)
+        {
+            Hide();
+            return;
+        }
+
         if (Mouse.current == null) return;
 
         Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -64,16 +78,16 @@ public class PopupController : MonoBehaviour
         popupInstance.position = targetPos;
     }
 
-    public void ShowSimple(string title, string description, string valueText = null)
+    public void ShowSimple(GameObject source, string title, string description, string valueText = null)
     {
+        currentSource = source;
         titleLabel.text = title;
         descriptionLabel.text = description;
-        if (valueLabel != null)
-        {
-            bool hasValue = valueText != null;
-            valueLabel.gameObject.SetActive(hasValue);
-            if (hasValue) valueLabel.text = valueText;
-        }
+
+        bool hasValue = valueText != null && valueLabel != null;
+        if (valueLabel != null) valueLabel.gameObject.SetActive(hasValue);
+        if (valuePrefixGO != null) valuePrefixGO.SetActive(hasValue);
+        if (hasValue) valueLabel.text = valueText;
 
         if (animRoutine != null) StopCoroutine(animRoutine);
         if (!popupInstance.gameObject.activeSelf)
@@ -87,6 +101,7 @@ public class PopupController : MonoBehaviour
 
     public void Hide()
     {
+        currentSource = null;
         if (!popupInstance.gameObject.activeSelf) return;
         if (animRoutine != null) StopCoroutine(animRoutine);
         animRoutine = StartCoroutine(AnimateTo(0f, 0.8f, deactivateAtEnd: true));
@@ -113,7 +128,7 @@ public class PopupController : MonoBehaviour
 
     // Monta "<valor antigo riscado> -> <valor novo>" (ex.: preço de item subindo por um perk,
     // R9+) — usa a tag nativa de riscado do TMP (<s>), já que Rich Text já vem ligado nesses
-    // prefabs. Ninguém chama isto ainda (Perks não existe); existe pronto pro Value_Text opcional.
+    // prefabs. Ninguém chama isto ainda (Perks não existe); existe pronto pro Value opcional.
     public static string FormatValueChange(long oldValue, long newValue) =>
         $"<s>{LargeNumberFormatter.Format(oldValue)}</s> → {LargeNumberFormatter.Format(newValue)}";
 }

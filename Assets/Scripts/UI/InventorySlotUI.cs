@@ -54,7 +54,10 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         selector.SetActive(true);
 
         if (hasItem && owner.Pricing != null && owner.Pricing.TryGetPrice(currentSlot.itemName, out long sellValue))
-            PopupController.Instance?.ShowSimple(currentSlot.itemName, $"{LargeNumberFormatter.Format(sellValue)} gold");
+        {
+            owner.Pricing.TryGetDescription(currentSlot.itemName, out string description);
+            PopupController.Instance?.ShowSimple(gameObject, currentSlot.itemName, description ?? "???", $"{LargeNumberFormatter.Format(sellValue)}g");
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
