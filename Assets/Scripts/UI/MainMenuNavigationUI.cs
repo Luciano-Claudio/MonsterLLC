@@ -14,6 +14,9 @@ public class MainMenuNavigationUI : MonoBehaviour
 {
     private enum MenuState { Main, Credits, Settings, HeroSelect, MapSelect }
 
+    [Tooltip("Vida base/ataque base/história por herói, pro popup de hover do Hero Select (GDD Deadline 8.1, Seção 6).")]
+    [SerializeField] private HeroDisplayTableSO heroDisplayTable;
+
     private GameObject menuButtons;
     private GameObject creditsPanel;
     private GameObject settingsPanel;
@@ -69,6 +72,9 @@ public class MainMenuNavigationUI : MonoBehaviour
         {
             string heroKey = button.transform.parent.name.Replace("_Card", "").Replace("_", "");
             button.onClick.AddListener(() => OnHeroChosen(heroKey));
+
+            var hover = button.gameObject.AddComponent<HeroCardHoverUI>();
+            hover.Setup(heroKey, heroDisplayTable);
         }
     }
 

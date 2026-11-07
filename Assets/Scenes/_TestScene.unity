@@ -76921,6 +76921,7 @@ MonoBehaviour:
   visuals: {fileID: 11400000, guid: e601fc39422de13bb1def6edcd9640c7, type: 2}
   unlockedSlotSprite: {fileID: -3811297134994700879, guid: d8c66e6755a46e743b2c40e0d02c2ccd, type: 3}
   lockedSlotSprite: {fileID: -4481325764064744824, guid: d8c66e6755a46e743b2c40e0d02c2ccd, type: 3}
+  pricing: {fileID: 0}
 --- !u!4 &922278784 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 200102, guid: 8bc4c46cc4ebe7596196d726f2236b2b, type: 3}
@@ -113016,6 +113017,7 @@ GameObject:
   - component: {fileID: 100000300}
   - component: {fileID: 1385680716}
   - component: {fileID: 1385680717}
+  - component: {fileID: 1385680718}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: UI
@@ -113138,6 +113140,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopUIController
   shopRoot: {fileID: 1478502610}
+--- !u!114 &1385680718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385680704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84ee3122b4884a44c9b7d157f0f34951, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupController
+  popupBoxPrefab: {fileID: 6707427705053459305, guid: ba4dca51cec4d0a43a051a00299ab128, type: 3}
+  cursorOffset: {x: 24, y: -24}
+  animDuration: 0.12
 --- !u!1 &1387807400
 GameObject:
   m_ObjectHideFlags: 0

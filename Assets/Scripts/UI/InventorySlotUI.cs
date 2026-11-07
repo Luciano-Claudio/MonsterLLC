@@ -12,6 +12,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private InventoryTabUI owner;
     private int index;
     private bool isUnlocked;
+    private bool hasItem;
+    private InventorySlot currentSlot;
 
     private Image icon;
     private TMP_Text quantityLabel;
@@ -34,8 +36,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void Refresh(InventorySlot slot, bool unlocked)
     {
         isUnlocked = unlocked;
-
-        bool hasItem = unlocked && slot != null && !slot.IsEmpty;
+        currentSlot = slot;
+        hasItem = unlocked && slot != null && !slot.IsEmpty;
         icon.gameObject.SetActive(hasItem);
         quantityLabel.gameObject.SetActive(hasItem);
         if (!hasItem) return;
@@ -44,12 +46,22 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         quantityLabel.text = LargeNumberFormatter.Format(slot.quantity);
     }
 
+    // Popup de hover (GDD Deadline 8.1, Seção 6: "nome do item + preço") — só pra slot
+    // desbloqueado com item e com preço cadastrado em LootPricingSettings.
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (isUnlocked) selector.SetActive(true);
+        if (!isUnlocked) return;
+        selector.SetActive(true);
+
+        if (hasItem && owner.Pricing != null && owner.Pricing.TryGetPrice(currentSlot.itemName, out long sellValue))
+            PopupController.Instance?.ShowSimple(currentSlot.itemName, $"{LargeNumberFormatter.Format(sellValue)} gold");
     }
 
-    public void OnPointerExit(PointerEventData eventData) => selector.SetActive(false);
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        selector.SetActive(false);
+        PopupController.Instance?.Hide();
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {

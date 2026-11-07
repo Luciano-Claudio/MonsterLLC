@@ -11,7 +11,11 @@ public class InventoryTabUI : MonoBehaviour
     public Sprite unlockedSlotSprite;
     public Sprite lockedSlotSprite;
 
+    [Tooltip("Mesmo asset do Vendor (Assets/Settings/LootPricingSettings.asset) — pro popup de hover mostrar o preço do item (GDD Deadline 8.1, Seção 6).")]
+    public LootPricingSettings pricing;
+
     public LootVisualSettings Visuals => visuals;
+    public LootPricingSettings Pricing => pricing;
 
     private InventorySlotUI[] slots;
     private Image[] slotBackgrounds;

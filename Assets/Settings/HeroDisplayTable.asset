@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61b5fd7005882dc47b61f8d879df88de, type: 3}
+  m_Name: HeroDisplayTable
+  m_EditorClassIdentifier: Core::HeroDisplayTableSO
+  heroes:
+  - heroKey: Assassin
+    baseHp: 28
+    baseDamage: 1.8
+    story: "Strikes from the shadows with Deadly Dash, firing a fan of projectiles that travel out and back while briefly turning invisible. A short-range teleport covers gaps in combat. The Ultimate transforms the Assassin into an unstoppable blade storm - immune to damage, untargetable, and free of attack cooldowns for its duration."
+  - heroKey: Barbarian
+    baseHp: 42
+    baseDamage: 2
+    story: "A relentless brawler who grows more dangerous the lower health drops. Passive: deals up to 3x damage once 80% or more of max HP is lost, scaling in 25% steps for every 10% of health missing. The ground slam leaves a burning crack that damages enemies over time, and the Ultimate unleashes projectiles in every direction."
+  - heroKey: BloodMage
+    baseHp: 26
+    baseDamage: 1.6
+    story: "Commands a Blood Elemental pet that fights alongside the Blood Mage, resummoned at the start of every day and upgradable in size and attack speed. The signature ability drains blood from up to 15 nearby enemies at once, healing for the exact damage each orb dealt. The Ultimate unleashes an expanding shockwave in three growing stages."
+  - heroKey: Cleric
+    baseHp: 32
+    baseDamage: 3
+    story: "A holy striker whose homing attacks seek out the nearest enemies. Passive: every primary attack hit deals double damage. The healing ability restores HP in four quick pulses, and the Prayer Ultimate blankets the surrounding area in a damaging, paralyzing curse."
+  - heroKey: Druid
+    baseHp: 36
+    baseDamage: 5
+    story: "Summons vines that lash out at nearby enemies and can shift into an Owl to become untargetable and reposition freely. The Ultimate transforms the Druid into a massive Elk - doubling max HP, boosting damage and speed, and swapping in a devastating headbutt charge plus area claw swipes."
+  - heroKey: Gunslinger
+    baseHp: 30
+    baseDamage: 1.6
+    story: "Turns every kill into a bigger payday. Passive: all monsters drop double loot while this hero is active. The primary fires a wide burst of up to 15 hitscan shots, Shift unleashes a shotgun blast with real knockback recoil, and the Ultimate fires homing shots that always chase the nearest living enemy."
+  - heroKey: Mage
+    baseHp: 24
+    baseDamage: 2.4
+    story: "Summons a Phoenix pet that fights alongside the Mage, resummoned at the start of every day and upgradable in size and attack speed. The spinning fire attack tracks the mouse in real time, Shift teleports safely across the battlefield, and the Ultimate hurls a fireball that explodes, leaves a burning trail, and scorches the ground for 30 seconds."
+  - heroKey: Paladin
+    baseHp: 50
+    baseDamage: 2
+    story: "A heavily armored defender protected by a self-regenerating shield. Passive: a shield dome with its own health pool absorbs all incoming damage until it breaks, then recharges automatically every 30 seconds (and comes back instantly on respawn). Thrown hammers explode on impact, Shift bashes in all four directions with full damage immunity, and the Ultimate summons swords that orbit and strike nearby enemies."
+  - heroKey: Ranger
+    baseHp: 30
+    baseDamage: 1.6
+    story: "Fires a wedge-shaped volley of up to 15 arrows that split their damage between every shot. Shift grants camouflage from targeting while slowly healing over time, and the Ultimate throws eight knives in every direction that cause bleeding and keep damaging enemies from the ground for 30 seconds."
+  - heroKey: Rogue
+    baseHp: 28
+    baseDamage: 3
+    story: "A fast, hit-and-run fighter who fills the Ultimate gauge far faster than anyone else. Passive: gains 4x Ultimate energy from every kill. The pulse area deals damage over time while free to keep moving, the roll grants full damage immunity, and the Ultimate throws an explosive bomb dealing massive area damage."
