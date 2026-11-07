@@ -275,36 +275,48 @@ forma.
 
 ---
 
-## 4. Sistema de Target / Aggro Total
+## 4. Sistema de Target / Aggro Total — Fechado (R4)
 
 Substitui o alcance de detecção individual por monstro. Regras:
 
-- Target é **global e independente de hit** — proximidade do jogador OU o jogador mirando/
-  selecionando um monstro também dispara. Assim que QUALQUER gatilho acontece, **todos** os
-  monstros do mundo pegam target no jogador ao mesmo tempo (não só quem foi atingido).
-- **Simulation Rings continuam existindo**, só passam a valer apenas para quem **não** tem target
-  — um monstro com target sai do sistema de anel de distância e simula cheio, não importa a
-  distância do jogador.
+- Target é **global e independente de hit** — proximidade do jogador OU qualquer hit dispara.
+  **"Mirando/selecionando" não virou um gatilho à parte** (confirmado com o usuário): já é
+  coberto pelo caminho de dano (`TakeDamage`, corrigido no R3) — atacar na direção de um
+  monstro já conta como hit. Assim que QUALQUER gatilho acontece, **todos** os monstros do
+  mundo pegam target no jogador ao mesmo tempo (não só quem foi atingido) —
+  `HeroController.GlobalAggroActive`, que era "teste descartável" desde antes do R4, virou a
+  versão de verdade: reseta a cada `DayTimer.ResetForNewDay()` (dia novo ou retry).
+- **Simulation Rings** agora só valem pra quem **não** tem target —
+  `isNearRing = distância <= raio || isInCombat` em `EnemyController.Update()`.
 - **Respawn** (retry do dia após morte) já nasce com target ativo — não tem detecção de novo.
-- **Stealth/transformação** (Coruja do Druid, invisibilidade do Assassin) zera o target enquanto
-  durar, mas ele **volta sozinho** assim que a forma normal retorna, sem precisar de novo gatilho.
-- **Cronômetro do dia** só começa a contar no instante do primeiro target (hit, proximidade, ou
-  mira) — antes disso fica parado. Como monstro respawnado já nasce com target, essa "pausa antes
-  de começar" só existe de verdade na primeira tentativa de cada dia; em todo retry o relógio já
-  começa quase na hora.
+  `WorldPopulationManager.SpawnOne()` chama `ForceImmediateAggro()` no spawn só quando
+  `!DayResolver.PlayerSurvivedLastDay` (confirmado: nunca num dia novo de verdade, nem no Dia
+  1 — `PlayerSurvivedLastDay` tem default `true` de propósito, pra não confundir o Dia 1 com
+  uma morte que nunca aconteceu). Boss já fazia isto sempre, independente de retry (decisão
+  anterior, Sprint 24) — não mudou.
+- **Stealth/transformação** (Coruja do Druid, invisibilidade do Assassin) zera o target
+  enquanto durar, mas ele **volta sozinho** assim que a forma normal retorna, sem precisar de
+  novo gatilho — generalizado de boss-only pra QUALQUER monstro, desde que `GlobalAggroActive`
+  já estivesse ativo antes da invisibilidade começar (senão, continua precisando de gatilho
+  real, como qualquer monstro dormente).
+- **Cronômetro do dia** só começa a contar no instante do primeiro target (hit ou proximidade)
+  — antes disso fica parado. `DayTimer.dayClockStarted` (novo), ligado por `StartDayClock()`,
+  chamado pelo setter de `HeroController.GlobalAggroActive` na transição false→true. Como
+  monstro respawnado já nasce com target, essa "pausa antes de começar" só existe de verdade
+  na primeira tentativa de cada dia; em todo retry o relógio já começa quase na hora.
 
 ---
 
-## 4.1 — Bosses: não despawnar por distância, teleportar
+## 4.1 — Bosses: não despawnar por distância, teleportar — Fechado (R4)
 
-Comportamento atual (`WorldBossSpawnManager`): quando um boss passa de `bossDespawnDistance` do
-jogador, ele é destruído sem morte/loot e um boss **novo** (HP cheio) nasce em outra posição via
-`SpawnOneBoss()`.
-
-**Decisão nova:** o boss deixa de ser destruído/substituído — em vez disso, **o mesmo boss é
-teleportado** para uma posição nova, próxima do jogador mas fora do campo de visão da câmera (sem
-spawnar outro). Preserva HP/estado atual do boss entre o teleporte — não é mais sempre um boss
-"fresco" depois de se afastar.
+**Implementado:** `WorldBossSpawnManager.Update()` não faz mais `Destroy()` + `SpawnOneBoss()`
+quando um boss passa de `bossDespawnDistance` — `TeleportBossNearPlayer()` novo reposiciona o
+MESMO GameObject (reaproveitando a mesma busca de posição de `bossReplacementSpawnMinDistance/
+MaxDistance`, mas com `preferOutsideCameraView` sempre `true`, nunca probabilístico como no
+spawn normal — a doc pede "fora do campo de visão" sempre, não às vezes). HP/estado preservados
+automaticamente por ser a mesma instância. Único cuidado extra: `EnemyController.
+CancelAttackForTeleport()` novo, cancela um golpe telegrafado em andamento antes do salto de
+posição (senão o Animator ficaria preso numa ação numa posição que não existe mais).
 
 **Em aberto (ver Seção 8) — Sistema de HP de Boss:** ainda não decidido como a barra de vida do
 boss vai funcionar na UI — fica embaixo do timer do dia? E se houver mais de 1 boss na tela ao
@@ -313,21 +325,26 @@ planejamento própria antes de implementar.
 
 ---
 
-## 4.2 — Bosses (e summons de boss) ignoram invisibilidade/untargetable
+## 4.2 — Bosses ignoram invisibilidade/untargetable — Fechado (R4)
 
-**Decisão nova:** bosses e qualquer summon gerado por um boss continuam escolhendo o jogador
-como alvo normalmente mesmo que ele esteja em qualquer estado de invisibilidade/untargetable
-concedido por kit de herói hoje — Camuflagem do Ranger, Coruja do Druid, forma sombria do
-Assassin (`IsPlayerUntargetable`). Afeta só a ESCOLHA DE ALVO (aggro/target); não remove a
-imunidade a dano desses estados — se o boss ainda acertar o jogador por algum outro meio, o dano
-é bloqueado normalmente do mesmo jeito que já é hoje.
+**Implementado (revisado — summon de boss FICA DE FORA, confirmado com o usuário):** só o
+boss de verdade (`isBoss`) continua escolhendo o jogador como alvo normalmente mesmo em
+qualquer estado de invisibilidade/untargetable concedido por kit de herói hoje — Camuflagem do
+Ranger, Coruja do Druid, forma sombria do Assassin (`IsPlayerUntargetable`). Summon gerado por
+um boss (reanimado do Lich, Rat People arremessado pela Royalty, etc.) **continua monstro
+comum em tudo** — perde o alvo normalmente durante invisibilidade, igual qualquer um. Marcar o
+summon como `isBoss=true` de verdade também daria imunidade a knockback e outros efeitos de
+boss — escopo maior do que pedido, o usuário preferiu não. Afeta só a ESCOLHA DE ALVO (aggro/
+target); não remove a
+imunidade a dano desses estados — se o boss ainda acertar o jogador por algum outro meio, o
+dano é bloqueado normalmente do mesmo jeito que já era.
 
 **Motivo:** um boss não pode ficar preso perseguindo um alvo "impossível de alcançar"
 indefinidamente — isso travaria a luta.
 
-**Implementação (pendente, igual todo o resto desta fase):** o check de `IsPlayerUntargetable`
-em `EnemyController` precisa de uma exceção pra quando `IsBoss` (ou o monstro for um summon de
-boss) for true — nesse caso, a busca de alvo ignora a flag e trata o jogador como alvo normal.
+**Implementação:** `EnemyController.Update()` — `isPlayerUntargetable = HeroController.
+IsPlayerUntargetable && !isBoss` — do ponto de vista de um boss, o jogador nunca fica
+untargetable, então `isInCombat` nunca é forçado a `false` por isso.
 
 ---
 

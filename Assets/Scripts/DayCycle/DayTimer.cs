@@ -10,6 +10,15 @@ public class DayTimer : MonoBehaviour
 
     private bool dayEnded;
 
+    // GDD Deadline 8.1, Seção 4 — "o cronômetro do dia só começa a contar no instante do
+    // primeiro target (hit, proximidade, ou mira)". Falso logo após ResetForNewDay(); vira
+    // true via StartDayClock(), chamado por HeroController.GlobalAggroActive no instante exato
+    // em que ele vira true pela 1ª vez no dia (ver o setter lá). Num retry (morreu, mesmo dia),
+    // o spawn da população já dispara isso quase na hora (WorldPopulationManager.SpawnOne()
+    // força ForceImmediateAggro() nesse caso) — só o início de um dia de verdade (ou a 1ª
+    // tentativa do dia) fica pausado esperando um gatilho real.
+    private bool dayClockStarted;
+
     // Duração REAL do dia em curso (pode diferir de defaultDayDuration — ver o overload com
     // argumento de ResetForNewDay) — guardada pra calcular a fase Dia/Noite (50/50, docs/new/
     // Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md, Seção 3) proporcional à
@@ -44,6 +53,7 @@ public class DayTimer : MonoBehaviour
         // então sem isto o relógio continuava contando durante a animação inteira — achado
         // real do usuário, o tempo devia parar no instante exato da morte, não no fim do "Die".
         if (!GameplayGate.IsActive || HeroController.IsDying) return;
+        if (!dayClockStarted) return; // Seção 4 — nenhum gatilho de target ainda, relógio parado
 
         timeRemaining -= Time.deltaTime;
         GameEvents.TimeChanged(Mathf.Max(timeRemaining, 0f));
@@ -81,12 +91,19 @@ public class DayTimer : MonoBehaviour
         timeRemaining = duration;
         currentDayDuration = duration;
         dayEnded = false;
+        dayClockStarted = false; // Seção 4 — pausado até o 1º gatilho de target deste dia/retry
         IsNight = false; // todo dia novo começa em Dia — doc, Seção 3
+        HeroController.GlobalAggroActive = false; // mesmo motivo — zera o "já teve gatilho" de ontem
         GameEvents.TimeChanged(timeRemaining);
         // Fonte única de "um novo dia começou" — cobre tanto o Dia 1 (MainMenuUI) quanto
         // todo dia seguinte (ShopHandler), sem precisar duplicar a chamada nos dois lugares.
         GameEvents.DayStarted();
     }
+
+    // GDD Deadline 8.1, Seção 4 — chamado só pelo setter de HeroController.GlobalAggroActive,
+    // na transição false->true (1º gatilho de target do dia/retry). Idempotente — chamar de
+    // novo depois que o relógio já começou não faz nada.
+    public void StartDayClock() => dayClockStarted = true;
 
     private void EndDay()
     {

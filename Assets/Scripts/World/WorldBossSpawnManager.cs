@@ -178,16 +178,13 @@ public class WorldBossSpawnManager : MonoBehaviour
                 float distance = Vector2.Distance(aliveBosses[i].transform.position, player.position);
                 if (distance <= bossSettings.bossDespawnDistance) continue;
 
-                // Boss Distance Despawn nunca é morte (sem loot/kill) — Destroy() direto, igual
-                // WorldPopulationManager faz com monstro comum. Repõe a vaga na hora, sem tocar
-                // em bossTimer (Replacement != novo Boss Timer Event). Replacement sempre repõe
-                // só 1 (quem nasce de novo é 1 boss só, diferente do Boss Timer periódico).
-                Destroy(aliveBosses[i]);
-                aliveBosses.RemoveAt(i);
-                replacementCooldownTimer = bossSettings.bossReplacementCooldown;
-                var replacement = SpawnOneBoss();
-                if (replacement != null) GameEvents.BossGroupSpawned(new[] { replacement.transform });
-                break; // só 1 replacement por frame — o cooldown que acabou de começar cobre o resto deste ciclo
+                // GDD Deadline 8.1, Seção 4.1 — teleporta em vez de Destroy+SpawnOneBoss: o
+                // MESMO boss (HP/estado preservados) salta pra perto do jogador em vez de
+                // sempre nascer "fresco" depois de se afastar. Reaproveita o mesmo cooldown de
+                // antes só pra não tentar reposicionar todo frame enquanto ele ainda estiver
+                // fora do alcance.
+                if (TeleportBossNearPlayer(aliveBosses[i])) replacementCooldownTimer = bossSettings.bossReplacementCooldown;
+                break; // só 1 por frame — mesmo critério de antes
             }
         }
 
@@ -205,6 +202,31 @@ public class WorldBossSpawnManager : MonoBehaviour
             if (spawned != null) spawnBatchScratch.Add(spawned.transform);
         }
         if (spawnBatchScratch.Count > 0) GameEvents.BossGroupSpawned(spawnBatchScratch.ToArray()); // snapshot — spawnBatchScratch é reaproveitado no próximo ciclo
+    }
+
+    // GDD Deadline 8.1, Seção 4.1 — mesma busca de posição de SpawnOneBoss() (reaproveita
+    // bossReplacementSpawnMinDistance/MaxDistance, já pensados pra "onde um boss substituto
+    // nasce perto do jogador"), mas reposiciona o MESMO GameObject em vez de instanciar um
+    // novo. "Fora do campo de visão da câmera" é sempre true aqui (não probabilístico como no
+    // spawn normal/replacement) — doc explícita: teleporte nunca deve acontecer à vista do
+    // jogador. Retorna false se nenhuma posição válida foi achada (tenta de novo no próximo
+    // ciclo, nunca loop infinito).
+    private bool TeleportBossNearPlayer(GameObject boss)
+    {
+        float minDistanceFromOrigin = worldSettings.safeZoneRadius + bossSettings.spawnSafetyPadding;
+        if (!WorldSpawnUtility.TryGetSpawnPosition(
+                player.position, bossSettings.bossReplacementSpawnMinDistance, bossSettings.bossReplacementSpawnMaxDistance,
+                minDistanceFromOrigin, bossSettings.maxSpawnPositionAttempts, out var newPosition,
+                bossSettings.spawnObstacleClearanceRadius, bossSettings.obstacleLayerMask, preferOutsideCameraView: true))
+        {
+            return false;
+        }
+
+        var controller = boss.GetComponent<EnemyController>();
+        if (controller != null) controller.CancelAttackForTeleport(); // cancela golpe telegrafado ANTES do salto — Animator não pode ficar preso numa ação numa posição que não existe mais
+
+        boss.transform.position = newPosition;
+        return true;
     }
 
     private GameObject SpawnOneBoss()

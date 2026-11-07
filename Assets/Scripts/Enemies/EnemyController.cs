@@ -497,8 +497,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // Mais longe, desliga o RVOController (barato de checar todo frame, mesmo sem
         // throttle) e reduz a FREQUÊNCIA da decisão de IA abaixo (nunca desliga — o monstro
         // continua vivo, patrulhando/perseguindo, só reavaliado com menos frequência).
+        //
+        // GDD Deadline 8.1, Seção 4 — "Simulation Rings só valem pra quem NÃO tem target":
+        // isInCombat=true sempre conta como "near ring", não importa a distância real — um
+        // monstro com target não pode perseguir em câmera lenta só porque ficou longe.
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        bool isNearRing = distanceToPlayer <= simulationNearRingRadius;
+        bool isNearRing = distanceToPlayer <= simulationNearRingRadius || isInCombat;
         if (rvo != null) rvo.enabled = isNearRing;
 
         float decisionDeltaTime;
@@ -515,18 +519,24 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
 
         // Camuflagem/stealth do herói (GDD Seção 16/17 — Ranger, futuramente Druid/Assassin) —
-        // o monstro perde o alvo de verdade (isInCombat=false), não só congela: continua se
-        // movendo/tocando a própria animação de patrulha normalmente, só sem saber que o player
-        // existe. Monstro comum precisa redetectar via observationRadius depois que a
-        // camuflagem cai (ver guarda em UpdatePatrol) — não retoma perseguição sozinho.
+        // o monstro comum perde o alvo de verdade (isInCombat=false), não só congela: continua
+        // se movendo/tocando a própria animação de patrulha normalmente, só sem saber que o
+        // player existe.
         //
-        // Boss é a ÚNICA exceção (decisão do usuário, Sprint 24): perde o alvo durante a
-        // camuflagem igual a qualquer monstro comum, mas RECUPERA automaticamente no instante
-        // exato em que ela cai, sem esperar o jogador voltar pro observationRadius — mesmo
-        // critério de "agressão imediata" do spawn, reaplicado na queda da camuflagem.
-        bool isPlayerUntargetable = HeroController.IsPlayerUntargetable;
+        // GDD Deadline 8.1, Seção 4.2 — boss (nunca summon de boss, decisão do usuário) ignora
+        // isso por completo pra ESCOLHA DE ALVO: &&!isBoss aqui faz isPlayerUntargetable nunca
+        // ser true do ponto de vista de um boss, então ele nunca solta o alvo só por causa de
+        // invisibilidade/camuflagem do herói (não remove a imunidade a dano desses estados,
+        // só a escolha de alvo — se o boss acertar o jogador por outro meio, o dano continua
+        // bloqueado normalmente).
+        //
+        // Seção 4 — "o target volta sozinho quando a forma normal retorna, sem novo gatilho":
+        // qualquer monstro (não só boss) recupera automaticamente se o aggro global já estava
+        // ativo ANTES da invisibilidade começar — senão, continua precisando de um gatilho real
+        // (proximidade/hit) como qualquer outro monstro dormente, via UpdatePatrol() abaixo.
+        bool isPlayerUntargetable = HeroController.IsPlayerUntargetable && !isBoss;
         if (isPlayerUntargetable) isInCombat = false;
-        else if (wasPlayerUntargetable && isBoss) ForceImmediateAggro();
+        else if (wasPlayerUntargetable && HeroController.GlobalAggroActive) ForceImmediateAggro();
         wasPlayerUntargetable = isPlayerUntargetable;
 
         if (hasAttackAnimation) attackAnimationCooldown.Tick(decisionDeltaTime);
@@ -565,13 +575,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (distanceToPlayer <= stats.observationRadius && !HeroController.IsPlayerUntargetable)
         {
             isInCombat = true;
-            HeroController.GlobalAggroActive = true; // teste descartável (Deadline 8.1, Seção 4) — 1 detectou, todos perseguem
+            HeroController.GlobalAggroActive = true; // GDD Deadline 8.1, Seção 4 — 1 detectou, todos perseguem (target global e independente de hit)
             return;
         }
 
-        // Teste descartável do aggro global — o bloco acima liga o flag no 1º monstro que
-        // detectar de verdade; a partir daí, todo o resto do mundo também persegue, inclusive
-        // quem normalmente ficaria dormente esperando (bloco staysDormantUntilDetected abaixo).
+        // Aggro global de verdade (Seção 4, fechado no R4) — o bloco acima liga o flag no 1º
+        // monstro que detectar por conta própria (ou TakeDamage, qualquer hit); a partir daí,
+        // todo o resto do mundo também persegue, inclusive quem normalmente ficaria dormente
+        // esperando (bloco staysDormantUntilDetected abaixo).
         if (HeroController.GlobalAggroActive && !HeroController.IsPlayerUntargetable)
         {
             ForceImmediateAggro();
@@ -792,6 +803,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         attackAnimState = AttackAnimState.Idle;
         attackSpeedMultiplier = 1f;
         if (animator != null && hasAttackSpeedParam) animator.SetFloat("AttackSpeedMultiplier", 1f);
+    }
+
+    // GDD Deadline 8.1, Seção 4.1 — chamado só por WorldBossSpawnManager antes de teleportar um
+    // boss que passou de bossDespawnDistance (substitui o antigo Destroy+respawn fresco).
+    // Cancela qualquer golpe telegrafado em andamento ANTES do salto de posição — sem isso, o
+    // Animator ficaria preso tocando a animação de ataque antiga numa posição que não existe
+    // mais. Seguro de chamar fora de hora: EndAttackAnimation() só zera estado, não dispara
+    // nenhum efeito colateral de "golpe concluído".
+    public void CancelAttackForTeleport()
+    {
+        if (attackAnimState == AttackAnimState.Attacking) EndAttackAnimation();
     }
 
     // Cada hit recebido durante o próprio golpe acelera a animação em vez de só piscar —
@@ -1036,10 +1058,19 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Sprint 24 (Boss Spawn System) — decisão do usuário: todo boss nasce já em combate,
     // mesmo longe do jogador, sem fase de patrulha/idle esperando observationRadius
     // detectar (diferente de todo monstro comum). Chamado pelo BossSpawnManager logo após
-    // Instantiate(), e de novo internamente quando a Camuflagem cai (ver Update()).
+    // Instantiate(), e de novo internamente quando a Camuflagem cai (ver Update()). Também
+    // chamado por WorldPopulationManager.SpawnOne() em retry (GDD Deadline 8.1, Seção 4) e por
+    // summons que já nascem "na cara do player" (Lich, Rat People, etc.).
+    //
+    // Também liga HeroController.GlobalAggroActive — qualquer gatilho forçado de target (boss
+    // nascendo, retry, summon) conta como gatilho global de verdade, igual proximidade/hit
+    // (Seção 4: "qualquer gatilho... todos os monstros pegam target ao mesmo tempo"); é também
+    // o que faz o relógio do dia começar quase na hora num retry, sem precisar repetir esta
+    // linha em cada call site.
     public void ForceImmediateAggro()
     {
         isInCombat = true;
+        HeroController.GlobalAggroActive = true;
     }
 
     private void UpdateKnockback()

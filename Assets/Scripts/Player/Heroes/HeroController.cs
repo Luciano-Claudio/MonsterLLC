@@ -132,13 +132,24 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
     public static bool IsPlayerUntargetable;
 
-    // 2026-10-31 — Deadline 8.1, TESTE DESCARTÁVEL (não é a versão final da Seção 4 do doc de
-    // redesign incremental). Assim que qualquer EnemyController detectar o player por conta
-    // própria (proximidade — ver EnemyController.UpdatePatrol), liga este flag e todo o resto
-    // do mundo passa a perseguir ao mesmo tempo, inclusive quem normalmente ficaria dormente
-    // esperando. Static pelo mesmo motivo de IsPlayerUntargetable (só existe 1 herói jogável
-    // por vez). Sem reset automático aqui de propósito — é só pra validar o enxame.
-    public static bool GlobalAggroActive;
+    // GDD Deadline 8.1, Seção 4 — "target é global e independente de hit": qualquer gatilho
+    // (proximidade, hit, retry já nascendo agressivo) liga isto, e todo o resto do mundo passa
+    // a perseguir ao mesmo tempo (ver EnemyController.UpdatePatrol). Resetado em
+    // DayTimer.ResetForNewDay() (todo dia novo, retry incluso, começa sem target global) — um
+    // RETRY específico volta a ligar quase na hora porque WorldPopulationManager.SpawnOne()
+    // força ForceImmediateAggro() no spawn durante retry (ver lá), não porque este flag nunca
+    // resetou. Setter customizado: a transição false->true é o próprio "1º gatilho de target
+    // do dia" que a Seção 4 pede pra destravar o relógio (DayTimer.StartDayClock()).
+    private static bool globalAggroActive;
+    public static bool GlobalAggroActive
+    {
+        get => globalAggroActive;
+        set
+        {
+            if (value && !globalAggroActive) DayTimer.Instance?.StartDayClock();
+            globalAggroActive = value;
+        }
+    }
 
     // Achado real do usuário (GDD Deadline 8.1, Seção 3): DayResolver.ResolvePlayerDeath()
     // limpa monstro/projétil/loot NA HORA da morte (não espera a animação), mas o GameState só

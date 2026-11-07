@@ -7,10 +7,15 @@ using UnityEngine;
 // ver PlayerSurvivedLastDay, lido por ShopHandler.
 public static class DayResolver
 {
-    // Lido por ResultsHandler (loga/decide Save) e ShopHandler (decide avançar dia + regenerar
-    // mundo, ou só repetir o dia atual). Static pelo mesmo motivo de outros flags de 1-run-só
-    // do projeto (ex.: HeroController.IsPlayerUntargetable) — nunca mais de 1 jogador por vez.
-    public static bool PlayerSurvivedLastDay { get; private set; }
+    // Lido por ResultsHandler (loga/decide Save), ShopHandler (decide avançar dia + regenerar
+    // mundo, ou só repetir o dia atual) e WorldPopulationManager.SpawnOne() (Seção 4 — aggro
+    // instantâneo só em retry). Default true (não false) de propósito: no Dia 1, ANTES de
+    // qualquer morte/sobrevivência acontecer pela 1ª vez na run, isto nunca foi setado ainda —
+    // sem o default true, o valor-padrão de bool (false) seria lido como "morreu", fazendo a
+    // primeira população do jogo inteiro nascer com aggro instantâneo por engano. Static pelo
+    // mesmo motivo de outros flags de 1-run-só do projeto (ex.: HeroController.
+    // IsPlayerUntargetable) — nunca mais de 1 jogador por vez.
+    public static bool PlayerSurvivedLastDay { get; private set; } = true;
 
     // Chamado por DayTimer.EndDay() — único jeito de sobreviver um dia, o timer chegar a 0
     // contando pra frente (não precisa fazer nada com o mundo: ele já está do jeito que o

@@ -225,6 +225,16 @@ public class WorldPopulationManager : MonoBehaviour
         // null como "sempre ativo", sem precisar de nenhuma mudança nesses scripts.
         WorldSpawnUtility.RestrictToOpenWorldGraph(enemyObj);
 
+        // GDD Deadline 8.1, Seção 4 — "Respawn (retry do dia após morte) já nasce com target
+        // ativo, não tem detecção de novo". Só no RETRY (não num dia novo de verdade, nem no
+        // Dia 1) — confirmado com o usuário. Boss já faz isto sempre, independente de retry
+        // (SpawnOneBoss, decisão separada/anterior) — não mexe nisso aqui.
+        if (!DayResolver.PlayerSurvivedLastDay)
+        {
+            var enemyController = enemyObj.GetComponent<EnemyController>();
+            if (enemyController != null) enemyController.ForceImmediateAggro();
+        }
+
         aliveEnemies.Add(enemyObj);
     }
 
