@@ -82,13 +82,27 @@ public class ShopHandler : MonoBehaviour
         Debug.Log($"[ShopHandler] (Debug) +1000 gold — total agora: {MainMenuUI.CurrentRun.gold}.");
     }
 
-    [ContextMenu("Start Next Day")]
-    public void StartNextDay()
+    // Botão único da Loja pra voltar ao jogo (GDD Deadline 8.1, Seção 3) — o que acontece
+    // depende de COMO o jogador chegou aqui (ver DayResolver.PlayerSurvivedLastDay):
+    // sobreviveu o dia -> avança o número do dia e regenera o mundo (mapa novo, bioma/Tier do
+    // dia novo); morreu -> repete o MESMO dia, mesmo mapa, nunca regenera terreno. Nos dois
+    // casos o relógio reinicia do zero — só quem muda é se o dia avança ou não.
+    [ContextMenu("Proceed From Shop")]
+    public void ProceedFromShop()
     {
-        MainMenuUI.CurrentRun.day++;
+        if (DayResolver.PlayerSurvivedLastDay)
+        {
+            MainMenuUI.CurrentRun.day++;
+            if (ChunkTerrainGenerator.Instance != null) ChunkTerrainGenerator.Instance.RegenerateWorld();
+            Debug.Log($"[ShopHandler] Dia sobrevivido — avançando pro Dia {MainMenuUI.CurrentRun.day}, mundo regenerado.");
+        }
+        else
+        {
+            Debug.Log($"[ShopHandler] Repetindo o Dia {MainMenuUI.CurrentRun.day} — mesmo mapa, sem regenerar.");
+        }
+
         DayTimer.Instance.ResetForNewDay();
-        DemandTracker.Instance.StartDay(MainMenuUI.CurrentRun.day);
+        GameplayBootstrap.Instance?.RespawnHeroFresh(); // sempre herói 100% novo — nunca só reposiciona o mesmo (achado real: valores de Instantiate/Start ficavam presos)
         GameStateManager.Instance.SetState(GameState.Gameplay);
-        Debug.Log($"[ShopHandler] Iniciando Dia {MainMenuUI.CurrentRun.day}.");
     }
 }

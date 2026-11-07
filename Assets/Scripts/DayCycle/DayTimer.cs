@@ -38,7 +38,12 @@ public class DayTimer : MonoBehaviour
         // GameplayGate já cobre pausa (TimeManager) e o estado do jogo (GameStateManager)
         // — sem isso, o timer contava desde o load da Scene, mesmo parado no MainMenu,
         // porque só checava pausa e nunca o GameState.
-        if (!GameplayGate.IsActive) return;
+        //
+        // HeroController.IsDying (não GameplayGate — ver comentário na declaração dele):
+        // GameState só muda pra Results no FIM da animação de morte (AnimationDieEndEvent),
+        // então sem isto o relógio continuava contando durante a animação inteira — achado
+        // real do usuário, o tempo devia parar no instante exato da morte, não no fim do "Die".
+        if (!GameplayGate.IsActive || HeroController.IsDying) return;
 
         timeRemaining -= Time.deltaTime;
         GameEvents.TimeChanged(Mathf.Max(timeRemaining, 0f));
@@ -49,15 +54,6 @@ public class DayTimer : MonoBehaviour
             timeRemaining = 0f;
             EndDay();
         }
-    }
-
-    public void ApplyPenalty(float seconds)
-    {
-        if (dayEnded) return;
-        timeRemaining = Mathf.Max(timeRemaining - seconds, 0f);
-        GameEvents.TimeChanged(timeRemaining);
-        UpdateDayNightPhase();
-        if (timeRemaining <= 0f) EndDay();
     }
 
     // Recalcula a fase a partir do tempo decorrido (currentDayDuration - timeRemaining) e só

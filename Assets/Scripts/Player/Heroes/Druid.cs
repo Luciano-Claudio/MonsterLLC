@@ -414,12 +414,12 @@ public class Druid : HeroController
     // estava a caminho não pode contar enquanto o Druid está escondido/em transição.
     protected override bool IsDamageImmune => isTransformImmune || isUsingSecondaryAbility;
 
-    // GDD: morrer DURANTE a transformação é a única exceção — pula a conversão proporcional
-    // e segue o fluxo universal de morte (Respawn() da base já cura pro stats.maxHealth, que
-    // aqui já volta a ser o humano antes disso rodar). Só mexe em stats/flag aqui — a troca do
-    // Animator Controller fica pra AnimationDieEndEvent() (ver comentário lá), pra dar tempo
-    // do "Die" do Alce (elk_die, reaproveitando por enquanto os frames do die humano) tocar de
-    // verdade em vez de sumir sem animação nenhuma.
+    // GDD: morrer DURANTE a transformação é a única exceção — pula a conversão proporcional e
+    // segue o fluxo universal de morte (stats.maxHealth já volta a ser o humano aqui, embora a
+    // instância seja destruída logo depois — não reaproveitada). Só mexe em stats/flag aqui — a
+    // troca do Animator Controller fica pra AnimationDieEndEvent() (ver comentário lá), pra dar
+    // tempo do "Die" do Alce (elk_die, reaproveitando por enquanto os frames do die humano)
+    // tocar de verdade em vez de sumir sem animação nenhuma.
     protected override void OnHeroDeath()
     {
         if (!isElkForm) return;
@@ -443,8 +443,7 @@ public class Druid : HeroController
     // Alce, o Animator ainda está no controller do Alce até agora (de propósito — é o que deixa
     // o "Die" dele tocar) — troca pro humano exatamente no instante em que a morte termina de
     // contar (evento real ou timeout de segurança, tanto faz, os dois passam por aqui), antes
-    // do Respawn() da base tentar dar Play("Idle") — sem isso ele tentaria tocar "Idle" num
-    // controller sem esse estado configurado do jeito certo pro humano.
+    // de base.AnimationDieEndEvent() destruir o objeto.
     public override void AnimationDieEndEvent()
     {
         if (animator != null && animator.runtimeAnimatorController != humanController)

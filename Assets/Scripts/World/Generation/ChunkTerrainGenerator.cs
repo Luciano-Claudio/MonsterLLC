@@ -28,6 +28,11 @@ using Pathfinding;
 //    ficam estranhos bem na transição entre tiers diferentes.
 public class ChunkTerrainGenerator : MonoBehaviour
 {
+    // Só pra ShopHandler chamar RegenerateWorld() ao avançar de dia (GDD Deadline 8.1, Seção 3)
+    // — antes disso só existia o botão de debug no Inspector, ninguém de fora referenciava esta
+    // classe. Mesmo padrão Instance de todo outro manager do projeto.
+    public static ChunkTerrainGenerator Instance { get; private set; }
+
     public WorldGenerationSettings settings;
 
     [Tooltip("1 BiomeProfileSO por grupo de tier, na ordem: [0]=Tier1, [1]=Tier2-3, [2]=Tier4-5, [3]=Tier6-8, [4]=Tier9, [5]=Tier10. Enquanto um slot estiver vazio, aquele grupo cai de volta pro Tier1 (tierBiomes[0]) pra não deixar buraco no mapa.")]
@@ -104,6 +109,24 @@ public class ChunkTerrainGenerator : MonoBehaviour
     // de ficar visível de perto.
     private readonly Queue<ChunkCoord> pendingPaint = new();
     private readonly HashSet<ChunkCoord> queuedChunks = new(); // evita enfileirar o mesmo 2x enquanto ele ainda está na fila/sendo processado
+
+    // Achado real do usuário: GameplayBootstrap escondia a tela de loading assim que
+    // SpawnHero() retornava — só o chunk central é pintado síncrono ali (ver HandleHeroSpawned),
+    // o anel ao redor pacea em vários frames. A tela sumia bem antes desse anel terminar,
+    // deixando alguns quadros de chunk preto/não gerado visíveis. Verdadeiro só quando TODO
+    // chunk que o ChunkStreamer já considera ativo terminou de pintar de verdade.
+    public bool IsInitialAreaReady
+    {
+        get
+        {
+            if (ChunkStreamer.Instance == null) return true;
+            foreach (var coord in ChunkStreamer.Instance.ActiveChunks.Keys)
+            {
+                if (!paintedChunks.Contains(coord)) return false;
+            }
+            return true;
+        }
+    }
 
     private float seedOffsetX;
     private float seedOffsetY;
@@ -191,6 +214,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         RecomputeSeedOffsets();
 
         int cellCount = settings != null ? settings.chunkSize * settings.chunkSize : 0;
@@ -658,6 +682,10 @@ public class ChunkTerrainGenerator : MonoBehaviour
         // nesta sessão) — nunca é morte (WorldPopulationManager/WorldBossSpawnManager escutam e
         // só dão Destroy(), sem loot/kill).
         GameEvents.ClearAllEnemies();
+        // ClearAllEnemies só limpa a lista rastreada por WorldPopulationManager/
+        // WorldBossSpawnManager — pega até projétil/summon de monstro que nunca entrou nela
+        // (achado real do usuário: tocha arremessada do Goblin Raider ficava congelada na cena).
+        EnemyController.DestroyAllSpawned();
 
         // Limpa TUDO que pode ter sobrado de um clique anterior interrompido — não só
         // `paintedChunks` (que só reflete chunks que terminaram de pintar, inclusive os

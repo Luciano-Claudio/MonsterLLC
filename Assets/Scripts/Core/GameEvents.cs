@@ -6,8 +6,10 @@ public static class GameEvents
 {
     // Sprint 7: passou a carregar o valor de energia do kill (GDD Seção 11 —
     // monstros mais fortes concedem mais Energia por kill). Quebra de assinatura proposital.
-    public static event Action<int> OnEnemyKilled;
-    public static void EnemyKilled(int energyValue) => OnEnemyKilled?.Invoke(energyValue);
+    // isBoss adicionado na Deadline 8.1 Seção 3.1 — KillGoldReward precisa saber se foi boss ou
+    // monstro comum pra escolher a coluna certa da tabela de gold por dia.
+    public static event Action<int, bool> OnEnemyKilled;
+    public static void EnemyKilled(int energyValue, bool isBoss) => OnEnemyKilled?.Invoke(energyValue, isBoss);
 
     public static event Action<float, float> OnEnergyChanged;
     public static void EnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
@@ -48,12 +50,6 @@ public static class GameEvents
     public static event Action<float, float> OnHealthChanged;
     public static void HealthChanged(float current, float max) => OnHealthChanged?.Invoke(current, max);
 
-    // [Limpeza sistema de Floor] Substitui OnFloorChanged — único consumidor real era
-    // PetController.HandleFloorChanged, que nem usava o parâmetro FloorDefinition (só reagia
-    // ao disparo). Disparado por HeroController.Respawn() (volta pra origem do mundo).
-    public static event Action OnHeroRespawned;
-    public static void HeroRespawned() => OnHeroRespawned?.Invoke();
-
     public static event Action<Bag> OnBagChanged;
     public static void BagChanged(Bag bag) => OnBagChanged?.Invoke(bag);
 
@@ -72,9 +68,6 @@ public static class GameEvents
 
     public static event Action<float> OnTimeChanged;
     public static void TimeChanged(float time) => OnTimeChanged?.Invoke(time);
-
-    public static event Action<long, long> OnDemandChanged;
-    public static void DemandChanged(long sold, long target) => OnDemandChanged?.Invoke(sold, target);
 
     public static event Action<GameState> OnGameStateChanged;
     public static void GameStateChanged(GameState state) => OnGameStateChanged?.Invoke(state);
@@ -109,9 +102,9 @@ public static class GameEvents
     public static event Action OnDayStart;
     public static void DayStarted() => OnDayStart?.Invoke();
 
-    // Fim do dia de gameplay — dispara de DayResolver.ResolveEndOfDay() (timer de DayTimer
-    // chegando a zero), ANTES de decidir Results ou GameOver (dispara nos dois casos: o Vendor
-    // fecha a loja de qualquer forma, sucesso ou fracasso na Demanda). Sprint 32 — Vendor usa
+    // Fim do dia de gameplay — dispara tanto de DayResolver.ResolveEndOfDay() (sobreviveu o dia
+    // inteiro) quanto de DayResolver.ResolvePlayerDeath() (morreu), ANTES de ir pra Results nos
+    // dois casos (GDD Deadline 8.1, Seção 3 — não existe mais Game Over). Sprint 32 — Vendor usa
     // isso pra tocar Shop_Closing.
     public static event Action OnDayEnd;
     public static void DayEnded() => OnDayEnd?.Invoke();

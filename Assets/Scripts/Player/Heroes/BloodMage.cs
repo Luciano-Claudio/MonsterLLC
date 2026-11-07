@@ -380,7 +380,7 @@ public class BloodMage : HeroController
         isAttacking = false;
     }
 
-    // GDD (Seção 52, "Pet retorna junto") — o pet sobrevive à morte do herói e se teleporta
-    // sozinho junto do respawn (PetController.HandleHeroRespawned(), já inscrito em
-    // GameEvents.OnHeroRespawned) — nenhuma limpeza extra necessária aqui, mesmo critério do Mage.
+    // Sem OnHeroDeath override — nenhuma limpeza de pet necessária aqui, mesmo critério do Mage
+    // (GDD Deadline 8.1, Seção 3: GameplayBootstrap.RespawnHeroFresh() já chama
+    // PetController.DestroyAll() antes de summonar o pet do herói novo).
 }

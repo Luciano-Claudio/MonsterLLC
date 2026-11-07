@@ -69,6 +69,20 @@ public class FloatingCombatText : MonoBehaviour
         if (elapsed >= lifetime) Destroy(gameObject);
     }
 
+    // Achado real (usuário testando morte com o Cleric): como Update() acima já respeita
+    // GameplayGate, qualquer texto flutuante vivo no instante em que o dia acaba (morte ou
+    // sucesso) congela pra sempre — GameplayGate vira false (sai de GameState.Gameplay) antes
+    // do próprio lifetime zerar, e sem Update() rodando ele nunca chama Destroy() sozinho.
+    // Chamado por DayResolver junto com LootDrop.DestroyAllOnGround()/GameEvents.ClearAllEnemies.
+    public static void DestroyAll()
+    {
+        var texts = Object.FindObjectsByType<FloatingCombatText>(FindObjectsSortMode.None);
+        foreach (var text in texts)
+        {
+            if (text != null) Destroy(text.gameObject);
+        }
+    }
+
     private void UpdateScreenPosition()
     {
         if (cam == null) return;

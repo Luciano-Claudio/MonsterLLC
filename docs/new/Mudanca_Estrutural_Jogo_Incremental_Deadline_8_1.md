@@ -148,7 +148,56 @@ anterior sem confirmação explícita do usuário; removida): Dia 1 usa a curva 
 
 ---
 
-## 3. Loop de Morte e Regeneração de Mundo
+## 3. Loop de Morte e Regeneração de Mundo — Fechado (R3)
+
+**Implementado:** o antigo par "Demanda cumprida → Results / Demanda não cumprida → GameOver"
+foi substituído por "sobreviveu o timer → Results / morreu → Results" (`DayResolver`, 2 métodos:
+`ResolveEndOfDay()` chamado por `DayTimer.EndDay()`, `ResolvePlayerDeath()` chamado por
+`HeroController.OnDeath()` — a antiga penalidade de -30s no timer foi removida de vez). Flag
+`DayResolver.PlayerSurvivedLastDay` decide, na saída da Loja (`ShopHandler.ProceedFromShop()`),
+se avança o dia + regenera o mundo (`ChunkTerrainGenerator.Instance.RegenerateWorld()`, agora com
+`Instance` estático) ou só repete o dia atual sem regenerar nada. `GameState.GameOver` foi
+removido do enum inteiro — não existe mais nenhuma forma de "fim de jogo" permanente nesta
+Deadline, só retry. `Demanda` foi removida por completo (`DemandTracker`/`DemandCalculator`/
+`DemandIndicatorUI` deletados, toda chamada relacionada limpa).
+
+**Pendência de cena (usuário faz manualmente):** remover o componente `DemandTracker` e
+`GameOverHandler` do GameObject "Systems" em `Main_Menu.unity`; remover o componente
+`DemandIndicatorUI` do "Canvas" e o GameObject "DemandLabel" em `_TestScene.unity`.
+
+**3 bugs achados testando com o Cleric, corrigidos:**
+- **A Loja nunca aparecia** — `ResultsHandler` chama `SetState(Shop)` de dentro do próprio
+  `HandleStateChanged(Results)` (reentrada síncrona no meio do despacho do evento). Um inscrito
+  que ainda não tivesse sido chamado na rodada original de "Results" (ex.: o novo
+  `ShopUIController`) recebia "Results" por último, desfazendo o "Shop" que tinha acabado de
+  ligar — tudo no mesmo frame. `GameStateManager.SetState()` agora enfileira qualquer chamada
+  recebida enquanto já está despachando, em vez de reentrar — corrige pra qualquer sequência de
+  estados futura, não só este caso. Novo `ShopUIController.cs` liga/desliga o GameObject "Shop"
+  de verdade conforme o estado (antes só existia log, nunca mostrava nada).
+- **Loja abria instantaneamente, cobrindo a animação de morte** — `DayResolver.
+  ResolvePlayerDeath()` morava no passo 4 de `HeroController.OnDeath()`, disparado na hora, antes
+  do "Die" sequer começar a tocar. Movido pra `AnimationDieEndEvent()` (fim real da animação,
+  evento ou timeout de segurança) — a Loja só abre depois que o jogador vê a morte de verdade.
+- **Projétil/summon de monstro (ex.: tocha arremessada do Goblin Raider) ficava congelado na
+  cena** — `GameEvents.ClearAllEnemies()` só limpa a lista interna que
+  `WorldPopulationManager`/`WorldBossSpawnManager` rastreiam (o que ELES spawnaram pelo
+  roster); qualquer outra coisa nascida dentro de `//ENEMYS`/`//BOSSES` por fora desse caminho
+  nunca entrava nessa lista. `EnemyController.DestroyAllSpawned()` novo — destrói literalmente
+  tudo dentro dos 2 containers, sem exceção; chamado junto com `ClearAllEnemies()` nos 3 lugares
+  que fazem reset de população (`DayResolver.ResolvePlayerDeath()`, `ChunkTerrainGenerator.
+  RegenerateWorld()`, o botão de debug de isolamento de Tier).
+- **Textos de dano flutuantes congelavam na tela** — `FloatingCombatText.Update()` já respeitava
+  `GameplayGate`, então qualquer um vivo no instante da virada do dia nunca mais rodava
+  `Update()` (porque `GameplayGate` desliga antes do Gameplay) e nunca se auto-destruía.
+  `FloatingCombatText.DestroyAll()` novo, chamado por `DayResolver` junto com
+  `ClearAllEnemies()`/`LootDrop.DestroyAllOnGround()`.
+- **Valores do herói ficavam presos entre dias** (ex.: size só atualizava com New Game do zero)
+  — reaproveitar a MESMA instância entre dias (só reposicionando) deixava qualquer valor
+  aplicado só no Instantiate/Start desatualizado. `GameplayBootstrap.RespawnHeroFresh()` novo:
+  destrói a instância atual e instancia 100% nova, chamado por `ShopHandler.ProceedFromShop()`
+  nos 2 casos (retry ou avanço). `HeroController.AnimationDieEndEvent()` simplificado pra só
+  destruir (antes reposicionava a mesma instância — "Respawn()" removido). `PetController.
+  DestroyAll()` novo, limpa o pet do herói anterior antes do summon do pet novo.
 
 - **Morrer:** vai pra Loja (mesmo dia). Perde todo loot que ainda estava na bag (não vendido).
   Mantém o gold já ganho (kills + loot já vendido antes de morrer). O dia reinicia do zero: jogador
@@ -175,7 +224,36 @@ anterior sem confirmação explícita do usuário; removida): Dia 1 usa a curva 
 > inteiros daquele dia — só aí a Loja regenera o mundo e avança pro Dia 3. Morrer nunca "desfaz"
 > um dia já vencido anteriormente, só repete o dia atual até ele ser superado.
 
-### 3.1 — Economia de Combate: Gold por Kill
+### 3.1 — Economia de Combate: Gold por Kill — Fechado (R3)
+
+**Implementado (revisado — virou tabela por dia, não mais +1 fixo pra sempre):** `GameEvents.
+OnEnemyKilled` ganhou um 2º parâmetro (`isBoss`); `KillGoldReward` (static, tabela injetada por
+`SystemsBootstrap` via Inspector, mesmo critério de toda outra tabela de dia) lê o dia atual e
+soma gold fixo diferente pra monstro comum e pra boss, crescendo a cada dia:
+
+| Dia | Gold/monstro | Gold/boss |
+|---|---|---|
+| 1 | 1 | 20 |
+| 2 | 100 | 500 |
+| 3 | 500 | 2.500 |
+| 4 | 2.000 | 10.000 |
+| 5 | 10.000 | 50.000 |
+| 6 | 50.000 | 250.000 |
+| 7 | 200.000 | 1.000.000 |
+| 8 | 1.000.000 | 5.000.000 |
+| 9 | 4.000.000 | 20.000.000 |
+| 10 | 15.000.000 | 75.000.000 |
+
+Valores soltos de propósito (usuário: "ainda não entendo bem a economia, buffa ou nerfa
+depois") — editáveis no Inspector do asset `DayGoldTable`, sem mexer em código. `KillGoldReward.
+GoldBonusMultiplier` (static, default 1) já existe como gancho pra bônus futuro de Perk/Talento
+multiplicar em cima — mesmo padrão de `HeroController.EnergyGainMultiplier` — mas nada ainda o
+usa (infra de Perk/Talento é R9/R10).
+
+**Pendência de cena (usuário faz manualmente):** criar o asset via
+`Assets > Create > MonsterLLC > Economy > Day Gold Table` (já nasce preenchido com a tabela
+acima) e arrastar ele pro campo **Gold Table** do `SystemsBootstrap`, no GameObject "Systems" em
+`Main_Menu.unity`.
 
 Contexto: o playtest do aggro global (Seção 4) mostrou 0 vendas em todos os testes — com o
 enxame perseguindo desde o 1º contato, ficar parado perto do Vendor virava morte certa. A solução

@@ -346,8 +346,9 @@ public class Assassin : HeroController
     }
 
     // Mesmo motivo do Druid — se a morte aconteceu na forma sombria, o Animator ainda está no
-    // controller sombrio (de propósito, pra tocar o "Die" dele); troca pro humano ANTES do
-    // Respawn() da base tentar dar Play("Idle") num controller sem esse estado certo.
+    // controller sombrio (de propósito, pra tocar o "Die" dele); troca pro humano antes de
+    // base.AnimationDieEndEvent() destruir o objeto (inofensivo deixar assim, mas evita o
+    // controller errado ficar visível por 1 frame se algo else ainda ler o Animator nesse meio-tempo).
     public override void AnimationDieEndEvent()
     {
         if (animator != null && animator.runtimeAnimatorController != humanController)

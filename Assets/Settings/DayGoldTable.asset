@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d94407f551ed0d04783cbcf3427aff72, type: 3}
+  m_Name: DayGoldTable
+  m_EditorClassIdentifier: Core::DayGoldTableSO
+  days:
+  - dayNumber: 1
+    killGold: 1
+    bossGold: 20
+  - dayNumber: 2
+    killGold: 100
+    bossGold: 500
+  - dayNumber: 3
+    killGold: 500
+    bossGold: 2500
+  - dayNumber: 4
+    killGold: 2000
+    bossGold: 10000
+  - dayNumber: 5
+    killGold: 10000
+    bossGold: 50000
+  - dayNumber: 6
+    killGold: 50000
+    bossGold: 250000
+  - dayNumber: 7
+    killGold: 200000
+    bossGold: 1000000
+  - dayNumber: 8
+    killGold: 1000000
+    bossGold: 5000000
+  - dayNumber: 9
+    killGold: 4000000
+    bossGold: 20000000
+  - dayNumber: 10
+    killGold: 15000000
+    bossGold: 75000000

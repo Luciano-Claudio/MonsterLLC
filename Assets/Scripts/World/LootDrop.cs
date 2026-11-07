@@ -100,12 +100,11 @@ public class LootDrop : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Só pra debug/teste (isolamento de Tier, WorldPopulationManager/WorldBossSpawnManager) —
-    // pedido do usuário: ao resetar pra isolar um Tier, também limpa todo loot já no chão, por
-    // poluição visual e FPS (uma sessão de teste empilha loot rápido, sem ninguém vendendo de
-    // verdade). NUNCA chamado pelo fluxo normal do jogo (ChunkTerrainGenerator.RegenerateWorld
-    // continua sem tocar em loot nenhum — sumir com o loot do jogador no meio de uma run real
-    // seria um bug, não uma feature).
+    // Debug/teste (isolamento de Tier) E fluxo real de morte (GDD Deadline 8.1, Seção 3 —
+    // `DayResolver.ResolvePlayerDeath()`: "todo o loot no chão é removido e ressumonado do
+    // zero" ao repetir o dia). `ChunkTerrainGenerator.RegenerateWorld()` (avanço de dia por
+    // sucesso) continua sem tocar em loot nenhum — só a MORTE limpa o chão, nunca o avanço
+    // normal de dia.
     public static void DestroyAllOnGround()
     {
         var drops = Object.FindObjectsByType<LootDrop>(FindObjectsSortMode.None);

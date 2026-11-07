@@ -80,27 +80,11 @@ public class PetController : MonoBehaviour
         return false;
     }
 
-    private void OnEnable()
-    {
-        GameEvents.OnHeroRespawned += HandleHeroRespawned;
-    }
-
-    private void OnDisable()
-    {
-        GameEvents.OnHeroRespawned -= HandleHeroRespawned;
-    }
-
-    // [Limpeza sistema de Floor] Era HandleFloorChanged (GameEvents.OnFloorChanged) — teleporta
-    // o pet direto pro spawn point ao herói respawnar, em vez de deixá-lo "andando" atrás do
-    // dono — o alvo também é descartado (não faz sentido perseguir algo de antes da morte). O
-    // parâmetro FloorDefinition nunca foi usado aqui (só o disparo do evento importava), então
-    // a troca pro evento novo (sem payload) é direta.
-    private void HandleHeroRespawned()
-    {
-        currentTarget = null;
-        Vector3 destination = teleportPoint != null ? teleportPoint.position : (owner != null ? owner.position : transform.position);
-        transform.position = destination;
-    }
+    // GameEvents.OnHeroRespawned (teleportava o pet junto quando o herói respawnava no mesmo
+    // lugar) removido — GDD Deadline 8.1, Seção 3: o herói nunca mais é "respawnado", é
+    // destruído e reinstanciado (GameplayBootstrap.RespawnHeroFresh()), que já chama
+    // PetController.DestroyAll() antes de summonar o pet novo. Este pet nunca sobrevive pra
+    // precisar teleportar.
 
     private void Update()
     {
@@ -249,5 +233,20 @@ public class PetController : MonoBehaviour
     public void AnimationDieEndEvent()
     {
         Destroy(gameObject);
+    }
+
+    // GDD Deadline 8.1, Seção 3 — achado real: GameplayBootstrap.RespawnHeroFresh() agora
+    // destrói e reinstancia o herói do zero a cada dia (retry ou avanço), em vez de só
+    // reposicionar a mesma instância. O pet antigo (owner agora destruído) ficaria congelado
+    // pra sempre na cena — Update() já tem guard de `owner == null`, mas nunca se autodestrói
+    // sozinho. O herói novo já resumona seu próprio pet via AnimationSummonPetEvent, como
+    // sempre fez; este método só limpa o que sobrou do herói anterior.
+    public static void DestroyAll()
+    {
+        var pets = Object.FindObjectsByType<PetController>(FindObjectsSortMode.None);
+        foreach (var pet in pets)
+        {
+            if (pet != null) Destroy(pet.gameObject);
+        }
     }
 }

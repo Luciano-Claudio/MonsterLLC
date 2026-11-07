@@ -150,7 +150,8 @@ public class WorldBossSpawnManager : MonoBehaviour
 
     private void Update()
     {
-        if (!GameplayGate.IsActive || player == null || worldSettings == null || bossSettings == null) return;
+        // HeroController.IsDying — mesmo motivo de WorldPopulationManager.Update() (ver lá).
+        if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || bossSettings == null) return;
 
         aliveBosses.RemoveAll(b => b == null); // null = morreu (EnemyController.Die()) — sem replacement automático, só o Boss Timer normal repõe
 

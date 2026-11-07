@@ -1084,7 +1084,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             }
         }
         AnimatorTrigger("DieTrigger");
-        GameEvents.EnemyKilled(energyReward);
+        GameEvents.EnemyKilled(energyReward, isBoss);
     }
 
     // Chamado por um Animation Event no último frame do clipe "die" — a animação é a
@@ -1144,6 +1144,28 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
                 bossesContainer = existing != null ? existing.transform : new GameObject("//BOSSES").transform;
             }
             return bossesContainer;
+        }
+    }
+
+    // GDD Deadline 8.1, Seção 3 — achado real do usuário: GameEvents.ClearAllEnemies() só
+    // limpa a lista interna que WorldPopulationManager/WorldBossSpawnManager rastreiam (os
+    // monstros que ELES spawnaram) — qualquer outra coisa dentro de ENEMYS/BOSSES nascida por
+    // fora desse caminho (ex.: projétil de ataque de monstro, tipo a tocha arremessada do
+    // Goblin Raider) nunca entra nessa lista, então nunca era destruída — ficava congelada na
+    // cena pra sempre (GameplayGate desliga o próprio Update() dela antes de se autodestruir).
+    // Destrói literalmente TUDO dentro dos 2 containers, sem exceção — é reset de dia inteiro
+    // (morte ou sucesso), não um despawn seletivo.
+    public static void DestroyAllSpawned()
+    {
+        DestroyAllChildren(EnemysContainer);
+        DestroyAllChildren(BossesContainer);
+    }
+
+    private static void DestroyAllChildren(Transform container)
+    {
+        for (int i = container.childCount - 1; i >= 0; i--)
+        {
+            Destroy(container.GetChild(i).gameObject);
         }
     }
 

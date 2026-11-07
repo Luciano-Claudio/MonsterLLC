@@ -52,7 +52,6 @@ public class Vendor : Interactable
             if (!pricingSettings.TryGetPrice(slot.itemName, out long sellValue)) continue;
 
             goldEarned += slot.quantity * sellValue;
-            DemandTracker.Instance.RegisterSale(slot.itemName, slot.quantity);
             if (cart != null) cart.AcceptSale(slot.itemName, slot.quantity, interactor.position);
             bag.RemoveSlot(i);
         }

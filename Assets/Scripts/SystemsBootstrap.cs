@@ -2,18 +2,22 @@ using UnityEngine;
 
 public class SystemsBootstrap : MonoBehaviour
 {
+    [Tooltip("Gold fixo por kill (monstro comum/boss), por dia — GDD Deadline 8.1, Seção 3.1. Mesmo critério de toda outra tabela de dia do projeto (Inspector, nunca Resources.Load).")]
+    [SerializeField] private DayGoldTableSO goldTable;
+
     private PlayerControls controls;
 
     private void Awake()
     {
         // Este GameObject ("Systems") carrega junto GameStateManager/TimeManager/BagController/
-        // DemandTracker/DayTimer/ShopHandler/ResultsHandler/GameOverHandler — tudo que precisa
-        // existir desde o boot do jogo (cena Main_Menu) e sobreviver a qualquer troca de cena
-        // depois (ex.: carregar a cena de gameplay). DontDestroyOnLoad aqui protege o grupo
-        // inteiro de uma vez, já que todos vivem no mesmo GameObject.
+        // DayTimer/ShopHandler/ResultsHandler — tudo que precisa existir desde o boot do jogo
+        // (cena Main_Menu) e sobreviver a qualquer troca de cena depois (ex.: carregar a cena de
+        // gameplay). DontDestroyOnLoad aqui protege o grupo inteiro de uma vez, já que todos
+        // vivem no mesmo GameObject.
         DontDestroyOnLoad(gameObject);
 
         ProgressTracker.Init();
+        KillGoldReward.Init(goldTable); // GDD Deadline 8.1, Seção 3.1 — gold fixo por kill/boss, por dia
         controls = new PlayerControls();
 
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —

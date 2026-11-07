@@ -1,5 +1,4 @@
 using UnityEngine;
-using EasyTransition;
 
 public abstract class HeroController : MonoBehaviour, IDamageable
 {
@@ -24,7 +23,6 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     }
 
     public HeroStats stats = new HeroStats();
-    public TransitionSettings respawnTransition;
     protected PlayerControls controls;
     protected Animator animator; // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (mesma regra do EnemyController)
     private SpriteRenderer spriteRenderer;
@@ -51,7 +49,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // sempre "morto" (mesmo padrão do EnemyController — maxDieDuration/dieElapsed).
     public float maxDieDuration = 3f;
     private float dieElapsed;
-    private bool dieHandled; // evita chamar Respawn() duas vezes (evento + timeout de segurança)
+    private bool dieHandled; // evita chamar AnimationDieEndEvent() duas vezes (evento + timeout de segurança)
 
     // Heróis com ataque real via Animation Event (ex.: Barbarian) marcam isso true/false ao
     // redor da própria janela de ataque — receber dano != interromper uma ação (mesma regra
@@ -141,6 +139,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // esperando. Static pelo mesmo motivo de IsPlayerUntargetable (só existe 1 herói jogável
     // por vez). Sem reset automático aqui de propósito — é só pra validar o enxame.
     public static bool GlobalAggroActive;
+
+    // Achado real do usuário (GDD Deadline 8.1, Seção 3): DayResolver.ResolvePlayerDeath()
+    // limpa monstro/projétil/loot NA HORA da morte (não espera a animação), mas o GameState só
+    // muda pra Results/Shop no FIM da animação (AnimationDieEndEvent) — nesse meio-tempo
+    // GameplayGate.IsActive continua true (CurrentState ainda é Gameplay), e
+    // WorldPopulationManager/WorldBossSpawnManager continuavam rodando normalmente, vendo a
+    // população zerada e reabastecendo tudo de novo ainda durante a animação (os monstros
+    // novos ficavam vivos até dentro da Loja). Não deu pra resolver só com GameplayGate — ele
+    // também gate(ia) o próprio Update() do HeroController, incluindo o timeout de segurança
+    // do "die" (ver linha ~372), que PRECISA continuar rodando enquanto isDead. Por isso é um
+    // flag separado, checado só pelos managers de população, não pelo GameplayGate em si.
+    public static bool IsDying;
 
     // 2026-11-01 — Deadline 8.1, IA de perseguição inteligente (planejamento prévio no chat).
     // Velocidade real do herói, pro monstro prever ONDE ele vai estar em vez de só perseguir
@@ -521,7 +531,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // ela). Default true, sem efeito em nenhum herói que não sobrescrever isso.
     protected virtual bool CanGainUltimateEnergy => true;
 
-    private void HandleEnemyKilled(int energyValue)
+    private void HandleEnemyKilled(int energyValue, bool isBoss)
     {
         // Janela de bloqueio pós-ultimate — sem isso, uma ultimate boa (que geralmente
         // limpa a área ou salva o jogador) já paga a energia da próxima sozinha, virando
@@ -731,6 +741,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private void OnDeath()
     {
         isDead = true;
+        IsDying = true; // trava WorldPopulationManager/WorldBossSpawnManager até o herói novo nascer (GameplayBootstrap.SpawnHero)
         isAttacking = false; // sem isso, um herói morto no meio de uma ação renasceria sem poder agir de novo (PrimaryAttack/UseUltimate ignoram clique enquanto isAttacking)
         isAttackResolving = false;
         isReactingToDamage = false;
@@ -771,49 +782,33 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         stats.energy = 0f;
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
 
-        // 4. Penalidade de -30s no timer do dia
-        DayTimer.Instance.ApplyPenalty(30f);
+        // 4. Reseta o mundo (monstro/projétil/loot somem na hora) — de propósito IMEDIATO, não
+        // espera a animação de morte terminar (pedido do usuário: monstro/projétil continuando
+        // em cena enquanto o "Die" toca ficava estranho). NÃO abre a Loja ainda — isso é
+        // DayResolver.OpenResultsAfterDeath(), chamado só depois que a animação termina de
+        // verdade (AnimationDieEndEvent) — o jogador precisa VER o "Die" primeiro.
+        DayResolver.ResolvePlayerDeath();
     }
 
     // Chamado por um Animation Event no último frame do clipe "die" (mesmo padrão do
-    // EnemyController) — a animação é a fonte de verdade do timing: o jogador só volta pro
-    // andar inicial depois que a morte terminou de tocar por completo.
+    // EnemyController) — a animação é a fonte de verdade do timing.
+    //
+    // GDD Deadline 8.1, Seção 3 (revisado 2x — achados reais do usuário):
+    // 1ª revisão: antes, isto reposicionava a MESMA instância de volta na origem com HP cheio
+    // ("Respawn"). Agora só destrói — a instância que volta da Loja é sempre 100% nova
+    // (GameplayBootstrap.RespawnHeroFresh(), chamado por ShopHandler.ProceedFromShop()), nunca
+    // a mesma reaproveitada — evita valores só aplicados no Instantiate/Start (ex.: size)
+    // ficarem presos no estado antigo até um New Game do zero.
+    // 2ª revisão: o reset do MUNDO (DayResolver.ResolvePlayerDeath()) é imediato, em OnDeath()
+    // (passo 4) — só a troca de GameState pra abrir a Loja (OpenResultsAfterDeath) mora aqui,
+    // depois que a animação termina de verdade (evento real ou timeout de segurança, tanto faz).
     public virtual void AnimationDieEndEvent()
     {
-        if (dieHandled) return; // proteção — evento + timeout de segurança não chamam Respawn() duas vezes
+        if (dieHandled) return; // proteção — evento + timeout de segurança não chamam Destroy() duas vezes
         dieHandled = true;
 
-        // 5. Respawn no térreo com HP cheio — sempre, mesmo se a penalidade do passo 4 (em
-        // OnDeath()) tiver zerado o dia (DayResolver já resolveu Results/Game Over em
-        // paralelo; o herói precisa terminar com HP/posição sãos para o próximo dia).
-        Respawn();
-    }
-
-    private void Respawn()
-    {
-        // Teleporte acontece dentro do callback, no momento em que a transição
-        // já cobriu a tela por completo — o jogador nunca vê o salto de posição.
-        TransitionHelper.PlayTransition(respawnTransition, () =>
-        {
-            // [Limpeza sistema de Floor] Antes voltava pro "Floor térreo"
-            // (FloorRegistry/FloorManager) — Mundo Único não tem andares, volta sempre pra
-            // origem do mundo (0,0,0), que é o centro da Safe Zone e o mesmo ponto onde o
-            // herói nasce em MainMenuUI.SpawnHero().
-            transform.position = Vector3.zero;
-            GameEvents.HeroRespawned(); // substitui GameEvents.FloorChanged — PetController escuta isso pra teleportar o pet junto
-
-            stats.health = stats.maxHealth;
-            GameEvents.HealthChanged(stats.health, stats.maxHealth);
-            isDead = false;
-
-            // Sem isso, o Animator ficaria preso no estado "Die" pra sempre — diferente do
-            // monstro (que é destruído ao fim do clipe), o herói continua existindo e
-            // precisa voltar pro Idle na marra (Play direto, não dá pra confiar num
-            // trigger/transição pra sair de um estado terminal).
-            if (animator != null) animator.Play("Idle", 0, 0f);
-
-            Debug.Log("[HeroController] Respawn na origem do mundo com HP cheio.");
-        });
+        DayResolver.OpenResultsAfterDeath();
+        Destroy(gameObject);
     }
 
     protected abstract void PrimaryAttack();

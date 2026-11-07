@@ -94,6 +94,7 @@ public class WorldPopulationManager : MonoBehaviour
 
         WorldBossSpawnManager.Instance?.SyncTierIsolation(useTierIsolationOverride, testTierOverride);
         GameEvents.ClearAllEnemies();
+        EnemyController.DestroyAllSpawned(); // pega até projétil/summon que ClearAllEnemies não rastreia
         LootDrop.DestroyAllOnGround(); // só debug — poluição visual/FPS numa sessão de teste, nunca no fluxo normal
         Debug.Log(useTierIsolationOverride
             ? $"[WorldPopulationManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora (monstro comum e boss)."
@@ -129,7 +130,12 @@ public class WorldPopulationManager : MonoBehaviour
 
     private void Update()
     {
-        if (!GameplayGate.IsActive || player == null || worldSettings == null || spawnSettings == null) return;
+        // HeroController.IsDying (não GameplayGate — ver comentário na declaração dele):
+        // sem isso, a população reabastecia sozinha ainda durante a animação de morte (o
+        // GameState só muda pra Results no fim dela, GameplayGate continua achando que é
+        // Gameplay normal) — achado real do usuário, monstro reabastecido ficava vivo até
+        // dentro da Loja.
+        if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || spawnSettings == null) return;
 
         aliveEnemies.RemoveAll(e => e == null);
 

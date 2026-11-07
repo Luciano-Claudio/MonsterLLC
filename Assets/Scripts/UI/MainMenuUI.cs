@@ -12,7 +12,7 @@ public class MainMenuUI : MonoBehaviour
 
     // Cena de gameplay (mundo/Tower) — GameplayBootstrap, lá dentro, termina o fluxo (spawna o
     // herói ou reabre a Loja) usando os singletons persistentes (GameStateManager/
-    // BagController/DayTimer/DemandTracker/SystemsBootstrap), que sobrevivem à troca de cena via
+    // BagController/DayTimer/SystemsBootstrap), que sobrevivem à troca de cena via
     // DontDestroyOnLoad (GameObject "Systems", nascido aqui na cena Main_Menu).
     private const string GameplaySceneName = "_TestScene";
 

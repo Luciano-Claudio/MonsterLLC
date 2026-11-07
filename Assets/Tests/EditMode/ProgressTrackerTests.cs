@@ -8,7 +8,7 @@ public class ProgressTrackerTests
         ProgressTracker.ResetAll();
         ProgressTracker.Init();
 
-        GameEvents.EnemyKilled(10); // valor de energia arbitrário — irrelevante para este teste
+        GameEvents.EnemyKilled(10, isBoss: false); // valores arbitrários — irrelevantes para este teste
 
         Assert.AreEqual(1, ProgressTracker.Get("EnemyKilled"));
     }
