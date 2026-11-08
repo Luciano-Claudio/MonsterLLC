@@ -27781,6 +27781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuNavigationUI
   heroDisplayTable: {fileID: 11400000, guid: a454e86cc6ea5abef94a4a8c59f29175, type: 2}
+  worldDisplayTable: {fileID: 0}
 --- !u!114 &1473946192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27794,7 +27795,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PopupController
   popupBoxPrefab: {fileID: 6707427705053459305, guid: ba4dca51cec4d0a43a051a00299ab128, type: 3}
-  cursorOffset: {x: 24, y: -24}
+  verticalGapAboveCursor: 20
   animDuration: 0.12
 --- !u!1 &1477959106
 GameObject:

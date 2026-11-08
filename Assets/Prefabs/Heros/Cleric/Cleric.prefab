@@ -450,15 +450,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cleric
   stats:
-    health: 32
-    maxHealth: 32
-    damage: 3
+    health: 320
+    maxHealth: 320
+    damage: 30
     critChance: 0.1
     moveSpeed: 5
-    attackSpeed: 0.5
+    attackSpeed: 1
     energy: 0
     maxEnergy: 100
-  respawnTransition: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
   maxDieDuration: 6
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
@@ -474,7 +473,7 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  projectileCount: 5
+  projectileCount: 20
   projectileSpeed: 7
   projectileMaxDistance: 12
   projectileKnockbackForce: 2

@@ -177,7 +177,15 @@ public class ChunkTerrainGenerator : MonoBehaviour
     private Vector2 lastStreamingTargetPos;
     private bool hasLastStreamingTargetPos;
 
-    private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
+    // "Dia de preview" (GDD Deadline 8.1, Seção 5, extensão pedida pelo usuário) — pro mapa do
+    // PRÓXIMO dia poder ser pré-pintado em background ENQUANTO o jogador ainda está na Loja,
+    // sem tocar MainMenuUI.CurrentRun.day ainda (isso quebraria o texto "Day X" do Resumo do
+    // Dia, que lê CurrentRun.day direto). Null = comportamento normal (lê o dia real da run).
+    // Ver BeginBackgroundRegeneration/CommitPreviewDay.
+    private int? previewDay;
+    private bool backgroundRegenActive;
+
+    private int ActualDay => useTestDayOverride ? testDayOverride : (previewDay ?? (MainMenuUI.CurrentRun?.day ?? 1));
 
     // Tier Suppression (resto do P10) — decisão do usuário: suprimir um Tier remove também o
     // bioma visual do terreno, não só o monstro/boss (WorldPopulationManager/
@@ -669,14 +677,9 @@ public class ChunkTerrainGenerator : MonoBehaviour
         StopAllCoroutines();
         pendingPaint.Clear();
 
-        // Bug real reportado: sem isso, WorldPopulationManager/WorldBossSpawnManager
-        // continuavam lendo o PRÓPRIO useTestDayOverride/testDayOverride (nunca sincronizado
-        // com o deste componente) — o bioma mudava de Tier aqui, mas os monstros/bosses
-        // recém-spawnados (abaixo, via ClearAllEnemies) continuavam nascendo no Dia antigo.
         // Precisa rodar ANTES do ClearAllEnemies — a repopulação automática (crise, ver
         // WorldPopulationManager.Update) já lê o Dia novo no próprio frame seguinte.
-        if (WorldPopulationManager.Instance != null) WorldPopulationManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
-        if (WorldBossSpawnManager.Instance != null) WorldBossSpawnManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
+        SyncPopulationDayOverrides();
 
         // População inteira renasce do zero sob as regras atuais (ex.: Tier Suppression comprada
         // nesta sessão) — nunca é morte (WorldPopulationManager/WorldBossSpawnManager escutam e
@@ -716,6 +719,79 @@ public class ChunkTerrainGenerator : MonoBehaviour
         StartCoroutine(ProcessPipeline()); // volta a processar streaming normal (novos chunks futuros)
 
         Debug.Log($"[ChunkTerrainGenerator] Mundo regenerado — Dia {ActualDay}{(useTestDayOverride ? " (override)" : "")}.");
+    }
+
+    // Bug real reportado (antes de existir este método): sem isto, WorldPopulationManager/
+    // WorldBossSpawnManager continuavam lendo o PRÓPRIO useTestDayOverride/testDayOverride
+    // (nunca sincronizado com o deste componente) — o bioma mudava de Tier aqui, mas os
+    // monstros/bosses continuavam nascendo no Dia antigo. Extraído de RegenerateWorld pra
+    // ShopHandler.ProceedFromShop também poder chamar (fluxo normal, sem passar pelo
+    // regenerate síncrono de debug — ver BeginBackgroundRegeneration).
+    public void SyncPopulationDayOverrides()
+    {
+        if (WorldPopulationManager.Instance != null) WorldPopulationManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
+        if (WorldBossSpawnManager.Instance != null) WorldBossSpawnManager.Instance.SyncDayOverride(useTestDayOverride, testDayOverride);
+    }
+
+    // GDD Deadline 8.1, Seção 5 (extensão pedida pelo usuário) — pré-pinta o mapa do PRÓXIMO
+    // dia em background, PACEADO (mesma fila/ProcessPipeline do streaming normal), enquanto o
+    // jogador ainda navega na Loja. Usa previewDay (nunca escreve em CurrentRun.day ainda) —
+    // ver comentário no campo. Só chamado quando o dia vai avançar de verdade (sobreviveu); se
+    // morreu, o mapa não muda, nada a pré-gerar (ShopUIController já filtra isso).
+    public void BeginBackgroundRegeneration(int previewDayValue)
+    {
+        if (!Application.isPlaying || backgroundRegenActive || settings == null) return;
+        backgroundRegenActive = true;
+        previewDay = previewDayValue;
+
+        // Herói sempre renasce em (0,0,0) num dia novo (ver HandleHeroSpawned/
+        // GameplayBootstrap.RespawnHeroFresh) — mesmo chunk central de sempre, só que aqui
+        // ninguém nasceu ainda, então usa a origem direto em vez de uma posição de herói real.
+        var origin = ChunkCoord.FromWorldPosition(Vector3.zero, settings.chunkSize);
+
+        StopAllCoroutines();
+        pendingPaint.Clear();
+
+        regenerateClearScratch.Clear();
+        foreach (var coord in paintedChunks) regenerateClearScratch.Add(coord);
+        foreach (var coord in queuedChunks) regenerateClearScratch.Add(coord);
+        foreach (var coord in regenerateClearScratch) ClearChunkImmediate(coord);
+
+        paintedChunks.Clear();
+        queuedChunks.Clear();
+        hiddenChunks.Clear();
+
+        // Chunk central primeiro, depois os anéis em espiral (mesma ordem de sempre,
+        // RingClockwiseFromNorth) — tudo pela fila PACEADA, nunca instantâneo aqui (pedido
+        // explícito do usuário: "sem atrapalhar fps nem nada enquanto o player estiver na
+        // loja"). Não usa EnqueueSpiralAroundCenter porque esse método exige
+        // ChunkStreamer.Instance.ActiveChunks, que fica vazio sem herói/alvo de streaming.
+        pendingPaint.Enqueue(origin);
+        queuedChunks.Add(origin);
+        for (int r = 1; r <= settings.streamingRadiusInChunks; r++)
+        {
+            foreach (var coord in RingClockwiseFromNorth(origin, r))
+            {
+                if (paintedChunks.Contains(coord) || queuedChunks.Contains(coord)) continue;
+                pendingPaint.Enqueue(coord);
+                queuedChunks.Add(coord);
+            }
+        }
+
+        StartCoroutine(ProcessPipeline());
+    }
+
+    // Chamado por ShopHandler.ProceedFromShop no instante exato em que o jogador confirma
+    // "Yes" e o dia de verdade avança (CurrentRun.day já incrementado) — solta o dia de
+    // preview, voltando ActualDay a ler CurrentRun.day direto. Tudo que a pintura em
+    // background já terminou continua válido (o preview sempre foi exatamente esse dia, nunca
+    // mudou no meio do caminho); o que ainda não terminou é completado na hora por
+    // HandleHeroSpawned (chunk central síncrono de sempre) + EnqueueSpiralAroundCenter (resto
+    // do anel), disparados por GameplayBootstrap.RespawnHeroFresh logo depois desta chamada.
+    public void CommitPreviewDay()
+    {
+        previewDay = null;
+        backgroundRegenActive = false;
     }
 
     // Processa 1 chunk de cada vez, do início ao fim, antes de passar pro próximo — os buffers

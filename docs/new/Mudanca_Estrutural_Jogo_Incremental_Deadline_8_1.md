@@ -2694,3 +2694,9 @@ sem implementação ainda.
   proximidade ao herói; ainda não mudado.
 - **Monstros mortos com body damage continuam causando dano durante a própria animação de
   morte** — bug real encontrado pelo usuário, ainda não corrigido.
+- **Double-buffering de Tilemap pra pré-gerar dias futuros de verdade** — ideia do usuário
+  (Seção 5): manter um set de Tilemaps "em preparação" (invisível) pintando o Dia N+1 enquanto
+  o Dia N ainda está ativo no set "visível", trocando os 2 instantaneamente na transição de
+  dia. Descartado por agora — avaliado junto com a solução de "dia de preview" (ver
+  `ChunkTerrainGenerator.BeginBackgroundRegeneration`), que já cobre o ganho prático real sem
+  esse custo. Fica registrado pra reavaliar como otimização futura separada, se precisar.

@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class ShopHandler : MonoBehaviour
 {
+    // Vive no GameObject "Systems" (DontDestroyOnLoad, carregado a partir da cena Main_Menu) —
+    // sem isto, nada em OUTRA cena (ex.: os botões Start_Day em _TestScene) consegue referenciar
+    // esta instância, já que ela nem existe no arquivo de cena deles em tempo de edição. Mesmo
+    // padrão de DayTimer.Instance/GameStateManager.Instance.
+    public static ShopHandler Instance { get; private set; }
+
+    private void Awake() => Instance = this;
+
     private void OnEnable() => GameEvents.OnGameStateChanged += HandleStateChanged;
     private void OnDisable() => GameEvents.OnGameStateChanged -= HandleStateChanged;
 
@@ -93,8 +101,29 @@ public class ShopHandler : MonoBehaviour
         if (DayResolver.PlayerSurvivedLastDay)
         {
             MainMenuUI.CurrentRun.day++;
-            if (ChunkTerrainGenerator.Instance != null) ChunkTerrainGenerator.Instance.RegenerateWorld();
-            Debug.Log($"[ShopHandler] Dia sobrevivido — avançando pro Dia {MainMenuUI.CurrentRun.day}, mundo regenerado.");
+
+            if (ChunkTerrainGenerator.Instance != null) ChunkTerrainGenerator.Instance.SyncPopulationDayOverrides();
+
+            // Bug real reportado pelo usuário: ao remover o RegenerateWorld() síncrono daqui
+            // (ver comentário abaixo), a limpeza de monstros/loot que vivia escondida DENTRO
+            // dele também foi removida por engano — DayResolver.ResolveEndOfDay() (caminho de
+            // sobreviver) nunca limpa isso por design (só a morte limpa, ver
+            // DayResolver.ResolvePlayerDeath()); essa limpeza sempre dependeu de rodar aqui, no
+            // "Start Day". Mesmo trio de chamadas de ResolvePlayerDeath, pra manter os 2
+            // caminhos simétricos.
+            GameEvents.ClearAllEnemies();
+            EnemyController.DestroyAllSpawned();
+            LootDrop.DestroyAllOnGround();
+
+            // O mapa do dia novo já vinha sendo pré-pintado em background desde que a Loja
+            // abriu (dia de preview, GDD Deadline 8.1 Seção 5 — ver
+            // ChunkTerrainGenerator.BeginBackgroundRegeneration, chamado por
+            // ShopUIController). Aqui só "comita" esse preview pro dia real — HandleHeroSpawned
+            // (disparado por RespawnHeroFresh abaixo) termina na hora qualquer coisa que o
+            // background não tenha concluído ainda (mesmo chunk central instantâneo de sempre).
+            if (ChunkTerrainGenerator.Instance != null) ChunkTerrainGenerator.Instance.CommitPreviewDay();
+
+            Debug.Log($"[ShopHandler] Dia sobrevivido — avançando pro Dia {MainMenuUI.CurrentRun.day}.");
         }
         else
         {
