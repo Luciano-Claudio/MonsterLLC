@@ -27,6 +27,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // sem precisar de FindObjectOfType nem de referência arrastada manualmente.
     public static HeroController Instance { get; private set; }
 
+    // World Perks (GDD Deadline 8.1, Seção 8) — todos escritos de uma vez só por
+    // WorldPerkEffects.Recompute(), nunca lidos de PerkState diretamente daqui (mesmo critério
+    // de LootMultiplier/PickupRadius já existentes). Default sempre neutro (1/0/false) — sem
+    // Perk nenhum comprado, nada muda pra nenhum herói.
+    public static float PickupRadiusMultiplier = 1f;
+    public static float MoveSpeedMultiplier = 1f;
+    public static float MaxHealthMultiplier = 1f;
+    public static float DamageReductionPercent = 0f;
+    public static float HpRegenPercentPerSecond = 0f;
+    public static bool SegundaChanceUnlocked = false;
+
     public HeroStats stats = new HeroStats();
     protected PlayerControls controls;
     protected Animator animator; // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (mesma regra do EnemyController)
@@ -46,6 +57,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private GameObject statusGoldIndicator;
     private float goldStatusTimer;
     private bool vendorGoldStatusActive;
+
+    // Segunda Chance (World Perk, Seção 8, item 30) — 1x por dia, reseta em OnDayStart (mesmo
+    // gatilho que WorldBossSpawnManager/WorldChestSpawnManager já usam pra "virou dia novo").
+    private bool segundaChanceUsedToday;
+
+    // stats.maxHealth é o valor BASE do herói (bespoke por herói, nunca mutado aqui) — o bônus
+    // de World Perk (Vigor/Fortitude/Pulso Vital/Vitalidade Suprema) é um multiplicador lido
+    // em cima, igual PickupRadiusMultiplier/MoveSpeedMultiplier. Todo clamp/UI de vida usa ISTO,
+    // nunca stats.maxHealth direto (ver TakeDamage/Heal/Start).
+    public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier;
+    private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier;
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
     // com EnemyController (ver StatusEffectController.cs). Trapped continua à parte, é
@@ -381,7 +403,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     protected virtual void Start()
     {
-        GameEvents.HealthChanged(stats.health, stats.maxHealth);
+        GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
 
@@ -389,19 +411,26 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     {
         controls.Enable();
         GameEvents.OnEnemyKilled += HandleEnemyKilled;
+        GameEvents.OnDayStart += HandleDayStartForSegundaChance;
     }
 
     protected virtual void OnDisable()
     {
         controls.Disable();
         GameEvents.OnEnemyKilled -= HandleEnemyKilled;
+        GameEvents.OnDayStart -= HandleDayStartForSegundaChance;
     }
+
+    private void HandleDayStartForSegundaChance() => segundaChanceUsedToday = false;
 
     protected virtual void Update()
     {
         // Reflete qualquer upgrade de Pickup Radius no collider de verdade, todo frame — mais
         // simples que um setter dedicado, já que PickupRadius é static (qualquer sistema pode
-        // mudar o valor direto, mesmo critério do LootMultiplier).
+        // mudar o valor direto, mesmo critério do LootMultiplier). PickupRadiusMultiplier
+        // (World Perks) multiplica POR CIMA do próprio basePickupRadius do herói, nunca
+        // substitui — cada herói mantém seu valor bespoke.
+        PickupRadius = basePickupRadius * PickupRadiusMultiplier;
         if (pickupRadius != null) pickupRadius.SetRadius(PickupRadius);
 
         if (!GameplayGate.IsActive) return;
@@ -423,6 +452,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         UpdateDamageFlash();
         UpdateGoldStatus();
+        if (!isDead) UpdateHpRegen();
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         if (AutoFlipBodyCollider) ApplyBodyColliderFlip();
 
@@ -511,13 +541,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             // vez de ser atravessado. Precisa zerar explicitamente quando canMove é falso —
             // diferente de Translate (que simplesmente não faz nada), velocity persiste entre
             // frames até ser trocada.
-            rb.linearVelocity = canMove ? moveInput * stats.moveSpeed : Vector2.zero;
+            rb.linearVelocity = canMove ? moveInput * EffectiveMoveSpeed : Vector2.zero;
             Velocity = rb.linearVelocity;
         }
         else if (canMove)
         {
-            transform.Translate(moveInput * stats.moveSpeed * Time.deltaTime);
-            Velocity = moveInput * stats.moveSpeed;
+            transform.Translate(moveInput * EffectiveMoveSpeed * Time.deltaTime);
+            Velocity = moveInput * EffectiveMoveSpeed;
         }
         else
         {
@@ -698,8 +728,23 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (isDead) return;
         if (IsDamageImmune) return;
 
+        // Pele Grossa/Couraça/Casco de Ferro (World Perks) — % de redução, aplicada ANTES do
+        // ApplyDamage (nunca depois: reduzir o dano JÁ aplicado deixaria o herói com vida "de
+        // volta", o que pareceria cura, não redução).
+        if (DamageReductionPercent > 0f) amount *= 1f - Mathf.Clamp01(DamageReductionPercent / 100f);
+
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
-        GameEvents.HealthChanged(stats.health, stats.maxHealth);
+
+        // Segunda Chance (World Perk, Seção 8, item 30) — 1x por dia, sobrevive com 1 HP a um
+        // hit que mataria. Checado AQUI (depois do ApplyDamage, antes do IsDead abaixo) pra
+        // nunca interferir com hits não-fatais, só o golpe que realmente zeraria a vida.
+        if (SegundaChanceUnlocked && !segundaChanceUsedToday && HealthSystem.IsDead(stats.health))
+        {
+            segundaChanceUsedToday = true;
+            stats.health = 1f;
+        }
+
+        GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         // isDirectPlayerHit não importa aqui (isPlayer=true) — valor fixo, nunca lido pelo HitFeelController nesse caso.
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: true, isDirectPlayerHit: true);
 
@@ -719,8 +764,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected void Heal(float amount)
     {
         float healthBefore = stats.health;
-        stats.health = Mathf.Min(stats.maxHealth, stats.health + amount);
-        GameEvents.HealthChanged(stats.health, stats.maxHealth);
+        stats.health = Mathf.Min(EffectiveMaxHealth, stats.health + amount);
+        GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
 
         // Mostra só o que realmente curou — evita "+50" quando faltava 3 de vida.
         float actualHealed = stats.health - healthBefore;
@@ -787,6 +832,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         bool shouldShow = goldStatusTimer > 0f || vendorGoldStatusActive;
         if (statusGoldIndicator != null && statusGoldIndicator.activeSelf != shouldShow)
             statusGoldIndicator.SetActive(shouldShow);
+    }
+
+    // Recuperação/Metabolismo Acelerado/Fôlego Eterno (World Perks) — % do HP MÁXIMO efetivo
+    // por segundo, contínuo (não em degraus). Heal() já cuida do clamp/evento/Floating Text.
+    private void UpdateHpRegen()
+    {
+        if (HpRegenPercentPerSecond <= 0f) return;
+        Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime);
     }
 
     private void TriggerDamageFlash()

@@ -8,12 +8,31 @@ public class BagController : MonoBehaviour
 
     private PlayerControls controls;
 
+    // GDD Seção 37/8 — base fixa do herói, nunca muda. Mais Espaço de Bag/Stack Maior (World
+    // Perks) somam/substituem por cima disso em ApplyWorldPerkBonuses(), nunca aqui.
+    private const int BaseMaxSlots = 10;
+    private const long BaseStackSize = 16;
+
     private void Awake()
     {
         Instance = this;
-        Bag = new Bag(maxSlots: 10, stackSize: 16); // GDD Seção 37 (revisado 2026-10-19): 10→20→30→40
+        Bag = new Bag(maxSlots: BaseMaxSlots, stackSize: BaseStackSize);
         controls = new PlayerControls();
         controls.Gameplay.Inventory.performed += ctx => ToggleBag();
+
+        ApplyWorldPerkBonuses();
+    }
+
+    // Chamado por WorldPerkEffects.Recompute() (Mais Espaço de Bag/Stack Maior) — e também no
+    // Awake acima, pro caso de um save carregado já vir com ranks > 0. BagController é
+    // DontDestroyOnLoad e nunca é recriado entre runs, então isto precisa recalcular do zero
+    // (BaseMaxSlots + bônus) a cada chamada, nunca só somar em cima do valor atual — senão uma
+    // run nova (perkRanks resetado) herdaria o bônus da run anterior pra sempre.
+    public void ApplyWorldPerkBonuses()
+    {
+        Bag.maxSlots = BaseMaxSlots + WorldPerkEffects.BagSlotBonus;
+        Bag.stackSize = WorldPerkEffects.BagStackSize;
+        GameEvents.BagChanged(Bag);
     }
 
     private void OnEnable() => controls.Enable();

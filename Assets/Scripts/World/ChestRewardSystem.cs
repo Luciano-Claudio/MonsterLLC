@@ -28,8 +28,10 @@ public static class ChestRewardSystem
             return;
         }
 
+        // Baú Duplo (World Perk, Seção 8, item 13) — bônus ADITIVO em cima da % base do asset.
         long reward = RollGold(settings);
-        if (Random.value * 100f < settings.doubleRewardChancePercent) reward += RollGold(settings);
+        float doubleChancePercent = settings.doubleRewardChancePercent + WorldPerkEffects.DoubleRewardBonusPercent;
+        if (Random.value * 100f < doubleChancePercent) reward += RollGold(settings);
 
         MainMenuUI.CurrentRun.gold += reward;
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);

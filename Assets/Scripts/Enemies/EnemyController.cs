@@ -5,6 +5,10 @@ using Pathfinding.RVO;
 
 public abstract class EnemyController : MonoBehaviour, IDamageable
 {
+    // Faro de Saque (World Perk, Seção 8) — escrito por WorldPerkEffects.Recompute(), mesmo
+    // padrão de HeroController.LootMultiplier/PickupRadius (static, 1 Player só no jogo).
+    public static float LootDropChanceBonusPercent = 0f;
+
     // Proteção central contra dano duplicado em ataques de área (bug real: primário do Mage
     // e o ataque do Pet aplicavam 2x). Todo monstro tem 2 Collider2D no mesmo GameObject — um
     // corpo físico (CapsuleCollider2D, sem trigger) e um trigger genérico maior (CircleCollider2D)
@@ -1217,7 +1221,9 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         foreach (var entry in lootDrops)
         {
             if (string.IsNullOrEmpty(entry.itemName)) continue;
-            if (Random.value * 100f >= entry.dropChancePercent) continue;
+            // Faro de Saque (World Perk, Seção 8) — bônus ADITIVO em cima do % próprio de cada
+            // entrada (nunca multiplicativo: dobrar uma chance de 100% não faria sentido).
+            if (Random.value * 100f >= entry.dropChancePercent + LootDropChanceBonusPercent) continue;
 
             // Random.Range(int,int) não serve mais — minQuantity/maxQuantity são long (Tier 10
             // do Bestiário já passa de 2,1 bilhões por drop), e Random.Range não tem overload

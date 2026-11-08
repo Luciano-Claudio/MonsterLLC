@@ -46,6 +46,11 @@ public class MainMenuUI : MonoBehaviour
             CurrentRun = RunCreation.CreateNewRun("Standard", heroName, "Tower");
             Debug.Log($"[MainMenu] RunState criado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}");
 
+            // Perks resetam toda run nova (perkRanks vem vazio de RunCreation) — recomputa pra
+            // zerar qualquer multiplicador estático que tenha sobrado de uma run ANTERIOR na
+            // mesma sessão de Play (KillGoldReward.GoldBonusMultiplier etc. não resetam sozinhos).
+            WorldPerkEffects.Recompute();
+
             BagController.Instance.Bag.Clear();
             GameEvents.GoldChanged(CurrentRun.gold);
             GameEvents.BagChanged(BagController.Instance.Bag);
@@ -65,6 +70,10 @@ public class MainMenuUI : MonoBehaviour
         {
             CurrentRun = SaveManager.Load();
             Debug.Log($"[MainMenu] Save carregado — Dia {CurrentRun.day}, Gold {CurrentRun.gold}, Hero {CurrentRun.hero}, Weapon {CurrentRun.weaponTier}");
+
+            // Reaplica os Perks salvos (ranks já vêm de CurrentRun.perkRanks) — mesmo motivo
+            // do StartRun acima.
+            WorldPerkEffects.Recompute();
 
             BagController.Instance.Bag.Clear(); // Bag é Daily — nunca persiste no save, nem no Continue
             GameEvents.GoldChanged(CurrentRun.gold);

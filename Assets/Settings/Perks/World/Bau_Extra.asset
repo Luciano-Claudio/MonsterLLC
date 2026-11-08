@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 817d76bd30fd8be4daa850f1b43b90fe, type: 3}
+  m_Name: Bau_Extra
+  m_EditorClassIdentifier: Core::PerkDefinitionSO
+  perkId: world_bau_extra
+  displayName: Baú Extra
+  description: +1 baú sumonado no mapa/rank.
+  icon: {fileID: 0}
+  costPerRank:
+  - 10000
+  - 100000
+  - 1000000

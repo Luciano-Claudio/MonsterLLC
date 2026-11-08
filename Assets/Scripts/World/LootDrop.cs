@@ -88,6 +88,20 @@ public class LootDrop : MonoBehaviour
     {
         if (beingDestroyed) return; // já sendo absorvido por outro loot neste mesmo frame
 
+        // Ímã Vivo (World Perk, Seção 8, item 7) — auto-vende no instante da coleta, nunca
+        // passa pela Bag. Mesmo valor de venda que o Vendor manual daria (TryComputeSaleValue
+        // é a fonte única dos 2 caminhos) — se o item não tem preço cadastrado, cai pro
+        // caminho normal (vai pra Bag mesmo).
+        if (WorldPerkEffects.AutoSellOnPickup && Vendor.Instance != null
+            && Vendor.Instance.TryComputeSaleValue(loot.itemName, loot.quantity, out long saleValue))
+        {
+            MainMenuUI.CurrentRun.gold += saleValue;
+            GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
+            DayStatsTracker.RegisterItemSold(loot.itemName, loot.quantity, saleValue);
+            Destroy(gameObject);
+            return;
+        }
+
         long added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
 
         if (added < loot.quantity)

@@ -45,6 +45,7 @@ public static class PerkState
         run.gold -= cost;
         SetRank(perk.perkId, rank + 1);
         GameEvents.GoldChanged(run.gold);
+        WorldPerkEffects.Recompute();
         return true;
     }
 

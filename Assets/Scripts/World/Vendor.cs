@@ -7,6 +7,10 @@ public class Vendor : Interactable
     // FindObjectOfType nem de uma referência arrastada manualmente.
     public static Vendor Instance { get; private set; }
 
+    // Negociante Nato/Mercador Astuto/Rede de Contatos/Tesouraria Real (World Perks, Seção 8) —
+    // escrito por WorldPerkEffects.Recompute(), mesmo padrão de KillGoldReward.GoldBonusMultiplier.
+    public static float SellBonusMultiplier = 1f;
+
     // Preço por material (GDD Seção 39) — substitui o antigo pricePerEssence fixo (Sprint 31:
     // vendia só "Monster Essence", hardcoded a 1 gold). Itens sem entrada em pricingSettings
     // não são vendidos (ficam na Bag).
@@ -58,9 +62,8 @@ public class Vendor : Interactable
         for (int i = bag.Slots.Count - 1; i >= 0; i--)
         {
             var slot = bag.Slots[i];
-            if (!pricingSettings.TryGetPrice(slot.itemName, out long sellValue)) continue;
+            if (!TryComputeSaleValue(slot.itemName, slot.quantity, out long subtotal)) continue;
 
-            long subtotal = slot.quantity * sellValue;
             goldEarned += subtotal;
             DayStatsTracker.RegisterItemSold(slot.itemName, slot.quantity, subtotal); // Resumo do Dia — Loot_Sold
             if (cart != null) cart.AcceptSale(slot.itemName, slot.quantity, interactor.position);
@@ -78,5 +81,18 @@ public class Vendor : Interactable
         Debug.Log($"[Vendor] Vendeu itens por {goldEarned} gold. Total: {MainMenuUI.CurrentRun.gold}");
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
         GameEvents.BagChanged(bag);
+    }
+
+    // Fonte única do valor de venda de 1 stack (Seção 8 — Negociante Nato/Mercador Astuto/Rede
+    // de Contatos/Tesouraria Real aplicados aqui) — usado tanto por Interact() (venda manual no
+    // Vendor) quanto por LootDrop.Collect() (Ímã Vivo, auto-venda no instante da coleta). Os 2
+    // caminhos têm que dar o MESMO valor pro MESMO item/quantidade, por isso 1 método só.
+    public bool TryComputeSaleValue(string itemName, long quantity, out long value)
+    {
+        value = 0;
+        if (pricingSettings == null || !pricingSettings.TryGetPrice(itemName, out long sellValue)) return false;
+
+        value = (long)System.Math.Round(quantity * sellValue * (double)SellBonusMultiplier);
+        return true;
     }
 }

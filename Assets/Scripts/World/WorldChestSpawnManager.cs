@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Spawn de Baú no mundo aberto (GDD Deadline 8.1, Seção 8) — mesmo padrão arquitetural de
@@ -5,9 +6,10 @@ using UnityEngine;
 // guarda o player, WorldSpawnUtility.TryGetSpawnPosition pro anel ao redor dele), mas bem mais
 // simples: SEM Tier/roster, SEM Timer periódico, SEM despawn por distância/replacement — é 1
 // roll só por dia (ChestSpawnSettings.chestSpawnChancePercent), que pode nem acontecer
-// (decisão do usuário: baú é raro/forte de propósito). Se acontecer, nasce exatamente 1 baú,
-// que só é removido quando aberto (Chest/ChestMimicController já cuidam disso sozinhos) ou
-// quando o mundo inteiro é limpo (HandleClearAllEnemies abaixo).
+// (decisão do usuário: baú é raro/forte de propósito). Se acontecer, nasce 1 baú (+1/rank de
+// Baú Extra, World Perk — ver WorldPerkEffects.ExtraChestCount), que só é removido quando
+// aberto (Chest/ChestMimicController já cuidam disso sozinhos) ou quando o mundo inteiro é
+// limpo (HandleClearAllEnemies abaixo).
 //
 // Funcionamento do Chest_Popup (perks/talentos de recompensa) fica pra depois — decisão do
 // usuário (2026-11-08): "no máximo a gente já pode fazer os spawns deles, mas o funcionamento
@@ -26,10 +28,33 @@ public class WorldChestSpawnManager : MonoBehaviour
     public GameObject chestMimicPrefab;
 
     private Transform player;
-    private GameObject aliveChest; // só 1 por dia nesta fase — null = nenhum baú vivo agora
 
-    // Pra WorldTargetPointerUI (seta de borda de tela) — null quando não tem baú vivo hoje.
-    public Transform AliveChestTransform => aliveChest != null ? aliveChest.transform : null;
+    // Baú Extra (World Perk, Seção 8, item 12) — +1 baú instanciado/rank, por isso lista (não
+    // mais 1 GameObject só). Cada instância rola Mimic de forma independente.
+    private readonly List<GameObject> aliveChests = new();
+
+    // Pra WorldTargetPointerUI (seta de borda de tela) — aponta pro mais PRÓXIMO do jogador
+    // (não só "o primeiro"), já que agora pode ter mais de 1 vivo ao mesmo tempo. Null quando
+    // não tem baú vivo nenhum hoje.
+    public Transform AliveChestTransform
+    {
+        get
+        {
+            Transform nearest = null;
+            float nearestSqrDistance = float.MaxValue;
+            foreach (var chest in aliveChests)
+            {
+                if (chest == null) continue;
+                float sqrDistance = player != null
+                    ? (chest.transform.position - player.position).sqrMagnitude
+                    : 0f;
+                if (nearest != null && sqrDistance >= nearestSqrDistance) continue;
+                nearest = chest.transform;
+                nearestSqrDistance = sqrDistance;
+            }
+            return nearest;
+        }
+    }
 
     // Find-or-create "//CHESTS" — mesmo padrão de EnemyController.EnemysContainer/
     // BossesContainer/lootContainer (GameplayBootstrap.herosContainer também segue isso).
@@ -71,8 +96,11 @@ public class WorldChestSpawnManager : MonoBehaviour
     // outro).
     private void HandleClearAllEnemies()
     {
-        if (aliveChest != null) Destroy(aliveChest);
-        aliveChest = null;
+        foreach (var chest in aliveChests)
+        {
+            if (chest != null) Destroy(chest);
+        }
+        aliveChests.Clear();
     }
 
     private void HandleDayStart()
@@ -80,7 +108,10 @@ public class WorldChestSpawnManager : MonoBehaviour
         if (chestSettings == null || worldSettings == null || player == null) return;
         if (Random.value * 100f >= chestSettings.chestSpawnChancePercent) return; // maioria dos dias: nenhum baú — de propósito
 
-        SpawnOneChest();
+        // Baú Extra (World Perk) — +1 baú/rank, cada um com sua própria tentativa de posição
+        // e seu próprio roll de Mimic independente.
+        int chestCount = 1 + WorldPerkEffects.ExtraChestCount;
+        for (int i = 0; i < chestCount; i++) SpawnOneChest();
     }
 
     private void SpawnOneChest()
@@ -108,7 +139,8 @@ public class WorldChestSpawnManager : MonoBehaviour
         GameObject prefab = isMimic ? chestMimicPrefab : chestPrefab;
         if (prefab == null) return;
 
-        aliveChest = Instantiate(prefab, spawnPosition, Quaternion.identity, ChestsContainer);
-        WorldSpawnUtility.RestrictToOpenWorldGraph(aliveChest); // no-op pro Chest normal (sem Seeker) — só importa pro Mimic
+        var spawned = Instantiate(prefab, spawnPosition, Quaternion.identity, ChestsContainer);
+        WorldSpawnUtility.RestrictToOpenWorldGraph(spawned); // no-op pro Chest normal (sem Seeker) — só importa pro Mimic
+        aliveChests.Add(spawned);
     }
 }

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 817d76bd30fd8be4daa850f1b43b90fe, type: 3}
+  m_Name: Stack_Maior
+  m_EditorClassIdentifier: Core::PerkDefinitionSO
+  perkId: world_stack_maior
+  displayName: Stack Maior
+  description: Aumenta o teto de stack por item/rank (16→32→128→1.024→8.192→131.072→1.048.576).
+  icon: {fileID: 0}
+  costPerRank:
+  - 50000
+  - 750000
+  - 11000000
+  - 169000000
+  - 2500000000
+  - 38000000000
