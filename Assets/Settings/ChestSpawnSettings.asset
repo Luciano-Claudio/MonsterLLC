@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492bfaa268d74acda59ca97a2cdf37e1, type: 3}
+  m_Name: ChestSpawnSettings
+  m_EditorClassIdentifier: Core::ChestSpawnSettings
+  chestSpawnChancePercent: 100
+  mimicChancePercent: 20
+  minChunksAway: 1
+  maxChunksAway: 2
+  spawnSafetyPadding: 0
+  maxSpawnPositionAttempts: 20
+  spawnObstacleClearanceRadius: 0.6
+  obstacleLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  choicePopupChancePercent: 50
+  minGoldReward: 50
+  maxGoldReward: 200
+  doubleRewardChancePercent: 0
+  goldStatusDuration: 3

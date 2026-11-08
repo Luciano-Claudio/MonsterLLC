@@ -22,6 +22,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         return null;
     }
 
+    // Só existe 1 Player no jogo (mesmo critério de CollectDistinctPlayer acima) — Instance
+    // existe só pra sistemas estáticos (ChestRewardSystem, VendorCart) acharem o herói atual
+    // sem precisar de FindObjectOfType nem de referência arrastada manualmente.
+    public static HeroController Instance { get; private set; }
+
     public HeroStats stats = new HeroStats();
     protected PlayerControls controls;
     protected Animator animator; // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (mesma regra do EnemyController)
@@ -31,6 +36,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private const float DamageFlashDuration = 0.08f;
     private Vector2 moveInput;
     private bool isDead;
+
+    // "Status_Gold" (GDD Deadline 8.1, Seção 8) — GameObject com Animator em loop já existente
+    // em todo prefab de herói, achado por nome (igual ChestPopupUI faz com "Chest_Popup" —
+    // busca recursiva em vez de transform.Find direto, pra não depender de profundidade exata
+    // na hierarquia). Ativo enquanto goldStatusTimer > 0 (baú deu gold, decisão do usuário:
+    // "só quando vier só gold", nunca no caminho popup) OU vendorGoldStatusActive (Vendor:
+    // ativo o tempo inteiro que os itens ainda estão voando pro carrinho — ver VendorCart).
+    private GameObject statusGoldIndicator;
+    private float goldStatusTimer;
+    private bool vendorGoldStatusActive;
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
     // com EnemyController (ver StatusEffectController.cs). Trapped continua à parte, é
@@ -211,6 +226,20 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // EnemyController.energyReward — vira 2 de verdade sem nenhum perk comprado).
     public static float EnergyGainMultiplier = 0.1f;
 
+    // GDD Deadline 8.1, Seção 7.3 (R9) — Perks de Esquerda/Cima/Direita precisam ser 100%
+    // independentes entre si. Antes deste rework, Ultimate/Shift calculavam dano como
+    // multiplicador de stats.damage — o MESMO campo que o Ataque Primário usa como base — então
+    // um perk de Esquerda que bufasse dano através dele vazaria de graça pra Ultimate/Shift.
+    // Cada herói agora multiplica o dano de CADA habilidade por UM destes 3, nunca por
+    // stats.damage sozinho nem pelos outros 2 — assim um perk de uma árvore só pode escrever no
+    // multiplicador da própria árvore. Static pelo mesmo motivo de LootMultiplier/PickupRadius/
+    // EnergyGainMultiplier (só existe 1 herói jogável por vez). Default 1 = sem perk comprado
+    // ainda (nenhum perk escreve nestes 3 ainda — isso é conteúdo, R11+; aqui só o rework de
+    // arquitetura, pra não vazar quando os perks de verdade começarem a escrever neles).
+    public static float PrimaryDamageMultiplier = 1f;
+    public static float UltimateDamageMultiplier = 1f;
+    public static float ShiftDamageMultiplier = 1f;
+
     // Exposto no Inspector só pra ajustar o valor BASE acima sem precisar editar código — campo
     // comum de instância (não static), igual qualquer outro 🔢 pendente de balanceamento
     // (ex.: energyReward do EnemyController). Copiado pro PickupRadius static em Awake(); como
@@ -282,6 +311,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     protected virtual void Awake()
     {
+        Instance = this;
+
+        foreach (var t in GetComponentsInChildren<Transform>(true))
+        {
+            if (t.name != "Status_Gold") continue;
+            statusGoldIndicator = t.gameObject;
+            break;
+        }
+        if (statusGoldIndicator != null) statusGoldIndicator.SetActive(false);
+
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
@@ -383,6 +422,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         wasAttackResolving = isAttackResolving;
 
         UpdateDamageFlash();
+        UpdateGoldStatus();
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         if (AutoFlipBodyCollider) ApplyBodyColliderFlip();
 
@@ -728,6 +768,25 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected void AnimatorTrigger(string trigger)
     {
         if (animator != null) animator.SetTrigger(trigger);
+    }
+
+    // Baú deu gold (ChestRewardSystem — nunca no caminho popup, decisão explícita do usuário).
+    // Mathf.Max, não atribuição direta: se já estava tocando (ex.: 2 baús muito próximos, raro
+    // nesta fase mas possível) não reinicia o timer pra um valor menor.
+    public void ShowGoldStatusFor(float duration) => goldStatusTimer = Mathf.Max(goldStatusTimer, duration);
+
+    // Chamado por VendorCart.Update() todo frame, refletindo se ainda tem item voando/
+    // enfileirado pro carrinho — nenhum timer próprio aqui, a duração É literalmente "enquanto
+    // isso for true".
+    public void SetVendorGoldStatusActive(bool active) => vendorGoldStatusActive = active;
+
+    private void UpdateGoldStatus()
+    {
+        if (goldStatusTimer > 0f) goldStatusTimer -= Time.deltaTime;
+
+        bool shouldShow = goldStatusTimer > 0f || vendorGoldStatusActive;
+        if (statusGoldIndicator != null && statusGoldIndicator.activeSelf != shouldShow)
+            statusGoldIndicator.SetActive(shouldShow);
     }
 
     private void TriggerDamageFlash()

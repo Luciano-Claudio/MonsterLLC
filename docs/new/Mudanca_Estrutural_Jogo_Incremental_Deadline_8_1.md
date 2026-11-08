@@ -499,6 +499,15 @@ Ataque Primário, Cima só na Ultimate, Direita só no Shift), lidos separadamen
 habilidade calcular seu dano, sem um "vazar" pro outro. Rework necessário em Barbarian, Ranger e
 Mage (já construídos) e em todos os heróis futuros, desde o início.
 
+**Feito (R9):** `HeroController.PrimaryDamageMultiplier`/`UltimateDamageMultiplier`/
+`ShiftDamageMultiplier` (static, default 1, ninguém escreve neles ainda — isso é conteúdo,
+R11+) — Barbarian reworked (Ataque Primário × `PrimaryDamageMultiplier`, Ultimate ×
+`UltimateDamageMultiplier`, nunca misturados). Multiplicadores de kit do próprio herói
+(`GetSecondaryAbilityDamageMultiplier`, `ultimateDamageMultiplier` local, etc.) ficaram
+intocados de propósito — são comportamento intencional do kit (ex.: o Shift do Barbarian É um
+buff geral de dano por design), não o vazamento que esta seção resolve. **Ainda pendente:**
+Ranger e Mage.
+
 **Pets já estão corretos** (`PetController.damage`, campo próprio fixo, não deriva de
 `stats.damage`) — não precisam de ajuste, só confirmado aqui pra não ficar pendência escondida.
 
@@ -2700,3 +2709,6 @@ sem implementação ainda.
   dia. Descartado por agora — avaliado junto com a solução de "dia de preview" (ver
   `ChunkTerrainGenerator.BeginBackgroundRegeneration`), que já cobre o ganho prático real sem
   esse custo. Fica registrado pra reavaliar como otimização futura separada, se precisar.
+- **`ChestSpawnSettings.chestSpawnChancePercent` está em 100 só pra teste** (decisão do
+  usuário, 2026-11-08 — baixar depois de validar o Chest/Chest Mimic/Chest_Popup end-to-end).
+  Valor real de produção é baixo de propósito (baú é raro/forte) — era 15 antes do teste.

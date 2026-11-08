@@ -129,7 +129,7 @@ public class Barbarian : HeroController
         var (hitbox, facingDirection) = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier();
+        float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier() * HeroController.PrimaryDamageMultiplier;
 
         // 128 (não 16) — bug real reportado pelo usuário (2026-10-26): com muito monstro
         // aglomerado perto do player (vários já "parados" no próprio slot de ataque, viram
@@ -191,7 +191,7 @@ public class Barbarian : HeroController
 
         if (ultimateProjectilePrefab == null) return;
 
-        float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier() * ultimateDamageMultiplier;
+        float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier() * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier;
         foreach (Vector2 dir in EightDirections)
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);

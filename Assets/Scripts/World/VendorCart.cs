@@ -183,6 +183,12 @@ public class VendorCart : MonoBehaviour
                 activeArcs.RemoveAt(i);
             }
         }
+
+        // "Status_Gold" do herói (GDD Deadline 8.1, Seção 8) — ativo o tempo exato que os itens
+        // levam pra chegar no carrinho, nem mais nem menos: reflete direto se ainda tem algo
+        // enfileirado ou voando, sem timer próprio (decisão do usuário: "o mesmo tempo q os
+        // itens levam pra chegar no cart").
+        HeroController.Instance?.SetVendorGoldStatusActive(queue.Count > 0 || activeArcs.Count > 0);
     }
 
     private void LaunchArc(PendingArc pending)

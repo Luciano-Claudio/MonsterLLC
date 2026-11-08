@@ -30,4 +30,17 @@ public class RunState
     // não índice — mais fácil de ler/debugar, e sobrevive a qualquer reordenação futura da
     // tabela de preços sem quebrar o save.
     public System.Collections.Generic.List<string> knownLootItems = new();
+
+    // Infra de Perks (GDD Deadline 8.1, Seção 6/7.3/8-38, R9) — rank investido por perk, reseta
+    // toda run (confirmado com o usuário, mesmo critério do resto da economia). Lista de
+    // (perkId, rank), não Dictionary direto — JsonUtility não serializa Dictionary nativo (mesmo
+    // motivo de knownLootItems ser List em vez de HashSet).
+    public System.Collections.Generic.List<PerkRankEntry> perkRanks = new();
+}
+
+[System.Serializable]
+public class PerkRankEntry
+{
+    public string perkId;
+    public int rank;
 }

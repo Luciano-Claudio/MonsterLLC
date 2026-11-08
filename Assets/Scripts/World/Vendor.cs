@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class Vendor : Interactable
 {
+    // Único por mapa (nunca spawnado em runtime, diferente do Chest) — Instance existe só pra
+    // WorldTargetPointerUI (seta de borda de tela) achar a posição dele sem precisar de
+    // FindObjectOfType nem de uma referência arrastada manualmente.
+    public static Vendor Instance { get; private set; }
+
     // Preço por material (GDD Seção 39) — substitui o antigo pricePerEssence fixo (Sprint 31:
     // vendia só "Monster Essence", hardcoded a 1 gold). Itens sem entrada em pricingSettings
     // não são vendidos (ficam na Bag).
@@ -13,7 +18,11 @@ public class Vendor : Interactable
 
     private Animator animator;
 
-    private void Awake() => animator = GetComponent<Animator>();
+    private void Awake()
+    {
+        Instance = this;
+        animator = GetComponent<Animator>();
+    }
 
     // Sprint 32 — Shop_Opening toca no início do dia, transita por conta própria (Exit Time, no
     // próprio Animator Controller) pra Idle_Shop_Open; Shop_Closing toca no fim do dia e fica lá
