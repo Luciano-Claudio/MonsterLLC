@@ -46,6 +46,16 @@ public static class PerkState
         SetRank(perk.perkId, rank + 1);
         GameEvents.GoldChanged(run.gold);
         WorldPerkEffects.Recompute();
+        // Perks bespoke (Esquerda/Direita/Cima) do herói ATUAL — cada herói sobrescreve
+        // RecomputePerkEffects() com os próprios efeitos; default no-op pra quem ainda não tem
+        // conteúdo real (R11+). "!= null", nunca "?." — Unity sobrecarrega "==" pra detectar
+        // objeto destruído, mas "?." ignora essa sobrecarga (mesma regra de
+        // HeroController.AnimatorTrigger). Achado real: comprar perk na Loja depois de morrer,
+        // antes de "Start Day", crashava aqui — o herói antigo já foi Destroy()ado e o novo só
+        // nasce em GameplayBootstrap.RespawnHeroFresh(), então Instance ainda aponta pro
+        // cadáver. Sem efeito nenhum nesse caso (a run não tem herói vivo pra recomputar) — o
+        // Awake() do herói novo já recomputa tudo sozinho quando ele nascer.
+        if (HeroController.Instance != null) HeroController.Instance.RecomputePerkEffects();
         return true;
     }
 

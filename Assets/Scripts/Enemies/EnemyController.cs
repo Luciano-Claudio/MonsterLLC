@@ -1048,6 +1048,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         knockbackVelocity = direction.normalized * force;
     }
 
+    // Exposto pra perks que reagem ao FIM do empurrão (ex.: Esquerda #30 do Barbarian, "Eco do
+    // Impacto" — 2º Ground Crack quando o inimigo empurrado termina de parar). Mesmo limiar
+    // (0.01) já usado internamente pra decidir quando o Lerp "chegou" em zero.
+    public bool IsBeingKnockedBack => knockbackVelocity.sqrMagnitude > 0.01f;
+
     // Sprint 24 (Boss Spawn System) — permite ao BossSpawnManager marcar o boss sem
     // depender do Inspector de cada prefab já vir configurado certo.
     public void SetIsBoss(bool value) => isBoss = value;

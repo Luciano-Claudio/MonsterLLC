@@ -27,6 +27,17 @@ public class PerkMapController : MonoBehaviour, IDragHandler, IScrollHandler
     // (nunca lembra estado de uma visita anterior à tela).
     private void OnEnable() => ResetView();
 
+    // Cada herói tem o próprio Content agora (R10 — ver PerkTreeController.ResolveHeroContent),
+    // então o Content "fixo" arrastado no Inspector deixou de existir — achado real do
+    // usuário: continuava apontando pro Content ORIGINAL (renomeado "Assassin" na duplicação),
+    // que fica desativado pra sempre, então arrastar/zoom parou de fazer efeito em nada visível.
+    // PerkTreeController chama isto 1x, logo depois de descobrir qual Content é do herói atual.
+    public void SetContent(RectTransform newContent)
+    {
+        content = newContent;
+        if (isActiveAndEnabled) ResetView();
+    }
+
     public void ResetView()
     {
         if (content == null) return;

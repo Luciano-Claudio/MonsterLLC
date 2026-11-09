@@ -26,12 +26,27 @@ public static class WorldPerkEffects
     public static long BagStackSize { get; private set; } = 16;
     public static int BagSlotBonus { get; private set; }
     public static bool AutoSellOnPickup { get; private set; }
-    public static int ExtraChestCount { get; private set; }
-    public static float DoubleRewardBonusPercent { get; private set; }
+    // Baú Extra + Chamado do Baú (ex-"Baú Duplo", GDD Seção 8, itens 12/13) — redesenhados
+    // (2026-11-09, pedido do usuário): o original ("+1 baú/rank" e "+15% chance de 2
+    // recompensas/rank") ficava OP demais no dia em que o baú já nasce; virou os 2 somando
+    // direto na % de NASCER baú por dia (ChestSpawnSettings.chestSpawnChancePercent), que é a
+    // parte realmente rara/importante. Baú Extra +5%/rank (barato), Chamado do Baú +10%/rank
+    // (caro) — mesma convenção de "perk mais caro dá bônus maior" já usada no resto desta
+    // classe (ex.: ButimGuerra vs InstintoCacador).
+    public static float ChestSpawnChanceBonusPercent { get; private set; }
     public static int FreeTalentRerollCount { get; private set; } // inert até Talentos existirem (R10)
+
+    // Perk Central "Despertar do Poder" (não é "Mundo" nem nenhuma das 4 áreas, mas recomputado
+    // aqui mesmo assim — único agregador rank->efeito já existente, mesmo critério do resto
+    // desta classe, em vez de criar um 2º sistema paralelo só pra 1 perk). Rank único (0 ou 1).
+    private const string CentralPerkId = "central_despertar_do_poder";
 
     public static void Recompute()
     {
+        bool centralUnlocked = PerkState.GetRank(CentralPerkId) >= 1;
+        HeroController.CentralDamageMultiplier = centralUnlocked ? 1.5f : 1f;
+        HeroController.CentralHealthMultiplier = centralUnlocked ? 1.5f : 1f;
+
         int instintoCacador = PerkState.GetRank(WorldPerkIds.InstintoCacador);
         int butimGuerra = PerkState.GetRank(WorldPerkIds.ButimGuerra);
         float goldBonusPercent = instintoCacador * 8f + butimGuerra * 15f;
@@ -60,8 +75,7 @@ public static class WorldPerkEffects
         float sellBonusPercent = negocianteNato * 10f + mercadorAstuto * 15f + redeContatos * 20f + tesourariaReal * 30f;
         Vendor.SellBonusMultiplier = 1f + sellBonusPercent / 100f;
 
-        ExtraChestCount = PerkState.GetRank(WorldPerkIds.BauExtra);
-        DoubleRewardBonusPercent = PerkState.GetRank(WorldPerkIds.BauDuplo) * 15f;
+        ChestSpawnChanceBonusPercent = PerkState.GetRank(WorldPerkIds.BauExtra) * 5f + PerkState.GetRank(WorldPerkIds.ChamadoDoBau) * 10f;
 
         BagSlotBonus = PerkState.GetRank(WorldPerkIds.MaisEspacoBag) * 5;
         int stackMaiorRank = Mathf.Clamp(PerkState.GetRank(WorldPerkIds.StackMaior), 0, StackMaiorCurve.Length - 1);

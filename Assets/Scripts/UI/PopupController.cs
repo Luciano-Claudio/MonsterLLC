@@ -153,6 +153,28 @@ public class PopupController : MonoBehaviour
         Activate(headerInstance, headerCanvasGroup, source);
     }
 
+    // Popup de item (ex.: linha de loot do Resumo do Dia) — mesmo conteúdo do ShowSimple
+    // (nome + descrição + preço), mas no visual Popup_Box_With_Header (pedido do usuário).
+    // Level_Text/Next_Level_Text não se aplicam a item, então ficam escondidos.
+    public void ShowItem(GameObject source, string title, string description, string valueText)
+    {
+        if (headerInstance == null) return;
+
+        headerTitleLabel.text = title;
+        headerDescriptionLabel.text = description;
+        headerLevelLabel?.gameObject.SetActive(false);
+        headerNextLevelLabel?.gameObject.SetActive(false);
+
+        if (headerValueLabel != null)
+        {
+            bool hasValue = valueText != null;
+            headerValueLabel.gameObject.SetActive(hasValue);
+            if (hasValue) headerValueLabel.text = valueText;
+        }
+
+        Activate(headerInstance, headerCanvasGroup, source);
+    }
+
     private void Activate(RectTransform instance, CanvasGroup canvasGroup, GameObject source)
     {
         currentSource = source;

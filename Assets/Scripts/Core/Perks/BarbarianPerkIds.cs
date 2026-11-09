@@ -1,0 +1,101 @@
+// IDs dos 90 perks bespoke do Barbarian (GDD Seções 9/10/11) — número no nome da constante é o
+// número ORIGINAL do GDD dentro de cada árvore (nunca a posição na linha/UI, que vem só da
+// ordem crescente de custo usada ao montar o Content). Mesmo critério de WorldPerkIds.cs.
+public static class BarbarianPerkIds
+{
+    // Esquerda — Ataque Primário (Seção 9)
+    public const string EsquerdaGolpePesado = "barbarian_esquerda_01";
+    public const string EsquerdaFuriaDoImpacto = "barbarian_esquerda_02";
+    public const string EsquerdaForcaBruta = "barbarian_esquerda_03";
+    public const string EsquerdaDevastacao = "barbarian_esquerda_04";
+    public const string EsquerdaFuriaDefinitiva = "barbarian_esquerda_05";
+    public const string EsquerdaEmpurrao = "barbarian_esquerda_06";
+    public const string EsquerdaImpactoSismico = "barbarian_esquerda_07";
+    public const string EsquerdaOndaDeChoque = "barbarian_esquerda_08";
+    public const string EsquerdaCorpoAvantajado = "barbarian_esquerda_09";
+    public const string EsquerdaCrescimentoBrutal = "barbarian_esquerda_10";
+    public const string EsquerdaCorpoDeTita = "barbarian_esquerda_11";
+    public const string EsquerdaFendaDuradoura = "barbarian_esquerda_12";
+    public const string EsquerdaRachaduraProfunda = "barbarian_esquerda_13";
+    public const string EsquerdaAbismo = "barbarian_esquerda_14";
+    public const string EsquerdaFendaLarga = "barbarian_esquerda_15";
+    public const string EsquerdaTerremoto = "barbarian_esquerda_16";
+    public const string EsquerdaCataclismo = "barbarian_esquerda_17";
+    public const string EsquerdaGolpeRapido = "barbarian_esquerda_18";
+    public const string EsquerdaFrenesi = "barbarian_esquerda_19";
+    public const string EsquerdaVelocidadeBrutal = "barbarian_esquerda_20";
+    public const string EsquerdaReflexosDeCombate = "barbarian_esquerda_21";
+    public const string EsquerdaInstintoDeBatalha = "barbarian_esquerda_22";
+    public const string EsquerdaGolpeCerteiro = "barbarian_esquerda_23";
+    public const string EsquerdaPrecisaoSelvagem = "barbarian_esquerda_24";
+    public const string EsquerdaFuriaDiagonal = "barbarian_esquerda_25";
+    public const string EsquerdaSangramentoPerfurante = "barbarian_esquerda_26";
+    public const string EsquerdaFendaEnfurecida = "barbarian_esquerda_27";
+    public const string EsquerdaFendaSelvagem = "barbarian_esquerda_28";
+    public const string EsquerdaFendaPermanente = "barbarian_esquerda_29";
+    public const string EsquerdaEcoDoImpacto = "barbarian_esquerda_30";
+
+    // Direita — Shift/Survival (Seção 10)
+    public const string DireitaFuriaCrescente = "barbarian_direita_01";
+    public const string DireitaImpetoSelvagem = "barbarian_direita_02";
+    public const string DireitaAvalancheDeGolpes = "barbarian_direita_03";
+    public const string DireitaFuriaSemFim = "barbarian_direita_04";
+    public const string DireitaPassosRapidos = "barbarian_direita_05";
+    public const string DireitaRajada = "barbarian_direita_06";
+    public const string DireitaVendaval = "barbarian_direita_07";
+    public const string DireitaVelocidadeDaTempestade = "barbarian_direita_08";
+    public const string DireitaFolegoExtra = "barbarian_direita_09";
+    public const string DireitaResistencia = "barbarian_direita_10";
+    public const string DireitaPerseveranca = "barbarian_direita_11";
+    public const string DireitaVontadeDeFerro = "barbarian_direita_12";
+    public const string DireitaRecuperacaoRapida = "barbarian_direita_13";
+    public const string DireitaFolegoRenovado = "barbarian_direita_14";
+    public const string DireitaInstintoAgil = "barbarian_direita_15";
+    public const string DireitaReflexoDeBatalha = "barbarian_direita_16";
+    public const string DireitaSangueFervente = "barbarian_direita_17";
+    public const string DireitaInstintoBerserker = "barbarian_direita_18";
+    public const string DireitaFuriaSemLimites = "barbarian_direita_19";
+    public const string DireitaLimiteExpandido = "barbarian_direita_20";
+    public const string DireitaFuriaProtetora = "barbarian_direita_21";
+    public const string DireitaSedeDeSangue = "barbarian_direita_22";
+    public const string DireitaFolegoRecuperado = "barbarian_direita_23";
+    public const string DireitaUltimoFolego = "barbarian_direita_24";
+    public const string DireitaRenovacaoSelvagem = "barbarian_direita_25";
+    public const string DireitaInstintoDeSobrevivencia = "barbarian_direita_26";
+    public const string DireitaVontadeInquebravel = "barbarian_direita_27";
+    public const string DireitaFuriaFinal = "barbarian_direita_28";
+    public const string DireitaCoracaoSelvagem = "barbarian_direita_29";
+    public const string DireitaAvatarDaFuria = "barbarian_direita_30";
+
+    // Cima — Ultimate (Seção 11)
+    public const string CimaGolpeDivino = "barbarian_cima_01";
+    public const string CimaIraAncestral = "barbarian_cima_02";
+    public const string CimaPoderEsmagador = "barbarian_cima_03";
+    public const string CimaApocalipsePessoal = "barbarian_cima_04";
+    public const string CimaJuizoFinal = "barbarian_cima_05";
+    public const string CimaProjetilVeloz = "barbarian_cima_06";
+    public const string CimaLancaRelampago = "barbarian_cima_07";
+    public const string CimaVelocidadeAbsoluta = "barbarian_cima_08";
+    public const string CimaAlcanceAmpliado = "barbarian_cima_09";
+    public const string CimaLongoAlcance = "barbarian_cima_10";
+    public const string CimaHorizonteDeGuerra = "barbarian_cima_11";
+    public const string CimaImpactoDevastador = "barbarian_cima_12";
+    public const string CimaOndaExpansiva = "barbarian_cima_13";
+    public const string CimaForcaAbsoluta = "barbarian_cima_14";
+    public const string CimaCanalizacaoRapida = "barbarian_cima_15";
+    public const string CimaFuriaContida = "barbarian_cima_16";
+    public const string CimaExplosaoIminente = "barbarian_cima_17";
+    public const string CimaInstintoDePoder = "barbarian_cima_18";
+    public const string CimaSedeDePoder = "barbarian_cima_19";
+    public const string CimaFomeDeDestruicao = "barbarian_cima_20";
+    public const string CimaChuvaDeLancas = "barbarian_cima_21";
+    public const string CimaGolpeCriticoCelestial = "barbarian_cima_22";
+    public const string CimaExplosaoDeImpacto = "barbarian_cima_23";
+    public const string CimaTrilhaDeFuria = "barbarian_cima_24";
+    public const string CimaPousoSismico = "barbarian_cima_25";
+    public const string CimaRenovacaoDeBatalha = "barbarian_cima_26";
+    public const string CimaFuriaRepetida = "barbarian_cima_27";
+    public const string CimaFuriaAutonoma = "barbarian_cima_28";
+    public const string CimaAvatarDaDestruicao = "barbarian_cima_29";
+    public const string CimaFragmentacaoSemFim = "barbarian_cima_30";
+}

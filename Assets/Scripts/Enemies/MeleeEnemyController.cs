@@ -212,9 +212,26 @@ public class MeleeEnemyController : EnemyController
 
     protected override void Die()
     {
-        if (hasAttackSlot && MeleeAttackSlotManager.Instance != null)
-            MeleeAttackSlotManager.Instance.ReleaseSlot();
-
+        ReleaseAttackSlotIfHeld();
         base.Die();
+    }
+
+    // Achado real (2026-11-09, usuário reportou todo Melee flanqueando pra sempre, mesmo com só
+    // 1 monstro e o player parado): WorldPopulationManager destrói monstro direto com Destroy()
+    // em pelo menos 2 casos de gameplay real (despawn por distância, HandleClearAllEnemies) —
+    // de propósito NUNCA passa por Die() (ver comentário lá: "nunca dispara EnemyKilled nem
+    // loot"). Se o monstro morto assim já tinha vaga reservada, ela nunca era liberada — o
+    // contador global de MeleeAttackSlotManager só subia, nunca descia, até travar permanentemente
+    // "cheio" (8/8) depois do suficiente de despawns, e dali pra frente NENHUM Melee da sessão
+    // conseguia mais vaga. OnDestroy() roda sempre, qualquer que seja o motivo da destruição —
+    // único ponto de liberação agora, em vez de depender de cada chamador lembrar de passar por
+    // Die() primeiro.
+    private void OnDestroy() => ReleaseAttackSlotIfHeld();
+
+    private void ReleaseAttackSlotIfHeld()
+    {
+        if (!hasAttackSlot) return;
+        if (MeleeAttackSlotManager.Instance != null) MeleeAttackSlotManager.Instance.ReleaseSlot();
+        hasAttackSlot = false;
     }
 }

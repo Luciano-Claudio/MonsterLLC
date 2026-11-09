@@ -1,11 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Orquestrador da árvore de Perks de 1 herói (GDD Deadline 8.1, Seção 6/7.3/8-38, R9) — vive no
-// GameObject "Perk_Painel". Mapeia a hierarquia REAL já montada pelo usuário em
-// "Perk_Painel/Viewport/Content" (Background_Perk = perk Central; "//World"/"//Primary_Attack"/
+// Orquestrador da árvore de Perks de 1 herói (GDD Deadline 8.1, Seção 6/7.3/8-38, R9/R10) — vive
+// no GameObject "Perk_Painel". Cada herói agora tem seu próprio "Content" (duplicado pelo
+// usuário em "Perk_Painel/Viewport", nome do GameObject == heroKey sem "_", ex. "Blood_Mage" ->
+// "BloodMage", mesma convenção de MainMenuNavigationUI.WireHeroCards). Content mapeia a
+// hierarquia REAL montada à mão (Background_Perk = perk Central; "//World"/"//Primary_Attack"/
 // "//Survival"/"//Ultimate" = as 4 árvores, cada uma com 37 filhos: 1 header + 6× Connection_N +
-// 30 perks na sequência 2,5,7,9,5,2) e liga PerkButtonUI/PerkConnectionUI nela.
+// 30 perks na sequência 2,5,7,9,5,2) e os PerkDefinitionSO de cada árvore vivem no
+// HeroPerkContent daquele Content (não mais aqui) — este controller só escolhe QUAL Content
+// ativar (ResolveHeroContent, por MainMenuUI.CurrentRun.hero) e liga PerkButtonUI/
+// PerkConnectionUI nele.
 //
 // Regra de desbloqueio (confirmada com o usuário): Central rank≥1 libera a linha 1 das 4
 // árvores ao mesmo tempo; dentro de 1 árvore, a linha N+1 só libera quando TODO perk com
@@ -13,18 +18,12 @@ using UnityEngine;
 // teste/placeholder — nunca bloqueia, pra não travar a validação da infra à espera dos 1210
 // perks completos).
 //
-// R9 valida só a infra — os arrays abaixo podem ter poucos slots preenchidos (resto null) até o
-// conteúdo real entrar (R11+). 1 controller por herói (hoje só o Barbarian, confirmado pro R11).
+// R9/R10 validam só a infra — os 9 heróis sem HeroPerkContent preenchido ainda ficam com os 4
+// arrays vazios (resto null) até o conteúdo real entrar (R11+). Hoje só o Barbarian tem dado
+// de verdade.
 public class PerkTreeController : MonoBehaviour
 {
-    [SerializeField] private Transform content; // "Perk_Painel/Viewport/Content"
-
-    [Header("Perks (slots na mesma ordem da linha 1→6, 2+5+7+9+5+2 = 30 por árvore)")]
-    [SerializeField] private PerkDefinitionSO centralPerk;
-    [SerializeField] private PerkDefinitionSO[] worldPerks = new PerkDefinitionSO[30];
-    [SerializeField] private PerkDefinitionSO[] primaryAttackPerks = new PerkDefinitionSO[30];
-    [SerializeField] private PerkDefinitionSO[] survivalPerks = new PerkDefinitionSO[30];
-    [SerializeField] private PerkDefinitionSO[] ultimatePerks = new PerkDefinitionSO[30];
+    [SerializeField] private Transform contentsRoot; // "Perk_Painel/Viewport" — guarda 1 Content por herói
 
     [Header("Sprites compartilhadas do botão (Perk_Button) — Seção 6.1")]
     [SerializeField] private Sprite buttonLockedSprite;
@@ -48,23 +47,46 @@ public class PerkTreeController : MonoBehaviour
     private static readonly int[] LineSizes = { 2, 5, 7, 9, 5, 2 };
     private static readonly PerkTreeId[] TreeIds = { PerkTreeId.World, PerkTreeId.PrimaryAttack, PerkTreeId.Survival, PerkTreeId.Ultimate };
 
+    private PerkDefinitionSO centralPerk;
     private PerkButtonUI centralButton;
     private readonly Dictionary<PerkTreeId, List<List<PerkButtonUI>>> treeLines = new();
     private readonly Dictionary<PerkTreeId, List<PerkConnectionUI>> treeConnections = new();
 
     private void Awake()
     {
-        if (content == null)
+        if (contentsRoot == null)
         {
-            Debug.LogError("[PerkTreeController] Campo \"content\" não configurado — arraste Perk_Painel/Viewport/Content.", this);
+            Debug.LogError("[PerkTreeController] Campo \"contentsRoot\" não configurado — arraste Perk_Painel/Viewport.", this);
             return;
         }
 
-        BuildCentral();
-        BuildTree(PerkTreeId.World, "//World", worldPerks);
-        BuildTree(PerkTreeId.PrimaryAttack, "//Primary_Attack", primaryAttackPerks);
-        BuildTree(PerkTreeId.Survival, "//Survival", survivalPerks);
-        BuildTree(PerkTreeId.Ultimate, "//Ultimate", ultimatePerks);
+        var content = ResolveHeroContent();
+        if (content == null) return; // ResolveHeroContent já logou o motivo
+
+        // Liga e nunca mais desativa — "até o final da run" (pedido do usuário). As outras 9
+        // Content ficam desativadas pra sempre (nunca têm PerkButtonUI nenhum ligado, nem
+        // consomem Awake de PerkButtonUI à toa).
+        content.gameObject.SetActive(true);
+
+        // PerkMapController mora no mesmo GameObject de contentsRoot (Viewport) — precisa saber
+        // qual dos 10 Content é o ativo pra arrastar/zoom funcionarem nele (achado real:
+        // continuava fixo no Content original, agora desativado pra sempre).
+        var mapController = contentsRoot.GetComponent<PerkMapController>();
+        if (mapController != null) mapController.SetContent((RectTransform)content);
+
+        var data = content.GetComponent<HeroPerkContent>();
+        if (data == null)
+        {
+            Debug.LogError($"[PerkTreeController] \"{content.name}\" não tem HeroPerkContent.", content);
+            return;
+        }
+
+        centralPerk = data.CentralPerk;
+        BuildCentral(content);
+        BuildTree(PerkTreeId.World, content, "//World", data.WorldPerks);
+        BuildTree(PerkTreeId.PrimaryAttack, content, "//Primary_Attack", data.PrimaryAttackPerks);
+        BuildTree(PerkTreeId.Survival, content, "//Survival", data.SurvivalPerks);
+        BuildTree(PerkTreeId.Ultimate, content, "//Ultimate", data.UltimatePerks);
     }
 
     private void OnEnable()
@@ -77,7 +99,29 @@ public class PerkTreeController : MonoBehaviour
 
     private void HandleGoldChanged(long _) => RefreshAll();
 
-    private void BuildCentral()
+    // Nome do GameObject Content == heroKey sem "_" (mesma convenção de
+    // MainMenuNavigationUI.WireHeroCards, ex. "Blood_Mage" -> "BloodMage") pra bater com
+    // MainMenuUI.CurrentRun.hero.
+    private Transform ResolveHeroContent()
+    {
+        string heroKey = MainMenuUI.CurrentRun?.hero;
+        if (string.IsNullOrEmpty(heroKey))
+        {
+            Debug.LogError("[PerkTreeController] MainMenuUI.CurrentRun/CurrentRun.hero nulo — não dá pra escolher o Content certo.", this);
+            return null;
+        }
+
+        for (int i = 0; i < contentsRoot.childCount; i++)
+        {
+            var candidate = contentsRoot.GetChild(i);
+            if (candidate.name.Replace("_", "") == heroKey) return candidate;
+        }
+
+        Debug.LogError($"[PerkTreeController] Nenhum Content em \"{contentsRoot.name}\" bate com o herói \"{heroKey}\".", this);
+        return null;
+    }
+
+    private void BuildCentral(Transform content)
     {
         var root = content.Find("Background_Perk");
         if (root == null)
@@ -91,9 +135,23 @@ public class PerkTreeController : MonoBehaviour
         centralButton.Setup(this, centralPerk, PerkTreeId.Central, 0);
     }
 
-    private void BuildTree(PerkTreeId treeId, string rootName, PerkDefinitionSO[] definitions)
+    // Transform.Find trata "/" como separador de caminho hierárquico — mas os GameObjects reais
+    // se chamam literalmente "//World"/"//Primary_Attack"/etc. (as barras fazem parte do nome, não
+    // são um caminho), então content.Find(rootName) sempre falhava (achado real: só veio à tona
+    // quando Perk_Painel foi ativado pela 1ª vez numa sessão de Play). Busca por filho direto com
+    // nome exato em vez disso.
+    private static Transform FindDirectChild(Transform parent, string name)
     {
-        var root = content.Find(rootName);
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            if (parent.GetChild(i).name == name) return parent.GetChild(i);
+        }
+        return null;
+    }
+
+    private void BuildTree(PerkTreeId treeId, Transform content, string rootName, PerkDefinitionSO[] definitions)
+    {
+        var root = FindDirectChild(content, rootName);
         if (root == null)
         {
             Debug.LogWarning($"[PerkTreeController] Não achei \"{rootName}\" dentro de Content.", this);

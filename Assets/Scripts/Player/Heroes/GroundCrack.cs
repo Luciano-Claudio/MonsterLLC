@@ -40,12 +40,15 @@ public class GroundCrack : MonoBehaviour
     // Barbarian.AnimationUltimateLandEvent), liga SÓ o collider da direção escolhida — os outros
     // 3 ficam desligados a vida inteira desta instância (nunca dão dano por engano) — e recebe
     // o dano/tick que o Barbarian decidir (upgradável por perk sem tocar neste prefab).
-    public void Initialize(Direction direction, float sizeMultiplier, float damagePerSecond, float tickInterval)
+    // areaMultiplier (default 1 — sem efeito em quem não passar) é INDEPENDENTE do
+    // sizeMultiplier do Corpo (Esquerda #9-11) — Esquerda #15-17 ("Área do Ground Crack") escala
+    // só a fenda, nunca o Barbarian. Os 2 se multiplicam juntos na escala final.
+    public void Initialize(Direction direction, float sizeMultiplier, float damagePerSecond, float tickInterval, float areaMultiplier = 1f)
     {
         this.damagePerSecond = damagePerSecond;
         this.tickInterval = tickInterval;
 
-        transform.localScale = Vector3.one * sizeMultiplier;
+        transform.localScale = Vector3.one * sizeMultiplier * areaMultiplier;
         if (animator != null) animator.Play(direction.ToString());
 
         if (neCollider != null) neCollider.enabled = direction == Direction.NE;

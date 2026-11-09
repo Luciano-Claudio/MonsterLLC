@@ -24,6 +24,13 @@ public class ShopUIController : MonoBehaviour
 
     private GameObject confirmPopup; // "Popup_Confirme", filho de shopRoot
 
+    // As 3 abas da Loja (extensão pedida pelo usuário) — cada uma tem botões de navegação pros
+    // outros 2 ("Resume_Button", "Perk_Painel_Button", "Talents_Button", repetidos conforme a
+    // aba onde já estão parado) que só trocam qual destas 3 fica ativa.
+    private GameObject resumePainel;
+    private GameObject perkPainel;
+    private GameObject talentPainel;
+
     // ShopHandler só existe em runtime, num GameObject que vem de outra cena (Main_Menu) via
     // DontDestroyOnLoad — não dá pra arrastar essa referência num arquivo de cena onde o objeto
     // nem existe ainda. Por isso liga por código aqui; o lookup de ShopHandler.Instance só
@@ -34,6 +41,9 @@ public class ShopUIController : MonoBehaviour
         if (shopRoot == null) return;
 
         confirmPopup = shopRoot.transform.Find("Popup_Confirme")?.gameObject;
+        resumePainel = shopRoot.transform.Find("Resume_Painel")?.gameObject;
+        perkPainel = shopRoot.transform.Find("Perk_Painel")?.gameObject;
+        talentPainel = shopRoot.transform.Find("Talent_Painel")?.gameObject;
 
         foreach (var button in shopRoot.GetComponentsInChildren<Button>(true))
         {
@@ -46,7 +56,19 @@ public class ShopUIController : MonoBehaviour
                 if (button.name == "Yes") button.onClick.AddListener(ConfirmYes);
                 else if (button.name == "No") button.onClick.AddListener(ConfirmNo);
             }
+            else if (button.name == "Resume_Button") button.onClick.AddListener(() => ShowOnlyPainel(resumePainel));
+            else if (button.name == "Perk_Painel_Button") button.onClick.AddListener(() => ShowOnlyPainel(perkPainel));
+            else if (button.name == "Talents_Button") button.onClick.AddListener(() => ShowOnlyPainel(talentPainel));
         }
+    }
+
+    // Botões de navegação entre as 3 abas (Resume_Button/Perk_Painel_Button/Talents_Button,
+    // repetidos em cada aba que não seja a própria) — só 1 aba fica ativa por vez.
+    private void ShowOnlyPainel(GameObject target)
+    {
+        resumePainel?.SetActive(target == resumePainel);
+        perkPainel?.SetActive(target == perkPainel);
+        talentPainel?.SetActive(target == talentPainel);
     }
 
     private void OnEnable() => GameEvents.OnGameStateChanged += HandleStateChanged;
@@ -58,6 +80,7 @@ public class ShopUIController : MonoBehaviour
         if (state != GameState.Shop) return;
 
         confirmPopup?.SetActive(false); // reseta qualquer estado preso de uma visita anterior
+        ShowOnlyPainel(resumePainel); // sempre reabre na aba Resume, nunca lembra a aba de uma visita anterior
         UpdateStartDayTexts();
 
         if (DayResolver.PlayerSurvivedLastDay && ChunkTerrainGenerator.Instance != null)

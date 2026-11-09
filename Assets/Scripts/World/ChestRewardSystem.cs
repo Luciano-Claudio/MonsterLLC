@@ -28,10 +28,11 @@ public static class ChestRewardSystem
             return;
         }
 
-        // Baú Duplo (World Perk, Seção 8, item 13) — bônus ADITIVO em cima da % base do asset.
+        // Baú Duplo deixou de alimentar isto (redesenho 2026-11-09 — agora só soma % de chance
+        // do baú NASCER, ver WorldPerkEffects.ChestSpawnChanceBonusPercent); settings.
+        // doubleRewardChancePercent sobra como configuração pura do Inspector, sem perk nenhum.
         long reward = RollGold(settings);
-        float doubleChancePercent = settings.doubleRewardChancePercent + WorldPerkEffects.DoubleRewardBonusPercent;
-        if (Random.value * 100f < doubleChancePercent) reward += RollGold(settings);
+        if (Random.value * 100f < settings.doubleRewardChancePercent) reward += RollGold(settings);
 
         MainMenuUI.CurrentRun.gold += reward;
         GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);

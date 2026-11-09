@@ -16,7 +16,7 @@ public static class WorldPerkIds
     public const string RedeContatos = "world_rede_contatos";
     public const string TesourariaReal = "world_tesouraria_real";
     public const string BauExtra = "world_bau_extra";
-    public const string BauDuplo = "world_bau_duplo";
+    public const string ChamadoDoBau = "world_bau_duplo"; // nome exibido mudou (ex-"Baú Duplo", 2026-11-09) — valor da string NUNCA muda (ver comentário da classe)
     public const string MaisEspacoBag = "world_mais_espaco_bag";
     public const string StackMaior = "world_stack_maior";
     public const string RerollTalento = "world_reroll_talento";

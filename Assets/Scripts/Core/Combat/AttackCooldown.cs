@@ -1,7 +1,14 @@
+using UnityEngine;
+
 public class AttackCooldown
 {
     private readonly float cooldownDuration;
     private float timeRemaining;
+
+    // Perks de cooldown (-%/rank, Esquerda #21-22/Direita #13-16/#26) — multiplica POR CIMA de
+    // cooldownDuration, nunca substitui (mesmo critério de qualquer outro multiplicador
+    // "static 1f default" do projeto). Default 1 = nenhuma mudança pra quem nunca tocar nisto.
+    public float DurationMultiplier = 1f;
 
     public AttackCooldown(float cooldownDuration)
     {
@@ -11,7 +18,7 @@ public class AttackCooldown
 
     public bool IsReady => timeRemaining <= 0f;
     public float TimeRemaining => timeRemaining;
-    public float Duration => cooldownDuration;
+    public float Duration => cooldownDuration * DurationMultiplier;
 
     public void Tick(float deltaTime)
     {
@@ -23,7 +30,7 @@ public class AttackCooldown
     public bool TryConsume()
     {
         if (!IsReady) return false;
-        timeRemaining = cooldownDuration;
+        timeRemaining = Duration;
         return true;
     }
 
@@ -32,6 +39,18 @@ public class AttackCooldown
     // timer só deve começar a contar quando a habilidade termina de verdade, não no clique.
     public void Start()
     {
-        timeRemaining = cooldownDuration;
+        timeRemaining = Duration;
+    }
+
+    // Direita #23 (Fôlego Recuperado — matar durante o Shift reduz o cooldown restante por %).
+    public void ReduceTimeRemaining(float amount)
+    {
+        timeRemaining = Mathf.Max(0f, timeRemaining - amount);
+    }
+
+    // Direita #29 (Coração Selvagem — zera o cooldown do Shift sempre que o HP cruza um limiar).
+    public void ResetTimeRemaining()
+    {
+        timeRemaining = 0f;
     }
 }

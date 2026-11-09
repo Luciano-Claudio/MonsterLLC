@@ -32,6 +32,19 @@ public class ResumePainelUI : MonoBehaviour
 
     private Coroutine runningRoutine;
 
+    // Popup de hover (preço + descrição, estilo Popup_Box_With_Header — pedido do usuário) em
+    // cada linha de item — 1 vez só (Awake, não OnEnable, já que o painel reabre toda vez que a
+    // Loja volta pra aba Resume e AddComponent de novo duplicaria o listener).
+    private void Awake()
+    {
+        foreach (var itemName in LootItemNames)
+        {
+            var row = LootRow(itemName);
+            if (row == null || row.GetComponent<LootRowHoverUI>() != null) continue;
+            row.gameObject.AddComponent<LootRowHoverUI>().Setup(itemName, pricingSettings);
+        }
+    }
+
     private void OnEnable()
     {
         if (runningRoutine != null) StopCoroutine(runningRoutine);

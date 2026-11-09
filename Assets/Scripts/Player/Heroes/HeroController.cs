@@ -38,6 +38,26 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     public static float HpRegenPercentPerSecond = 0f;
     public static bool SegundaChanceUnlocked = false;
 
+    // Perk Central "Despertar do Poder" (5g, rank único) — escrito por WorldPerkEffects.Recompute()
+    // junto dos outros multiplicadores estáticos, mesmo critério. Multiplica POR CIMA de
+    // MaxHealthMultiplier/PrimaryDamageMultiplier/UltimateDamageMultiplier, nunca substitui (os
+    // efeitos se acumulam) — composto em EffectiveMaxHealth aqui, e em cada fórmula de dano de
+    // cada herói (ver Barbarian.AnimationAttackHitEvent/AnimationUltimateLandEvent).
+    public static float CentralDamageMultiplier = 1f;
+    public static float CentralHealthMultiplier = 1f;
+
+    // Infra pros 90 perks bespoke (Esquerda/Direita/Cima) do Barbarian (e futuros heróis) —
+    // construída agora, com default neutro, SEM nenhum perk escrevendo nela ainda (isso é
+    // conteúdo, próxima fase). Chance de crítico é por ÁRVORE (Esquerda ≠ Cima), nunca um campo
+    // só — senão um perk de uma árvore vazaria pra outra (mesma regra de
+    // Primary/Ultimate/ShiftDamageMultiplier acima).
+    public static float PrimaryCritChance = 0f;
+    public static float UltimateCritChance = 0f;
+
+    // Dano x2 em crítico (GDD: "dano x2"), nunca outro valor — centralizado aqui pra não
+    // duplicar o literal em cada herói que rolar crítico.
+    public static float RollCritMultiplier(float critChance) => Random.value < critChance ? 2f : 1f;
+
     public HeroStats stats = new HeroStats();
     protected PlayerControls controls;
     protected Animator animator; // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (mesma regra do EnemyController)
@@ -62,11 +82,31 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // gatilho que WorldBossSpawnManager/WorldChestSpawnManager já usam pra "virou dia novo").
     private bool segundaChanceUsedToday;
 
+    // Escudo genérico (Direita #24 do Barbarian, "Último Fôlego" — reaproveitável por qualquer
+    // herói futuro com perk parecido) — absorve dano ANTES do HP, até esvaziar. AddShield() usa
+    // Mathf.Max (não soma) — mesmo critério de ShowGoldStatusFor: reativar o mesmo perk não
+    // deve "empilhar" escudo, só garantir o valor configurado.
+    private float shieldAmount;
+    public float ShieldAmount => shieldAmount;
+    public void AddShield(float amount) => shieldAmount = Mathf.Max(shieldAmount, amount);
+
     // stats.maxHealth é o valor BASE do herói (bespoke por herói, nunca mutado aqui) — o bônus
     // de World Perk (Vigor/Fortitude/Pulso Vital/Vitalidade Suprema) é um multiplicador lido
     // em cima, igual PickupRadiusMultiplier/MoveSpeedMultiplier. Todo clamp/UI de vida usa ISTO,
     // nunca stats.maxHealth direto (ver TakeDamage/Heal/Start).
-    public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier;
+    public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier * CentralHealthMultiplier
+        * (1f + GetConditionalMaxHealthBonusPercent() / 100f);
+
+    // Hook pra bônus de HP máximo CONDICIONAL (ex.: Direita #27 do Barbarian, "Vontade
+    // Inquebrável" — HP máximo temporário enquanto o Shift estiver ativo). Default 0 — sem
+    // efeito em nenhum herói que não sobrescrever isso. Cada herói decide a própria condição
+    // (isUsingSecondaryAbility, etc.); aqui só o ponto de leitura central.
+    protected virtual float GetConditionalMaxHealthBonusPercent() => 0f;
+
+    // Hook pra redução de dano CONDICIONAL (ex.: Direita #21 do Barbarian, "Fúria Protetora" —
+    // dano recebido -% enquanto o Shift estiver ativo). Default 0 — nunca interfere com
+    // DamageReductionPercent (World Perks, incondicional), os dois se acumulam.
+    protected virtual float GetConditionalDamageReductionPercent() => 0f;
     private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier;
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
@@ -158,6 +198,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     [SerializeField] private float secondaryAbilityCooldownDuration = 8f; // 🔢 maior que o do primário, ajustável por herói
     private AttackCooldown secondaryAbilityCooldown;
     protected bool isUsingSecondaryAbility;
+
+    // Exposição controlada dos 2 AttackCooldown privados pra perks bespoke de cooldown (Esquerda
+    // #21-22/Direita #13-16/#23/#26/#29 do Barbarian) — nenhum herói precisa saber que existe um
+    // AttackCooldown por baixo, só que pode ajustar/reduzir/zerar o próprio cooldown.
+    protected void SetPrimaryCooldownMultiplier(float multiplier) => attackCooldown.DurationMultiplier = multiplier;
+    protected void SetSecondaryCooldownMultiplier(float multiplier) => secondaryAbilityCooldown.DurationMultiplier = multiplier;
+    protected void ReduceSecondaryCooldownRemaining(float amount) => secondaryAbilityCooldown.ReduceTimeRemaining(amount);
+    protected void ResetSecondaryCooldownRemaining() => secondaryAbilityCooldown.ResetTimeRemaining();
     private bool wasUsingSecondaryAbility; // detecta a transição true -> false no Update(), ver comentário lá
 
     // Teia da Spider Queen (Efeito Ice) — detecta a transição pra chamar SetTrapped() só nas
@@ -401,6 +449,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // repassarem o mesmo multiplicador — SetFloat não propaga entre Animators diferentes.
     protected float ActionSpeedMultiplier => actionSpeedMultiplier;
 
+    // Pros perks de velocidade de animação (ex.: Esquerda #18-20 do Barbarian) recomputarem o
+    // valor sem precisar duplicar o SetFloat do Animator aqui — RefreshActionSpeedMultiplier()
+    // já faz isso.
+    protected void SetActionSpeedMultiplier(float multiplier)
+    {
+        actionSpeedMultiplier = multiplier;
+        RefreshActionSpeedMultiplier();
+    }
+
     protected virtual void Start()
     {
         GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
@@ -606,6 +663,19 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // de Ultimate por kill").
     protected virtual float UltimateEnergyMultiplier => 1f;
 
+    // Cima #15-17 do Barbarian ("Canalização Rápida"/"Fúria Contida"/"Explosão Iminente" —
+    // carga necessária -%/rank). Multiplica o THRESHOLD de "pronto pra usar", nunca o
+    // stats.maxEnergy real (que também é o teto de EnergySystem.AddEnergy) — default 1 = sem
+    // efeito em nenhum herói que não sobrescrever. Valores < 1 deixam a Ultimate pronta ANTES
+    // da barra visual chegar a 100% — ajuste de UI fica pra quando o perk for ligado de verdade.
+    protected virtual float UltimateChargeRequiredMultiplier => 1f;
+
+    // Chamado por PerkState.TryBuy() (qualquer compra, de qualquer árvore) e pelo próprio herói
+    // no Awake() (pra aplicar ranks já salvos/comprados antes dele existir). Default no-op —
+    // só heróis com perks bespoke próprios (Esquerda/Direita/Cima) sobrescrevem isso; Perks de
+    // Mundo continuam 100% à parte, em WorldPerkEffects.Recompute().
+    public virtual void RecomputePerkEffects() { }
+
     // Rework 2026-10-30 (Druid — Alce) — heróis cuja Ultimate tem uma forma/duração própria
     // podem bloquear o próprio ganho de Energia enquanto ela estiver ativa (senão o jogador
     // sairia da forma já com a próxima Ultimate pronta de graça, só de matar monstro durante
@@ -652,7 +722,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // (ex.: Coruja do Druid, isAttacking de qualquer herói) ainda perdia a energia toda,
         // já que UseUltimate() é void e o "return" cedo dele é invisível pra quem chamou.
         if (!CanUseUltimate()) return;
-        if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy)) return;
+        if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy * UltimateChargeRequiredMultiplier)) return;
         // Releitura forçada antes de congelar — o Input System processa este clique ANTES
         // do Update() deste frame, então sem isso a mira congelaria com o valor do frame
         // ANTERIOR (podendo estar bem perto do herói se o mouse só chegou na posição final
@@ -730,8 +800,21 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         // Pele Grossa/Couraça/Casco de Ferro (World Perks) — % de redução, aplicada ANTES do
         // ApplyDamage (nunca depois: reduzir o dano JÁ aplicado deixaria o herói com vida "de
-        // volta", o que pareceria cura, não redução).
+        // volta", o que pareceria cura, não redução). GetConditionalDamageReductionPercent
+        // (ex.: Fúria Protetora do Barbarian, só durante o Shift) se acumula com a de Mundo,
+        // nunca substitui — por isso os 2 "if" separados, não um só somado antes do clamp.
         if (DamageReductionPercent > 0f) amount *= 1f - Mathf.Clamp01(DamageReductionPercent / 100f);
+        float conditionalReduction = GetConditionalDamageReductionPercent();
+        if (conditionalReduction > 0f) amount *= 1f - Mathf.Clamp01(conditionalReduction / 100f);
+
+        // Escudo (ex.: Último Fôlego do Barbarian) absorve ANTES do HP — mesma ordem do resto
+        // (redução de % primeiro, escudo absorve o que sobrar, só então o HP perde o resto).
+        if (shieldAmount > 0f)
+        {
+            float absorbed = Mathf.Min(shieldAmount, amount);
+            shieldAmount -= absorbed;
+            amount -= absorbed;
+        }
 
         stats.health = HealthSystem.ApplyDamage(stats.health, amount);
 
@@ -757,6 +840,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         else if (isReactingToDamage) AccelerateDamageReaction();
         else StartDamageReaction();
     }
+
+    // Wrapper público só pro HeroProjectile (Cima #26 do Barbarian, "Renovação de Batalha") —
+    // Heal() em si fica protected de propósito (só o próprio herói decide curar a si mesmo);
+    // o projétil não é um HeroController, precisa deste ponto de entrada dedicado.
+    public void HealFromProjectile(float amount) => Heal(amount);
 
     // Centraliza toda cura de qualquer herói (Cleric.ApplyHealWave, regeneração do Ranger,
     // etc.) — clamp em maxHealth, GameEvents.HealthChanged e o Floating Combat Text de cura

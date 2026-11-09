@@ -3,10 +3,11 @@ using UnityEngine;
 // Config central do spawn de Baú no mundo aberto (GDD Deadline 8.1, Seção 8) — paralelo a
 // BossSpawnSettings/MonsterSpawnSettings, mas pros parâmetros próprios do Baú. Decisão do
 // usuário: o Baú NÃO tem uma quantidade fixa/por-dia — é uma % de "o dia tem baú ou não",
-// rolada 1x por dia (pode não ter baú nenhum). Essa % é de propósito baixa e vai crescer via
-// World Perks (Seção 8, pendência "aumentar a % de surgir baú") — o hook em si (bônus do
-// WorldPerkEffects somado aqui) só entra quando os Perks existirem de verdade; por enquanto
-// chestSpawnChancePercent é só a base fixa configurável no Inspector.
+// rolada 1x por dia (pode não ter baú nenhum). Essa % é de propósito baixa — chestSpawnChancePercent
+// aqui é só a base fixa configurável no Inspector; o bônus dos World Perks Baú Extra/Baú Duplo
+// (redesenho 2026-11-09: eles somam % de chance de nascer em vez de +1 baú/+recompensa dupla)
+// é somado por cima em WorldChestSpawnManager.HandleDayStart, via WorldPerkEffects.
+// ChestSpawnChanceBonusPercent.
 [CreateAssetMenu(fileName = "ChestSpawnSettings", menuName = "MonsterLLC/World Generation/Chest Spawn Settings")]
 public class ChestSpawnSettings : ScriptableObject
 {
@@ -42,7 +43,7 @@ public class ChestSpawnSettings : ScriptableObject
     public long maxGoldReward = 200;
 
     [Range(0f, 100f)]
-    [Tooltip("Chance de dar 2 recompensas em vez de 1 — placeholder até WorldPerkEffects.ChestDoubleChancePercent existir (perk \"Baú Duplo\").")]
+    [Tooltip("Chance de dar 2 recompensas em vez de 1. Configuração pura do Inspector — não tem perk nenhum somando aqui (Baú Duplo foi redesenhado em 2026-11-09 pra só aumentar a % de NASCER baú, ver ChestSpawnChancePercent acima).")]
     public float doubleRewardChancePercent = 0f;
 
     [Tooltip("Quanto tempo o \"Status_Gold\" do herói fica ativo quando o baú dá gold (decisão do usuário, 2026-11-08: NUNCA no caminho popup — só quando vem gold de verdade).")]
