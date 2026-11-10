@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Mercador_Astuto
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_mercador_astuto
-  displayName: Mercador Astuto
-  description: Venda +15%/rank.
-  icon: {fileID: -810699457, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 40420f0000000000001bb700000000000044950800000000
+  displayName: Shrewd Merchant
+  description: Sell price +75%/rank.
+  icon: {fileID: 7321958058734341866, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 1000
+  - 6000
+  - 36000

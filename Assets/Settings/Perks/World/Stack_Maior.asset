@@ -13,7 +13,13 @@ MonoBehaviour:
   m_Name: Stack_Maior
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_stack_maior
-  displayName: Stack Maior
-  description: "Aumenta o teto de stack por item/rank (16\u219232\u2192128\u21921.024\u21928.192\u2192131.072\u21921.048.576)."
-  icon: {fileID: -1664706001, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 50c3000000000000b0710b0000000000c0d8a7000000000040bc120a0000000000f902950000000000fcf9d808000000
+  displayName: Bigger Stack
+  description: Raises the stack cap per item, per rank (16 -> 32 -> 128 -> 1,024 -> 8,192 -> 131,072 -> 1,048,576).
+  icon: {fileID: -3882140759288099154, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 250
+  - 3750
+  - 56250
+  - 843750
+  - 12656250
+  - 189843750

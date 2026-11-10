@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Bau_Extra
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_bau_extra
-  displayName: "Ba\xFA Extra"
-  description: "+5% de chance do ba\xFA nascer no dia/rank."
-  icon: {fileID: -765234364, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 1027000000000000a08601000000000040420f0000000000
+  displayName: Extra Chest
+  description: +5% chance for a chest to spawn each day, per rank.
+  icon: {fileID: 683122446747003391, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 500
+  - 3000
+  - 18000

@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Folego_Eterno
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_folego_eterno
-  displayName: "F\xF4lego Eterno"
-  description: "Regen +%/rank (n\xFAmero exato ainda n\xE3o confirmado \u2014 ver
-    WorldPerkEffects.RegenPercentPerRankPerSecond)."
-  icon: {fileID: -930000514, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 00e1f50500000000002f68590000000000c11a3d05000000
+  displayName: Eternal Stamina
+  description: HP regen +%/rank (exact number not confirmed yet - see WorldPerkEffects.RegenPercentPerRankPerSecond).
+  icon: {fileID: 6977315885860644692, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 300000
+  - 1800000
+  - 10800000

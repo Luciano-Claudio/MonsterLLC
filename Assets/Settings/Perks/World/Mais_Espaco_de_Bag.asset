@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Mais_Espaco_de_Bag
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_mais_espaco_bag
-  displayName: "Mais Espa\xE7o de Bag"
-  description: "+5 slots de invent\xE1rio/rank."
-  icon: {fileID: 1870139247, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 881300000000000050c300000000000020a1070000000000
+  displayName: Bigger Bag
+  description: +5 inventory slots/rank.
+  icon: {fileID: 3899032394562535809, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 500
+  - 3000
+  - 18000

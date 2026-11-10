@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: Ima_Vivo
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_ima_vivo
-  displayName: "\xCDm\xE3 Vivo"
-  description: "Auto-vende loot coletado, no instante da coleta, usando o Pickup
-    Radius atual como raio do \xEDm\xE3. O buff mais forte da \xE1rvore \u2014 caro
-    de prop\xF3sito."
-  icon: {fileID: -979081244, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 005039278c040000
+  displayName: Living Magnet
+  description: "Auto-sells collected loot the instant it is picked up, using the current Pickup Radius as the magnet's range. The strongest buff in the tree - expensive on purpose."
+  icon: {fileID: 9142451757709242382, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 120000000000

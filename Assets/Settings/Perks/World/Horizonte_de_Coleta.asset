@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Horizonte_de_Coleta
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_horizonte_coleta
-  displayName: Horizonte de Coleta
+  displayName: Collection Horizon
   description: Pickup Radius +30%/rank.
-  icon: {fileID: -979081244, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 00e1f50500000000002f68590000000000c11a3d05000000
+  icon: {fileID: 7968606637515174565, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 10000
+  - 60000
+  - 360000

@@ -13,8 +13,12 @@ MonoBehaviour:
   m_Name: Recuperacao
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_recuperacao
-  displayName: "Recupera\xE7\xE3o"
-  description: "Regen de HP +%/rank (n\xFAmero exato ainda n\xE3o confirmado \u2014
-    ver WorldPerkEffects.RegenPercentPerRankPerSecond)."
-  icon: {fileID: -930000514, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 1027000000000000a08601000000000040420f0000000000809698000000000000e1f50500000000
+  displayName: Recovery
+  description: HP regen +%/rank (exact number not confirmed yet - see WorldPerkEffects.RegenPercentPerRankPerSecond).
+  icon: {fileID: -2416489803253182320, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 50
+  - 250
+  - 1250
+  - 6250
+  - 31250

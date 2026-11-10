@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Segunda_Chance
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_segunda_chance
-  displayName: Segunda Chance
-  description: 1x por dia, sobrevive com 1 HP a um hit fatal.
-  icon: {fileID: -1107766955, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 0088526a74000000
+  displayName: Second Chance
+  description: Once per day, survive a fatal hit with 1 HP.
+  icon: {fileID: 5932371233710450765, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 40000000000

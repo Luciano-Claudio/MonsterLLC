@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: Atracao
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_atracao
-  displayName: "Atra\xE7\xE3o"
-  description: Raio de coleta (Pickup Radius) +10%/rank.
-  icon: {fileID: -979081244, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 0a0000000000000050000000000000008002000000000000001400000000000000a0000000000000
+  displayName: Attraction
+  description: Pickup Radius +10%/rank.
+  icon: {fileID: 7880987770561709586, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 500
+  - 3000
+  - 18000
+  - 108000
+  - 648000

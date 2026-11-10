@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Butim_de_Guerra
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_butim_guerra
-  displayName: Butim de Guerra
-  description: Gold por kill +15%/rank.
-  icon: {fileID: -1151409668, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 40420f0000000000001bb700000000000044950800000000
+  displayName: War Spoils
+  description: Gold per kill +75%/rank.
+  icon: {fileID: 8222453887248044519, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 1000
+  - 6000
+  - 36000

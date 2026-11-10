@@ -14,6 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_vigor
   displayName: Vigor
-  description: "HP m\xE1ximo +5%/rank."
-  icon: {fileID: 1575851291, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 0a0000000000000050000000000000008002000000000000001400000000000000a0000000000000
+  description: Max HP +25%/rank.
+  icon: {fileID: 7396133070535158269, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 5
+  - 25
+  - 125
+  - 625
+  - 3125

@@ -460,6 +460,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     protected virtual void Start()
     {
+        // Achado real do usuário: perk de "+%HP máximo" só mexia no TETO (EffectiveMaxHealth) —
+        // stats.health (vida ATUAL) é o valor fixo serializado no prefab, nunca sincronizado
+        // com o novo máximo, então o jogador nascia com a vida de sempre e só "via" o bônus se
+        // regenerasse/curasse até lá. Start() roda depois de TODO Awake() (inclusive
+        // RecomputePerkEffects() do herói específico, chamado no fim do Awake() de cada
+        // subclasse), então aqui EffectiveMaxHealth já reflete World + Central + bônus próprios
+        // do herói — nasce sempre com a vida ATUAL = vida MÁXIMA efetiva daquele momento. Só
+        // acontece 1x aqui (spawn); comprar perk DEPOIS de nascido não deve curar de graça — só
+        // aumenta o teto, como já fazia.
+        stats.health = EffectiveMaxHealth;
+
         GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
@@ -849,7 +860,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Centraliza toda cura de qualquer herói (Cleric.ApplyHealWave, regeneração do Ranger,
     // etc.) — clamp em maxHealth, GameEvents.HealthChanged e o Floating Combat Text de cura
     // (verde, com "+") num só lugar, em vez de cada herói duplicar essa lógica.
-    protected void Heal(float amount)
+    // showFloatingText=false pra regen PASSIVO/contínuo (tick todo frame, ver UpdateHpRegen() e
+    // o regen do Shift do Barbarian) — achado real do usuário: cada frame curava uma fração de
+    // HP (ex. 0,016 de 1/segundo), sempre "> 0f", então o texto flutuante disparava a CADA
+    // FRAME (60x/s), cada um arredondado pra exibir "+0" (visualmente parecia bugado/não
+    // curava nada) e ainda lagava o jogo de tanto spawnar objeto. Cura de verdade (Cleric,
+    // lifesteal, poção) continua com texto — só o drip passivo fica silencioso (a barra de HP
+    // já mostra a cura subindo suave, não precisa do texto por frame).
+    protected void Heal(float amount, bool showFloatingText = true)
     {
         float healthBefore = stats.health;
         stats.health = Mathf.Min(EffectiveMaxHealth, stats.health + amount);
@@ -857,7 +875,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         // Mostra só o que realmente curou — evita "+50" quando faltava 3 de vida.
         float actualHealed = stats.health - healthBefore;
-        if (actualHealed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), actualHealed);
+        if (showFloatingText && actualHealed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), actualHealed);
     }
 
     private void StartDamageReaction()
@@ -927,7 +945,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private void UpdateHpRegen()
     {
         if (HpRegenPercentPerSecond <= 0f) return;
-        Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime);
+        Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
     }
 
     private void TriggerDamageFlash()

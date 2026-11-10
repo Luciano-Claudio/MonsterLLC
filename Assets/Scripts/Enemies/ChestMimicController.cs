@@ -22,6 +22,15 @@ public class ChestMimicController : SlimeEnemyController
 
     private bool rewardGranted;
 
+    // Achado real do usuário: o Mimic estava "ganhando target" igual todo outro monstro —
+    // tanto por proximidade (observationRadius, igual Gargoyle/Skeleton normal) quanto por
+    // contágio de Aggro Global (se QUALQUER outro monstro do mapa detectasse o player, o
+    // Mimic virava monstro de verdade junto, mesmo o player nunca tendo ido perto do baú).
+    // Isso contraria a própria identidade do Mimic — ele só deve virar monstro quando o
+    // player clica pra abrir (ChestMimicInteractable.ForceImmediateAggro(), gatilho explícito,
+    // continua funcionando normalmente).
+    protected override bool CanAutoDetectPlayer => false;
+
     protected override void Awake()
     {
         base.Awake();

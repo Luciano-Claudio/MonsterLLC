@@ -8,10 +8,12 @@ using UnityEngine.InputSystem;
 // partir do R9 — PerkButtonUI). 1 instância de cada por Canvas (Main_Menu e a cena de gameplay
 // têm a sua própria) — qualquer IPointerEnterHandler da cena chama PopupController.Instance.
 //
-// Segue o mouse, mas sempre ACIMA dele (nunca centrado/diagonal) — pivot do popup é o centro,
+// Segue o mouse, ACIMA dele por padrão (nunca centrado/diagonal) — pivot do popup é o centro,
 // então o X acompanha o cursor e o Y fica deslocado pra cima por meia altura do popup + um
-// respiro (verticalGapAboveCursor), com clamp pra nunca vazar da tela. Mouse.current, não
-// Input.mousePosition legado, mesmo critério do resto do projeto (Input System package).
+// respiro (verticalGapAboveCursor). Perto da borda SUPERIOR da tela (sem espaço pro popup
+// inteiro caber acima), inverte e nasce ABAIXO do cursor em vez de acima (ver Update()) — sempre
+// com clamp pra nunca vazar da tela, nos dois casos. Mouse.current, não Input.mousePosition
+// legado, mesmo critério do resto do projeto (Input System package).
 // Fade (CanvasGroup.alpha) + scale juntos, sem Animator, mesmo estilo já usado no Resumo do Dia
 // (ResumePainelUI.GrowNumber).
 public class PopupController : MonoBehaviour
@@ -110,7 +112,15 @@ public class PopupController : MonoBehaviour
         float halfWidth = activeInstance.sizeDelta.x * 0.5f;
         float halfHeight = activeInstance.sizeDelta.y * 0.5f;
 
-        Vector2 targetPos = mousePos + new Vector2(0f, halfHeight + verticalGapAboveCursor);
+        // Achado real do usuário: perto da borda SUPERIOR da tela, o popup (sempre acima do
+        // cursor) ficava difícil de ler — ou o clamp abaixo empurrava ele pra baixo, cobrindo o
+        // próprio cursor/conteúdo que o jogador está tentando ver. Se não cabe o popup inteiro
+        // acima do cursor (topo dele estouraria a tela), inverte e nasce ABAIXO do cursor em vez
+        // de acima — só nesse caso; o normal (longe da borda) continua idêntico a antes.
+        bool notEnoughSpaceAbove = mousePos.y + halfHeight * 2f + verticalGapAboveCursor > Screen.height;
+        Vector2 targetPos = notEnoughSpaceAbove
+            ? mousePos - new Vector2(0f, halfHeight + verticalGapAboveCursor)
+            : mousePos + new Vector2(0f, halfHeight + verticalGapAboveCursor);
         targetPos.x = Mathf.Clamp(targetPos.x, halfWidth, Screen.width - halfWidth);
         targetPos.y = Mathf.Clamp(targetPos.y, halfHeight, Screen.height - halfHeight);
         activeInstance.position = targetPos;

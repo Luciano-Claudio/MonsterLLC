@@ -61,8 +61,13 @@ public class PerkButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         bool maxed = PerkState.IsMaxed(definition);
         bool canBuy = unlocked && !maxed && PerkState.CanAfford(definition);
 
-        button.interactable = unlocked && !maxed;
-
+        // Selectable.interactable, ao MUDAR de valor, dispara a troca de sprite na hora
+        // (DoStateTransition), lendo o spriteState de ENTÃO — por isso o spriteState precisa
+        // estar atualizado ANTES de tocar em "interactable", nunca depois. Achado real: Central
+        // (1 rank só) comprava e ficava preso no sprite Locked em vez de trocar pro Maxed,
+        // porque o código antigo setava "interactable" primeiro (disparando a troca com o
+        // disabledSprite ainda apontando pro Locked da leitura anterior) e só DEPOIS atualizava
+        // o spriteState pro Maxed — tarde demais, a transição já tinha acontecido.
         if (buttonImage != null)
         {
             var state = button.spriteState;
@@ -70,9 +75,13 @@ public class PerkButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             button.spriteState = state;
         }
 
+        button.interactable = unlocked && !maxed;
+
         if (rootImage != null)
         {
-            var bgSprite = canBuy ? owner.BackgroundCanAffordSprite : owner.BackgroundDefaultSprite;
+            // Maxed também usa o background "pode comprar" (pedido do usuário) — não só
+            // enquanto ainda há o que comprar.
+            var bgSprite = (canBuy || maxed) ? owner.BackgroundCanAffordSprite : owner.BackgroundDefaultSprite;
             if (bgSprite != null) rootImage.sprite = bgSprite;
         }
 
@@ -100,6 +109,14 @@ public class PerkButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (!PerkState.TryBuy(definition)) return;
         owner.RefreshAll();
+
+        // Achado real do usuário: o popup não atualizava o rank/preço novo depois de comprar —
+        // só recalculava de novo quando o mouse saía e voltava a entrar (OnPointerEnter).
+        // O clique só dispara com o mouse ainda EM CIMA deste botão (comportamento padrão do
+        // Button do uGUI), então o popup já está visível pra este mesmo perk — só recalcular o
+        // texto de novo. ShowPopupFor -> PopupController.Activate() não reinicia o fade/scale
+        // quando o popup já está visível (só troca o texto), então não "some e aparece de novo".
+        owner.ShowPopupFor(this);
     }
 
     public void OnPointerEnter(PointerEventData eventData) => owner.ShowPopupFor(this);

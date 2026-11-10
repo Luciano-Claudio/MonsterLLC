@@ -207,8 +207,10 @@ public class Barbarian : HeroController
         {
             secondaryAbilityRemaining -= Time.deltaTime;
 
-            // #25 "Renovação Selvagem" — regen contínuo, só enquanto o Shift está ativo.
-            if (shiftRegenPercentPerSecond > 0f) Heal(EffectiveMaxHealth * shiftRegenPercentPerSecond / 100f * Time.deltaTime);
+            // #25 "Renovação Selvagem" — regen contínuo, só enquanto o Shift está ativo. Sem
+            // texto flutuante (mesmo motivo do regen de Mundo em HeroController.UpdateHpRegen)
+            // — tick todo frame spamava "+0" e lagava o jogo.
+            if (shiftRegenPercentPerSecond > 0f) Heal(EffectiveMaxHealth * shiftRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
 
             if (secondaryAbilityRemaining <= 0f)
             {
@@ -622,11 +624,12 @@ public class Barbarian : HeroController
 
     private void RecomputeEsquerda()
     {
-        float danoPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaGolpePesado) * 8f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDoImpacto) * 15f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaForcaBruta) * 20f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaDevastacao) * 30f
-            + (PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDefinitiva) >= 1 ? 50f : 0f);
+        // Balanceamento (2026-11-10): 5x o original — era 8/15/20/30/50.
+        float danoPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaGolpePesado) * 40f
+            + PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDoImpacto) * 75f
+            + PerkState.GetRank(BarbarianPerkIds.EsquerdaForcaBruta) * 100f
+            + PerkState.GetRank(BarbarianPerkIds.EsquerdaDevastacao) * 150f
+            + (PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDefinitiva) >= 1 ? 250f : 0f);
         HeroController.PrimaryDamageMultiplier = 1f + danoPercent / 100f;
 
         float knockbackPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaEmpurrao) * 10f
@@ -663,18 +666,22 @@ public class Barbarian : HeroController
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaPrecisaoSelvagem) * 8f;
         HeroController.PrimaryCritChance = Mathf.Clamp01(critPercent / 100f);
 
-        furiaDiagonalBonusPerExtraTarget = PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDiagonal) * 10f;
+        // Balanceamento (2026-11-10): dano direto/indireto — 5x o original (era 10f).
+        furiaDiagonalBonusPerExtraTarget = PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDiagonal) * 50f;
 
         // 🔢 PLACEHOLDER — GDD só descreve "aplica Sangramento", nunca deu dano/rank nem duração.
+        // Balanceamento (2026-11-10): 5x o original (era 2f).
         int sangramentoRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaSangramentoPerfurante);
-        sangramentoPerfuranteDamagePerSecond = sangramentoRank * 2f;
+        sangramentoPerfuranteDamagePerSecond = sangramentoRank * 10f;
         sangramentoPerfuranteDuration = 3f;
 
-        groundCrackShiftBonusPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaFendaEnfurecida) * 15f;
+        // Balanceamento (2026-11-10): 5x o original (era 15f).
+        groundCrackShiftBonusPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaFendaEnfurecida) * 75f;
 
         // GDD: "+10/15/20% por step, CONFORME O RANK" — tabela por rank, não rank*X.
+        // Balanceamento (2026-11-10): 5x o original (era 0/10/15/20).
         int fendaSelvagemRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaFendaSelvagem);
-        float[] fendaSelvagemPerStep = { 0f, 10f, 15f, 20f };
+        float[] fendaSelvagemPerStep = { 0f, 50f, 75f, 100f };
         groundCrackHpLostBonusPerStep = fendaSelvagemPerStep[Mathf.Clamp(fendaSelvagemRank, 0, 3)];
 
         groundCrackPermanent = PerkState.GetRank(BarbarianPerkIds.EsquerdaFendaPermanente) >= 1;
@@ -683,12 +690,16 @@ public class Barbarian : HeroController
 
     private void RecomputeDireita()
     {
-        float shiftDanoPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaCrescente) * 10f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaImpetoSelvagem) * 15f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaAvalancheDeGolpes) * 20f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemFim) * 30f;
+        // Balanceamento (2026-11-10): 5x o original — era 10/15/20/30.
+        float shiftDanoPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaCrescente) * 50f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaImpetoSelvagem) * 75f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaAvalancheDeGolpes) * 100f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemFim) * 150f;
         HeroController.ShiftDamageMultiplier = 1f + shiftDanoPercent / 100f;
 
+        // Velocidade de movimento SAI da escala de buff (2026-11-10, pedido do usuário: "tá
+        // roubado o movespeed") — volta pro valor original (8/12/16/20), nunca mais escala
+        // junto com dano/vida/gold.
         float shiftSpeedPercent = PerkState.GetRank(BarbarianPerkIds.DireitaPassosRapidos) * 8f
             + PerkState.GetRank(BarbarianPerkIds.DireitaRajada) * 12f
             + PerkState.GetRank(BarbarianPerkIds.DireitaVendaval) * 16f
@@ -707,13 +718,14 @@ public class Barbarian : HeroController
             + PerkState.GetRank(BarbarianPerkIds.DireitaReflexoDeBatalha) * 15f;
         secondaryCooldownBaseMultiplier = 1f - Mathf.Clamp01(shiftCooldownPercent / 100f);
 
-        passiveDamagePerStepBonus = PerkState.GetRank(BarbarianPerkIds.DireitaSangueFervente) * 0.05f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaInstintoBerserker) * 0.08f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemLimites) * 0.10f;
+        // Balanceamento (2026-11-10): 5x o original — era 0.05/0.08/0.10.
+        passiveDamagePerStepBonus = PerkState.GetRank(BarbarianPerkIds.DireitaSangueFervente) * 0.25f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaInstintoBerserker) * 0.40f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemLimites) * 0.50f;
         passiveDamageStepCapBonus = PerkState.GetRank(BarbarianPerkIds.DireitaLimiteExpandido);
 
         shiftDamageReductionPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaProtetora) * 8f;
-        shiftLifestealPercent = PerkState.GetRank(BarbarianPerkIds.DireitaSedeDeSangue) * 10f;
+        shiftLifestealPercent = PerkState.GetRank(BarbarianPerkIds.DireitaSedeDeSangue) * 50f; // era 10f (5x)
         shiftCooldownReductionOnKillPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFolegoRecuperado) * 5f;
 
         // GDD: "10%/20% do HP máximo POR RANK" — tabela por rank (2 ranks), não rank*X.
@@ -722,10 +734,11 @@ public class Barbarian : HeroController
         shiftShieldPercentOfMaxHealth = ultimoFolegoPercent[Mathf.Clamp(ultimoFolegoRank, 0, 2)];
 
         // 🔢 PLACEHOLDER — GDD só diz "%/segundo por rank", nunca deu o número.
-        shiftRegenPercentPerSecond = PerkState.GetRank(BarbarianPerkIds.DireitaRenovacaoSelvagem) * 2f;
+        // Balanceamento (2026-11-10): 5x o original — era 2f.
+        shiftRegenPercentPerSecond = PerkState.GetRank(BarbarianPerkIds.DireitaRenovacaoSelvagem) * 10f;
 
         lowHpShiftCooldownReductionPercent = PerkState.GetRank(BarbarianPerkIds.DireitaInstintoDeSobrevivencia) * 50f;
-        shiftMaxHealthBonusPercent = PerkState.GetRank(BarbarianPerkIds.DireitaVontadeInquebravel) * 5f;
+        shiftMaxHealthBonusPercent = PerkState.GetRank(BarbarianPerkIds.DireitaVontadeInquebravel) * 25f; // era 5f (5x)
 
         // GDD: "1s/2s POR RANK" — tabela por rank (2 ranks).
         int furiaFinalRank = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaFinal);
@@ -738,11 +751,12 @@ public class Barbarian : HeroController
 
     private void RecomputeCima()
     {
-        float ultDanoPercent = PerkState.GetRank(BarbarianPerkIds.CimaGolpeDivino) * 10f
-            + PerkState.GetRank(BarbarianPerkIds.CimaIraAncestral) * 15f
-            + PerkState.GetRank(BarbarianPerkIds.CimaPoderEsmagador) * 20f
-            + PerkState.GetRank(BarbarianPerkIds.CimaApocalipsePessoal) * 30f
-            + (PerkState.GetRank(BarbarianPerkIds.CimaJuizoFinal) >= 1 ? 40f : 0f);
+        // Balanceamento (2026-11-10): 5x o original — era 10/15/20/30/40.
+        float ultDanoPercent = PerkState.GetRank(BarbarianPerkIds.CimaGolpeDivino) * 50f
+            + PerkState.GetRank(BarbarianPerkIds.CimaIraAncestral) * 75f
+            + PerkState.GetRank(BarbarianPerkIds.CimaPoderEsmagador) * 100f
+            + PerkState.GetRank(BarbarianPerkIds.CimaApocalipsePessoal) * 150f
+            + (PerkState.GetRank(BarbarianPerkIds.CimaJuizoFinal) >= 1 ? 200f : 0f);
         HeroController.UltimateDamageMultiplier = 1f + ultDanoPercent / 100f;
 
         float ultSpeedPercent = PerkState.GetRank(BarbarianPerkIds.CimaProjetilVeloz) * 10f
@@ -775,21 +789,24 @@ public class Barbarian : HeroController
         float ultCritPercent = PerkState.GetRank(BarbarianPerkIds.CimaGolpeCriticoCelestial) * 5f;
         HeroController.UltimateCritChance = Mathf.Clamp01(ultCritPercent / 100f);
 
-        // 🔢 PLACEHOLDER — GDD não dá o raio nem o %/rank exatos da explosão.
+        // 🔢 PLACEHOLDER — GDD não dá o raio nem o %/rank exatos da explosão. Raio fica como
+        // está (área, fora da escala de buff); dano 5x o original (2026-11-10, era 15f).
         int explosionRank = PerkState.GetRank(BarbarianPerkIds.CimaExplosaoDeImpacto);
         ultimateExplosionRadius = explosionRank >= 1 ? 2f : 0f;
-        ultimateExplosionDamagePercent = explosionRank * 15f;
+        ultimateExplosionDamagePercent = explosionRank * 75f;
 
         // 🔢 PLACEHOLDER — GDD não dá a chance/rank exata.
         ultimateGroundCrackTrailChance = PerkState.GetRank(BarbarianPerkIds.CimaTrilhaDeFuria) * 10f;
 
-        // 🔢 PLACEHOLDER — GDD não dá o raio nem o %/rank exatos do pouso.
+        // 🔢 PLACEHOLDER — GDD não dá o raio nem o %/rank exatos do pouso. Raio fica como está
+        // (área, fora da escala de buff); dano 5x o original (2026-11-10, era 20f).
         int landingRank = PerkState.GetRank(BarbarianPerkIds.CimaPousoSismico);
         ultimateLandingAreaRadius = landingRank >= 1 ? 2.5f : 0f;
-        ultimateLandingAreaDamagePercent = landingRank * 20f;
+        ultimateLandingAreaDamagePercent = landingRank * 100f;
 
         // 🔢 PLACEHOLDER — GDD não dá o %/rank exato de cura.
-        ultimateHealPercentPerHit = PerkState.GetRank(BarbarianPerkIds.CimaRenovacaoDeBatalha) * 5f;
+        // Balanceamento (2026-11-10): 5x o original — era 5f.
+        ultimateHealPercentPerHit = PerkState.GetRank(BarbarianPerkIds.CimaRenovacaoDeBatalha) * 25f;
 
         // 🔢 PLACEHOLDER — GDD não dá a chance/rank exata.
         ultimateRepeatVolleyChance = PerkState.GetRank(BarbarianPerkIds.CimaFuriaRepetida) * 15f;

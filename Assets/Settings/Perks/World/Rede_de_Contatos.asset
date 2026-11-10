@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Rede_de_Contatos
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_rede_contatos
-  displayName: Rede de Contatos
-  description: Venda +20%/rank.
-  icon: {fileID: -810699457, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 00e1f50500000000002f68590000000000c11a3d05000000
+  displayName: Contact Network
+  description: Sell price +100%/rank.
+  icon: {fileID: 4963496043254128824, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 10000
+  - 60000
+  - 360000

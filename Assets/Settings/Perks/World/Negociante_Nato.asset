@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: Negociante_Nato
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_negociante_nato
-  displayName: Negociante Nato
-  description: Venda de loot +10%/rank.
-  icon: {fileID: -810699457, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 0a0000000000000050000000000000008002000000000000001400000000000000a0000000000000
+  displayName: Natural Trader
+  description: Loot sell price +50%/rank.
+  icon: {fileID: 8138396423020949522, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 50
+  - 250
+  - 1250
+  - 6250
+  - 31250

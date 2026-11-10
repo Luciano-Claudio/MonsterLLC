@@ -21,7 +21,8 @@ public static class WorldPerkEffects
     private static readonly long[] StackMaiorCurve = { 16, 32, 128, 1024, 8192, 131072, 1048576 };
 
     // 🔢 placeholder — GDD não especifica o número de regen/rank (ver comentário acima da classe).
-    public static float RegenPercentPerRankPerSecond = 0.5f;
+    // Balanceamento (2026-11-10): 5x o valor original — era 0.5f.
+    public static float RegenPercentPerRankPerSecond = 2.5f;
 
     public static long BagStackSize { get; private set; } = 16;
     public static int BagSlotBonus { get; private set; }
@@ -43,13 +44,18 @@ public static class WorldPerkEffects
 
     public static void Recompute()
     {
+        // Balanceamento (2026-11-10, pedido do usuário): Dia 1 morrendo ~10x sem conseguir
+        // progredir — dano/vida/gold-por-abate/venda/regen agora valem 5x o original (nunca
+        // movespeed/tamanho/área/alcance/cooldown/aceleração/duração, esses ficam como
+        // estavam). Central NÃO entra nessa escala (decisão do usuário): é um perk inicial e
+        // barato, fica fixo em +50%.
         bool centralUnlocked = PerkState.GetRank(CentralPerkId) >= 1;
         HeroController.CentralDamageMultiplier = centralUnlocked ? 1.5f : 1f;
         HeroController.CentralHealthMultiplier = centralUnlocked ? 1.5f : 1f;
 
         int instintoCacador = PerkState.GetRank(WorldPerkIds.InstintoCacador);
         int butimGuerra = PerkState.GetRank(WorldPerkIds.ButimGuerra);
-        float goldBonusPercent = instintoCacador * 8f + butimGuerra * 15f;
+        float goldBonusPercent = instintoCacador * 40f + butimGuerra * 75f; // era 8f/15f (5x)
         KillGoldReward.GoldBonusMultiplier = 1f + goldBonusPercent / 100f;
 
         // Faro de Saque (GDD: "chance/quantidade de drop de loot +8%/rank") — os 2 efeitos
@@ -72,7 +78,7 @@ public static class WorldPerkEffects
         int mercadorAstuto = PerkState.GetRank(WorldPerkIds.MercadorAstuto);
         int redeContatos = PerkState.GetRank(WorldPerkIds.RedeContatos);
         int tesourariaReal = PerkState.GetRank(WorldPerkIds.TesourariaReal);
-        float sellBonusPercent = negocianteNato * 10f + mercadorAstuto * 15f + redeContatos * 20f + tesourariaReal * 30f;
+        float sellBonusPercent = negocianteNato * 50f + mercadorAstuto * 75f + redeContatos * 100f + tesourariaReal * 150f; // era 10/15/20/30 (5x)
         Vendor.SellBonusMultiplier = 1f + sellBonusPercent / 100f;
 
         ChestSpawnChanceBonusPercent = PerkState.GetRank(WorldPerkIds.BauExtra) * 5f + PerkState.GetRank(WorldPerkIds.ChamadoDoBau) * 10f;
@@ -88,7 +94,7 @@ public static class WorldPerkEffects
         int fortitude = PerkState.GetRank(WorldPerkIds.Fortitude);
         int pulsoVital = PerkState.GetRank(WorldPerkIds.PulsoVital);
         int vitalidadeSuprema = PerkState.GetRank(WorldPerkIds.VitalidadeSuprema);
-        float maxHealthBonusPercent = vigor * 5f + fortitude * 8f + pulsoVital * 10f + vitalidadeSuprema * 15f;
+        float maxHealthBonusPercent = vigor * 25f + fortitude * 40f + pulsoVital * 50f + vitalidadeSuprema * 75f; // era 5/8/10/15 (5x)
         HeroController.MaxHealthMultiplier = 1f + maxHealthBonusPercent / 100f;
 
         int peleGrossa = PerkState.GetRank(WorldPerkIds.PeleGrossa);
@@ -105,6 +111,9 @@ public static class WorldPerkEffects
         int passoLeve = PerkState.GetRank(WorldPerkIds.PassoLeve);
         int ventoCostas = PerkState.GetRank(WorldPerkIds.VentoCostas);
         int pesLigeiros = PerkState.GetRank(WorldPerkIds.PesLigeiros);
+        // Velocidade de movimento SAI da escala de buff (2026-11-10, pedido do usuário: "tá
+        // roubado o movespeed") — volta pro valor original (4/6/8), nunca mais escala junto
+        // com dano/vida/gold.
         float moveSpeedBonusPercent = passoLeve * 4f + ventoCostas * 6f + pesLigeiros * 8f;
         HeroController.MoveSpeedMultiplier = 1f + moveSpeedBonusPercent / 100f;
 

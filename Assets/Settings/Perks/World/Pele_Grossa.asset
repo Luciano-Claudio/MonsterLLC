@@ -13,7 +13,12 @@ MonoBehaviour:
   m_Name: Pele_Grossa
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_pele_grossa
-  displayName: Pele Grossa
-  description: Dano recebido -3%/rank.
-  icon: {fileID: -712692327, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 1027000000000000a08601000000000040420f0000000000
+  displayName: Thick Skin
+  description: Damage taken -3%/rank.
+  icon: {fileID: -7558207918691511419, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 50
+  - 250
+  - 1250
+  - 6250
+  - 31250

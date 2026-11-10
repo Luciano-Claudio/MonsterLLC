@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Pes_Ligeiros
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_pes_ligeiros
-  displayName: "P\xE9s Ligeiros"
-  description: Velocidade +8%/rank.
-  icon: {fileID: 344117938, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 00e1f50500000000002f68590000000000c11a3d05000000
+  displayName: Swift Feet
+  description: Movement speed +8%/rank.
+  icon: {fileID: -6140112109084458771, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 300000
+  - 1800000
+  - 10800000

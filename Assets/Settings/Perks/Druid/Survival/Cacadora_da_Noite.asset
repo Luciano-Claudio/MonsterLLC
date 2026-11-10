@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 817d76bd30fd8be4daa850f1b43b90fe, type: 3}
+  m_Name: Cacadora_da_Noite
+  m_EditorClassIdentifier: Core::PerkDefinitionSO
+  perkId: druid_direita_26
+  displayName: Huntress of the Night
+  description: "Allows using the Primary Attack (vines) normally during Owl form, without leaving the form - but attacking breaks the disguise: the monster hit (and, per the Global Aggro rule, the rest of the world too) regains the target immediately, even while invisibility is still active. The Owl still hides from anyone who merely approaches; attacking always has the same price - everyone comes after you."
+  icon: {fileID: 0}
+  costPerRank:
+  - 500000000000000

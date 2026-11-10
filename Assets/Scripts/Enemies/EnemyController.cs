@@ -540,7 +540,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // (proximidade/hit) como qualquer outro monstro dormente, via UpdatePatrol() abaixo.
         bool isPlayerUntargetable = HeroController.IsPlayerUntargetable && !isBoss;
         if (isPlayerUntargetable) isInCombat = false;
-        else if (wasPlayerUntargetable && HeroController.GlobalAggroActive) ForceImmediateAggro();
+        else if (wasPlayerUntargetable && HeroController.GlobalAggroActive && CanAutoDetectPlayer) ForceImmediateAggro();
         wasPlayerUntargetable = isPlayerUntargetable;
 
         if (hasAttackAnimation) attackAnimationCooldown.Tick(decisionDeltaTime);
@@ -576,7 +576,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // isso, forçar isInCombat=false no Update() não adiantaria nada, porque esse
         // check de distância reativaria o combate sozinho no frame seguinte (o player
         // continua fisicamente perto, só "invisível" pro monstro).
-        if (distanceToPlayer <= stats.observationRadius && !HeroController.IsPlayerUntargetable)
+        if (CanAutoDetectPlayer && distanceToPlayer <= stats.observationRadius && !HeroController.IsPlayerUntargetable)
         {
             isInCombat = true;
             HeroController.GlobalAggroActive = true; // GDD Deadline 8.1, Seção 4 — 1 detectou, todos perseguem (target global e independente de hit)
@@ -587,7 +587,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // monstro que detectar por conta própria (ou TakeDamage, qualquer hit); a partir daí,
         // todo o resto do mundo também persegue, inclusive quem normalmente ficaria dormente
         // esperando (bloco staysDormantUntilDetected abaixo).
-        if (HeroController.GlobalAggroActive && !HeroController.IsPlayerUntargetable)
+        if (CanAutoDetectPlayer && HeroController.GlobalAggroActive && !HeroController.IsPlayerUntargetable)
         {
             ForceImmediateAggro();
             return;
@@ -1081,6 +1081,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         isInCombat = true;
         HeroController.GlobalAggroActive = true;
     }
+
+    // Chest Mimic (ver override): disfarçado de baú, nunca deve "detectar" o player por conta
+    // própria (nem por proximidade/observationRadius, nem por contágio de Aggro Global de outro
+    // monstro) — só vira monstro de verdade quando o player clica pra abrir o baú
+    // (ChestMimicInteractable chama ForceImmediateAggro() direto, isso sim sempre funciona, é
+    // um gatilho explícito, não automático). Guarda os 3 pontos de detecção AMBIENTE em
+    // UpdatePatrol()/Update() (proximidade, contágio de GlobalAggroActive enquanto dormente, e
+    // recuperação de target após camuflagem cair) — true pra todo o resto do jogo, sem mudar
+    // nada do comportamento existente.
+    protected virtual bool CanAutoDetectPlayer => true;
 
     private void UpdateKnockback()
     {

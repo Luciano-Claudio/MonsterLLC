@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Pulso_Vital
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_pulso_vital
-  displayName: Pulso Vital
-  description: "HP m\xE1ximo +10%/rank."
-  icon: {fileID: 1575851291, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 00e1f50500000000002f68590000000000c11a3d05000000
+  displayName: Vital Pulse
+  description: Max HP +50%/rank.
+  icon: {fileID: -4224325693610113760, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 10000
+  - 60000
+  - 360000

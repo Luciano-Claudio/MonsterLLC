@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Reroll_de_Talento
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_reroll_talento
-  displayName: Reroll de Talento
-  description: "+1 reroll gr\xE1tis por dia das 3 cartas de Talento mostradas/rank.
-    Inerte at\xE9 o sistema de Talentos existir (R10)."
-  icon: {fileID: 569843292, guid: 2a1d5c00243cbcc468743388352d82cf, type: 3}
-  costPerRank: 809698000000000080d1f0080000000080461c8600000000
+  displayName: Talent Reroll
+  description: +1 free reroll per day for the 3 Talent cards shown, per rank. Inert until the Talent system exists (R10).
+  icon: {fileID: 166781659049912348, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
+  costPerRank:
+  - 5000
+  - 30000
+  - 180000

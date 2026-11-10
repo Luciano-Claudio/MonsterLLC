@@ -55,6 +55,47 @@ public class ResumePainelUI : MonoBehaviour
     {
         if (runningRoutine != null) StopCoroutine(runningRoutine);
         runningRoutine = null;
+
+        // Achado real do usuário: trocar de aba (ou qualquer OnDisable) no meio da animação
+        // deixava texto rotacionado/grande pra sempre. Motivo: StopCoroutine(runningRoutine)
+        // só mata a coroutine DE FORA (AnimateResume) — as coroutines FILHAS que ela iniciou
+        // via "yield return StartCoroutine(...)" (GrowNumber de cada linha, AnimateSurvivalTime)
+        // são instâncias independentes; o Unity só as mata de verdade quando o componente
+        // desativa (o que já está acontecendo aqui, mas DEPOIS da linha de reset normal de cada
+        // uma, que só roda se o loop terminar sozinho) — então qualquer uma pega no meio do
+        // "wobble" fica travada torta/grande. Reset incondicional de tudo aqui garante que, não
+        // importa ONDE a animação estava, o painel sempre reabre limpo.
+        ResetAllAnimatedRects();
+    }
+
+    private void ResetAllAnimatedRects()
+    {
+        ResetRect(transform.Find("Survival_Time/Time"));
+        ResetRect(FindValueRect("Combat_Sumary/List/Creatures_Slain"));
+        ResetRect(FindValueRect("Combat_Sumary/List/Bosses_Defeated"));
+        ResetRect(FindValueRect("Combat_Sumary/List/Gold_From_Monsters"));
+        ResetRect(FindValueRect("Combat_Sumary/List/Gold_From_Bosses"));
+        ResetRect(FindTotalValueRect("Totals/Kill_Gold"));
+        ResetRect(FindTotalValueRect("Totals/Loot_Gold"));
+        ResetRect(FindTotalValueRect("Totals/Total"));
+
+        foreach (var itemName in LootItemNames)
+        {
+            var row = LootRow(itemName);
+            if (row == null) continue;
+            ResetRect(row.Find("Quantity"));
+            ResetRect(row.Find("Subtotal"));
+        }
+    }
+
+    private Transform FindValueRect(string rowPath) => transform.Find(rowPath + "/Value");
+    private Transform FindTotalValueRect(string rowPath) => transform.Find(rowPath + "/Total_Value");
+
+    private static void ResetRect(Transform t)
+    {
+        if (t == null) return;
+        t.localRotation = Quaternion.identity;
+        t.localScale = Vector3.one;
     }
 
     private IEnumerator AnimateResume()
@@ -108,8 +149,6 @@ public class ResumePainelUI : MonoBehaviour
 
         label.color = SurvivedColor;
         var rect = label.rectTransform;
-        Quaternion baseRotation = rect.localRotation;
-        Vector3 baseScale = rect.localScale;
 
         float t = 0f;
         while (t < growDuration)
@@ -118,12 +157,12 @@ public class ResumePainelUI : MonoBehaviour
             float p = Mathf.Clamp01(t / growDuration);
             int current = Mathf.RoundToInt(Mathf.Lerp(0, finalElapsedSeconds, p));
             label.text = $"{current}s / {totalSeconds}s";
-            ApplyGrowJuice(rect, baseRotation, baseScale, p);
+            ApplyGrowJuice(rect, p);
             yield return null;
         }
         label.text = $"{finalElapsedSeconds}s / {totalSeconds}s";
-        rect.localRotation = baseRotation;
-        rect.localScale = baseScale;
+        rect.localRotation = Quaternion.identity;
+        rect.localScale = Vector3.one;
     }
 
     private void AddCombatGrowCoroutines(List<Coroutine> list)
@@ -198,8 +237,6 @@ public class ResumePainelUI : MonoBehaviour
         if (label == null) yield break;
 
         var rect = label.rectTransform;
-        Quaternion baseRotation = rect.localRotation;
-        Vector3 baseScale = rect.localScale;
 
         float t = 0f;
         while (t < growDuration)
@@ -208,19 +245,24 @@ public class ResumePainelUI : MonoBehaviour
             float p = Mathf.Clamp01(t / growDuration);
             double current = finalValue * (double)p;
             label.text = LargeNumberFormatter.Format(current);
-            ApplyGrowJuice(rect, baseRotation, baseScale, p);
+            ApplyGrowJuice(rect, p);
             yield return null;
         }
         label.text = LargeNumberFormatter.Format(finalValue);
-        rect.localRotation = baseRotation;
-        rect.localScale = baseScale;
+        rect.localRotation = Quaternion.identity;
+        rect.localScale = Vector3.one;
     }
 
-    private static void ApplyGrowJuice(RectTransform rect, Quaternion baseRotation, Vector3 baseScale, float p)
+    // Base SEMPRE identity/one (nunca lido do rect atual) — de propósito, depois do achado real
+    // de "fica torto pra sempre": ler rect.localRotation/localScale como "base" deixava o bug
+    // se perpetuar (uma animação interrompida no meio virava a "base" da próxima, compondo o
+    // erro a cada reabertura do painel). Nenhum destes labels tem rotação/escala própria por
+    // design (conferido na cena) — o "wobble" é sempre em torno do neutro de verdade.
+    private static void ApplyGrowJuice(RectTransform rect, float p)
     {
         float wobbleDegrees = Mathf.Sin(p * Mathf.PI * 3f) * Mathf.Lerp(10f, 0f, p);
         float scalePulse = 1f + Mathf.Sin(p * Mathf.PI) * 0.2f;
-        rect.localRotation = baseRotation * Quaternion.Euler(0f, 0f, wobbleDegrees);
-        rect.localScale = baseScale * scalePulse;
+        rect.localRotation = Quaternion.Euler(0f, 0f, wobbleDegrees);
+        rect.localScale = Vector3.one * scalePulse;
     }
 }
