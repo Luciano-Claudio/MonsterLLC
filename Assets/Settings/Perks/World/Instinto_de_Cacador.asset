@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_instinto_cacador
   displayName: "Hunter's Instinct"
-  description: Gold per kill +40%/rank.
+  description: Gold per kill x(rank+1) - multiplies with other gold perks.
   icon: {fileID: 2254499794503232846, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
   costPerRank:
   - 10

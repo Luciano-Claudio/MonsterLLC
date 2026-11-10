@@ -90,6 +90,10 @@ public class Barbarian : HeroController
     [SerializeField] private float shiftCooldownReductionOnKillPercent = 0f; // #23 "Fôlego Recuperado"
     [SerializeField] private float shiftShieldPercentOfMaxHealth = 0f; // #24 "Último Fôlego"
     [SerializeField] private float shiftRegenPercentPerSecond = 0f; // #25 "Renovação Selvagem"
+    // Mesmo acumulador do regen de Mundo (HeroController.UpdateHpRegen) — 1 Floating Text por
+    // segundo com o total curado no intervalo, nunca 1 por frame.
+    private float shiftRegenTextAccumulator;
+    private float shiftRegenTextElapsed;
     [SerializeField] private float lowHpShiftCooldownReductionPercent = 0f; // #26 "Instinto de Sobrevivência"
     [SerializeField] private float lowHpShiftCooldownThresholdPercent = 30f; // 🔢 ajustável — "abaixo de 30% HP"
     [SerializeField] private float shiftMaxHealthBonusPercent = 0f; // #27 "Vontade Inquebrável"
@@ -207,10 +211,24 @@ public class Barbarian : HeroController
         {
             secondaryAbilityRemaining -= Time.deltaTime;
 
-            // #25 "Renovação Selvagem" — regen contínuo, só enquanto o Shift está ativo. Sem
-            // texto flutuante (mesmo motivo do regen de Mundo em HeroController.UpdateHpRegen)
-            // — tick todo frame spamava "+0" e lagava o jogo.
-            if (shiftRegenPercentPerSecond > 0f) Heal(EffectiveMaxHealth * shiftRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
+            // #25 "Renovação Selvagem" — regen contínuo, só enquanto o Shift está ativo.
+            // Acumula e mostra 1 Floating Text por segundo (mesmo critério do regen de Mundo em
+            // HeroController.UpdateHpRegen) — nunca 1 por frame (bugado/lag) nem nenhum (sem
+            // feedback nenhum).
+            if (shiftRegenPercentPerSecond > 0f)
+            {
+                float shiftHealed = Heal(EffectiveMaxHealth * shiftRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
+                shiftRegenTextAccumulator += shiftHealed;
+            }
+
+            shiftRegenTextElapsed += Time.deltaTime;
+            if (shiftRegenTextElapsed >= 1f)
+            {
+                shiftRegenTextElapsed = 0f;
+                if (shiftRegenTextAccumulator > 0f)
+                    GameEvents.HealReceived(GetFloatingTextSpawnPosition(), shiftRegenTextAccumulator);
+                shiftRegenTextAccumulator = 0f;
+            }
 
             if (secondaryAbilityRemaining <= 0f)
             {

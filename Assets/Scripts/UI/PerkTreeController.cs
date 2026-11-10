@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 // Orquestrador da árvore de Perks de 1 herói (GDD Deadline 8.1, Seção 6/7.3/8-38, R9/R10) — vive
 // no GameObject "Perk_Painel". Cada herói agora tem seu próprio "Content" (duplicado pelo
@@ -52,6 +54,13 @@ public class PerkTreeController : MonoBehaviour
     private readonly Dictionary<PerkTreeId, List<List<PerkButtonUI>>> treeLines = new();
     private readonly Dictionary<PerkTreeId, List<PerkConnectionUI>> treeConnections = new();
 
+    // "Hero_Perks_x/120" (filho direto de Perk_Painel) — pedido do usuário: o "total" não é
+    // mais a CONTAGEM de perks (ex. hoje 120 = 4 árvores × 30), e sim a soma de todos os RANKS
+    // de cada perk (ex. Vigor com 5 ranks conta como 5, não como 1) — então o número muda
+    // conforme o conteúdo real de cada herói (90 bespoke + 30 Mundo + Central), nunca mais um
+    // "120" fixo.
+    private TMP_Text heroPerksCounterLabel;
+
     private void Awake()
     {
         if (contentsRoot == null)
@@ -59,6 +68,15 @@ public class PerkTreeController : MonoBehaviour
             Debug.LogError("[PerkTreeController] Campo \"contentsRoot\" não configurado — arraste Perk_Painel/Viewport.", this);
             return;
         }
+
+        // "/" faz parte do nome, não é caminho — mesmo motivo de "//World" etc. abaixo, por
+        // isso FindDirectChild em vez de transform.Find.
+        heroPerksCounterLabel = FindDirectChild(transform, "Hero_Perks_x/120")?.GetComponent<TMP_Text>();
+
+        // "Redefine" — Ctrl+Z de 1 compra por clique (PerkState.UndoLastPurchase), pedido do
+        // usuário.
+        var redefineButton = FindDirectChild(transform, "Redefine")?.GetComponent<Button>();
+        if (redefineButton != null) redefineButton.onClick.AddListener(HandleRedefineClicked);
 
         var content = ResolveHeroContent();
         if (content == null) return; // ResolveHeroContent já logou o motivo
@@ -210,6 +228,44 @@ public class PerkTreeController : MonoBehaviour
                 foreach (var button in lines[line]) button.Refresh(unlocked);
             }
         }
+
+        UpdateHeroPerksCounter();
+    }
+
+    private void HandleRedefineClicked()
+    {
+        if (PerkState.UndoLastPurchase()) RefreshAll();
+    }
+
+    // Soma RANKS, não perks — um perk de 5 ranks pesa 5 no total, não 1 (pedido do usuário).
+    // Só conta quem tem PerkDefinitionSO de verdade (slot vazio/placeholder nunca entra aqui,
+    // já que treeLines só guarda PerkButtonUI criado quando a definição não é null — ver
+    // BuildTree).
+    private void UpdateHeroPerksCounter()
+    {
+        if (heroPerksCounterLabel == null) return;
+
+        int purchasedRanks = 0;
+        int totalRanks = 0;
+
+        void Count(PerkDefinitionSO definition)
+        {
+            if (definition == null) return;
+            int maxRank = definition.costPerRank.Length;
+            totalRanks += maxRank;
+            purchasedRanks += Mathf.Min(PerkState.GetRank(definition.perkId), maxRank);
+        }
+
+        Count(centralPerk);
+        foreach (var treeId in TreeIds)
+        {
+            if (!treeLines.TryGetValue(treeId, out var lines)) continue;
+            foreach (var line in lines)
+                foreach (var button in line)
+                    Count(button.Definition);
+        }
+
+        heroPerksCounterLabel.text = $"Hero perks: {purchasedRanks} / {totalRanks}";
     }
 
     // line==0: depende só do Central. line>0: depende de TODO perk com definição preenchida na

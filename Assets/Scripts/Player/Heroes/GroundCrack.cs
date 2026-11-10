@@ -118,7 +118,11 @@ public class GroundCrack : MonoBehaviour
             // "enemy == null" aqui usa o operador sobrecarregado da Unity (detecta objeto
             // destruído), não a referência crua.
             if (enemy == null) { staleScratch.Add(enemy); continue; }
-            enemy.TakeDamage(damageThisTick);
+            // isDirectPlayerHit: false — mesmo critério já usado pro DoT da Ultimate do Mage
+            // (dano repetido/em área não deve tremer a tela, só o hit direto do jogador; ver
+            // HitFeelController.HandleDamageTaken). Sem isso, o Ground Crack tiquando em vários
+            // inimigos ao mesmo tempo deixava a câmera tremendo sem parar.
+            enemy.TakeDamage(damageThisTick, isDirectPlayerHit: false);
         }
 
         foreach (var stale in staleScratch) overlapCount.Remove(stale);

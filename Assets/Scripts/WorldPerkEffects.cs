@@ -53,10 +53,19 @@ public static class WorldPerkEffects
         HeroController.CentralDamageMultiplier = centralUnlocked ? 1.5f : 1f;
         HeroController.CentralHealthMultiplier = centralUnlocked ? 1.5f : 1f;
 
+        // Balanceamento (2026-11-11, pedido do usuário): gold por kill é long (inteiro) — um
+        // bônus de +40%/75% em cima de uma base pequena (Dia 1: killGold=1) truncava pra ZERO
+        // de efeito ((long)(1 * 1.4f) = 1, sem mudança nenhuma). Virou multiplicativo entre os
+        // 2 perks em vez de somar % num pool só: cada perk tem seu PRÓPRIO multiplicador local
+        // (1 + rank, ou seja, rank1=x2, rank2=x3, rank3=x4...), e os 2 multiplicadores se
+        // multiplicam entre si (não somam) — rank1 de Hunter's Instinct (x2) + rank1 de War
+        // Spoils (x2) = x4 total, não x3. Isso também resolve o truncamento: base=1, rank1 de
+        // qualquer um dos 2 já vira 2 (dobro), nunca fica invisível.
         int instintoCacador = PerkState.GetRank(WorldPerkIds.InstintoCacador);
         int butimGuerra = PerkState.GetRank(WorldPerkIds.ButimGuerra);
-        float goldBonusPercent = instintoCacador * 40f + butimGuerra * 75f; // era 8f/15f (5x)
-        KillGoldReward.GoldBonusMultiplier = 1f + goldBonusPercent / 100f;
+        float hunterMultiplier = 1f + instintoCacador;
+        float warSpoilsMultiplier = 1f + butimGuerra;
+        KillGoldReward.GoldBonusMultiplier = hunterMultiplier * warSpoilsMultiplier;
 
         // Faro de Saque (GDD: "chance/quantidade de drop de loot +8%/rank") — os 2 efeitos
         // juntos, mesma magnitude. Quantidade reaproveita o multiplicador que já existe

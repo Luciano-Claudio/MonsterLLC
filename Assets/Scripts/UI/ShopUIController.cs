@@ -83,6 +83,17 @@ public class ShopUIController : MonoBehaviour
         ShowOnlyPainel(resumePainel); // sempre reabre na aba Resume, nunca lembra a aba de uma visita anterior
         UpdateStartDayTexts();
 
+        // "Redefine" (Perk_Painel) nunca pode desfazer uma compra de uma visita ANTERIOR à
+        // Loja — zera a pilha toda vez que ela abre (pedido do usuário).
+        PerkState.ClearPurchaseHistory();
+
+        // Achado real do usuário: texto flutuante de cura (regen, Orc Shaman) às vezes
+        // sobrevivia à virada de dia (DayResolver.DestroyAll já roda lá, mas um texto que
+        // nasce bem na corrida de frames da virada escapa) e ficava preso pra sempre na tela,
+        // mesmo com a Loja já aberta. Chamar de novo aqui, bem mais tarde no fluxo (só quando
+        // a Loja já está visível de verdade), fecha essa brecha de vez.
+        FloatingCombatText.DestroyAll();
+
         if (DayResolver.PlayerSurvivedLastDay && ChunkTerrainGenerator.Instance != null)
             ChunkTerrainGenerator.Instance.BeginBackgroundRegeneration(MainMenuUI.CurrentRun.day + 1);
     }

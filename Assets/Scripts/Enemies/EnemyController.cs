@@ -400,11 +400,28 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // stats.attackDamage base) sobrescrevem isso depois de base.Awake() — ver
         // GoblinSapperController.
         rvo = GetComponent<RVOController>(); // cacheado (campo, não var local) — Simulation Rings liga/desliga a cada frame, sem GetComponent repetido
-        if (rvo != null) rvo.priority = DamageToRvoPriority(stats.attackDamage);
+        if (rvo != null)
+        {
+            // Jitter pequeno e fixo por instância (pedido do usuário, bug reportado no dia 2):
+            // monstros da MESMA espécie têm o MESMO stats.attackDamage, logo a mesma prioridade
+            // "pura" — numa fresta estreita, 2+ deles com prioridade EXATAMENTE igual entravam
+            // em oscilação simétrica (cada um cedendo espaço pro outro ao mesmo tempo, pra
+            // sempre, se esbarrando sem ninguém passar). A regra do usuário "quem dá mais dano
+            // tem prioridade maior" continua intacta — o jitter é pequeno o bastante pra nunca
+            // inverter a ordem entre monstros de dano bem diferente, só desempatar os idênticos.
+            // Guardado em rvoBasePriority (não só aplicado direto) porque o escape valve de
+            // "travado" abaixo precisa saber pra qual valor voltar depois do boost temporário.
+            rvoBasePriority = Mathf.Clamp01(DamageToRvoPriority(stats.attackDamage) + Random.Range(-RvoPriorityJitterRange, RvoPriorityJitterRange));
+            rvo.priority = rvoBasePriority;
+        }
+        stuckCheckPosition = transform.position;
     }
 
     private const float RvoPriorityReferenceDamage = 25f; // 🔢 dano "alto" de referência — igual/acima disso, satura em prioridade máxima
     private const float RvoPriorityFloor = 0.2f; // 🔢 nem o monstro mais fraco cede espaço pra todo mundo sempre
+    private const float RvoPriorityJitterRange = 0.03f; // 🔢 variação por instância pra desempatar prioridades idênticas (ver Awake)
+
+    private float rvoBasePriority; // prioridade "normal" (dano + jitter) — pra onde o boost de stuck-escape decai de volta
 
     protected static float DamageToRvoPriority(float damage) =>
         Mathf.Lerp(RvoPriorityFloor, 1f, Mathf.Clamp01(damage / RvoPriorityReferenceDamage));
@@ -560,6 +577,78 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         if (!isInCombat) UpdatePatrol(decisionDeltaTime);
         else UpdateCombat(decisionDeltaTime);
+
+        UpdateStuckEscape(decisionDeltaTime);
+    }
+
+    // GDD Deadline 8.1 — "trava de congestionamento" (bug reportado pelo usuário no dia 2: vários
+    // monstros se esbarrando numa fresta estreita, nenhum passando). Correção do usuário feita
+    // via jitter de prioridade (Awake) cobre o empate EXATO entre monstros idênticos, mas não
+    // cobre todo caso (ex.: 3+ monstros, ou um deles vindo de uma direção que ainda empaca mesmo
+    // com prioridades levemente diferentes) — esta é a 2ª medida de segurança, pedida junto.
+    //
+    // Importante (correção do próprio usuário): o monstro travado NÃO fica parado/velocity zero —
+    // ele continua se sacolejando (direita/esquerda/cima/baixo) sem progresso real. Por isso isto
+    // mede DESLOCAMENTO LÍQUIDO ao longo de um intervalo (não ai.isStopped/velocidade instantânea).
+    // O limiar escala com a própria velocidade do monstro (stats.moveSpeed), não um valor fixo em
+    // unidades do mundo — assim funciona igual pra monstros lentos e rápidos sem precisar calibrar
+    // por espécie.
+    private Vector2 stuckCheckPosition;
+    private float stuckCheckTimer;
+    private int stuckStreak;
+    private float priorityBoostUntil; // Time.time em que o boost acaba e a prioridade volta a rvoBasePriority; 0 = sem boost ativo
+
+    private const float StuckCheckInterval = 1f; // 🔢 a cada quanto tempo mede o deslocamento líquido
+    private const float StuckMinProgressRatio = 0.15f; // 🔢 abaixo de 15% da distância que andaria livre nesse intervalo = "sem progresso real"
+    private const int StuckStreakToTrigger = 2; // 🔢 nº de checagens consecutivas sem progresso antes de ativar o escape valve (~2s)
+    private const float PriorityBoostDuration = 3f; // 🔢 quanto tempo o boost de prioridade dura antes de decair de volta ao normal
+
+    private void UpdateStuckEscape(float deltaTime)
+    {
+        if (ai == null || rvo == null) return;
+
+        if (priorityBoostUntil > 0f)
+        {
+            if (Time.time < priorityBoostUntil) return; // ainda dentro do boost — não reavalia nem decai ainda
+            rvo.priority = rvoBasePriority; // boost expirou, volta ao normal (com o jitter de sempre)
+            priorityBoostUntil = 0f;
+        }
+
+        // Só mede progresso enquanto o monstro está de fato TENTANDO andar (destino liberado em
+        // MoveInDirection) — qualquer estado "parado de propósito" (emboscada dormente, colado em
+        // attackRadius, etc.) reseta a janela em vez de contar como travado.
+        if (ai.isStopped)
+        {
+            stuckStreak = 0;
+            stuckCheckTimer = 0f;
+            stuckCheckPosition = transform.position;
+            return;
+        }
+
+        stuckCheckTimer += deltaTime;
+        if (stuckCheckTimer < StuckCheckInterval) return;
+
+        float moved = Vector2.Distance(transform.position, stuckCheckPosition);
+        float expectedMinimum = stats.moveSpeed * stuckCheckTimer * StuckMinProgressRatio;
+        stuckCheckPosition = transform.position;
+        stuckCheckTimer = 0f;
+
+        if (moved < expectedMinimum)
+        {
+            stuckStreak++;
+            if (stuckStreak >= StuckStreakToTrigger)
+            {
+                rvo.priority = 1f; // escape valve — prioridade máxima temporária, os outros cedem espaço pra este sair do congestionamento
+                priorityBoostUntil = Time.time + PriorityBoostDuration;
+                ai.SearchPath(); // força recalcular rota imediatamente, não espera o próximo throttle de 0.3s
+                nextRepathTime = Time.time + RepathInterval;
+                stuckStreak = 0;
+            }
+        }
+        else
+        {
+            stuckStreak = 0;
+        }
     }
 
     // GDD Seção 22: antes de detectar o jogador, alterna idle/walk aleatoriamente. A

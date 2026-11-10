@@ -867,7 +867,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // curava nada) e ainda lagava o jogo de tanto spawnar objeto. Cura de verdade (Cleric,
     // lifesteal, poção) continua com texto — só o drip passivo fica silencioso (a barra de HP
     // já mostra a cura subindo suave, não precisa do texto por frame).
-    protected void Heal(float amount, bool showFloatingText = true)
+    // Devolve o quanto curou de verdade (clampado) — UpdateHpRegen() usa isso pra acumular e
+    // mostrar 1 texto só de tempos em tempos, em vez de a cada frame.
+    protected float Heal(float amount, bool showFloatingText = true)
     {
         float healthBefore = stats.health;
         stats.health = Mathf.Min(EffectiveMaxHealth, stats.health + amount);
@@ -876,6 +878,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // Mostra só o que realmente curou — evita "+50" quando faltava 3 de vida.
         float actualHealed = stats.health - healthBefore;
         if (showFloatingText && actualHealed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), actualHealed);
+        return actualHealed;
     }
 
     private void StartDamageReaction()
@@ -942,10 +945,30 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     // Recuperação/Metabolismo Acelerado/Fôlego Eterno (World Perks) — % do HP MÁXIMO efetivo
     // por segundo, contínuo (não em degraus). Heal() já cuida do clamp/evento/Floating Text.
+    //
+    // Achado real do usuário: silenciar o texto por completo (showFloatingText: false) resolveu
+    // o spam/lag de antes, mas também tirou o feedback inteiro — "deveria aparecer, só que 1 de
+    // cada vez". Em vez de 1 texto por frame (bugado) ou nenhum (sem feedback), acumula o quanto
+    // curou de verdade e solta 1 texto só a cada hpRegenTextInterval segundos, com o total
+    // acumulado daquele intervalo — nunca mais que 1 por segundo, nunca "+0" (só soma e mostra
+    // se curou alguma coisa de verdade no intervalo).
+    [SerializeField] private float hpRegenTextInterval = 1f;
+    private float hpRegenTextAccumulator;
+    private float hpRegenTextElapsed;
+
     private void UpdateHpRegen()
     {
         if (HpRegenPercentPerSecond <= 0f) return;
-        Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
+
+        float healed = Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
+        hpRegenTextAccumulator += healed;
+
+        hpRegenTextElapsed += Time.deltaTime;
+        if (hpRegenTextElapsed < hpRegenTextInterval) return;
+        hpRegenTextElapsed = 0f;
+
+        if (hpRegenTextAccumulator > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), hpRegenTextAccumulator);
+        hpRegenTextAccumulator = 0f;
     }
 
     private void TriggerDamageFlash()
