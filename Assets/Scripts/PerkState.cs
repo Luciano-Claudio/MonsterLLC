@@ -32,6 +32,12 @@ public static class PerkState
         int rank = GetRank(perk.perkId);
         if (rank >= perk.costPerRank.Length) return false; // já no rank máximo
 
+        // Pré-requisito entre perks (ex.: Ranger "Imortal em Combate" exige "Veterano de
+        // Guerra" já comprado) — trava a compra em si, não só o efeito; o jogador nem consegue
+        // pagar por este perk antes do pré-requisito ter rank >= 1.
+        if (!string.IsNullOrEmpty(perk.prerequisitePerkId) && GetRank(perk.prerequisitePerkId) < 1)
+            return false;
+
         return run.gold >= perk.costPerRank[rank];
     }
 

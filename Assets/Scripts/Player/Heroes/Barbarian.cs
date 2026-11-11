@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Barbarian : HeroController
 {
+    public override string CentralPerkId => BarbarianPerkIds.Central;
+
     // 4 triggers fixos (um por diagonal) — mesmo padrão do golpe direcional do Bestiário
     // (MeleeEnemyController.GetHitboxForFacing, Seção 22): o GameObject nunca vira, só a
     // animação muda, então o trigger certo depende de onde a mira apontava quando o golpe

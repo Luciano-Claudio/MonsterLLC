@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: central_awakening_ranger
   displayName: Awakening of Power
-  description: "Awakens the hero's full potential - damage and max health increase by 50%."
+  description: Awakens the hero's full potential - damage and max health +20%/rank, up to +100% at rank 5.
   icon: {fileID: 0}
   costPerRank:
   - 5
+  - 10
+  - 25
+  - 50
+  - 100

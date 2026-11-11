@@ -71,18 +71,182 @@ public class Ranger : HeroController
     private bool isCamouflaged; // só true durante a fase "during" — controla o tick de cura
     private float camouflageElapsed;
 
+    // #25 "Veterano de Guerra" (GDD Seção 13) — troca a camuflagem por um modo visível/
+    // vulnerável: sem animação de disfarce, sem bloquear isAttacking (Primary Attack/
+    // Ultimate/movimento continuam livres), sem IsPlayerUntargetable/IsDamageImmune (o
+    // "custo real" trocado) — só os efeitos de cura/etc. já comprados na árvore continuam
+    // rodando, no mesmo timing de sempre. Duração cai 30% (compensação do próprio perk).
+    // Decisão de design do GDD (Seção 13): "árvore única, sem fork" — não existem 2 trilhas
+    // separadas, é uma progressão só, e #25 troca o MODO no topo, mantendo #1-24 intactos.
+    private bool veteranoDeGuerraEnabled;
+
+    // true só enquanto a camuflagem CLÁSSICA (fases "escondendo"/"reaparecendo") está usando
+    // isAttacking pra bloquear tudo — nunca true no modo Veterano, onde isAttacking fica
+    // livre pro Primary Attack/Ultimate normais disparar WHILE isCamouflaged também é true.
+    // Sem este flag dedicado, a rede de segurança genérica do Attack/Ultimate em Update()
+    // (que hoje usa "!isCamouflaged") ficaria cega pra qualquer ataque disparado durante um
+    // Shift no modo Veterano, porque isCamouflaged fica true nesse modo também.
+    private bool isAttackingForCamouflage;
+
+    // #26 "Postura de Combate" + #30 "Imortal em Combate" — dano recebido -%, só enquanto o
+    // Shift estiver ativo (os 2 somam, igual o padrão shiftDamageReductionPercent do
+    // Barbarian). #30 exige #25 comprado (PerkDefinitionSO.prerequisitePerkId, checado em
+    // PerkState.CanAfford() — não precisa ser checado de novo aqui).
+    private float shiftDamageReductionPercent;
+
+    // #27 "Fúria Curativa" — dano causado +%, só enquanto o Shift estiver ativo. Funciona nos
+    // 2 modos, mas só é visível de verdade no modo Veterano — no modo clássico o Ranger não
+    // ataca durante o disfarce, então nunca há dano causado pra bonificar.
+    private float shiftDamageDealtBonusPercent;
+
+    // #28 "Vigor de Batalha" — cura adicional (já em fração de Vida Máxima/tick, não %
+    // inteiro) somada à cura base (secondaryAbilityHealPercentPerTick) — funciona nos 2 modos.
+    private float shiftExtraHealPercentPerTick;
+
+    public override string CentralPerkId => RangerPerkIds.Central;
+
+    // Valores de design (Inspector) capturados 1x em Awake() — RecomputeEsquerda/Cima()
+    // escalam a PARTIR destes, nunca do valor já escalado (senão cada compra de perk
+    // composria em cima da última, igual o bug que já corrigimos no Barbarian).
+    private float baseArrowSpeed, baseArrowLifetime, baseArrowKnockbackForce;
+    private int baseArrowCount;
+    private float baseKnifeFlightSpeed, baseKnifeMaxDistance, baseKnifeFlightKnockbackForce;
+    private float baseKnifeGroundedDuration, baseKnifeGroundedRadius;
+    private float baseBleedDamageMultiplier, baseKnifeBleedDuration;
+    private float baseSecondaryAbilityHealPercentPerTick, baseSecondaryAbilityHealTickInterval;
+
+    // Direita #13 "Emboscada Perfeita" — crítico garantido (x2) no 1º disparo após sair da
+    // camuflagem, igual #26 "Ataque Furtivo" mas forçado, não um %/rank.
+    private bool emboscadaPerfeitaEnabled;
+    private bool emboscadaPerfeitaPending;
+
+    // #14/#22 — redução de dano CONDICIONAL por limiar de HP (somam com
+    // shiftDamageReductionPercent em GetConditionalDamageReductionPercent).
+    private float lowHpDamageReductionPercent; // #14, abaixo de 20% HP
+    private float criticalHpDamageReductionPercent; // #22, abaixo de 10% HP, binário
+
+    // #16 "Véu Prolongado" — imunidade continua por X segundos depois de sair da camuflagem
+    // CLÁSSICA (curto de propósito, GDD).
+    private float postCamouflageImmunityDuration;
+    private float postCamouflageImmunityRemaining;
+
+    // #17 "Sombra Vingativa" — ao reaparecer, IsPlayerUntargetable continua true por mais X
+    // segundos antes de soltar de vez (sem isso, EnemyController.ForceImmediateAggro() re-
+    // adquire o alvo no exato frame em que a camuflagem acaba, porque GlobalAggroActive
+    // continua true — ver comentário em EnemyController.Update()).
+    private float untargetableGraceDuration;
+    private float untargetableGraceRemaining;
+
+    // #18 "Instinto de Sobrevivência" — cooldown -50%/rank SÓ abaixo de 30% HP, por cima do
+    // -%/rank incondicional de #8-11 (baseCooldownReductionPercent) — precisa reavaliar a
+    // cada frame (SetSecondaryCooldownMultiplier é um setter, não reativo, ao contrário de
+    // GetConditionalDamageReductionPercent/GetConditionalMaxHealthBonusPercent, que são lidos
+    // na hora certa pelo próprio HeroController).
+    private float baseCooldownReductionPercent;
+    private float lowHpCooldownReductionPercent;
+
+    // #19 "Fôlego Sombrio" — HP máximo temporário +%/rank por alguns segundos ao sair da
+    // camuflagem (não cura o atual, só abre um colchão) — GDD não dá o número de segundos.
+    private float postCamouflageMaxHealthBonusPercent;
+    private float postCamouflageMaxHealthRemaining;
+    private const float PostCamouflageMaxHealthDuration = 5f; // 🔢 GDD: "alguns segundos", sem número exato
+
+    // #21 "Instinto Predador" — regen passivo fora do disfarce (inclui tanto parado quanto
+    // em combate normal, desde que não esteja escondido) — acumulador pra não repetir o bug
+    // de floating text por frame já corrigido no Barbarian/HeroController.
+    private float outOfCombatRegenPercentPerSecond;
+    private float predatorRegenAccumulator, predatorRegenElapsed;
+
+    // PENDENTE (não implementado ainda, de propósito — exigem sistema novo que não existe
+    // em nenhum outro herói, melhor desenhar com calma em vez de arriscar algo frágil):
+    // #12 "Disfarce Perfeito" (aura de lentidão em monstros próximos durante o disfarce),
+    // #15 "Retorno Sombrio" (reembolso de % do cooldown ao cancelar manualmente — timing
+    // exato de quando o cooldown real começa a contar precisa ser confirmado antes de
+    // implementar), #20 "Reflexos nas Sombras" (fases mais rápidas via Animator.speed global
+    // — risco de travar a velocidade de TODAS as animações se alguma interrupção no meio da
+    // transição, ex. morte, não resetar de volta pra 1x), #23 "Armadilha Camuflada"
+    // (refletir dano de contato — precisa de referência ao atacante, que o TakeDamage() atual
+    // não repassa). Os ranks desses 4 continuam compráveis normalmente, só sem efeito ainda.
+
+    // Esquerda — "Dano" (Mira Afiada...Disparo Supremo) soma aqui, alimenta
+    // attackDamageMultiplier através de GetPrimaryDamageMultiplier().
+    private float primaryDamagePercent;
+
+    // #26 "Ataque Furtivo" — bônus só no PRIMEIRO disparo depois de sair da camuflagem
+    // (qualquer um dos 2 modos). stealthAttackBonusPercent é o valor do perk; o flag abaixo
+    // é consumido (1x só) no próximo AnimationShootEvent.
+    private float stealthAttackBonusPercent;
+    private bool stealthAttackBonusPending;
+
+    // #27 "Tiro à Distância" — dano +%/rank conforme a distância percorrida, até o alcance
+    // máximo (repassado pra RangerArrow calcular na hora do hit, onde a distância real
+    // percorrida já é conhecida).
+    private float distanceDamageBonusPercent;
+
+    // #28 "Flechas Sangrentas" — chance/rank de aplicar Bleeding por flecha (repassado pra
+    // RangerArrow rolar no hit).
+    private float arrowBleedChancePercent;
+
+    // #29/#30 — gates da Esquerda, repassados pra RangerArrow decidir o comportamento no
+    // hit/fim de vida (ver RangerArrow.Launch()).
+    private bool boomerangArrowEnabled;
+    private bool infinitePierceEnabled;
+
+    // Cima — "Dano em voo" (Lâmina Certeira...Lâmina Suprema) alimenta
+    // HeroController.UltimateDamageMultiplier (mesmo static usado pelo Barbarian - genérico,
+    // não exclusivo de 1 herói). "Dano no chão" não tem multiplicador próprio — vira sempre
+    // metade do dano em voo (pedido do usuário, mesmo padrão do Ground Crack do Barbarian:
+    // nunca mais um número fixo desconectado do personagem).
+    private float bleedDamagePercent; // "Dano de sangramento" soma aqui
+
+    // #6-8 "Facas Fincadas"/"Lâminas Cravadas"/"Armadilha Mortal" — multiplicam o dano no
+    // chão JÁ calculado (metade do dano em voo), nunca o substituem (igual Fenda Enfurecida/
+    // Selvagem em cima do Ground Crack do Barbarian).
+    private float groundDamageBonusMultiplier = 1f;
+
+    // #29 "Segunda Rajada" — 2ª rodada automática de 8 facas, 1s depois da primeira.
+    private bool segundaRajadaEnabled;
+    private bool segundaRajadaPending;
+    private float segundaRajadaElapsed;
+    private const float SegundaRajadaDelay = 1f;
+
+    // #30 "Chuva de Lâminas" — cada lançamento solta 2 facas (±11,25°) em vez de 1.
+    private bool chuvaDeLaminasEnabled;
+    private const float ChuvaDeLaminasAngleOffset = 11.25f;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        baseArrowSpeed = arrowSpeed;
+        baseArrowLifetime = arrowLifetime;
+        baseArrowKnockbackForce = arrowKnockbackForce;
+        baseArrowCount = arrowCount;
+        baseKnifeFlightSpeed = knifeFlightSpeed;
+        baseKnifeMaxDistance = knifeMaxDistance;
+        baseKnifeFlightKnockbackForce = knifeFlightKnockbackForce;
+        baseKnifeGroundedDuration = knifeGroundedDuration;
+        baseKnifeGroundedRadius = knifeGroundedRadius;
+        baseBleedDamageMultiplier = bleedDamageMultiplier;
+        baseKnifeBleedDuration = knifeBleedDuration;
+        baseSecondaryAbilityHealPercentPerTick = secondaryAbilityHealPercentPerTick;
+        baseSecondaryAbilityHealTickInterval = secondaryAbilityHealTickInterval;
+    }
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
 
         base.Update();
 
-        // !isCamouflaged aqui é essencial: a fase "during" da camuflagem tem seu próprio
+        // !isAttackingForCamouflage aqui é essencial: a camuflagem CLÁSSICA tem seu próprio
         // teto de tempo (secondaryAbilityMaxDuration, maior que maxActionDuration) e sua
         // própria rede de segurança (camouflageElapsed, logo abaixo) — não pode usar a
-        // mesma rede genérica do Attack/Ultimate, senão a camuflagem seria cortada cedo
-        // demais (maxActionDuration é calibrado pro tiro único do primário, bem mais curto).
-        if (isAttacking && !isCamouflaged)
+        // mesma rede genérica do Attack/Ultimate, senão seria cortada cedo demais
+        // (maxActionDuration é calibrado pro tiro único do primário, bem mais curto). Não dá
+        // pra usar "!isCamouflaged" aqui (como era antes) porque no modo Veterano (#25)
+        // isCamouflaged também fica true, só que isAttacking nesse caso é de um Primary
+        // Attack/Ultimate normal disparado em paralelo — esses SIM precisam da rede genérica.
+        if (isAttacking && !isAttackingForCamouflage)
         {
             actionElapsed += Time.deltaTime;
             if (actionElapsed >= maxActionDuration)
@@ -98,11 +262,61 @@ public class Ranger : HeroController
             secondaryAbilityHealTick.Tick(Time.deltaTime);
             if (secondaryAbilityHealTick.TryConsume())
             {
-                Heal(stats.maxHealth * secondaryAbilityHealPercentPerTick);
+                Heal(stats.maxHealth * (secondaryAbilityHealPercentPerTick + shiftExtraHealPercentPerTick));
             }
 
             camouflageElapsed += Time.deltaTime;
-            if (camouflageElapsed >= secondaryAbilityMaxDuration) EndCamouflage();
+            // #25 "Veterano de Guerra" — a janela de efeitos dura 30% menos nesse modo.
+            float maxDuration = veteranoDeGuerraEnabled ? secondaryAbilityMaxDuration * 0.7f : secondaryAbilityMaxDuration;
+            if (camouflageElapsed >= maxDuration) EndCamouflage();
+        }
+
+        // #29 "Segunda Rajada" — dispara a 2ª rodada de 8 facas sozinha, sem novo input nem
+        // nova animação (GDD: "automática, 1s depois da primeira").
+        if (segundaRajadaPending)
+        {
+            segundaRajadaElapsed += Time.deltaTime;
+            if (segundaRajadaElapsed >= SegundaRajadaDelay)
+            {
+                segundaRajadaPending = false;
+                // knifeThrown trava 1 disparo por direção por rodada (evita duplicar via
+                // Blend Tree) — tem que resetar pra essa 2ª rodada poder lançar de novo.
+                for (int i = 0; i < knifeThrown.Length; i++) knifeThrown[i] = false;
+                for (int i = 0; i < 8; i++) ThrowKnife(i);
+            }
+        }
+
+        // #16/#17/#19 — janelas temporárias que decaem sozinhas (nunca negativas; não
+        // precisam de evento, só contagem regressiva simples).
+        if (postCamouflageImmunityRemaining > 0f) postCamouflageImmunityRemaining -= Time.deltaTime;
+        if (postCamouflageMaxHealthRemaining > 0f) postCamouflageMaxHealthRemaining -= Time.deltaTime;
+        if (untargetableGraceRemaining > 0f)
+        {
+            untargetableGraceRemaining -= Time.deltaTime;
+            if (untargetableGraceRemaining <= 0f) IsPlayerUntargetable = false;
+        }
+
+        // #18 "Instinto de Sobrevivência" — reavaliado todo frame (SetSecondaryCooldownMultiplier
+        // é um setter, não um hook reativo como GetConditionalDamageReductionPercent) porque
+        // depende do HP ATUAL, que muda a qualquer momento fora de uma compra de perk.
+        float hpFraction = stats.maxHealth > 0f ? stats.health / stats.maxHealth : 1f;
+        float effectiveCooldownReduction = baseCooldownReductionPercent + (hpFraction < 0.3f ? lowHpCooldownReductionPercent : 0f);
+        SetSecondaryCooldownMultiplier(1f - Mathf.Clamp01(effectiveCooldownReduction / 100f));
+
+        // #21 "Instinto Predador" — regen passivo fora do disfarce (acumulador pra não
+        // repetir o bug de floating text por frame, mesmo critério já corrigido no
+        // Barbarian/HeroController.UpdateHpRegen()).
+        if (!isCamouflaged && outOfCombatRegenPercentPerSecond > 0f)
+        {
+            float healed = Heal(stats.maxHealth * outOfCombatRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
+            predatorRegenAccumulator += healed;
+            predatorRegenElapsed += Time.deltaTime;
+            if (predatorRegenElapsed >= 1f)
+            {
+                predatorRegenElapsed = 0f;
+                if (predatorRegenAccumulator > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), predatorRegenAccumulator);
+                predatorRegenAccumulator = 0f;
+            }
         }
     }
 
@@ -127,16 +341,31 @@ public class Ranger : HeroController
         Vector2 forward = RawAimDirection;
         Vector2 lateral = new Vector2(-forward.y, forward.x);
 
+        // #26 "Ataque Furtivo" / Direita #13 "Emboscada Perfeita" — bônus/crítico garantido
+        // só no 1º disparo depois de sair da camuflagem, consumidos aqui (no disparo em si,
+        // não no hit — "primeiro disparo" é sobre a AÇÃO).
+        float stealthBonus = stealthAttackBonusPending ? stealthAttackBonusPercent / 100f : 0f;
+        stealthAttackBonusPending = false;
+        float guaranteedCritMultiplier = emboscadaPerfeitaPending ? 2f : 1f;
+        emboscadaPerfeitaPending = false;
+
         // GDD Seção 17.2: dano total do golpe é dividido igualmente entre as flechas —
-        // cada uma carrega essa fração como sua própria reserva de perfuração.
-        float reservePerArrow = stats.damage * attackDamageMultiplier / arrowCount;
+        // cada uma carrega essa fração como sua própria reserva de perfuração. Esquerda
+        // "Dano" (#1-5) + #26 + Central entram todos aqui, mesma fórmula do Barbarian.
+        float reservePerArrow = stats.damage * attackDamageMultiplier * (1f + primaryDamagePercent / 100f)
+            * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier() / arrowCount;
 
         Vector2[] offsets = ArrowFormation.GetOffsets(arrowCount, arrowLateralStep, arrowForwardStep);
         foreach (var offset in offsets)
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
             var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-            arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow, arrowSpeed, arrowLifetime, arrowKnockbackForce);
+            // #28 "Flechas Sangrentas" é "mesmo efeito da Ultimate" (GDD) — reaproveita a
+            // magnitude/duração do bleed das facas (bleedDamageMultiplier/knifeBleedDuration),
+            // só a CHANCE por flecha é própria desta família.
+            arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow, arrowSpeed, arrowLifetime, arrowKnockbackForce,
+                distanceDamageBonusPercent, arrowBleedChancePercent, stats.damage * bleedDamageMultiplier, knifeBleedDuration,
+                boomerangArrowEnabled, infinitePierceEnabled);
         }
     }
 
@@ -159,6 +388,13 @@ public class Ranger : HeroController
         actionElapsed = 0f;
         for (int i = 0; i < knifeThrown.Length; i++) knifeThrown[i] = false;
         AnimatorTrigger("UltimateTrigger");
+
+        // #29 "Segunda Rajada" — agenda a 2ª rodada automática (ver Update()).
+        if (segundaRajadaEnabled)
+        {
+            segundaRajadaPending = true;
+            segundaRajadaElapsed = 0f;
+        }
     }
 
     // 8 Animation Events, um por direção fixa (E/NE/N/NW/W/SW/S/SE, mesma ordem de
@@ -179,13 +415,42 @@ public class Ranger : HeroController
         knifeThrown[directionIndex] = true;
 
         Vector2 dir = DirectionUtility.DirectionFromIndex(directionIndex);
-        float flightDamage = stats.damage * ultimateDamageMultiplier;
-        float groundedDamage = stats.damage;
-        float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier;
+        float shiftMultiplier = GetShiftDamageDealtMultiplier();
+        // Cima "Dano em voo" (#1-5) + Central entram aqui, mesma fórmula do Barbarian.
+        float flightDamage = stats.damage * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier
+            * HeroController.CentralDamageMultiplier * shiftMultiplier;
+        // "Dano no chão" (pedido do usuário, 2026-11-11) nunca mais um número fixo
+        // desconectado do personagem — sempre metade do dano em voo, piso 1 (mesma solução
+        // do Ground Crack do Barbarian). #6-8 multiplicam ESSE valor por cima.
+        float groundedDamage = Mathf.Max(1f, flightDamage * 0.5f) * groundDamageBonusMultiplier;
+        float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier * shiftMultiplier;
 
+        if (chuvaDeLaminasEnabled)
+        {
+            // #30 "Chuva de Lâminas" — 2 facas por lançamento, pequeno desvio angular entre
+            // elas (a animação continua sendo a do estado mais próximo, só a trajetória real
+            // de voo diverge — mesmo critério de RawAimDirection na RangerArrow).
+            LaunchKnife(RotateDirection(dir, ChuvaDeLaminasAngleOffset), flightDamage, groundedDamage, bleedDamagePerSecond);
+            LaunchKnife(RotateDirection(dir, -ChuvaDeLaminasAngleOffset), flightDamage, groundedDamage, bleedDamagePerSecond);
+        }
+        else
+        {
+            LaunchKnife(dir, flightDamage, groundedDamage, bleedDamagePerSecond);
+        }
+    }
+
+    private void LaunchKnife(Vector2 dir, float flightDamage, float groundedDamage, float bleedDamagePerSecond)
+    {
         var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,
             knifeFlightSpeed, knifeMaxDistance, knifeFlightKnockbackForce, knifeGroundedDuration, knifeGroundedTickInterval, knifeGroundedRadius, knifeGroundedKnockbackForce, knifeBleedDuration);
+    }
+
+    private static Vector2 RotateDirection(Vector2 dir, float angleDeg)
+    {
+        float rad = angleDeg * Mathf.Deg2Rad;
+        float cos = Mathf.Cos(rad), sin = Mathf.Sin(rad);
+        return new Vector2(dir.x * cos - dir.y * sin, dir.x * sin + dir.y * cos);
     }
 
     // Animation Event, no fim do clipe da Ultimate.
@@ -196,32 +461,80 @@ public class Ranger : HeroController
 
     protected override void UseSecondaryAbility()
     {
+        // #25 "Veterano de Guerra" — modo visível: sem animação, sem bloquear isAttacking
+        // (Primary Attack/Ultimate/movimento continuam livres), sem IsPlayerUntargetable —
+        // só os efeitos de cura/etc. já comprados na árvore rodando, no mesmo timing de
+        // sempre (BeginCamouflageEffects() é a MESMA lógica que o modo clássico só dispara
+        // via Animation Event, ver AnimationCamouflageHiddenEvent()).
+        if (veteranoDeGuerraEnabled)
+        {
+            BeginCamouflageEffects();
+            return;
+        }
+
         // isAttacking bloqueia PrimaryAttack/UseUltimate (mesma trava que eles já usam) e,
         // como nenhum dos 3 estados da camuflagem é "Walk", o movimento já fica preso
         // sozinho (regra geral do HeroController, Seção 16) — não precisa de flag nova.
         isAttacking = true;
+        isAttackingForCamouflage = true;
         actionElapsed = 0f;
         AnimatorTrigger("SecondaryAbilityTrigger");
     }
 
     // Animation Event, no fim do clipe de "se escondendo" — o Animator já transiciona
     // sozinho pro estado "during" (Exit Time, sem condição), esse evento só sincroniza a
-    // parte de código (começa a cura, avisa os monstros que o player sumiu).
+    // parte de código (começa a cura, avisa os monstros que o player sumiu). Só existe no
+    // modo clássico (sem #25) — o modo Veterano chama BeginCamouflageEffects() direto em
+    // UseSecondaryAbility(), sem esperar clipe nenhum.
     public void AnimationCamouflageHiddenEvent()
     {
-        IsPlayerUntargetable = true;
+        BeginCamouflageEffects();
+        IsPlayerUntargetable = true; // só no modo clássico (único que dispara este evento)
+    }
+
+    // Compartilhado pelos 2 modos — liga o tick de cura e o timer da janela de efeitos. O
+    // que muda entre os modos é só QUEM chama isto (Animation Event vs. direto em
+    // UseSecondaryAbility()) e se IsPlayerUntargetable/IsDamageImmune também ligam.
+    private void BeginCamouflageEffects()
+    {
         isCamouflaged = true;
         camouflageElapsed = 0f;
         secondaryAbilityHealTick = new AttackCooldown(secondaryAbilityHealTickInterval);
     }
 
-    // Imune a dano a viagem INTEIRA da camuflagem (start + during + end), não só o "during"
-    // — um Slime de contato ou um golpe que já estava a caminho não pode contar enquanto o
-    // Ranger está se escondendo/escondido/reaparecendo.
-    protected override bool IsDamageImmune => isUsingSecondaryAbility;
+    // Imune a dano a viagem INTEIRA da camuflagem CLÁSSICA (start + during + end), não só o
+    // "during" — um Slime de contato ou um golpe que já estava a caminho não pode contar
+    // enquanto o Ranger está se escondendo/escondido/reaparecendo. #25 "Veterano de Guerra"
+    // remove essa imunidade por completo (GDD Seção 13: "o custo real" trocado por poder
+    // continuar lutando) — #26/#30 (redução de dano recebido) existem justamente pra
+    // compensar essa vulnerabilidade nova, não pra substituir a imunidade de antes.
+    // #16 "Véu Prolongado" soma uma janela extra de imunidade depois do modo clássico acabar
+    // (postCamouflageImmunityRemaining), fora da viagem normal da camuflagem.
+    protected override bool IsDamageImmune =>
+        (isUsingSecondaryAbility && !veteranoDeGuerraEnabled) || postCamouflageImmunityRemaining > 0f;
 
-    // Shift de novo durante a camuflagem — só faz efeito depois que "during" realmente
-    // começou (cancelar no meio da animação de esconder ainda não existe como caso de uso).
+    // #26 "Postura de Combate" + #30 "Imortal em Combate" (Shift ativo) + #14/#22 (limiar de
+    // HP baixo/crítico, incondicional do Shift) — todos somam.
+    protected override float GetConditionalDamageReductionPercent()
+    {
+        float percent = isUsingSecondaryAbility ? shiftDamageReductionPercent : 0f;
+        float hpFraction = stats.maxHealth > 0f ? stats.health / stats.maxHealth : 1f;
+        if (hpFraction < 0.2f) percent += lowHpDamageReductionPercent; // #14
+        if (hpFraction < 0.1f) percent += criticalHpDamageReductionPercent; // #22
+        return percent;
+    }
+
+    // #19 "Fôlego Sombrio" — HP máximo temporário, só durante a janela pós-camuflagem.
+    protected override float GetConditionalMaxHealthBonusPercent() =>
+        postCamouflageMaxHealthRemaining > 0f ? postCamouflageMaxHealthBonusPercent : 0f;
+
+    // #27 "Fúria Curativa" — dano causado +%, só enquanto o Shift estiver ativo.
+    private float GetShiftDamageDealtMultiplier() =>
+        isUsingSecondaryAbility ? 1f + shiftDamageDealtBonusPercent / 100f : 1f;
+
+    // Shift de novo durante a camuflagem — só faz efeito depois que a janela de efeitos
+    // realmente começou (cancelar no meio da animação de esconder, no modo clássico, ainda
+    // não existe como caso de uso — pré-existente, não mudou aqui).
     protected override void CancelSecondaryAbility()
     {
         if (!isCamouflaged) return;
@@ -229,19 +542,267 @@ public class Ranger : HeroController
     }
 
     // Compartilhado entre o cancelamento manual (Shift de novo) e o teto de tempo
-    // (secondaryAbilityMaxDuration estourado) — os dois terminam a camuflagem do mesmo jeito.
+    // (secondaryAbilityMaxDuration, já reduzido 30% no modo Veterano — estourado) — os dois
+    // terminam a janela de efeitos do mesmo jeito.
     private void EndCamouflage()
     {
         isCamouflaged = false;
-        IsPlayerUntargetable = false;
+        // #26 "Ataque Furtivo" / #13 "Emboscada Perfeita" — armam o bônus do próximo disparo,
+        // nos 2 modos (clássico ou Veterano) — "sair da camuflagem" vale pros 2, é a mesma
+        // janela de efeitos.
+        stealthAttackBonusPending = true;
+        if (emboscadaPerfeitaEnabled) emboscadaPerfeitaPending = true;
+
+        // #16/#17/#19 só fazem sentido no modo CLÁSSICO (onde existe disfarce/untargetable
+        // de verdade pra estender) — no modo Veterano não há nada pra prolongar, solta
+        // IsPlayerUntargetable na hora (nem chegou a ligar nesse modo, mas reforça por
+        // segurança).
+        if (veteranoDeGuerraEnabled)
+        {
+            IsPlayerUntargetable = false;
+            // Sem clipe de "reaparecendo" nesse modo — fecha a janela direto, sem animação
+            // (o Animation Event AnimationCamouflageEndEvent() nunca dispararia pra avisar).
+            isUsingSecondaryAbility = false;
+            return;
+        }
+
+        if (postCamouflageImmunityDuration > 0f) postCamouflageImmunityRemaining = postCamouflageImmunityDuration;
+        if (postCamouflageMaxHealthBonusPercent > 0f) postCamouflageMaxHealthRemaining = PostCamouflageMaxHealthDuration;
+        // #17 "Sombra Vingativa" — mantém IsPlayerUntargetable=true por mais X segundos em
+        // vez de soltar na hora (ver o decaimento em Update()); sem isso,
+        // EnemyController.ForceImmediateAggro() readquire o alvo no mesmo frame.
+        if (untargetableGraceDuration > 0f) untargetableGraceRemaining = untargetableGraceDuration;
+        else IsPlayerUntargetable = false;
+
         AnimatorTrigger("SecondaryAbilityEndTrigger");
     }
 
-    // Animation Event, no fim do clipe de "reaparecendo".
+    // Animation Event, no fim do clipe de "reaparecendo" — só existe no modo clássico.
     public void AnimationCamouflageEndEvent()
     {
         isAttacking = false;
+        isAttackingForCamouflage = false;
         isUsingSecondaryAbility = false;
+    }
+
+    // Tabela compartilhada pelos 2 capstones de dano (Disparo Supremo/Lâmina Suprema) — mesmo
+    // formato/escala usados em Fúria Definitiva/Juízo Final do Barbarian (rank1 = valor
+    // original do GDD, depois saltos crescentes até ~1,875×10^13% no rank 5), calibrados pra
+    // chegar no mesmo ~1,2 trilhão de dano-alvo contra os monstros Tier9/10 (ver chat
+    // 2026-11-11) com a família inteira (#1-5) maxada + Central.
+    private static readonly float[] DamageCapstonePercent = { 0f, 40f, 400f, 20000f, 4000000f, 18750000000000f };
+
+    protected override float UltimateChargeRequiredMultiplier => ultimateChargeRequiredPercent / 100f;
+    private float ultimateChargeRequiredPercent = 100f;
+
+    // Cima #27 "Instinto de Caça" (incondicional) + Direita #24 "Instinto Caçador" (só
+    // enquanto o Shift estiver em cooldown) — campos SEPARADOS de propósito: RecomputeCima()/
+    // RecomputeDireita() rodam em sequência dentro do mesmo RecomputePerkEffects(), e se os
+    // 2 escrevessem no MESMO campo, o que roda depois sobrescreveria o outro (bug real que
+    // cheguei a introduzir e corrigir ainda nesta sessão). Combinados só aqui, na leitura.
+    protected override float UltimateEnergyMultiplier =>
+        1f + (ultimateEnergyGainBonusPercent + (!IsSecondaryAbilityCooldownReady ? direitaEnergyGainBonusPercent : 0f)) / 100f;
+    private float ultimateEnergyGainBonusPercent;
+    private float direitaEnergyGainBonusPercent;
+
+    // Chamado no fim de Awake() (HeroController) e por PerkState a cada compra/undo.
+    public override void RecomputePerkEffects()
+    {
+        RecomputeEsquerda();
+        RecomputeDireita();
+        RecomputeCima();
+    }
+
+    private void RecomputeEsquerda()
+    {
+        // "Dano" (#1-5) — #5 "Disparo Supremo" é o capstone (tabela, não rank*X).
+        float disparoSupremoRank = PerkState.GetRank(RangerPerkIds.EsquerdaDisparoSupremo);
+        primaryDamagePercent = PerkState.GetRank(RangerPerkIds.EsquerdaMiraAfiada) * 8f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaPrecisaoMortal) * 15f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaTiroCerteiro) * 20f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaChuvaMortal) * 30f
+            + DamageCapstonePercent[Mathf.Clamp((int)disparoSupremoRank, 0, 5)];
+
+        float speedPercent = PerkState.GetRank(RangerPerkIds.EsquerdaFlechaVeloz) * 10f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaVentoCortante) * 15f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaVelocidadeSonica) * 20f;
+        arrowSpeed = baseArrowSpeed * (1f + speedPercent / 100f);
+
+        float rangePercent = PerkState.GetRank(RangerPerkIds.EsquerdaAlcanceEstendido) * 10f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaVistaDeAguia) * 15f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaHorizonteInfinito) * 20f;
+        arrowLifetime = baseArrowLifetime * (1f + rangePercent / 100f);
+
+        float knockbackPercent = PerkState.GetRank(RangerPerkIds.EsquerdaImpactoPerfurante) * 10f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaForcaDoDisparo) * 15f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaOndaDeChoque) * 20f;
+        arrowKnockbackForce = baseArrowKnockbackForce * (1f + knockbackPercent / 100f);
+
+        int extraArrows = PerkState.GetRank(RangerPerkIds.EsquerdaCarcazCheio)
+            + PerkState.GetRank(RangerPerkIds.EsquerdaChuvaDeFlechas)
+            + PerkState.GetRank(RangerPerkIds.EsquerdaTempestadeDeSetas);
+        arrowCount = baseArrowCount + extraArrows;
+
+        float cooldownPercent = PerkState.GetRank(RangerPerkIds.EsquerdaMaosRapidas) * 5f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaReflexoDeCacador) * 8f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaInstintoAgil) * 10f;
+        SetPrimaryCooldownMultiplier(1f - Mathf.Clamp01(cooldownPercent / 100f));
+
+        float animSpeedPercent = PerkState.GetRank(RangerPerkIds.EsquerdaDisparoRapido) * 10f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaFluidezDeCombate) * 15f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaPrecisaoVeloz) * 20f;
+        SetActionSpeedMultiplier(1f + animSpeedPercent / 100f);
+
+        float critPercent = PerkState.GetRank(RangerPerkIds.EsquerdaGolpeVital) * 5f
+            + PerkState.GetRank(RangerPerkIds.EsquerdaOlhoDeFalcao) * 8f;
+        HeroController.PrimaryCritChance = Mathf.Clamp01(critPercent / 100f);
+
+        stealthAttackBonusPercent = PerkState.GetRank(RangerPerkIds.EsquerdaAtaqueFurtivo) * 20f;
+        distanceDamageBonusPercent = PerkState.GetRank(RangerPerkIds.EsquerdaTiroADistancia) * 20f;
+        // 🔢 PLACEHOLDER — GDD (#28) só diz "%/rank" sem valor exato, mesmo critério usado
+        // nos placeholders do Barbarian/Direita do Ranger.
+        arrowBleedChancePercent = PerkState.GetRank(RangerPerkIds.EsquerdaFlechasSangrentas) * 15f;
+        boomerangArrowEnabled = PerkState.GetRank(RangerPerkIds.EsquerdaFlechaBumerangue) >= 1;
+        infinitePierceEnabled = PerkState.GetRank(RangerPerkIds.EsquerdaEnxamePerfurante) >= 1;
+    }
+
+    private void RecomputeCima()
+    {
+        // "Dano em voo" (#1-5) — #5 "Lâmina Suprema" é o capstone, mesma tabela de Disparo
+        // Supremo (famílias idênticas: 8/15/20/30/40%).
+        float laminaSupremaRank = PerkState.GetRank(RangerPerkIds.CimaLaminaSuprema);
+        float ultDanoPercent = PerkState.GetRank(RangerPerkIds.CimaLaminaCerteira) * 8f
+            + PerkState.GetRank(RangerPerkIds.CimaCorteProfundo) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaFuriaDasLaminas) * 20f
+            + PerkState.GetRank(RangerPerkIds.CimaTempestadeDeAco) * 30f
+            + DamageCapstonePercent[Mathf.Clamp((int)laminaSupremaRank, 0, 5)];
+        HeroController.UltimateDamageMultiplier = 1f + ultDanoPercent / 100f;
+
+        // "Dano no chão" (#6-8) — multiplica a metade-do-dano-em-voo já calculada em
+        // ThrowKnife(), nunca a substitui (pedido do usuário, 2026-11-11).
+        float groundPercent = PerkState.GetRank(RangerPerkIds.CimaFacasFincadas) * 8f
+            + PerkState.GetRank(RangerPerkIds.CimaLaminasCravadas) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaArmadilhaMortal) * 20f;
+        groundDamageBonusMultiplier = 1f + groundPercent / 100f;
+
+        float bleedPercent = PerkState.GetRank(RangerPerkIds.CimaSangramentoIntenso) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaHemorragia) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaFeridaFatal) * 20f;
+        bleedDamageMultiplier = baseBleedDamageMultiplier * (1f + bleedPercent / 100f);
+
+        float flightSpeedPercent = PerkState.GetRank(RangerPerkIds.CimaVooVeloz) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaLaminaRelampago) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaVelocidadeMortal) * 20f;
+        knifeFlightSpeed = baseKnifeFlightSpeed * (1f + flightSpeedPercent / 100f);
+
+        float flightRangePercent = PerkState.GetRank(RangerPerkIds.CimaAlcanceDaLamina) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaLongoVoo) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaHorizonteDeAco) * 20f;
+        knifeMaxDistance = baseKnifeMaxDistance * (1f + flightRangePercent / 100f);
+
+        float flightKnockbackPercent = PerkState.GetRank(RangerPerkIds.CimaImpactoDaLamina) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaForcaCortante) * 15f;
+        knifeFlightKnockbackForce = baseKnifeFlightKnockbackForce * (1f + flightKnockbackPercent / 100f);
+
+        float groundedDurationPercent = PerkState.GetRank(RangerPerkIds.CimaArmadilhaDuradoura) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaLaminaPersistente) * 15f
+            + PerkState.GetRank(RangerPerkIds.CimaCampoMinado) * 20f;
+        knifeGroundedDuration = baseKnifeGroundedDuration * (1f + groundedDurationPercent / 100f);
+
+        float groundedRadiusPercent = PerkState.GetRank(RangerPerkIds.CimaAreaAmpliada) * 10f
+            + PerkState.GetRank(RangerPerkIds.CimaZonaDePerigo) * 15f;
+        knifeGroundedRadius = baseKnifeGroundedRadius * (1f + groundedRadiusPercent / 100f);
+
+        float bleedDurationPercent = PerkState.GetRank(RangerPerkIds.CimaVenenoProlongado) * 15f;
+        knifeBleedDuration = baseKnifeBleedDuration * (1f + bleedDurationPercent / 100f);
+
+        float chargeReductionPercent = PerkState.GetRank(RangerPerkIds.CimaCanalizacaoRapida) * 5f;
+        ultimateChargeRequiredPercent = 100f - Mathf.Clamp(chargeReductionPercent, 0f, 100f);
+
+        ultimateEnergyGainBonusPercent = PerkState.GetRank(RangerPerkIds.CimaInstintoDeCaca) * 15f;
+
+        float ultCritPercent = PerkState.GetRank(RangerPerkIds.CimaGolpeCriticoSombrio) * 5f;
+        HeroController.UltimateCritChance = Mathf.Clamp01(ultCritPercent / 100f);
+
+        segundaRajadaEnabled = PerkState.GetRank(RangerPerkIds.CimaSegundaRajada) >= 1;
+        chuvaDeLaminasEnabled = PerkState.GetRank(RangerPerkIds.CimaChuvaDeLaminas) >= 1;
+    }
+
+    private void RecomputeDireita()
+    {
+        // "Cura por tick" (#1-4) — soma em PONTOS percentuais direto na fração de cura/tick
+        // (ex.: rank5 de Regeneração Furtiva sozinho = +10 pontos em cima dos 10% base = 20%
+        // por tick) — não é um multiplicador do valor, é aditivo, consistente com a escala
+        // dos números do GDD (2-5%) serem comparáveis à base (10%).
+        float healBonusPoints = PerkState.GetRank(RangerPerkIds.DireitaRegeneracaoFurtiva) * 2f
+            + PerkState.GetRank(RangerPerkIds.DireitaCuraSilenciosa) * 3f
+            + PerkState.GetRank(RangerPerkIds.DireitaRenovacaoNaSombra) * 4f
+            + PerkState.GetRank(RangerPerkIds.DireitaVidaOculta) * 5f;
+        secondaryAbilityHealPercentPerTick = baseSecondaryAbilityHealPercentPerTick + healBonusPoints / 100f;
+
+        // "Frequência da cura" (#5-7) — reduz o intervalo entre ticks.
+        float tickIntervalReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaPulsoVital) * 10f
+            + PerkState.GetRank(RangerPerkIds.DireitaFluxoConstante) * 15f
+            + PerkState.GetRank(RangerPerkIds.DireitaRitmoDaSombra) * 20f;
+        secondaryAbilityHealTickInterval = baseSecondaryAbilityHealTickInterval * (1f - Mathf.Clamp01(tickIntervalReductionPercent / 100f));
+
+        // "Cooldown" (#8-11) — incondicional; combinado com #18 (condicional, HP baixo) todo
+        // frame em Update(), não aqui (SetSecondaryCooldownMultiplier não é reativo).
+        baseCooldownReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaReflexoFurtivo) * 5f
+            + PerkState.GetRank(RangerPerkIds.DireitaInstintoSilencioso) * 8f
+            + PerkState.GetRank(RangerPerkIds.DireitaSombraVeloz) * 10f
+            + PerkState.GetRank(RangerPerkIds.DireitaDissipacaoRapida) * 15f;
+
+        // #12 "Disfarce Perfeito" — PENDENTE (ver comentário nos campos, topo do arquivo).
+        // #13 "Emboscada Perfeita" — binário.
+        emboscadaPerfeitaEnabled = PerkState.GetRank(RangerPerkIds.DireitaEmboscadaPerfeita) >= 1;
+
+        // #14 "Reflexos de Emergência" — redução condicional (abaixo de 20% HP).
+        lowHpDamageReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaReflexosDeEmergencia) * 10f;
+
+        // #15 "Retorno Sombrio" — PENDENTE (ver comentário nos campos).
+
+        // #16 "Véu Prolongado" — 0.5/1/1.5s por rank (tabela, não rank*X).
+        int veuProlongadoRank = PerkState.GetRank(RangerPerkIds.DireitaVeuProlongado);
+        float[] veuProlongadoDuration = { 0f, 0.5f, 1f, 1.5f };
+        postCamouflageImmunityDuration = veuProlongadoDuration[Mathf.Clamp(veuProlongadoRank, 0, 3)];
+
+        // #17 "Sombra Vingativa" — segundos/rank de perda de alvo ao reaparecer.
+        // 🔢 PLACEHOLDER — GDD não dá o número exato de segundos/rank.
+        untargetableGraceDuration = PerkState.GetRank(RangerPerkIds.DireitaSombraVingativa) * 1f;
+
+        // #18 "Instinto de Sobrevivência" — cooldown -50%/rank condicional (abaixo de 30% HP).
+        lowHpCooldownReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaInstintoDeSobrevivencia) * 50f;
+
+        // #19 "Fôlego Sombrio" — HP máximo temporário +%/rank.
+        // 🔢 PLACEHOLDER — GDD não dá o %/rank exato.
+        postCamouflageMaxHealthBonusPercent = PerkState.GetRank(RangerPerkIds.DireitaFolegoSombrio) * 10f;
+
+        // #20 "Reflexos nas Sombras" — PENDENTE (ver comentário nos campos).
+
+        // #21 "Instinto Predador" — regen passivo fora do disfarce.
+        // 🔢 PLACEHOLDER — GDD não dá o %/rank exato.
+        outOfCombatRegenPercentPerSecond = PerkState.GetRank(RangerPerkIds.DireitaInstintoPredador) * 1f;
+
+        // #22 "Última Linha de Defesa" — binário, -40% abaixo de 10% HP.
+        criticalHpDamageReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaUltimaLinhaDeDefesa) >= 1 ? 40f : 0f;
+
+        // #23 "Armadilha Camuflada" — PENDENTE (ver comentário nos campos).
+
+        // #24 "Instinto Caçador" — ganho de energia da Ultimate +%/rank, enquanto a
+        // camuflagem estiver em cooldown (condição avaliada na leitura, em
+        // UltimateEnergyMultiplier — ver comentário lá).
+        direitaEnergyGainBonusPercent = PerkState.GetRank(RangerPerkIds.DireitaInstintoCacador) * 10f;
+
+        veteranoDeGuerraEnabled = PerkState.GetRank(RangerPerkIds.DireitaVeteranoDeGuerra) >= 1;
+
+        // #26/#27/#28 — 🔢 PLACEHOLDER, GDD só diz "%/rank" sem valor exato (mesmo critério
+        // de vários casos do Barbarian). #30 "Imortal em Combate" é 1 rank, "drasticamente" —
+        // valor grande (60%) escolhido na mesma linha.
+        shiftDamageReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaPosturaDeCombate) * 10f
+            + (PerkState.GetRank(RangerPerkIds.DireitaImortalEmCombate) >= 1 ? 60f : 0f);
+        shiftDamageDealtBonusPercent = PerkState.GetRank(RangerPerkIds.DireitaFuriaCurativa) * 15f;
+        shiftExtraHealPercentPerTick = PerkState.GetRank(RangerPerkIds.DireitaVigorDeBatalha) * 5f / 100f;
     }
 
     // Sem Card Framework ainda (Sprint 35) — incremento manual só pra provar o leque nesta sprint.

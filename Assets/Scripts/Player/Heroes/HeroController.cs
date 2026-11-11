@@ -46,6 +46,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     public static float CentralDamageMultiplier = 1f;
     public static float CentralHealthMultiplier = 1f;
 
+    // Central é POR HERÓI (cada um tem seu próprio .asset/perkId — ex.: Barbarian usa
+    // "central_despertar_do_poder", Ranger usa "central_awakening_ranger") — mas o cálculo
+    // (WorldPerkEffects.Recompute()) é um agregador ÚNICO, compartilhado por todos. Sem este
+    // hook, esse agregador só sabia ler o ID do Barbarian (hardcoded), então trocar de herói
+    // nunca recomputava o Central de verdade. Default null = herói ainda sem Central ligado
+    // (seguro: WorldPerkEffects trata null como "sem perk nenhum comprado").
+    public virtual string CentralPerkId => null;
+
     // Infra pros 90 perks bespoke (Esquerda/Direita/Cima) do Barbarian (e futuros heróis) —
     // construída agora, com default neutro, SEM nenhum perk escrevendo nela ainda (isso é
     // conteúdo, próxima fase). Chance de crítico é por ÁRVORE (Esquerda ≠ Cima), nunca um campo
@@ -204,6 +212,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // AttackCooldown por baixo, só que pode ajustar/reduzir/zerar o próprio cooldown.
     protected void SetPrimaryCooldownMultiplier(float multiplier) => attackCooldown.DurationMultiplier = multiplier;
     protected void SetSecondaryCooldownMultiplier(float multiplier) => secondaryAbilityCooldown.DurationMultiplier = multiplier;
+    // Leitura (sem consumir nem alterar nada) — pra perks condicionados a "enquanto a
+    // habilidade secundária estiver em cooldown" (ex.: Ranger #24 "Instinto Caçador").
+    protected bool IsSecondaryAbilityCooldownReady => secondaryAbilityCooldown.IsReady;
     protected void ReduceSecondaryCooldownRemaining(float amount) => secondaryAbilityCooldown.ReduceTimeRemaining(amount);
     protected void ResetSecondaryCooldownRemaining() => secondaryAbilityCooldown.ResetTimeRemaining();
     private bool wasUsingSecondaryAbility; // detecta a transição true -> false no Update(), ver comentário lá

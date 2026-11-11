@@ -37,10 +37,10 @@ public static class WorldPerkEffects
     public static float ChestSpawnChanceBonusPercent { get; private set; }
     public static int FreeTalentRerollCount { get; private set; } // inert até Talentos existirem (R10)
 
-    // Perk Central "Despertar do Poder" (não é "Mundo" nem nenhuma das 4 áreas, mas recomputado
-    // aqui mesmo assim — único agregador rank->efeito já existente, mesmo critério do resto
-    // desta classe, em vez de criar um 2º sistema paralelo só pra 1 perk). Rank único (0 ou 1).
-    private const string CentralPerkId = "central_despertar_do_poder";
+    // Perk Central (não é "Mundo" nem nenhuma das 4 áreas, mas recomputado aqui mesmo assim —
+    // único agregador rank->efeito já existente, mesmo critério do resto desta classe, em vez
+    // de criar um 2º sistema paralelo só pra 1 perk). ID é POR HERÓI (HeroController.
+    // CentralPerkId, cada um sobrescreve com o próprio) — nunca mais hardcoded pro Barbarian.
 
     public static void Recompute()
     {
@@ -51,7 +51,8 @@ public static class WorldPerkEffects
         //
         // Balanceamento (2026-11-11, pedido do usuário): Central virou 5 ranks ("parcelas") de
         // +20% cada, em vez de 1 rank fixo em +50% — rank 5 = +100% (dobro), não mais +50%.
-        int centralRank = PerkState.GetRank(CentralPerkId);
+        string centralPerkId = HeroController.Instance != null ? HeroController.Instance.CentralPerkId : null;
+        int centralRank = centralPerkId != null ? PerkState.GetRank(centralPerkId) : 0;
         float centralMultiplier = 1f + centralRank * 0.2f;
         HeroController.CentralDamageMultiplier = centralMultiplier;
         HeroController.CentralHealthMultiplier = centralMultiplier;

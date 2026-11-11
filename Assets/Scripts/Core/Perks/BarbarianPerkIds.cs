@@ -3,6 +3,8 @@
 // ordem crescente de custo usada ao montar o Content). Mesmo critério de WorldPerkIds.cs.
 public static class BarbarianPerkIds
 {
+    public const string Central = "central_despertar_do_poder";
+
     // Esquerda — Ataque Primário (Seção 9)
     public const string EsquerdaGolpePesado = "barbarian_esquerda_01";
     public const string EsquerdaFuriaDoImpacto = "barbarian_esquerda_02";

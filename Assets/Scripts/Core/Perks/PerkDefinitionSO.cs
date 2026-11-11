@@ -20,4 +20,7 @@ public class PerkDefinitionSO : ScriptableObject
 
     [Tooltip("Custo em gold de cada rank, na ordem (index 0 = custo pra comprar o rank 1, etc.). O tamanho deste array = rank maximo do perk.")]
     public long[] costPerRank = { 10 };
+
+    [Tooltip("perkId de outro perk que precisa ter pelo menos rank 1 ANTES deste poder ser comprado (ex.: Ranger 'Imortal em Combate' exige 'Veterano de Guerra'). Vazio = sem pre-requisito. Checado em PerkState.CanAfford().")]
+    public string prerequisitePerkId;
 }
