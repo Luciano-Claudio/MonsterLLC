@@ -93,6 +93,12 @@ public class DayTimer : MonoBehaviour
         dayEnded = false;
         dayClockStarted = false; // Seção 4 — pausado até o 1º gatilho de target deste dia/retry
         IsNight = false; // todo dia novo começa em Dia — doc, Seção 3
+        // Achado real do usuário: setar IsNight aqui (estado interno, pra WorldPopulationManager/
+        // WorldBossSpawnManager) não bastava — DayNightLightController só escuta o EVENTO, nunca lê
+        // IsNight direto. Sem este Invoke, quem sobrevivesse (ou morresse) até a Noite ficava com a
+        // luz noturna congelada pra sempre em todo dia seguinte, porque o Light2D nunca era avisado
+        // da troca de volta pro Dia.
+        GameEvents.DayNightPhaseChanged(false);
         HeroController.GlobalAggroActive = false; // mesmo motivo — zera o "já teve gatilho" de ontem
         GameEvents.TimeChanged(timeRemaining);
         // Fonte única de "um novo dia começou" — cobre tanto o Dia 1 (MainMenuUI) quanto

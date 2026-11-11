@@ -14,6 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: central_despertar_do_poder
   displayName: Awakening of Power
-  description: "Awakens the hero's full potential - damage and max health increase by 50%."
+  description: Awakens the hero's full potential - damage and max health +20%/rank, up to +100% at rank 5.
   icon: {fileID: -5788009515197222219, guid: 0bfe076b27918224ab31cb53a882e8e9, type: 3}
-  costPerRank: 0500000000000000
+  costPerRank:
+  - 5
+  - 10
+  - 25
+  - 50
+  - 100

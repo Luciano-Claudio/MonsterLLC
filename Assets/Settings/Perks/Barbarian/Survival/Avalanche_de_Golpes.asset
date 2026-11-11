@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_direita_03
   displayName: Avalanche of Blows
-  description: Shift damage +100%/rank.
+  description: Shift damage +9%/rank.
   icon: {fileID: -1435886575843794056, guid: dc26fb335804595488a42b731312c70c, type: 3}
   costPerRank:
-  - 10000
-  - 60000
-  - 360000
+  - 100000
+  - 600000
+  - 3600000

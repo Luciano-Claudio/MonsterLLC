@@ -682,7 +682,7 @@ MonoBehaviour:
   attackHitboxSW: {fileID: 9218440592649366789}
   groundCrackPrefab: {fileID: 6680281268108630338, guid: 697febb6f8e46a6478c0bb4da116481c, type: 3}
   groundCrackDuration: 5
-  groundCrackDamagePerSecond: 3
+  groundCrackDamagePerSecond: 1
   groundCrackTickInterval: 1
   knockbackForce: 0
   ultimateProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
@@ -690,7 +690,7 @@ MonoBehaviour:
   projectileSpeed: 10
   projectileMaxDistance: 8
   projectileKnockbackForce: 4
-  secondaryAbilityDamageMultiplier: 2
+  secondaryAbilityDamageMultiplier: 1.5
   secondaryAbilitySpeedMultiplier: 1.5
   secondaryAbilityDuration: 5
   maxActionDuration: 3

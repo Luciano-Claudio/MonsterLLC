@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_direita_02
   displayName: Savage Impetus
-  description: Shift damage +75%/rank.
+  description: Shift damage +7%/rank.
   icon: {fileID: -1509262247, guid: dc26fb335804595488a42b731312c70c, type: 3}
   costPerRank:
-  - 1000
-  - 6000
-  - 36000
+  - 10000
+  - 60000
+  - 360000

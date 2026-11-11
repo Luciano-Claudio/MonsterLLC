@@ -75,7 +75,10 @@ public class Barbarian : HeroController
     // Sprint 18→19). 1 animação só, sem direções, sem fases (igual "die") — não bloqueia
     // ataque/ultimate/movimento, e não é cancelável: roda até o fim sozinha.
     [Header("Habilidade Secundária (Shift) — dano e velocidade temporários")]
-    [SerializeField] private float secondaryAbilityDamageMultiplier = 2f; // 🔢 ajustável
+    // Balanceamento (2026-11-11, pedido do usuário): nerf de 2x pra 1.5x — combinado com o
+    // teto de +100% dos perks de Dano no Shift (RecomputeDireita), o total nunca passa de 3x
+    // (era até 23.5x antes, Shift virava "tecla de matar tudo" sem desafio nenhum).
+    [SerializeField] private float secondaryAbilityDamageMultiplier = 1.5f; // 🔢 ajustável
     [SerializeField] private float secondaryAbilitySpeedMultiplier = 1.5f; // 🔢 ajustável
     [SerializeField] private float secondaryAbilityDuration = 5f; // 🔢 ajustável
     private float secondaryAbilityRemaining;
@@ -388,9 +391,14 @@ public class Barbarian : HeroController
 
         if (groundCrackPrefab != null)
         {
+            // Pedido do usuário (2026-11-11): o dano base do Ground Crack passa a ser SEMPRE
+            // metade do dano do golpe que o gerou ("damage", já calculado acima com toda a
+            // família "Dano"/Central/crítico desse hit específico) — nunca mais um número fixo
+            // desconectado do personagem, resolvendo de vez o problema de "1 de dano pra
+            // sempre" mesmo com os 2 perks dedicados comprados. Mathf.Max garante piso de 1.
             // #27 "Fenda Enfurecida" (dano +% durante o Shift) e #28 "Fenda Selvagem" (dano +X%
-            // por step de HP perdido) se acumulam, nunca substituem o valor base.
-            float crackDamage = groundCrackDamagePerSecond;
+            // por step de HP perdido) continuam multiplicando ESSE valor, nunca substituindo.
+            float crackDamage = Mathf.Max(1f, damage * 0.5f);
             if (secondaryAbilityRemaining > 0f && groundCrackShiftBonusPercent > 0f)
                 crackDamage *= 1f + groundCrackShiftBonusPercent / 100f;
             if (groundCrackHpLostBonusPerStep > 0f)
@@ -643,11 +651,19 @@ public class Barbarian : HeroController
     private void RecomputeEsquerda()
     {
         // Balanceamento (2026-11-10): 5x o original — era 8/15/20/30/50.
+        //
+        // Balanceamento (2026-11-11, pedido do usuário): Fúria Definitiva virou 1->5 ranks e é
+        // quem carrega o "teto" de dano novo (igual Vitalidade Suprema do lado da vida) — tabela
+        // escalando, não rank*X, pra chegar no ~1,2 trilhão de dano calibrado contra os
+        // monstros Tier9/10 (ver chat 2026-11-11). Força Bruta ganhou 2 ranks novos (3->5) mas
+        // manteve o mesmo 100%/rank — rank*X já escala sozinho, sem precisar de tabela.
+        float furiaDefinitivaRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDefinitiva);
+        float[] furiaDefinitivaPercent = { 0f, 250f, 2500f, 125000f, 25000000f, 30000000000000f };
         float danoPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaGolpePesado) * 40f
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDoImpacto) * 75f
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaForcaBruta) * 100f
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaDevastacao) * 150f
-            + (PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDefinitiva) >= 1 ? 250f : 0f);
+            + furiaDefinitivaPercent[Mathf.Clamp((int)furiaDefinitivaRank, 0, 5)];
         HeroController.PrimaryDamageMultiplier = 1f + danoPercent / 100f;
 
         float knockbackPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaEmpurrao) * 10f
@@ -708,11 +724,14 @@ public class Barbarian : HeroController
 
     private void RecomputeDireita()
     {
-        // Balanceamento (2026-11-10): 5x o original — era 10/15/20/30.
-        float shiftDanoPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaCrescente) * 50f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaImpetoSelvagem) * 75f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaAvalancheDeGolpes) * 100f
-            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemFim) * 150f;
+        // Balanceamento (2026-11-11, pedido do usuário): nerf geral do Shift — esses 4 perks
+        // somados agora têm teto de +100% (era até +1075%), pra combinar com o
+        // secondaryAbilityDamageMultiplier=1.5 (nerfado de 2) e fechar um teto TOTAL de 3x no
+        // Shift (era até 23.5x — "tecla de matar tudo" sem desafio nenhum).
+        float shiftDanoPercent = PerkState.GetRank(BarbarianPerkIds.DireitaFuriaCrescente) * 5f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaImpetoSelvagem) * 7f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaAvalancheDeGolpes) * 9f
+            + PerkState.GetRank(BarbarianPerkIds.DireitaFuriaSemFim) * 14f;
         HeroController.ShiftDamageMultiplier = 1f + shiftDanoPercent / 100f;
 
         // Velocidade de movimento SAI da escala de buff (2026-11-10, pedido do usuário: "tá
@@ -770,11 +789,17 @@ public class Barbarian : HeroController
     private void RecomputeCima()
     {
         // Balanceamento (2026-11-10): 5x o original — era 10/15/20/30/40.
+        //
+        // Balanceamento (2026-11-11, pedido do usuário): Juízo Final virou 1->5 ranks, mesmo
+        // tratamento de Fúria Definitiva (tabela escalando, proporção 0,8x dela — era 200:250
+        // no design original). Poder Esmagador ganhou 2 ranks novos (3->5), mesmo 100%/rank.
+        float juizoFinalRank = PerkState.GetRank(BarbarianPerkIds.CimaJuizoFinal);
+        float[] juizoFinalPercent = { 0f, 200f, 2000f, 100000f, 20000000f, 24000000000000f };
         float ultDanoPercent = PerkState.GetRank(BarbarianPerkIds.CimaGolpeDivino) * 50f
             + PerkState.GetRank(BarbarianPerkIds.CimaIraAncestral) * 75f
             + PerkState.GetRank(BarbarianPerkIds.CimaPoderEsmagador) * 100f
             + PerkState.GetRank(BarbarianPerkIds.CimaApocalipsePessoal) * 150f
-            + (PerkState.GetRank(BarbarianPerkIds.CimaJuizoFinal) >= 1 ? 200f : 0f);
+            + juizoFinalPercent[Mathf.Clamp((int)juizoFinalRank, 0, 5)];
         HeroController.UltimateDamageMultiplier = 1f + ultDanoPercent / 100f;
 
         float ultSpeedPercent = PerkState.GetRank(BarbarianPerkIds.CimaProjetilVeloz) * 10f

@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_esquerda_05
   displayName: Ultimate Fury
-  description: Primary attack damage +250%.
+  description: Primary attack damage per rank: +250% / +2,500% / +125,000% / +25,000,000% / +30,000,000,000,000%.
   icon: {fileID: -2238070567392329553, guid: fde153b48e2caab41ba4f224dfa69baf, type: 3}
   costPerRank:
+  - 8000000000
   - 80000000000
+  - 2000000000000
+  - 200000000000000
+  - 200000000000000000

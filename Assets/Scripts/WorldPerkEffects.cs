@@ -47,11 +47,14 @@ public static class WorldPerkEffects
         // Balanceamento (2026-11-10, pedido do usuário): Dia 1 morrendo ~10x sem conseguir
         // progredir — dano/vida/gold-por-abate/venda/regen agora valem 5x o original (nunca
         // movespeed/tamanho/área/alcance/cooldown/aceleração/duração, esses ficam como
-        // estavam). Central NÃO entra nessa escala (decisão do usuário): é um perk inicial e
-        // barato, fica fixo em +50%.
-        bool centralUnlocked = PerkState.GetRank(CentralPerkId) >= 1;
-        HeroController.CentralDamageMultiplier = centralUnlocked ? 1.5f : 1f;
-        HeroController.CentralHealthMultiplier = centralUnlocked ? 1.5f : 1f;
+        // estavam). Central NÃO entra nessa escala de 5x.
+        //
+        // Balanceamento (2026-11-11, pedido do usuário): Central virou 5 ranks ("parcelas") de
+        // +20% cada, em vez de 1 rank fixo em +50% — rank 5 = +100% (dobro), não mais +50%.
+        int centralRank = PerkState.GetRank(CentralPerkId);
+        float centralMultiplier = 1f + centralRank * 0.2f;
+        HeroController.CentralDamageMultiplier = centralMultiplier;
+        HeroController.CentralHealthMultiplier = centralMultiplier;
 
         // Balanceamento (2026-11-11, pedido do usuário): gold por kill é long (inteiro) — um
         // bônus de +40%/75% em cima de uma base pequena (Dia 1: killGold=1) truncava pra ZERO
@@ -99,11 +102,20 @@ public static class WorldPerkEffects
 
         FreeTalentRerollCount = PerkState.GetRank(WorldPerkIds.RerollTalento);
 
+        // Balanceamento (2026-11-11, pedido do usuário): Fortitude e Pulso Vital ganharam 2
+        // ranks novos (3->5), mantendo o mesmo %/rank de sempre (rank*X já escala sozinho).
+        // Vitalidade Suprema também virou 2->5 ranks, mas com uma tabela ESCALANDO (não
+        // rank*X) — ela é quem carrega o "teto" novo de vida, pra bater os ~20 trilhões de
+        // vida máxima calibrados contra os monstros Tier9/10 (ver chat 2026-11-11). GDD/
+        // monstros desse tier têm vida/dano na faixa de 10^11-10^15 — nenhum %/rank linear
+        // sensato chega lá, só uma tabela com um salto gigante no rank final.
         int vigor = PerkState.GetRank(WorldPerkIds.Vigor);
         int fortitude = PerkState.GetRank(WorldPerkIds.Fortitude);
         int pulsoVital = PerkState.GetRank(WorldPerkIds.PulsoVital);
-        int vitalidadeSuprema = PerkState.GetRank(WorldPerkIds.VitalidadeSuprema);
-        float maxHealthBonusPercent = vigor * 25f + fortitude * 40f + pulsoVital * 50f + vitalidadeSuprema * 75f; // era 5/8/10/15 (5x)
+        int vitalidadeSupremaRank = PerkState.GetRank(WorldPerkIds.VitalidadeSuprema);
+        float[] vitalidadeSupremaPercent = { 0f, 100f, 2000f, 100000f, 20000000f, 24000000000000f };
+        float vitalidadeSupremaBonus = vitalidadeSupremaPercent[Mathf.Clamp(vitalidadeSupremaRank, 0, 5)];
+        float maxHealthBonusPercent = vigor * 25f + fortitude * 40f + pulsoVital * 50f + vitalidadeSupremaBonus;
         HeroController.MaxHealthMultiplier = 1f + maxHealthBonusPercent / 100f;
 
         int peleGrossa = PerkState.GetRank(WorldPerkIds.PeleGrossa);
