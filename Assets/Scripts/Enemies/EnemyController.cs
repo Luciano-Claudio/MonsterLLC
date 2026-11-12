@@ -483,6 +483,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         UpdateDamageFlash();
         UpdateKnockback();
+        UpdateExternalSlow();
 
         if (isDead)
         {
@@ -1186,6 +1187,32 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (knockbackVelocity.sqrMagnitude <= 0.01f) return;
         transform.Translate(knockbackVelocity * Time.deltaTime);
         knockbackVelocity = Vector2.Lerp(knockbackVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);
+    }
+
+    // Lentidão de fonte EXTERNA (ex.: Ranger #12 "Disfarce Perfeito" — aura em volta da
+    // camuflagem) — nunca sobrescreve stats.moveSpeed (fonte única de verdade), só multiplica
+    // ai.maxSpeed por cima, a cada frame, enquanto o debuff estiver ativo. Decai sozinho
+    // (quem está causando o efeito precisa reaplicar continuamente pra manter o alvo lento —
+    // ver ApplyExternalSlow). Pega sempre o multiplicador MAIS FORTE (menor) se 2 fontes
+    // diferentes aplicarem ao mesmo tempo, nunca o mais fraco sobrescreve o mais forte.
+    private float externalSlowMultiplier = 1f;
+    private float externalSlowRemaining;
+
+    public void ApplyExternalSlow(float multiplier, float duration)
+    {
+        if (duration <= 0f) return;
+        externalSlowMultiplier = externalSlowRemaining > 0f ? Mathf.Min(externalSlowMultiplier, multiplier) : multiplier;
+        externalSlowRemaining = Mathf.Max(externalSlowRemaining, duration);
+    }
+
+    private void UpdateExternalSlow()
+    {
+        if (externalSlowRemaining > 0f)
+        {
+            externalSlowRemaining -= Time.deltaTime;
+            if (externalSlowRemaining <= 0f) externalSlowMultiplier = 1f;
+        }
+        if (ai != null) ai.maxSpeed = stats.moveSpeed * externalSlowMultiplier;
     }
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado

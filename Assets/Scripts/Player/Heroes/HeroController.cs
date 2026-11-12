@@ -215,6 +215,10 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Leitura (sem consumir nem alterar nada) — pra perks condicionados a "enquanto a
     // habilidade secundária estiver em cooldown" (ex.: Ranger #24 "Instinto Caçador").
     protected bool IsSecondaryAbilityCooldownReady => secondaryAbilityCooldown.IsReady;
+    // Duração BASE do cooldown (já com os multiplicadores de outros perks aplicados) — pra
+    // perks que reembolsam uma FRAÇÃO do cooldown ao cancelar cedo (ex.: Ranger #15 "Retorno
+    // Sombrio"). Só leitura, nunca altera o timer.
+    protected float SecondaryAbilityCooldownDuration => secondaryAbilityCooldown.Duration;
     protected void ReduceSecondaryCooldownRemaining(float amount) => secondaryAbilityCooldown.ReduceTimeRemaining(amount);
     protected void ResetSecondaryCooldownRemaining() => secondaryAbilityCooldown.ResetTimeRemaining();
     private bool wasUsingSecondaryAbility; // detecta a transição true -> false no Update(), ver comentário lá

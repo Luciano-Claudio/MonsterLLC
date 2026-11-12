@@ -157,19 +157,37 @@ public class Ranger : HeroController
     private float outOfCombatRegenPercentPerSecond;
     private float predatorRegenAccumulator, predatorRegenElapsed;
 
-    // PENDENTE (não implementado ainda, de propósito — exigem sistema novo que não existe
-    // em nenhum outro herói, melhor desenhar com calma em vez de arriscar algo frágil):
-    // #12 "Disfarce Perfeito" (aura de lentidão em monstros próximos durante o disfarce),
-    // #15 "Retorno Sombrio" (reembolso de % do cooldown ao cancelar manualmente — timing
-    // exato de quando o cooldown real começa a contar precisa ser confirmado antes de
-    // implementar), #20 "Reflexos nas Sombras" (fases mais rápidas via Animator.speed global
-    // — risco de travar a velocidade de TODAS as animações se alguma interrupção no meio da
-    // transição, ex. morte, não resetar de volta pra 1x), #23 "Armadilha Camuflada"
-    // (refletir dano de contato — precisa de referência ao atacante, que o TakeDamage() atual
-    // não repassa). Os ranks desses 4 continuam compráveis normalmente, só sem efeito ainda.
+    // #12 "Disfarce Perfeito" — aura de lentidão em monstros próximos, só no modo CLÁSSICO
+    // (categoria "armadilha do disfarce" do GDD — o Ranger é uma pedra/objeto parado; no modo
+    // Veterano ele não é mais isso). Reaplicada todo frame via EnemyController.
+    // ApplyExternalSlow() — decai sozinha se sair de perto, nunca precisa de "remover".
+    private float perfectDisguiseSlowMultiplier = 1f; // 1 = sem efeito; ex. 0.9 = -10%
+    private const float PerfectDisguiseRadius = 2.5f; // 🔢 GDD não dá o raio exato
+    private static readonly Collider2D[] PerfectDisguiseHits = new Collider2D[16];
 
-    // Esquerda — "Dano" (Mira Afiada...Disparo Supremo) soma aqui, alimenta
-    // attackDamageMultiplier através de GetPrimaryDamageMultiplier().
+    // #15 "Retorno Sombrio" — reembolsa %/rank do cooldown gasto ao CANCELAR manualmente
+    // (nunca no timeout). O cooldown real só começa quando isUsingSecondaryAbility vira
+    // false de verdade (base HeroController.Update(), ver comentário em Update() abaixo) —
+    // por isso isto é um "pedido pendente", consumido assim que essa transição acontecer,
+    // nunca direto em CancelSecondaryAbility().
+    private float cancelCooldownRefundPercent;
+    private float pendingCooldownRefundPercent;
+
+    // #20 "Reflexos nas Sombras" — fases de entrar/sair da camuflagem CLÁSSICA mais rápidas,
+    // via Animator.speed (só durante essas 2 fases — nunca fica setado fora delas). Reset
+    // garantido em 3 pontos: os 2 Animation Events de fim de fase normais, e OnHeroDeath()
+    // como rede de segurança (se a morte interromper no meio da transição).
+    private float transitionSpeedMultiplier = 1f;
+
+    // #23 "Armadilha Camuflada" — reflete dano em quem tocar o disfarce sem saber (só modo
+    // CLÁSSICO, mesma categoria "armadilha" do #12). dedup por HashSet (não TakeDamage() —
+    // ele não repassa quem atacou, então a defesa é detectar o CONTATO físico direto no
+    // Ranger, igual o EnemyContactDamage.cs já faz do lado do monstro).
+    private bool armadilhaCamufladaEnabled;
+    private readonly System.Collections.Generic.HashSet<EnemyController> armadilhaCamufladaHit = new();
+
+    // Esquerda — "Dano" (Mira Afiada...Disparo Supremo) soma aqui, consumido direto em
+    // AnimationShootEvent() (e também em OnTriggerEnter2D(), ver #23 mais abaixo).
     private float primaryDamagePercent;
 
     // #26 "Ataque Furtivo" — bônus só no PRIMEIRO disparo depois de sair da camuflagem
@@ -317,6 +335,32 @@ public class Ranger : HeroController
                 if (predatorRegenAccumulator > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), predatorRegenAccumulator);
                 predatorRegenAccumulator = 0f;
             }
+        }
+
+        // #12 "Disfarce Perfeito" — só no modo clássico (o Ranger precisa estar
+        // literalmente "parado fingindo ser objeto" pra fazer sentido como armadilha).
+        // Reaplica o debuff em todo monstro na área TODO frame — ApplyExternalSlow() decai
+        // sozinho, então sair do raio = voltar ao normal sem precisar de lógica de saída.
+        if (isCamouflaged && !veteranoDeGuerraEnabled && perfectDisguiseSlowMultiplier < 1f)
+        {
+            int hitCount = Physics2D.OverlapCircleNonAlloc(transform.position, PerfectDisguiseRadius, PerfectDisguiseHits);
+            for (int i = 0; i < hitCount; i++)
+            {
+                if (!PerfectDisguiseHits[i].CompareTag("Enemy")) continue;
+                var enemy = PerfectDisguiseHits[i].GetComponent<EnemyController>();
+                if (enemy != null) enemy.ApplyExternalSlow(perfectDisguiseSlowMultiplier, 0.2f);
+            }
+        }
+
+        // #15 "Retorno Sombrio" — só aplica o reembolso QUANDO o cooldown real de verdade
+        // começa a contar (base.Update(), chamado no topo deste método, já rodou ESTE mesmo
+        // frame) — nunca direto em CancelSecondaryAbility(), porque no modo clássico o
+        // cooldown só começa quando a animação de "reaparecendo" termina de tocar, não no
+        // instante do cancelamento.
+        if (pendingCooldownRefundPercent > 0f && !isUsingSecondaryAbility)
+        {
+            ReduceSecondaryCooldownRemaining(SecondaryAbilityCooldownDuration * pendingCooldownRefundPercent / 100f);
+            pendingCooldownRefundPercent = 0f;
         }
     }
 
@@ -478,6 +522,10 @@ public class Ranger : HeroController
         isAttacking = true;
         isAttackingForCamouflage = true;
         actionElapsed = 0f;
+        // #20 "Reflexos nas Sombras" — acelera só a fase "escondendo" (Animator.speed é
+        // GLOBAL, então isto nunca fica setado fora das 2 fases de transição — ver os 2
+        // pontos de reset: AnimationCamouflageHiddenEvent() logo abaixo e OnHeroDeath()).
+        if (animator != null) animator.speed = transitionSpeedMultiplier;
         AnimatorTrigger("SecondaryAbilityTrigger");
     }
 
@@ -490,6 +538,10 @@ public class Ranger : HeroController
     {
         BeginCamouflageEffects();
         IsPlayerUntargetable = true; // só no modo clássico (único que dispara este evento)
+        // #20 "Reflexos nas Sombras" — fim da fase "escondendo", volta a velocidade normal
+        // (a fase "during" nunca precisa de velocidade alterada).
+        if (animator != null) animator.speed = 1f;
+        armadilhaCamufladaHit.Clear(); // #23 — nova janela de disfarce, pode refletir de novo nos mesmos monstros
     }
 
     // Compartilhado pelos 2 modos — liga o tick de cura e o timer da janela de efeitos. O
@@ -538,6 +590,10 @@ public class Ranger : HeroController
     protected override void CancelSecondaryAbility()
     {
         if (!isCamouflaged) return;
+        // #15 "Retorno Sombrio" — só arma o pedido de reembolso aqui (cancelamento MANUAL,
+        // nunca no timeout automático de Update()) — consumido mais tarde, no frame exato em
+        // que o cooldown de verdade começa a contar (ver Update()).
+        if (cancelCooldownRefundPercent > 0f) pendingCooldownRefundPercent = cancelCooldownRefundPercent;
         EndCamouflage();
     }
 
@@ -574,6 +630,9 @@ public class Ranger : HeroController
         if (untargetableGraceDuration > 0f) untargetableGraceRemaining = untargetableGraceDuration;
         else IsPlayerUntargetable = false;
 
+        // #20 "Reflexos nas Sombras" — acelera a fase "reaparecendo" (reset no Animation
+        // Event logo abaixo).
+        if (animator != null) animator.speed = transitionSpeedMultiplier;
         AnimatorTrigger("SecondaryAbilityEndTrigger");
     }
 
@@ -583,6 +642,16 @@ public class Ranger : HeroController
         isAttacking = false;
         isAttackingForCamouflage = false;
         isUsingSecondaryAbility = false;
+        if (animator != null) animator.speed = 1f; // #20 — fim da fase acelerada
+    }
+
+    // #20 "Reflexos nas Sombras" — rede de segurança: se a morte interromper o Ranger NO
+    // MEIO de uma fase acelerada (animator.speed != 1), sem isso o respawn nasceria com
+    // TODAS as animações (não só a camuflagem) rodando na velocidade errada pra sempre.
+    protected override void OnHeroDeath()
+    {
+        base.OnHeroDeath();
+        if (animator != null) animator.speed = 1f;
     }
 
     // Tabela compartilhada pelos 2 capstones de dano (Disparo Supremo/Lâmina Suprema) — mesmo
@@ -756,14 +825,18 @@ public class Ranger : HeroController
             + PerkState.GetRank(RangerPerkIds.DireitaDissipacaoRapida) * 15f
             + PerkState.GetRank(RangerPerkIds.DireitaReflexosDeVeterano) * 20f;
 
-        // #12 "Disfarce Perfeito" — PENDENTE (ver comentário nos campos, topo do arquivo).
+        // #12 "Disfarce Perfeito" — 🔢 PLACEHOLDER, GDD não dá o %/rank exato.
+        float disfarcePerfeitoPercent = PerkState.GetRank(RangerPerkIds.DireitaDisfarcePerfeito) * 10f;
+        perfectDisguiseSlowMultiplier = 1f - Mathf.Clamp01(disfarcePerfeitoPercent / 100f);
+
         // #13 "Emboscada Perfeita" — binário.
         emboscadaPerfeitaEnabled = PerkState.GetRank(RangerPerkIds.DireitaEmboscadaPerfeita) >= 1;
 
         // #14 "Reflexos de Emergência" — redução condicional (abaixo de 20% HP).
         lowHpDamageReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaReflexosDeEmergencia) * 10f;
 
-        // #15 "Retorno Sombrio" — PENDENTE (ver comentário nos campos).
+        // #15 "Retorno Sombrio" — 🔢 PLACEHOLDER, GDD não dá o %/rank exato.
+        cancelCooldownRefundPercent = PerkState.GetRank(RangerPerkIds.DireitaRetornoSombrio) * 15f;
 
         // #16 "Véu Prolongado" — 0.5/1/1.5s por rank (tabela, não rank*X).
         int veuProlongadoRank = PerkState.GetRank(RangerPerkIds.DireitaVeuProlongado);
@@ -781,7 +854,9 @@ public class Ranger : HeroController
         // 🔢 PLACEHOLDER — GDD não dá o %/rank exato.
         postCamouflageMaxHealthBonusPercent = PerkState.GetRank(RangerPerkIds.DireitaFolegoSombrio) * 10f;
 
-        // #20 "Reflexos nas Sombras" — PENDENTE (ver comentário nos campos).
+        // #20 "Reflexos nas Sombras" — 🔢 PLACEHOLDER, GDD não dá o %/rank exato.
+        float reflexosNasSombrasPercent = PerkState.GetRank(RangerPerkIds.DireitaReflexosNasSombras) * 10f;
+        transitionSpeedMultiplier = 1f + reflexosNasSombrasPercent / 100f;
 
         // #21 "Instinto Predador" — regen passivo fora do disfarce.
         // 🔢 PLACEHOLDER — GDD não dá o %/rank exato.
@@ -790,7 +865,8 @@ public class Ranger : HeroController
         // #22 "Última Linha de Defesa" — binário, -40% abaixo de 10% HP.
         criticalHpDamageReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaUltimaLinhaDeDefesa) >= 1 ? 40f : 0f;
 
-        // #23 "Armadilha Camuflada" — PENDENTE (ver comentário nos campos).
+        // #23 "Armadilha Camuflada" — binário.
+        armadilhaCamufladaEnabled = PerkState.GetRank(RangerPerkIds.DireitaArmadilhaCamuflada) >= 1;
 
         // #24 "Instinto Caçador" — ganho de energia da Ultimate +%/rank, enquanto a
         // camuflagem estiver em cooldown (condição avaliada na leitura, em
@@ -814,5 +890,27 @@ public class Ranger : HeroController
     {
         arrowCount++;
         Debug.Log($"[Ranger] arrowCount = {arrowCount}");
+    }
+
+    // #23 "Armadilha Camuflada" — monstro que TOCA o disfarce (dano de contato, ex.: Slime,
+    // via EnemyContactDamage.cs do lado dele) reflete o dano nele mesmo. TakeDamage() não
+    // repassa quem atacou, então detecta o contato físico direto AQUI, no Ranger (mesmo
+    // padrão de trigger que EnemyContactDamage.cs já usa do lado do monstro). Só modo
+    // CLÁSSICO (categoria "armadilha do disfarce" — no modo Veterano o Ranger não é mais um
+    // objeto parado pra "tocar sem saber"). Dedup por monstro por janela de disfarce
+    // (armadilhaCamufladaHit, limpo em AnimationCamouflageHiddenEvent) — nunca pune o mesmo
+    // monstro 2x na mesma vez que ele fica "grudado" no Ranger.
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!armadilhaCamufladaEnabled || !isCamouflaged || veteranoDeGuerraEnabled) return;
+        if (!other.CompareTag("Enemy")) return;
+        var enemy = other.GetComponent<EnemyController>();
+        if (enemy == null || !armadilhaCamufladaHit.Add(enemy)) return;
+
+        // Reflete o equivalente a 1 golpe primário completo — GDD não dá o valor exato
+        // ("reflete dano nele mesmo", sem número), escolhido pra doer de verdade sem ser um
+        // insta-kill, consistente com o resto do kit.
+        float reflectDamage = stats.damage * attackDamageMultiplier * (1f + primaryDamagePercent / 100f) * HeroController.CentralDamageMultiplier;
+        enemy.TakeDamage(reflectDamage, isDirectPlayerHit: false);
     }
 }
