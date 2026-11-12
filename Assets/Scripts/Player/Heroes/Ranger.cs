@@ -746,12 +746,15 @@ public class Ranger : HeroController
             + PerkState.GetRank(RangerPerkIds.DireitaRitmoDaSombra) * 20f;
         secondaryAbilityHealTickInterval = baseSecondaryAbilityHealTickInterval * (1f - Mathf.Clamp01(tickIntervalReductionPercent / 100f));
 
-        // "Cooldown" (#8-11) — incondicional; combinado com #18 (condicional, HP baixo) todo
-        // frame em Update(), não aqui (SetSecondaryCooldownMultiplier não é reativo).
+        // "Cooldown" (#8-11) + #29 "Reflexos de Veterano" (achado faltando numa auditoria de
+        // descrição, 2026-11-12 — nunca tinha entrado nesta soma) — incondicional; combinado
+        // com #18 (condicional, HP baixo) todo frame em Update(), não aqui
+        // (SetSecondaryCooldownMultiplier não é reativo).
         baseCooldownReductionPercent = PerkState.GetRank(RangerPerkIds.DireitaReflexoFurtivo) * 5f
             + PerkState.GetRank(RangerPerkIds.DireitaInstintoSilencioso) * 8f
             + PerkState.GetRank(RangerPerkIds.DireitaSombraVeloz) * 10f
-            + PerkState.GetRank(RangerPerkIds.DireitaDissipacaoRapida) * 15f;
+            + PerkState.GetRank(RangerPerkIds.DireitaDissipacaoRapida) * 15f
+            + PerkState.GetRank(RangerPerkIds.DireitaReflexosDeVeterano) * 20f;
 
         // #12 "Disfarce Perfeito" — PENDENTE (ver comentário nos campos, topo do arquivo).
         // #13 "Emboscada Perfeita" — binário.

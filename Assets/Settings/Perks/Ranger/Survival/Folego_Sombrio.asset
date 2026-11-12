@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: ranger_direita_19
   displayName: Shadow Stamina
-  description: "On leaving Camouflage, temporary max HP +%/rank for a few seconds (doesn't heal current HP, just opens a temporary cushion)."
+  description: On leaving Camouflage, temporary max HP +10%/rank for a few seconds (doesn't heal current HP, just opens a temporary cushion).
   icon: {fileID: 0}
   costPerRank:
   - 10000000
