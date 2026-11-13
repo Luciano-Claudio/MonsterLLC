@@ -398,6 +398,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     {
         Instance = this;
 
+        // Achado real: StartRun/ContinueGame (MainMenuUI) chamam WorldPerkEffects.Recompute()
+        // ANTES do herói nascer (Instance ainda nulo lá) — o multiplicador do perk Central
+        // (CentralPerkId é por-herói) fica calculado com rank 0 pra sempre, mesmo já tendo
+        // ranks salvos. Recomputar de novo aqui, agora que Instance == this herói de verdade,
+        // garante que Central (e todo o resto de Mundo) sempre reflita o estado real, pra
+        // qualquer herói, sem precisar de chamada específica em cada subclasse.
+        WorldPerkEffects.Recompute();
+
         foreach (var t in GetComponentsInChildren<Transform>(true))
         {
             if (t.name != "Status_Gold") continue;
@@ -959,31 +967,26 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     }
 
     // Recuperação/Metabolismo Acelerado/Fôlego Eterno (World Perks) — % do HP MÁXIMO efetivo
-    // por segundo, contínuo (não em degraus). Heal() já cuida do clamp/evento/Floating Text.
-    //
-    // Achado real do usuário: silenciar o texto por completo (showFloatingText: false) resolveu
-    // o spam/lag de antes, mas também tirou o feedback inteiro — "deveria aparecer, só que 1 de
-    // cada vez". Em vez de 1 texto por frame (bugado) ou nenhum (sem feedback), acumula o quanto
-    // curou de verdade e solta 1 texto só a cada hpRegenTextInterval segundos, com o total
-    // acumulado daquele intervalo — nunca mais que 1 por segundo, nunca "+0" (só soma e mostra
-    // se curou alguma coisa de verdade no intervalo).
-    [SerializeField] private float hpRegenTextInterval = 1f;
-    private float hpRegenTextAccumulator;
+    // por segundo, em TICKS (não mais contínuo) — pedido do usuário (2026-11-13): regen
+    // contínuo (curando todo frame) tava forte demais na prática, mesmo com a %/segundo
+    // "parecendo" baixa, porque nunca para nem 1 frame. Agora só cura 1x a cada
+    // hpRegenTextInterval segundos, de uma vez (a % acumulada daquele intervalo todo) — igual
+    // valor médio por minuto, mas em degraus visíveis, nunca escondendo dano sofrido ENTRE os
+    // ticks. Heal() já cuida do clamp/evento/Floating Text.
+    [SerializeField] private float hpRegenTextInterval = 2f;
     private float hpRegenTextElapsed;
 
     private void UpdateHpRegen()
     {
         if (HpRegenPercentPerSecond <= 0f) return;
 
-        float healed = Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * Time.deltaTime, showFloatingText: false);
-        hpRegenTextAccumulator += healed;
-
         hpRegenTextElapsed += Time.deltaTime;
         if (hpRegenTextElapsed < hpRegenTextInterval) return;
+
+        float healed = Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * hpRegenTextElapsed, showFloatingText: false);
         hpRegenTextElapsed = 0f;
 
-        if (hpRegenTextAccumulator > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), hpRegenTextAccumulator);
-        hpRegenTextAccumulator = 0f;
+        if (healed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), healed);
     }
 
     private void TriggerDamageFlash()

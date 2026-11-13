@@ -285,7 +285,7 @@ MonoBehaviour:
   stats:
     health: 30
     maxHealth: 30
-    damage: 1.6
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -300,6 +300,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   arrowPrefab: {fileID: 3826008860373041601, guid: 06edcbb77a27b774b8bfb6bc5cc5e410, type: 3}
   arrowCount: 1

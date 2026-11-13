@@ -248,6 +248,12 @@ public class Ranger : HeroController
         baseKnifeBleedDuration = knifeBleedDuration;
         baseSecondaryAbilityHealPercentPerTick = secondaryAbilityHealPercentPerTick;
         baseSecondaryAbilityHealTickInterval = secondaryAbilityHealTickInterval;
+
+        // Aplica de cara qualquer rank já comprado/salvo (Continue Game, ou reabrir a Loja
+        // depois de já ter comprado algo nesta run) — mesmo motivo/mesmo padrão de
+        // Barbarian.Awake(). Faltava aqui: sem isso, os 90 perks bespoke do Ranger (dano, vida,
+        // flechas etc.) não reaplicavam ao nascer de novo (respawn/load).
+        RecomputePerkEffects();
     }
 
     protected override void Update()
@@ -393,11 +399,13 @@ public class Ranger : HeroController
         float guaranteedCritMultiplier = emboscadaPerfeitaPending ? 2f : 1f;
         emboscadaPerfeitaPending = false;
 
-        // GDD Seção 17.2: dano total do golpe é dividido igualmente entre as flechas —
-        // cada uma carrega essa fração como sua própria reserva de perfuração. Esquerda
-        // "Dano" (#1-5) + #26 + Central entram todos aqui, mesma fórmula do Barbarian.
+        // Balanceamento (pedido do usuário): dividir o dano do golpe entre as flechas estava
+        // quebrando o Ranger (mais flechas = cada uma mais fraca, sem ganho real) — GDD Seção
+        // 17.2 original foi revertido. Cada flecha agora carrega o dano CHEIO do golpe como
+        // sua própria reserva de perfuração, não mais uma fração. Esquerda "Dano" (#1-5) +
+        // #26 + Central entram todos aqui, mesma fórmula do Barbarian.
         float reservePerArrow = stats.damage * attackDamageMultiplier * (1f + primaryDamagePercent / 100f)
-            * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier() / arrowCount;
+            * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier();
 
         Vector2[] offsets = ArrowFormation.GetOffsets(arrowCount, arrowLateralStep, arrowForwardStep);
         foreach (var offset in offsets)
