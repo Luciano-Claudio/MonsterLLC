@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_esquerda_21
   displayName: Flaming Trail
-  description: Leaves a persistent fire area on the ground, %/rank damage/second.
-  icon: {fileID: 0}
+  description: Primary attack leaves a persistent fire area on the ground on hit, dealing 10%/rank of the Mage's damage per second.
+  icon: {fileID: -2689053279992597854, guid: 06c57cfe9edaa304ab116c0aba4036c5, type: 3}
   costPerRank:
   - 1000000
   - 12000000

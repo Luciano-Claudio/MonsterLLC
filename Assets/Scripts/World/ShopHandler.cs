@@ -114,6 +114,7 @@ public class ShopHandler : MonoBehaviour
             GameEvents.ClearAllEnemies();
             EnemyController.DestroyAllSpawned();
             LootDrop.DestroyAllOnGround();
+            HeroController.DestroyAllSpawnedEffects(); // idem pro lado do herói (ground crack, projétil etc. — bug real reportado pelo usuário)
 
             // O mapa do dia novo já vinha sendo pré-pintado em background desde que a Loja
             // abriu (dia de preview, GDD Deadline 8.1 Seção 5 — ver
@@ -129,6 +130,14 @@ public class ShopHandler : MonoBehaviour
         {
             Debug.Log($"[ShopHandler] Repetindo o Dia {MainMenuUI.CurrentRun.day} — mesmo mapa, sem regenerar.");
         }
+
+        // 3ª chamada da mesma receita de DayResolver.ResolveEndOfDay()/ResolvePlayerDeath() +
+        // ShopUIController.HandleStateChanged() (ambas já chamam isto, ver comentários lá) —
+        // faltava fechar a brecha ENTRE a Loja abrir e o Gameplay voltar de verdade: qualquer
+        // texto flutuante que nasça enquanto o jogador navega a Loja (ex.: tick de efeito
+        // atrasado, Coroutine que não respeita GameplayGate) fica congelado até aqui e só
+        // reaparece animando quando o dia novo começa — bug relatado pelo usuário.
+        FloatingCombatText.DestroyAll();
 
         DayTimer.Instance.ResetForNewDay();
         GameplayBootstrap.Instance?.RespawnHeroFresh(); // sempre herói 100% novo — nunca só reposiciona o mesmo (achado real: valores de Instantiate/Start ficavam presos)

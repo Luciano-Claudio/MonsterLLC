@@ -349,7 +349,7 @@ public class Ranger : HeroController
         // sozinho, então sair do raio = voltar ao normal sem precisar de lógica de saída.
         if (isCamouflaged && !veteranoDeGuerraEnabled && perfectDisguiseSlowMultiplier < 1f)
         {
-            int hitCount = Physics2D.OverlapCircleNonAlloc(transform.position, PerfectDisguiseRadius, PerfectDisguiseHits);
+            int hitCount = Physics2D.OverlapCircle(transform.position, PerfectDisguiseRadius, ContactFilter2D.noFilter, PerfectDisguiseHits);
             for (int i = 0; i < hitCount; i++)
             {
                 if (!PerfectDisguiseHits[i].CompareTag("Enemy")) continue;

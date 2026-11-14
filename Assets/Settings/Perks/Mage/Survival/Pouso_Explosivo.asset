@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_direita_26
   displayName: Explosive Landing
-  description: On reappearing, deals area damage at the landing point, %/rank.
-  icon: {fileID: 0}
+  description: On reappearing from a teleport, deals area damage at the landing point equal to 20%/rank of the Mage's primary attack damage.
+  icon: {fileID: 1854271406, guid: a447c13b7125ec243a07f81adf818348, type: 3}
   costPerRank:
   - 1000000
   - 12000000

@@ -15,6 +15,17 @@ public class MageFireball : MonoBehaviour
     private enum Phase { Flying, Exploding, Grounded, Disappearing }
     private Phase phase = Phase.Flying;
 
+    // Mage (Rastro Flamejante/Chama Residual/Rastro Ardente, perks) — true enquanto esta
+    // instância ainda está voando (só faz sentido consultar de fora pra decidir onde deixar
+    // uma trilha de fogo no meio do caminho, ver Mage.TrySpawnGroundFirePatch).
+    public bool IsFlying => phase == Phase.Flying;
+
+    // Mesmos perks acima — chamado no instante exato em que o objeto é destruído de verdade
+    // (AnimationDisappearEndEvent), pra quem instanciou soltar a própria referência (ex.:
+    // Mage.activeGroundFireTrailPatch) e poder nascer outra no lugar certo, sem nunca deixar
+    // 2 trilhas da MESMA fonte ativas ao mesmo tempo.
+    public System.Action OnDisappeared;
+
     private float flightSpeed;
     private float maxTravelDistance;
     private float explosionRadius;
@@ -167,7 +178,27 @@ public class MageFireball : MonoBehaviour
 
     // Animation Event, no fim do clipe "Explosion" — vira a área persistente no chão (mesmo
     // instante que a RangerKnife chama BecomeGrounded()).
-    public void AnimationExplosionEndEvent()
+    public void AnimationExplosionEndEvent() => EnterGroundedPhase();
+
+    // Mage (Rastro Flamejante/Chama Residual/Rastro Ardente, perks) — variante "mini" desta
+    // MESMA prefab, usada pelas trilhas de fogo menores que o Mage deixa pra trás (no hit do
+    // primário, na origem do teleporte, no caminho da bola de fogo da Ultimate) — pedido
+    // explícito do usuário: "mesmo prefab da ultimate no grounded, só que menor". Pula Flying/
+    // Exploding inteiros, nasce direto em Grounded (sem voo, sem explosão de impacto —
+    // impactDamage fica 0, nunca é usado). Quem chama já decidiu escala (transform.localScale)
+    // ANTES de chamar isto, mesmo critério do fireball principal em Mage.AnimationUltimateLaunchEvent.
+    public void LaunchGroundedOnly(float damagePerSecond, float fireDamagePerSecond, float groundDuration, float groundTickInterval, float groundRadius, float burnDuration)
+    {
+        groundedDamagePerSecond = damagePerSecond;
+        fireStatusDamagePerSecond = fireDamagePerSecond;
+        groundedDuration = groundDuration;
+        groundedTickInterval = groundTickInterval;
+        groundedRadius = groundRadius;
+        fireStatusDuration = burnDuration;
+        EnterGroundedPhase();
+    }
+
+    private void EnterGroundedPhase()
     {
         phase = Phase.Grounded;
         groundedElapsed = 0f;
@@ -243,6 +274,7 @@ public class MageFireball : MonoBehaviour
     // verdade (não mais Destroy() instantâneo assim que o tempo no chão acaba).
     public void AnimationDisappearEndEvent()
     {
+        OnDisappeared?.Invoke();
         Destroy(gameObject);
     }
 

@@ -755,7 +755,10 @@ public class ChunkTerrainGenerator : MonoBehaviour
         regenerateClearScratch.Clear();
         foreach (var coord in paintedChunks) regenerateClearScratch.Add(coord);
         foreach (var coord in queuedChunks) regenerateClearScratch.Add(coord);
-        foreach (var coord in regenerateClearScratch) ClearChunkImmediate(coord);
+        // Snapshot numa lista própria — a limpeza abaixo agora é paceada (roda por vários
+        // frames), então não pode depender do HashSet compartilhado (regenerateClearScratch,
+        // reusado por RegenerateWorld()) continuar intacto até lá.
+        var coordsToClear = new List<ChunkCoord>(regenerateClearScratch);
 
         paintedChunks.Clear();
         queuedChunks.Clear();
@@ -776,6 +779,24 @@ public class ChunkTerrainGenerator : MonoBehaviour
                 pendingPaint.Enqueue(coord);
                 queuedChunks.Add(coord);
             }
+        }
+
+        StartCoroutine(ClearThenPaint(coordsToClear));
+    }
+
+    // [Perf] Bug real reportado pelo usuário: limpar todos os chunks do dia anterior num só
+    // foreach síncrono (ClearChunkImmediate por chunk, até 5 SetTilesBlock + destruir props
+    // cada) travava a tela por um instante bem no momento em que a Loja abria ("a loja da uma
+    // leve travada no começo"), sempre reproduzível. Mesmo critério de pacing de
+    // PaintChunkIncremental (1 operação de tilemap por frame) — e tem que terminar ANTES de
+    // começar a pintar o dia novo (ProcessPipeline reusa as MESMAS tilemaps; limpar e pintar em
+    // paralelo podia apagar um chunk que a pintura acabou de terminar).
+    private IEnumerator ClearThenPaint(List<ChunkCoord> coordsToClear)
+    {
+        foreach (var coord in coordsToClear)
+        {
+            ClearChunkImmediate(coord);
+            yield return null; // 1 chunk por frame
         }
 
         StartCoroutine(ProcessPipeline());

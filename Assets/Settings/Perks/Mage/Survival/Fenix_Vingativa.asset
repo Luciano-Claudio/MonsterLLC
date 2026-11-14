@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_direita_27
   displayName: Vengeful Phoenix
-  description: When the hero takes damage, the pet gains temporary extra damage, %/rank.
-  icon: {fileID: 0}
+  description: When the hero takes damage, the Phoenix (pet) gains +25%/rank extra damage for a short time.
+  icon: {fileID: 2100903122, guid: a447c13b7125ec243a07f81adf818348, type: 3}
   costPerRank:
   - 100000000
   - 1500000000

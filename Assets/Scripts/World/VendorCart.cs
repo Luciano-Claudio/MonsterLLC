@@ -109,10 +109,11 @@ public class VendorCart : MonoBehaviour
         activeArcs.Clear();
     }
 
-    // Chamado por Vendor.Interact() — 1 vez por material vendido. origin é a posição do herói
-    // NO INSTANTE da venda (não acompanha o herói se ele andar durante a animação, de propósito
-    // — arcos são curtos, não compensa a complexidade de perseguir um alvo móvel pra um efeito
-    // cosmético).
+    // Chamado por Vendor.Interact() (venda manual, 1 vez por material vendido, origin = herói)
+    // e por LootDrop.Collect() (Ímã Vivo, origin = posição do loot no chão) — 1 vez por item
+    // auto-vendido. origin é a posição NO INSTANTE da venda (não acompanha o alvo se ele andar/
+    // for destruído durante a animação, de propósito — arcos são curtos, não compensa a
+    // complexidade de perseguir um alvo móvel pra um efeito cosmético).
     public void AcceptSale(string itemName, long quantity, Vector3 origin)
     {
         if (quantity <= 0) return;

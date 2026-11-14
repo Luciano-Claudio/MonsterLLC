@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_direita_25
   displayName: Residual Flame
-  description: The teleport leaves a fire area at the origin point, %/rank damage/second.
-  icon: {fileID: 0}
+  description: The teleport leaves a persistent fire area at the origin point, dealing 10%/rank of the Mage's damage per second.
+  icon: {fileID: 864123908044701314, guid: a447c13b7125ec243a07f81adf818348, type: 3}
   costPerRank:
   - 1000000
   - 12000000

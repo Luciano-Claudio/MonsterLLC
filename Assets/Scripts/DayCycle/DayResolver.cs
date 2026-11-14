@@ -43,6 +43,7 @@ public static class DayResolver
         EnemyController.DestroyAllSpawned(); // ClearAllEnemies só limpa a lista rastreada — isto pega até projétil/summon que escapou dela
         LootDrop.DestroyAllOnGround();
         FloatingCombatText.DestroyAll();
+        HeroController.DestroyAllSpawnedEffects(); // idem pro lado do herói (ground crack, projétil etc. — bug real reportado pelo usuário)
         GameEvents.DayEnded();
         Debug.Log("[DayResolver] Jogador morreu — mundo resetado, aguardando fim da animação de morte...");
     }

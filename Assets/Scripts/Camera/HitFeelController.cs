@@ -20,6 +20,24 @@ public class HitFeelController : MonoBehaviour
     [Header("Herói leva dano (só shake, sem zoom)")]
     public float heroHitShakeForce = 0.25f;
 
+    // Bug real reportado pelo usuário: 1 hit treme normal, mas acertar/levar DEZENAS ou
+    // CENTENAS de hits no mesmo instante (AOE, enxame denso, Ground Crack tiquando em vários
+    // inimigos ao mesmo tempo) disparava 1 GenerateImpulseWithForce POR HIT — o impulso do
+    // Cinemachine soma/acumula, e a câmera saía tremendo tão forte que parecia bugada. Cada
+    // categoria (jogador acerta monstro / herói leva dano) tem seu PRÓPRIO orçamento
+    // independente: no máximo maxShakesPerWindow impulsos a cada shakeWindowSeconds — o resto
+    // dos hits na mesma janela continua aplicando dano normal, só não empilha MAIS tremida/zoom
+    // em cima da que já disparou. Os 2 campos ficam expostos de propósito (pedido do usuário:
+    // "um cooldown pequeno") — ajustável ao vivo sem recompilar.
+    [Header("Limite anti-spam de tremida/zoom")]
+    public int maxShakesPerWindow = 3;
+    public float shakeWindowSeconds = 0.15f;
+
+    private float monsterHitWindowStart = float.NegativeInfinity;
+    private int monsterHitShakesInWindow;
+    private float heroHitWindowStart = float.NegativeInfinity;
+    private int heroHitShakesInWindow;
+
     private Coroutine zoomRoutine;
 
     private void OnEnable() => GameEvents.OnDamageTaken += HandleDamageTaken;
@@ -31,6 +49,7 @@ public class HitFeelController : MonoBehaviour
 
         if (isPlayer)
         {
+            if (!TryConsumeShakeBudget(ref heroHitWindowStart, ref heroHitShakesInWindow)) return;
             impulseSource.GenerateImpulseWithForce(heroHitShakeForce);
             return;
         }
@@ -39,12 +58,29 @@ public class HitFeelController : MonoBehaviour
         // direto do próprio jogador (decisão do usuário: ult explode = juice, dot dela = não;
         // primário do mage = juice, pet batendo = não).
         if (!isDirectPlayerHit) return;
+        if (!TryConsumeShakeBudget(ref monsterHitWindowStart, ref monsterHitShakesInWindow)) return;
 
         impulseSource.GenerateImpulseWithForce(monsterHitShakeForce);
 
         if (cinemachineCamera == null) return;
         if (zoomRoutine != null) StopCoroutine(zoomRoutine);
         zoomRoutine = StartCoroutine(PunchZoom());
+    }
+
+    // Janela deslizante simples via Time.time — nenhum Update()/Coroutine próprio precisa
+    // rodar só pra isto: a cada chamada, se a janela anterior já expirou, reseta o contador;
+    // senão só soma e compara contra o teto.
+    private bool TryConsumeShakeBudget(ref float windowStart, ref int countInWindow)
+    {
+        if (Time.time - windowStart > shakeWindowSeconds)
+        {
+            windowStart = Time.time;
+            countInWindow = 0;
+        }
+
+        if (countInWindow >= maxShakesPerWindow) return false;
+        countInWindow++;
+        return true;
     }
 
     private IEnumerator PunchZoom()

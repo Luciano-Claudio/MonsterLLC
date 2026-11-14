@@ -117,6 +117,18 @@ public class PerkTreeController : MonoBehaviour
 
     private void HandleGoldChanged(long _) => RefreshAll();
 
+    // Cheat de debug — só pra testar rank alto de perk sem precisar farmar gold de verdade.
+    // Nunca chamado pelo fluxo real do jogo; plugado manualmente num Button de teste no painel
+    // (OnClick -> PerkTreeController.DebugGiveTrillionGold). Mesmo critério do
+    // ShopHandler.DebugGiveGold().
+    [ContextMenu("Debug: Give 1 Trillion Gold")]
+    public void DebugGiveTrillionGold()
+    {
+        MainMenuUI.CurrentRun.gold += 1_000_000_000_000L;
+        GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
+        Debug.Log($"[PerkTreeController] (Debug) +1 trilhão de gold — total agora: {MainMenuUI.CurrentRun.gold}.");
+    }
+
     // Nome do GameObject Content == heroKey sem "_" (mesma convenção de
     // MainMenuNavigationUI.WireHeroCards, ex. "Blood_Mage" -> "BloodMage") pra bater com
     // MainMenuUI.CurrentRun.hero.

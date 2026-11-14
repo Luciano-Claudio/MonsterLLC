@@ -16,6 +16,22 @@ public class GroundCrack : MonoBehaviour
 {
     public enum Direction { NE, NW, SE, SW }
 
+    // Bug real reportado pelo usuário: a #29 "Fenda Permanente" (nunca expira por timer)
+    // deixava o jogador empilhar fendas infinitas na mesma área — qualquer monstro que
+    // passasse ali acumulava o dano de TODAS ao mesmo tempo, morrendo com 1 hit. Regra final
+    // pedida pelo usuário: existe uma "safe zone" MENOR que o raio da fenda onde 2 fendas PODEM
+    // coexistir lado a lado — só deleta a mais antiga quando a distância entre os centros for
+    // <= o raio da fenda (não a soma dos 2 raios, que impedia até fendas lado a lado de
+    // sobreviverem juntas — tentativa anterior, rejeitada).
+    //
+    // Bug meu corrigido agora: "centro"/"raio" têm que ser os do PRÓPRIO COLLIDER ativo (pedido
+    // explícito do usuário), nunca transform.position/transform.localScale da RAIZ — os 4
+    // CircleCollider2D moram em filhos com offset local fixo (±1.01, ver Crack_NE/NW/SE/SW no
+    // prefab), então o centro de verdade do collider ativo NUNCA é o mesmo ponto que
+    // transform.position da raiz. Collider2D.bounds já resolve escala + offset + hierarquia
+    // inteira sozinho — fonte única de centro/raio reais, em vez de recalcular na mão.
+    private static readonly List<GroundCrack> ActiveCracks = new();
+
     [SerializeField] private Animator animator;
     [SerializeField] private CircleCollider2D neCollider;
     [SerializeField] private CircleCollider2D nwCollider;
@@ -64,7 +80,54 @@ public class GroundCrack : MonoBehaviour
         AttachRelay(nwCollider);
         AttachRelay(seCollider);
         AttachRelay(swCollider);
+
+        var myCollider = GetActiveCollider(direction);
+        if (myCollider != null)
+        {
+            Vector2 myCenter = myCollider.bounds.center;
+            float myRadius = myCollider.bounds.extents.x; // circle: extents.x == extents.y == raio real em mundo
+
+            for (int i = ActiveCracks.Count - 1; i >= 0; i--)
+            {
+                var other = ActiveCracks[i];
+                if (other == null) { ActiveCracks.RemoveAt(i); continue; }
+                if (other == this) continue;
+
+                var otherCollider = other.GetCurrentlyEnabledCollider();
+                if (otherCollider == null) continue;
+
+                // Safe zone: distância entre os CENTROS DOS COLLIDERS <= raio DO COLLIDER desta
+                // fenda = deleta a mais antiga (ver comentário na declaração de ActiveCracks).
+                // Distância > raio = as 2 sobrevivem lado a lado.
+                if (Vector2.Distance(myCenter, otherCollider.bounds.center) <= myRadius)
+                    Destroy(other.gameObject);
+            }
+        }
+
+        ActiveCracks.Add(this);
     }
+
+    private CircleCollider2D GetActiveCollider(Direction direction) => direction switch
+    {
+        Direction.NE => neCollider,
+        Direction.NW => nwCollider,
+        Direction.SE => seCollider,
+        Direction.SW => swCollider,
+        _ => null
+    };
+
+    // Qual dos 4 está ligado AGORA — usado só pra checar overlap contra fendas já existentes
+    // (cada uma já decidiu sua direção no próprio Initialize(), não precisa guardar à parte).
+    private CircleCollider2D GetCurrentlyEnabledCollider()
+    {
+        if (neCollider != null && neCollider.enabled) return neCollider;
+        if (nwCollider != null && nwCollider.enabled) return nwCollider;
+        if (seCollider != null && seCollider.enabled) return seCollider;
+        if (swCollider != null && swCollider.enabled) return swCollider;
+        return null;
+    }
+
+    private void OnDestroy() => ActiveCracks.Remove(this);
 
     private void AttachRelay(CircleCollider2D col)
     {
@@ -94,6 +157,19 @@ public class GroundCrack : MonoBehaviour
 
     private void Update()
     {
+        // Causa real do floating text "fantasma" no Results/Loja depois de SOBREVIVER o dia
+        // (nunca acontecia na morte): Time.timeScale nunca muda neste projeto (GameplayGate é só
+        // flag), e no caminho de sobreviver a limpeza de Ground Crack/inimigos só roda bem depois,
+        // em ShopHandler.ProceedFromShop — então, sem este gate, a fenda continuava tiquando dano
+        // em qualquer inimigo ainda parado nela durante TODO o Results+Loja, gerando
+        // GameEvents.OnDamageTaken -> FloatingCombatText novo a cada tick. Esse texto novo nasce
+        // DEPOIS do único DestroyAll() já disparado na virada do dia, e como o próprio Update()
+        // dele já respeita GameplayGate, ele nunca anima nem se autodestrói sozinho — fica
+        // congelado na tela até o jogador sair da loja. Todo outro script de dano por tick do
+        // projeto já tem este gate (RogueBomb, GroundFireHazard, GroundTargetHazard etc.) — este
+        // aqui tinha ficado de fora.
+        if (!GameplayGate.IsActive) return;
+
         tickElapsed += Time.deltaTime;
         if (tickElapsed < tickInterval) return;
         tickElapsed = 0f;

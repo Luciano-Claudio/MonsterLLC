@@ -90,6 +90,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // gatilho que WorldBossSpawnManager/WorldChestSpawnManager já usam pra "virou dia novo").
     private bool segundaChanceUsedToday;
 
+    // Hook genérico (mesmo critério de RespawnHealthPercent/CentralPerkId — default false, só o
+    // herói que precisar sobrescreve) pra perks de "ignora 1 morte" EXCLUSIVOS de 1 herói (ex.:
+    // Renascimento do Mage, redesenhado 2026-11-13 pedido do usuário pra funcionar IGUAL ao
+    // Segunda Chance de Mundo, só que com flag própria). Flag separada de segundaChanceUsedToday
+    // de propósito — pedido explícito do usuário: "se ele tiver os 2 perks, ele aguenta morrer
+    // 2x", então as 2 fontes nunca podem compartilhar o mesmo "já usado hoje".
+    protected virtual bool HasExclusiveSecondChance => false;
+    private bool exclusiveSecondChanceUsedToday;
+
     // Escudo genérico (Direita #24 do Barbarian, "Último Fôlego" — reaproveitável por qualquer
     // herói futuro com perk parecido) — absorve dano ANTES do HP, até esvaziar. AddShield() usa
     // Mathf.Max (não soma) — mesmo critério de ShowGoldStatusFor: reativar o mesmo perk não
@@ -128,6 +137,10 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // tempo suficiente pra chegar perto, principalmente com knockback aplicado a cada hit.
     private AttackCooldown attackCooldown;
     private bool attackHeld;
+
+    // Mage (Chama Eterna, perk) — precisa saber se o jogador ainda está segurando o botão de
+    // ataque pra decidir se recasta na hora ou deixa a ação terminar de vez.
+    protected bool IsAttackHeld => attackHeld;
 
     // Rede de segurança — se o Animation Event de fim do "die" nunca disparar (clipe sem o
     // evento configurado), força o respawn depois desse tempo em vez de travar o herói pra
@@ -284,6 +297,32 @@ public abstract class HeroController : MonoBehaviour, IDamageable
                 herosContainer = existing != null ? existing.transform : new GameObject("//HEROS").transform;
             }
             return herosContainer;
+        }
+    }
+
+    // Bug real reportado pelo usuário: a #29 "Fenda Permanente" do Barbarian (Ground Crack sem
+    // timer de Destroy()) sobrevivia pra sempre — nem morrer nem passar o dia limpava, porque
+    // nasce como FILHO de HerosContainer (irmão do herói, nunca filho dele, ver comentário
+    // acima), então destruir só o herói (Destroy(currentHeroObj) em
+    // GameplayBootstrap.RespawnHeroFresh) nunca leva nada junto. Generaliza pra QUALQUER
+    // efeito/projétil de QUALQUER herói, presente ou futuro (pedido explícito do usuário) — os
+    // que já têm timer próprio (Destroy(obj, duration)) se limpam sozinhos de qualquer jeito,
+    // isto só fecha a brecha dos que não têm. Preserva o herói ainda vivo (pode estar no meio
+    // da animação de morte — ver DayResolver.ResolvePlayerDeath, chama isto ANTES da animação
+    // terminar) e qualquer PetController (ciclo de vida próprio, ver PetController.DestroyAll).
+    // Chamado nos mesmos 2 pontos que já limpam monstro/loot: DayResolver.ResolvePlayerDeath()
+    // e ShopHandler.ProceedFromShop() (caminho de sobreviver).
+    public static void DestroyAllSpawnedEffects()
+    {
+        if (herosContainer == null) return;
+
+        for (int i = herosContainer.childCount - 1; i >= 0; i--)
+        {
+            var child = herosContainer.GetChild(i);
+            if (child == null) continue;
+            if (Instance != null && child == Instance.transform) continue;
+            if (child.GetComponent<PetController>() != null) continue;
+            Destroy(child.gameObject);
         }
     }
 
@@ -481,6 +520,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         RefreshActionSpeedMultiplier();
     }
 
+    // Default 100% — nenhum herói muda isto hoje. O Mage usava isto pro perk "Renascimento"
+    // antigo (nascer a 50% e curar %/rank); redesenhado 2026-11-13 (pedido do usuário) pro perk
+    // virar "ignora 1 morte/dia" em vez disso (ver HasExclusiveSecondChance), então ninguém
+    // sobrescreve este hook por enquanto — fica como ponto de extensão genérico, mesmo critério
+    // de CentralPerkId/HasExclusiveSecondChance (default neutro, só quem precisar sobrescreve).
+    protected virtual float RespawnHealthPercent => 1f;
+
     protected virtual void Start()
     {
         // Achado real do usuário: perk de "+%HP máximo" só mexia no TETO (EffectiveMaxHealth) —
@@ -489,10 +535,19 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // regenerasse/curasse até lá. Start() roda depois de TODO Awake() (inclusive
         // RecomputePerkEffects() do herói específico, chamado no fim do Awake() de cada
         // subclasse), então aqui EffectiveMaxHealth já reflete World + Central + bônus próprios
-        // do herói — nasce sempre com a vida ATUAL = vida MÁXIMA efetiva daquele momento. Só
-        // acontece 1x aqui (spawn); comprar perk DEPOIS de nascido não deve curar de graça — só
-        // aumenta o teto, como já fazia.
-        stats.health = EffectiveMaxHealth;
+        // do herói. Só acontece 1x aqui (spawn); comprar perk DEPOIS de nascido não deve curar
+        // de graça — só aumenta o teto, como já fazia.
+        //
+        // DayResolver.PlayerSurvivedLastDay distingue os 2 jeitos de chegar aqui (GDD Deadline
+        // 8.1, Seção 3): sobreviveu o dia (ou é o 1º spawn da run) -> nasce com 100% do teto,
+        // igual sempre foi. Morreu -> usa RespawnHealthPercent (100% default, nenhum herói muda
+        // hoje). Não conflita com Segunda Chance (World) nem com HasExclusiveSecondChance (ex.:
+        // Mage): esses 2 perks evitam a morte inteira
+        // (define stats.health = 1f dentro de TakeDamage, nunca chama OnDeath/RespawnHeroFresh),
+        // então nunca passa por aqui — os 2 sistemas nunca escrevem o mesmo campo na mesma
+        // chamada.
+        float startHealthPercent = DayResolver.PlayerSurvivedLastDay ? 1f : RespawnHealthPercent;
+        stats.health = EffectiveMaxHealth * startHealthPercent;
 
         GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
@@ -512,7 +567,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         GameEvents.OnDayStart -= HandleDayStartForSegundaChance;
     }
 
-    private void HandleDayStartForSegundaChance() => segundaChanceUsedToday = false;
+    private void HandleDayStartForSegundaChance()
+    {
+        segundaChanceUsedToday = false;
+        exclusiveSecondChanceUsedToday = false;
+    }
 
     protected virtual void Update()
     {
@@ -729,6 +788,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
 
+    // Mage (Fôlego Arcano, perk) — ganho de Energia POR HIT do primário, diferente do ganho
+    // por abate acima (HandleEnemyKilled): não passa pelo lockout pós-ultimate nem pelos
+    // multiplicadores de abate (UltimateEnergyMultiplier/EnergyGainMultiplier são especificamente
+    // sobre recompensa de abate) — é % FLAT do próprio maxEnergy, decidida por quem chama.
+    protected void GainEnergyPercentOfMax(float percent)
+    {
+        if (percent <= 0f) return;
+        stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, stats.maxEnergy * percent / 100f);
+        GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
+    }
+
     // Extraído do Update() (que só chama isto enquanto attackHeld) pra também poder ser
     // chamado 1x só por um clique de UI (Right_Button_Mouse em Primary_Attack) — mesmos gates,
     // mesmo consumo de cooldown, sem duplicar a lógica.
@@ -858,6 +928,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (SegundaChanceUnlocked && !segundaChanceUsedToday && HealthSystem.IsDead(stats.health))
         {
             segundaChanceUsedToday = true;
+            stats.health = 1f;
+        }
+
+        // Renascimento do Mage (redesenhado 2026-11-13) — mesmo efeito do Segunda Chance acima,
+        // flag própria (exclusiveSecondChanceUsedToday) pra poder empilhar com ele: se o Mage
+        // tiver os 2 perks, a 1ª morte do dia consome 1 flag, a 2ª consome a outra, só a 3ª mata
+        // de verdade. Checado DEPOIS do Segunda Chance de propósito (não importa a ordem — os 2
+        // só setam stats.health = 1f quando IsDead, nunca os dois no mesmo hit: o 1º já tira o
+        // "IsDead" antes do 2º ser avaliado).
+        if (HasExclusiveSecondChance && !exclusiveSecondChanceUsedToday && HealthSystem.IsDead(stats.health))
+        {
+            exclusiveSecondChanceUsedToday = true;
             stats.health = 1f;
         }
 

@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: central_awakening_mage
   displayName: Awakening of Power
-  description: "Awakens the hero's full potential - damage and max health increase by 50%."
-  icon: {fileID: 0}
+  description: "Awakens the hero's full potential - damage and max health +20%/rank, up to +100% at rank 5."
+  icon: {fileID: -5788009515197222219, guid: 51af64f4aa1da5d468ab863c774756e1, type: 3}
   costPerRank:
   - 5
+  - 10
+  - 25
+  - 50
+  - 100

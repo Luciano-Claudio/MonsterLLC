@@ -98,6 +98,15 @@ public class LootDrop : MonoBehaviour
             MainMenuUI.CurrentRun.gold += saleValue;
             GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
             DayStatsTracker.RegisterItemSold(loot.itemName, loot.quantity, saleValue);
+
+            // Pedido do usuário: "o magnet vai ser literalmente o vendor ligado 100% do tempo" —
+            // mesmo arco visual (herói/chão -> carrinho) que Vendor.Interact() dispara numa
+            // venda manual, só que a partir de onde o loot estava no chão (não existe posição
+            // de Bag pra usar aqui, já que o Ímã Vivo nunca deixa o item passar por ela). O
+            // gold/stat já aconteceram ali em cima, instantâneo — isto é 100% cosmético, mesmo
+            // critério documentado em VendorCart (nunca atrasa nem bloqueia a economia real).
+            Vendor.Instance.cart?.AcceptSale(loot.itemName, loot.quantity, transform.position);
+
             Destroy(gameObject);
             return;
         }

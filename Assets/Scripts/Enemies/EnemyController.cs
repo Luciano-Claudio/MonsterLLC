@@ -123,7 +123,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // do ciclo de combate padrão (ex.: SpiderQueenController, teia automática em paralelo à
     // perseguição) e precisa parar de agir no instante exato em que o monstro morre, sem
     // esperar o próximo frame do Update() base decidir isso por conta própria.
-    protected bool IsDead => isDead;
+    // Público (não só protected) desde o Mage (Impacto Explosivo, perk) — MageAttackHitbox
+    // precisa saber se o próprio hit matou um inimigo em chamas, e não é subclasse de
+    // EnemyController (é um componente à parte, mesmo critério de qualquer projétil).
+    public bool IsDead => isDead;
 
     private bool dieHandled; // evita destruir/dropar loot duas vezes (evento + timeout de segurança)
     protected Animator animator;

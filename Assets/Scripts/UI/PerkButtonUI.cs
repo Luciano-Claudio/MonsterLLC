@@ -35,6 +35,12 @@ public class PerkButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             buttonImage = button.GetComponent<Image>();
             button.onClick.AddListener(OnClick);
 
+            // Clique direito (pedido do usuário) — Button só entrega onClick pro esquerdo, por
+            // isso o relay separado (mesmo GameObject do Button, ver comentário na classe).
+            var rightClickRelay = button.GetComponent<PerkButtonRightClickRelay>();
+            if (rightClickRelay == null) rightClickRelay = button.gameObject.AddComponent<PerkButtonRightClickRelay>();
+            rightClickRelay.Owner = this;
+
             nameLabel = button.transform.Find("Perk_Name")?.GetComponent<TMP_Text>();
             icon = button.transform.Find("Perk_Icon")?.GetComponent<Image>();
             pipsContainer = button.transform.Find("Perk_Qtd_Content");
@@ -116,6 +122,21 @@ public class PerkButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         // Button do uGUI), então o popup já está visível pra este mesmo perk — só recalcular o
         // texto de novo. ShowPopupFor -> PopupController.Activate() não reinicia o fade/scale
         // quando o popup já está visível (só troca o texto), então não "some e aparece de novo".
+        owner.ShowPopupFor(this);
+    }
+
+    // Clique direito (pedido do usuário, via PerkButtonRightClickRelay) — compra o máximo de
+    // ranks que o gold atual permitir deste perk, de uma vez. Mesmo refresh de UI do clique
+    // esquerdo normal; TryBuyMax já devolve 0 sem fazer nada se não der pra comprar nem 1 rank
+    // (maxado, sem gold, ou linha trancada — CanAfford cobre os 3 casos).
+    public void OnRightClick()
+    {
+        // PerkButtonRightClickRelay não é um Selectable — ao contrário do onClick esquerdo
+        // (Button.Press() já checa IsInteractable() por conta própria), o clique direito
+        // dispara mesmo com o botão trancado/maxado se eu não checar isto na mão.
+        if (button == null || !button.interactable) return;
+        if (PerkState.TryBuyMax(definition) <= 0) return;
+        owner.RefreshAll();
         owner.ShowPopupFor(this);
     }
 

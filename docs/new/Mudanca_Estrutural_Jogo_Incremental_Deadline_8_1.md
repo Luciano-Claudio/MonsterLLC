@@ -615,62 +615,77 @@ primário do Barbarian passa a sumonar uma fenda no chão:
 
 ### 9.2 — Os 30 perks
 
+_Sincronizado com o código real em 2026-11-13 (estava desatualizado desde o balanceamento de
+2026-11-10/11 — ver `Barbarian.cs`). Custos reais são os mesmos valores-base de sempre; o
+balanceamento de 2026-11-10 só escalou dano/vida (nunca movespeed/tamanho/área/alcance/cooldown/
+aceleração/duração — ver nota em WorldPerkEffects.cs), por isso as famílias de dano aqui saltam
+5x e as outras famílias mantêm o %/rank antigo, só com custo renumerado._
+
 **Dano**
-1. Golpe Pesado — 0/5 · 10/80/640/5.120/40.960 · dano +8%/rank.
-2. Fúria do Impacto — 0/3 · 1M/12M/144M · dano +15%/rank.
-3. Força Bruta — 0/3 · 100M/1,5B/22,5B · dano +20%/rank.
-4. Devastação — 0/2 · 5B/100B · dano +30%/rank.
-5. Fúria Definitiva — 0/1 · 50T · dano do ataque primário +50%.
+1. Golpe Pesado — 0/5 · 100/500/2.500/12.500/62.500 · dano +40%/rank.
+2. Fúria do Impacto — 0/3 · 10.000/60.000/360.000 · dano +75%/rank.
+3. Força Bruta — 0/5 (ganhou 2 ranks novos em 2026-11-11, era 0/3) · 100.000/600.000/3.600.000/
+   21.600.000/129.600.000 · dano +100%/rank.
+4. Devastação — 0/2 · 7.000.000/42.000.000 · dano +150%/rank.
+5. Fúria Definitiva — 0/5 (ganhou 4 ranks novos em 2026-11-11, era 0/1 flat) ·
+   8.000.000.000/80.000.000.000/2.000.000.000.000/200.000.000.000.000/200.000.000.000.000.000 ·
+   tabela escalonada (não %/rank linear): dano do ataque primário +250%/+2.500%/+125.000%/
+   +25.000.000%/+30.000.000.000.000%, calibrada contra o teto de HP dos monstros Tier9/10.
 
 **Knockback**
-6. Empurrão — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-7. Impacto Sísmico — 0/3 · 1M/12M/144M · +20%/rank.
-8. Onda de Choque — 0/3 · 100M/1,5B/22,5B · +30%/rank.
+6. Empurrão — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+7. Impacto Sísmico — 0/3 · 5.000/30.000/180.000 · +20%/rank.
+8. Onda de Choque — 0/3 · 50.000/300.000/1.800.000 · +30%/rank.
 
 **Corpo (`sizeMultiplier`)**
-9. Corpo Avantajado — 0/5 · 10/80/640/5.120/40.960 · +5%/rank.
-10. Crescimento Brutal — 0/3 · 1M/12M/144M · +10%/rank.
-11. Corpo de Titã — 0/3 · 100M/1,5B/22,5B · +15%/rank.
+9. Corpo Avantajado — 0/5 · 500/2.500/12.500/62.500/312.500 · +5%/rank.
+10. Crescimento Brutal — 0/3 · 5.000/30.000/180.000 · +10%/rank.
+11. Corpo de Titã — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
 
 **Duração do Ground Crack**
-12. Fenda Duradoura — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-13. Rachadura Profunda — 0/3 · 1M/12M/144M · +20%/rank.
-14. Abismo — 0/3 · 100M/1,5B/22,5B · +30%/rank.
+12. Fenda Duradoura — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+13. Rachadura Profunda — 0/3 · 5.000/30.000/180.000 · +20%/rank.
+14. Abismo — 0/3 · 3.000.000/18.000.000/108.000.000 · +30%/rank.
 
 **Área do Ground Crack**
-15. Fenda Larga — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-16. Terremoto — 0/3 · 1M/12M/144M · +15%/rank.
-17. Cataclismo — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+15. Fenda Larga — 0/5 · 500/2.500/12.500/62.500/312.500 · +8%/rank.
+16. Terremoto — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+17. Cataclismo — 0/3 · 3.000.000/18.000.000/108.000.000 · +20%/rank.
 
 **Aceleração da animação (`ActionSpeedMultiplier`)**
-18. Golpe Rápido — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-19. Frenesi — 0/3 · 1M/12M/144M · +15%/rank.
-20. Velocidade Brutal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+18. Golpe Rápido — 0/5 · 50/250/1.250/6.250/31.250 · +10%/rank.
+19. Frenesi — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+20. Velocidade Brutal — 0/3 · 3.000.000/18.000.000/108.000.000 · +20%/rank.
 
 **Cooldown real (`stats.attackSpeed`)**
-21. Reflexos de Combate — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-22. Instinto de Batalha — 0/3 · 1M/12M/144M · -8%/rank.
+21. Reflexos de Combate — 0/5 · 500/2.500/12.500/62.500/312.500 · -5%/rank.
+22. Instinto de Batalha — 0/3 · 50.000/300.000/1.800.000 · -8%/rank.
 
 **Crítico** _(mecânica nova pro Barbarian)_
-23. Golpe Certeiro — 0/5 · 10/80/640/5.120/40.960 · +5% chance de crítico (dano x2)/rank.
-24. Precisão Selvagem — 0/3 · 1M/12M/144M · +8% chance de crítico/rank.
+23. Golpe Certeiro — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +5% chance de crítico
+    (dano x2)/rank.
+24. Precisão Selvagem — 0/3 · 50.000/300.000/1.800.000 · +8% chance de crítico/rank.
 
 **Sinergia (ligadas ao Ground Crack)**
-25. Fúria Diagonal — 0/3 · 10K/100K/1M · cada hitbox diagonal que acerta um alvo DIFERENTE no
-    mesmo golpe soma +10% de dano nesse golpe, por rank.
-26. Golpe Perfurante — 0/3 · 1M/12M/144M · o ataque atravessa o 1º alvo e acerta um 2º atrás
-    dele; alcance de perfuração aumenta por rank.
-27. Fenda Enfurecida — 0/3 · 1M/12M/144M · durante o Shift (Direita), dano do Ground Crack
-    +15%/rank — mora na Esquerda porque o efeito é do Ground Crack, não do Shift.
-28. Fenda Selvagem — 0/3 · 1M/12M/144M · a cada 10% de HP perdido (mesmo gatilho da passiva
-    `GetPassiveDamageMultiplier`), dano do Ground Crack também sobe (+10/15/20% por step,
-    conforme o rank).
+25. Fúria Diagonal — 0/3 · 10.000/60.000/360.000 · cada hitbox diagonal que acerta um alvo
+    DIFERENTE no mesmo golpe soma +50%/rank de dano nesse golpe (era +10%/rank).
+26. **Sangramento Perfurante** (redesign — era "Golpe Perfurante"/perfuração física; decisão do
+    usuário: trocou por um Bleeding real, mesmo `StatusEffectController` que Ranger/Mage/Cleric
+    já usam) — 0/3 · 100.000/600.000/3.600.000 · aplica Sangramento por 3s, 10/20/30 dano por
+    segundo conforme o rank (reaplicar só reseta a duração, nunca empilha 2 instâncias no mesmo
+    monstro).
+27. Fenda Enfurecida — 0/3 · 100.000/600.000/3.600.000 · durante o Shift (Direita), dano do
+    Ground Crack +75%/rank (era +15%/rank) — mora na Esquerda porque o efeito é do Ground
+    Crack, não do Shift.
+28. Fenda Selvagem — 0/3 · 100.000/600.000/3.600.000 · a cada 10% de HP perdido (mesmo gatilho
+    da passiva `GetPassiveDamageMultiplier`), dano do Ground Crack também sobe — tabela por
+    rank: +50%/+75%/+100% (era +10/15/20%).
 
 **Gates finais**
-29. Fenda Permanente — 0/1 · 5T · o Ground Crack nunca desaparece enquanto o Barbarian não se
-    afastar do local.
-30. Eco do Impacto — 0/1 · 500T · todo inimigo empurrado pelo knockback do ataque primário, ao
-    parar, cria um 2º Ground Crack (menor) no ponto de impacto.
+29. Fenda Permanente — 0/1 · 30M (era 5T) · o Ground Crack nunca desaparece enquanto o
+    Barbarian não se afastar do local.
+30. Eco do Impacto — 0/1 · 500B (era 500T) · todo inimigo empurrado pelo knockback do ataque
+    primário, ao parar, cria um 2º Ground Crack (menor) no ponto de impacto.
 
 ---
 
@@ -680,55 +695,65 @@ Grounded nos campos reais do Shift (`secondaryAbilityDamageMultiplier`, `seconda
 `secondaryAbilityDuration`, cooldown herdado de `HeroController`) e na passiva de HP perdido
 (`GetPassiveDamageMultiplier`/`GetPassiveDamageSteps` — hoje +25%/step, teto de 8 steps/+200%).
 
+_Sincronizado com o código real em 2026-11-13 (mesma causa da Seção 9 — nunca atualizado depois
+do balanceamento de 2026-11-10/11). Aqui o %/rank do dano do Shift foi NERFADO (teto caiu de
++1.075% pra +100%), não escalado 5x — ver comentário em `Barbarian.cs`._
+
 **Dano do Shift**
-1. Fúria Crescente — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-2. Ímpeto Selvagem — 0/3 · 1M/12M/144M · +15%/rank.
-3. Avalanche de Golpes — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Fúria Sem Fim — 0/2 · 5B/100B · +30%/rank.
+1. Fúria Crescente — 0/5 · 100/500/2.500/12.500/62.500 · +5%/rank (era +10%/rank).
+2. Ímpeto Selvagem — 0/3 · 10.000/60.000/360.000 · +7%/rank (era +15%/rank).
+3. Avalanche de Golpes — 0/3 · 100.000/600.000/3.600.000 · +9%/rank (era +20%/rank).
+4. Fúria Sem Fim — 0/2 · 7.000.000/42.000.000 · +14%/rank (era +30%/rank).
 
 **Velocidade do Shift**
-5. Passos Rápidos — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-6. Rajada — 0/3 · 1M/12M/144M · +12%/rank.
-7. Vendaval — 0/3 · 100M/1,5B/22,5B · +16%/rank.
-8. Velocidade da Tempestade — 0/2 · 5B/100B · +20%/rank.
+5. Passos Rápidos — 0/5 · 50/250/1.250/6.250/31.250 · +8%/rank.
+6. Rajada — 0/3 · 5.000/30.000/180.000 · +12%/rank.
+7. Vendaval — 0/3 · 50.000/300.000/1.800.000 · +16%/rank.
+8. Velocidade da Tempestade — 0/2 · 3.000.000/18.000.000 · +20%/rank.
 
 **Duração do Shift**
-9. Fôlego Extra — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-10. Resistência — 0/3 · 1M/12M/144M · +15%/rank.
-11. Perseverança — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-12. Vontade de Ferro — 0/2 · 5B/100B · +30%/rank.
+9. Fôlego Extra — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+10. Resistência — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+11. Perseverança — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+12. Vontade de Ferro — 0/2 · 3.000.000/18.000.000 · +30%/rank.
 
 **Cooldown do Shift**
-13. Recuperação Rápida — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-14. Fôlego Renovado — 0/3 · 1M/12M/144M · -8%/rank.
-15. Instinto Ágil — 0/3 · 100M/1,5B/22,5B · -10%/rank.
-16. Reflexo de Batalha — 0/2 · 5B/100B · -15%/rank.
+13. Recuperação Rápida — 0/5 · 500/2.500/12.500/62.500/312.500 · -5%/rank.
+14. Fôlego Renovado — 0/3 · 5.000/30.000/180.000 · -8%/rank.
+15. Instinto Ágil — 0/3 · 50.000/300.000/1.800.000 · -10%/rank.
+16. Reflexo de Batalha — 0/2 · 3.000.000/18.000.000 · -15%/rank.
 
 **Passiva de HP perdido**
-17. Sangue Fervente — 0/3 · 1M/12M/144M · +5%/step adicional por rank (acima dos 25% base).
-18. Instinto Berserker — 0/3 · 100M/1,5B/22,5B · +8%/step adicional por rank.
-19. Fúria sem Limites — 0/2 · 5B/100B · +10%/step adicional por rank.
-20. Limite Expandido — 0/2 · 10M/150M · +1 step no teto da passiva por rank (hoje 8 steps/+200%,
-    vai até 10/+250%).
+17. Sangue Fervente — 0/3 · 500/2.500/12.500 · +25%/step adicional por rank (era +5%/step;
+    acima dos 25% base).
+18. Instinto Berserker — 0/3 · 100.000/600.000/3.600.000 · +40%/step adicional por rank (era
+    +8%/step).
+19. Fúria sem Limites — 0/2 · 7.000.000/42.000.000 · +50%/step adicional por rank (era
+    +10%/step).
+20. Limite Expandido — 0/2 · 50.000/300.000 (era 10M/150M) · +1 step no teto da passiva por
+    rank (hoje 8 steps/+200%, vai até 10/+250%).
 
 **Mecânicas novas (sobrevivência)**
-21. Fúria Protetora — 0/3 · 1M/12M/144M · durante o Shift, dano recebido -8%/rank.
-22. Sede de Sangue — 0/3 · 1M/12M/144M · durante o Shift, cura 10%/rank do dano causado como HP.
-23. Fôlego Recuperado — 0/3 · 1M/12M/144M · matar um monstro durante o Shift reduz o cooldown
-    restante em 5%/rank.
-24. Último Fôlego — 0/2 · 100M/1,5B · ao ativar o Shift, ganha um escudo (absorve dano) de
+21. Fúria Protetora — 0/3 · 500/2.500/12.500 · durante o Shift, dano recebido -8%/rank.
+22. Sede de Sangue — 0/3 · 500/2.500/12.500 · durante o Shift, cura 50%/rank do dano causado
+    como HP (era 10%/rank).
+23. Fôlego Recuperado — 0/3 · 5.000/30.000/180.000 · matar um monstro durante o Shift reduz o
+    cooldown restante em 5%/rank.
+24. Último Fôlego — 0/2 · 100.000/600.000 · ao ativar o Shift, ganha um escudo (absorve dano) de
     10%/20% do HP máximo por rank.
-25. Renovação Selvagem — 0/3 · 1M/12M/144M · regenera HP durante o Shift, %/segundo por rank.
-26. Instinto de Sobrevivência — 0/2 · 100M/1,5B · abaixo de 30% HP, cooldown do Shift é reduzido
-    em 50%/rank.
-27. Vontade Inquebrável — 0/3 · 1M/12M/144M · durante o Shift, HP máximo temporário +5%/rank.
-28. Fúria Final — 0/2 · 100M/1,5B · se o Shift for ativado abaixo de 20% HP, concede 1s/2s de
-    invulnerabilidade total no início, por rank.
-29. **Coração Selvagem** — 0/1 · 5T · upgrade direto do Instinto de Sobrevivência (#26, pré-
-    requisito): toda vez que o HP cair abaixo de 10% — sem limite de 1x por dia, repete sempre
-    que acontecer — o cooldown do Shift zera na hora, completamente.
-30. Avatar da Fúria — 0/1 · 50T · durante o Shift, a passiva de HP perdido perde o teto de 8
-    steps (escala sem limite enquanto durar).
+25. Renovação Selvagem — 0/3 · 10.000/60.000/360.000 · regenera HP durante o Shift, 10%/segundo
+    por rank (GDD antigo nunca tinha o número — agora documentado).
+26. Instinto de Sobrevivência — 0/2 · 50.000/300.000 · abaixo de 30% HP, cooldown do Shift é
+    reduzido em 50%/rank.
+27. Vontade Inquebrável — 0/3 · 10.000/60.000/360.000 · durante o Shift, HP máximo temporário
+    +25%/rank (era +5%/rank).
+28. Fúria Final — 0/2 · 100.000/600.000 · se o Shift for ativado abaixo de 20% HP, concede 1s/2s
+    de invulnerabilidade total no início, por rank.
+29. **Coração Selvagem** — 0/1 · 450B (era 5T) · upgrade direto do Instinto de Sobrevivência
+    (#26, pré-requisito): toda vez que o HP cair abaixo de 10% — sem limite de 1x por dia,
+    repete sempre que acontecer — o cooldown do Shift zera na hora, completamente.
+30. Avatar da Fúria — 0/1 · 900B (era 50T) · durante o Shift, a passiva de HP perdido perde o
+    teto de 8 steps (escala sem limite enquanto durar).
 
 ---
 
@@ -740,45 +765,60 @@ completos pro 1º herói, incluindo o central). Grounded em `ultimateDamageMulti
 específica da Ultimate (pendência citada na Seção 12 — resolvida aqui, Cima ganha um
 multiplicador de ganho de energia próprio, separado do `EnergyGainMultiplier` geral de Baixo).
 
-1. Golpe Divino — 0/5 · 10/80/640/5.120/40.960 · dano +10%/rank.
-2. Ira Ancestral — 0/3 · 1M/12M/144M · +15%/rank.
-3. Poder Esmagador — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Apocalipse Pessoal — 0/2 · 5B/100B · +30%/rank.
-5. Juízo Final — 0/1 · 50T · dano +40%.
-6. Projétil Veloz — 0/5 · 10/80/640/5.120/40.960 · velocidade +10%/rank.
-7. Lança Relâmpago — 0/3 · 1M/12M/144M · +15%/rank.
-8. Velocidade Absoluta — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-9. Alcance Ampliado — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-10. Longo Alcance — 0/3 · 1M/12M/144M · +15%/rank.
-11. Horizonte de Guerra — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-12. Impacto Devastador — 0/5 · 10/80/640/5.120/40.960 · knockback +10%/rank.
-13. Onda Expansiva — 0/3 · 1M/12M/144M · +15%/rank.
-14. Força Absoluta — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-15. Canalização Rápida — 0/5 · 10/80/640/5.120/40.960 · carga necessária -5%/rank.
-16. Fúria Contida — 0/3 · 1M/12M/144M · -8%/rank.
-17. Explosão Iminente — 0/3 · 100M/1,5B/22,5B · -10%/rank.
-18. Instinto de Poder — 0/5 · 10/80/640/5.120/40.960 · ganho de energia da Ultimate +10%/rank.
-19. Sede de Poder — 0/3 · 1M/12M/144M · +15%/rank.
-20. Fome de Destruição — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-21. Chuva de Lanças — 0/3 · 1M/12M/144M · +2 projéteis/rank (8 → 10 → 12 → 14).
-22. Golpe Crítico Celestial — 0/3 · 1M/12M/144M · +5% chance de crítico (dano x2)/rank.
-23. Explosão de Impacto — 0/3 · 1M/12M/144M · explosão em área por projétil, %/rank do dano.
-24. Trilha de Fúria — 0/3 · 1M/12M/144M · chance de deixar um Ground Crack (Esquerda) no
-    caminho, %/rank.
-25. Pouso Sísmico — 0/3 · 1M/12M/144M · dano em área no ponto de aterrissagem, %/rank do dano
-    base.
-26. Renovação de Batalha — 0/2 · 100M/1,5B · cura %/rank de HP por inimigo atingido.
-27. Fúria Repetida — 0/2 · 100M/1,5B · %/rank de chance de disparar uma 2ª rodada completa dos 8
-    projéteis automaticamente.
-28. Fúria Autônoma — 0/1 · 50T · a Ultimate dispara sozinha a cada N segundos fixos, além do uso
-    manual normal.
-29. Avatar da Destruição — 0/1 · 500T · a cada 5 usos da Ultimate, o 5º vem automaticamente com
-    o dobro de dano e de projéteis, sem custo extra.
-30. **Fragmentação Sem Fim** — 0/1 · **1 quadrilhão** (nó mais caro de toda a árvore de Cima) ·
-    ao acertar um monstro, o projétil se divide em 2 novos projéteis (metade do dano/reserva de
-    perfuração cada), disparados em direções opostas — cada filho pode se dividir de novo no seu
-    próprio próximo acerto, recursivamente (cascata exponencial). Extremamente forte de
-    propósito.
+_Sincronizado com o código real em 2026-11-13 (mesma causa das Seções 9-10). Mesmo padrão da
+Esquerda: família de dano escala 5x e ganha 2 perks com ranks extras (3→5 e 1→5), as outras
+famílias mantêm %/rank e só o custo foi renumerado. **Os 3 gates finais (28-30) são a maior
+divergência da árvore inteira — na prática ficaram ~1.000x a ~8 BILHÕES de vezes mais baratos do
+que o texto antigo dizia, e a ordem crescente de preço que o texto afirmava nunca existiu de
+verdade (28=80M é o 2º mais barato, 29=1,5T é o mais caro, 30=120M é o MAIS barato dos 3,
+apesar do texto chamar ele de "nó mais caro de toda a árvore").**
+
+1. Golpe Divino — 0/5 · 100/500/2.500/12.500/62.500 · dano +50%/rank.
+2. Ira Ancestral — 0/3 · 10.000/60.000/360.000 · +75%/rank.
+3. Poder Esmagador — 0/5 (ganhou 2 ranks novos em 2026-11-11, era 0/3) ·
+   100.000/600.000/3.600.000/21.600.000/129.600.000 · +100%/rank (mesmo %/rank, só mais ranks).
+4. Apocalipse Pessoal — 0/2 · 7.000.000/42.000.000 · +150%/rank.
+5. Juízo Final — 0/5 (ganhou 4 ranks novos em 2026-11-11, era 0/1 flat) ·
+   6.000.000.000/60.000.000.000/1.500.000.000.000/150.000.000.000.000/150.000.000.000.000.000 ·
+   tabela escalonada (não %/rank linear): dano +200%/+2.000%/+100.000%/+20.000.000%/
+   +24.000.000.000.000% (0,8x a proporção da Fúria Definitiva do Barbarian/Esquerda).
+6. Projétil Veloz — 0/5 · 50/250/1.250/6.250/31.250 · velocidade +10%/rank.
+7. Lança Relâmpago — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+8. Velocidade Absoluta — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+9. Alcance Ampliado — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+10. Longo Alcance — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+11. Horizonte de Guerra — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+12. Impacto Devastador — 0/5 · 500/2.500/12.500/62.500/312.500 · knockback +10%/rank.
+13. Onda Expansiva — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+14. Força Absoluta — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+15. Canalização Rápida — 0/5 · 500/2.500/12.500/62.500/312.500 · carga necessária -5%/rank.
+16. Fúria Contida — 0/3 · 5.000/30.000/180.000 · -8%/rank.
+17. Explosão Iminente — 0/3 · 50.000/300.000/1.800.000 · -10%/rank.
+18. Instinto de Poder — 0/5 · 500/2.500/12.500/62.500/312.500 · ganho de energia da Ultimate
+    +10%/rank.
+19. Sede de Poder — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+20. Fome de Destruição — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+21. Chuva de Lanças — 0/3 · 1.000/5.000/25.000 · +2 projéteis/rank (8 → 10 → 12 → 14).
+22. Golpe Crítico Celestial — 0/3 · 10.000/60.000/360.000 · +5% chance de crítico (dano x2)/rank.
+23. Explosão de Impacto — 0/3 · 100.000/600.000/3.600.000 · explosão em área por projétil,
+    +75%/rank do dano (GDD antigo nunca tinha o número — agora documentado).
+24. Trilha de Fúria — 0/3 · 100.000/600.000/3.600.000 · chance de deixar um Ground Crack
+    (Esquerda) no caminho, +10%/rank.
+25. Pouso Sísmico — 0/3 · 100.000/600.000/3.600.000 · dano em área no ponto de aterrissagem,
+    +100%/rank do dano base.
+26. Renovação de Batalha — 0/2 · 3.000.000/18.000.000 · cura +25%/rank de HP por inimigo
+    atingido.
+27. Fúria Repetida — 0/2 · 7.000.000/42.000.000 · 15%/rank de chance de disparar uma 2ª rodada
+    completa dos 8 projéteis automaticamente.
+28. Fúria Autônoma — 0/1 · 80M (era 50T) · a Ultimate dispara sozinha a cada N segundos fixos,
+    além do uso manual normal.
+29. Avatar da Destruição — 0/1 · 1,5T (era 500T) · a cada 5 usos da Ultimate, o 5º vem
+    automaticamente com o dobro de dano e de projéteis, sem custo extra.
+30. **Fragmentação Sem Fim** — 0/1 · **120M** (era "1 quadrilhão, nó mais caro da árvore" — na
+    real é o MAIS BARATO dos 3 gates finais, não o mais caro) · ao acertar um monstro, o
+    projétil se divide em 2 novos projéteis (metade do dano/reserva de perfuração cada),
+    disparados em direções opostas — cada filho pode se dividir de novo no seu próprio próximo
+    acerto, recursivamente (cascata exponencial). Extremamente forte de propósito.
 
 ---
 
@@ -789,60 +829,71 @@ Rogue, 6. Cleric, 7. Paladin, 8. Gunslinger, 9. Assassin, 10. Blood Mage). Groun
 `attackDamageMultiplier`, `arrowSpeed`, `arrowLifetime`, `arrowKnockbackForce`, `arrowCount`
 (hoje soma com o tier de arma) e o Bleeding/camuflagem já existentes no kit.
 
+_Sincronizado com o código real em 2026-11-13. Correção importante (pedido explícito do
+usuário): os RANKS e os %/rank do Ranger são os dele mesmo — nunca foram forçados a bater com
+a posição equivalente do Barbarian. Só o PREÇO em gold foi padronizado, reaproveitando a mesma
+escada de custos do Barbarian (por nº de ranks), sem mudar nenhuma mecânica. Onde o Ranger já
+tinha mais ranks que a escada do Barbarian alcançava, a escada foi estendida geometricamente na
+mesma razão; onde tinha menos, foi só truncada. 2 perks (Reflexos de Veterano, Golpe Crítico
+Sombrio) mantiveram o preço antigo porque a posição equivalente no Barbarian é um gate binário
+de 1 rank só — sem uma escada de 2-3 ranks de verdade pra reaproveitar.
+
 **Dano**
-1. Mira Afiada — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-2. Precisão Mortal — 0/3 · 1M/12M/144M · +15%/rank.
-3. Tiro Certeiro — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Chuva Mortal — 0/2 · 5B/100B · +30%/rank.
-5. Disparo Supremo — 0/1 · 50T · +40%.
+1. Mira Afiada — 0/5 · 100/500/2.500/12.500/62.500 · +8%/rank.
+2. Precisão Mortal — 0/5 · 10.000/60.000/360.000/2.160.000/12.960.000 · +15%/rank.
+3. Tiro Certeiro — 0/5 · 100.000/600.000/3.600.000/21.600.000/129.600.000 · +20%/rank.
+4. Chuva Mortal — 0/5 · 7.000.000/42.000.000/252.000.000/1.512.000.000/9.072.000.000 ·
+   +30%/rank.
+5. Disparo Supremo — 0/5 · 8B/80B/2T/200T/200 quadrilhões · tabela escalonada (não %/rank
+   linear): +40%/+400%/+20.000%/+4.000.000%/+18.750.000.000.000%.
 
 **Velocidade da flecha**
-6. Flecha Veloz — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-7. Vento Cortante — 0/3 · 1M/12M/144M · +15%/rank.
-8. Velocidade Sônica — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+6. Flecha Veloz — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+7. Vento Cortante — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+8. Velocidade Sônica — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Alcance da flecha**
-9. Alcance Estendido — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-10. Vista de Águia — 0/3 · 1M/12M/144M · +15%/rank.
-11. Horizonte Infinito — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+9. Alcance Estendido — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+10. Vista de Águia — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+11. Horizonte Infinito — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Knockback da flecha**
-12. Impacto Perfurante — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-13. Força do Disparo — 0/3 · 1M/12M/144M · +15%/rank.
-14. Onda de Choque — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+12. Impacto Perfurante — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+13. Força do Disparo — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+14. Onda de Choque — 0/3 · 3.000.000/18.000.000/108.000.000 · +20%/rank.
 
 **Quantidade de flechas** (`arrowCount`, soma ao que o tier de arma já dá)
-15. Carcaz Cheio — 0/3 · 1M/12M/144M · +1 flecha/rank.
-16. Chuva de Flechas — 0/3 · 100M/1,5B/22,5B · +1 flecha/rank.
-17. Tempestade de Setas — 0/2 · 5B/100B · +1 flecha/rank.
+15. Carcaz Cheio — 0/3 · 500/2.500/12.500 · +1 flecha/rank.
+16. Chuva de Flechas — 0/3 · 5.000/30.000/180.000 · +1 flecha/rank.
+17. Tempestade de Setas — 0/3 · 3.000.000/18.000.000/108.000.000 · +1 flecha/rank.
 
 **Cooldown real**
-18. Mãos Rápidas — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-19. Reflexo de Caçador — 0/3 · 1M/12M/144M · -8%/rank.
-20. Instinto Ágil — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+18. Mãos Rápidas — 0/5 · 50/250/1.250/6.250/31.250 · -5%/rank.
+19. Reflexo de Caçador — 0/3 · 50.000/300.000/1.800.000 · -8%/rank.
+20. Instinto Ágil — 0/3 · 3.000.000/18.000.000/108.000.000 · -10%/rank.
 
 **Aceleração da animação**
-21. Disparo Rápido — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-22. Fluidez de Combate — 0/3 · 1M/12M/144M · +15%/rank.
-23. Precisão Veloz — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+21. Disparo Rápido — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+22. Fluidez de Combate — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+23. Precisão Veloz — 0/3 · 5.000/30.000/180.000 · +20%/rank.
 
 **Crítico**
-24. Golpe Vital — 0/3 · 1M/12M/144M · +5% chance de crítico/rank.
-25. Olho de Falcão — 0/3 · 100M/1,5B/22,5B · +8% chance de crítico/rank.
+24. Golpe Vital — 0/3 · 50.000/300.000/1.800.000 · +5% chance de crítico/rank.
+25. Olho de Falcão — 0/2 · 10.000/60.000 · +8% chance de crítico/rank.
 
 **Sinergia/novas mecânicas**
-26. Ataque Furtivo — 0/3 · 1M/12M/144M · o primeiro disparo depois de saiu da camuflagem
-    (Shift/Direita) causa +20%/rank de dano.
-27. Tiro à Distância — 0/3 · 1M/12M/144M · dano da flecha aumenta conforme a distância
-    percorrida antes de acertar, até +20%/rank no alcance máximo.
-28. Flechas Sangrentas — 0/3 · 1M/12M/144M · cada flecha tem %/rank de chance de aplicar
-    Bleeding (mesmo efeito da Ultimate).
-29. Flecha Bumerangue — 0/1 · 5T · ao chegar no alcance máximo sem gastar toda a reserva, a
+26. Ataque Furtivo — 0/3 · 100.000/600.000/3.600.000 · o primeiro disparo depois de saiu da
+    camuflagem (Shift/Direita) causa +20%/rank de dano.
+27. Tiro à Distância — 0/3 · 100.000/600.000/3.600.000 · dano da flecha aumenta conforme a
+    distância percorrida antes de acertar, até +20%/rank no alcance máximo.
+28. Flechas Sangrentas — 0/3 · 100.000/600.000/3.600.000 · cada flecha tem +15%/rank de chance
+    de aplicar Bleeding (mesmo efeito da Ultimate).
+29. Flecha Bumerangue — 0/1 · 30M · ao chegar no alcance máximo sem gastar toda a reserva, a
     flecha retorna pelo mesmo caminho, podendo acertar de novo.
 
 **Gate final**
-30. Enxame Perfurante — 0/1 · 500T · flechas nunca gastam a reserva de perfuração ao atravessar
-    um monstro — atingem TODOS no caminho com dano cheio, sem perder força.
+30. Enxame Perfurante — 0/1 · 500B · flechas nunca gastam a reserva de perfuração ao
+    atravessar um monstro — atingem TODOS no caminho com dano cheio, sem perder força.
 
 ---
 
@@ -863,69 +914,76 @@ lutador ativo) foi abandonada. Em vez disso, é uma progressão só: todo o rest
 igual durante o disfarce normal, e o topo da árvore (#25) remove a necessidade do disfarce em
 si, mantendo os efeitos já comprados.
 
+_Sincronizado com o código real em 2026-11-13 — só o preço mudou (mesma lógica da Seção 12);
+ranks e %/rank são os que o `Ranger.cs` já implementa._
+
 **Cura por tick**
-1. Regeneração Furtiva — 0/5 · 10/80/640/5.120/40.960 · cura +2%/rank.
-2. Cura Silenciosa — 0/3 · 1M/12M/144M · +3%/rank.
-3. Renovação na Sombra — 0/3 · 100M/1,5B/22,5B · +4%/rank.
-4. Vida Oculta — 0/2 · 5B/100B · +5%/rank.
+1. Regeneração Furtiva — 0/5 · 100/500/2.500/12.500/62.500 · cura +2%/rank.
+2. Cura Silenciosa — 0/3 · 10.000/60.000/360.000 · +3%/rank.
+3. Renovação na Sombra — 0/3 · 100.000/600.000/3.600.000 · +4%/rank.
+4. Vida Oculta — 0/2 · 7.000.000/42.000.000 · +5%/rank.
 
 **Frequência da cura**
-5. Pulso Vital — 0/3 · 1M/12M/144M · intervalo -10%/rank.
-6. Fluxo Constante — 0/3 · 100M/1,5B/22,5B · -15%/rank.
-7. Ritmo da Sombra — 0/2 · 5B/100B · -20%/rank.
+5. Pulso Vital — 0/3 · 50/250/1.250 · intervalo -10%/rank.
+6. Fluxo Constante — 0/3 · 5.000/30.000/180.000 · -15%/rank.
+7. Ritmo da Sombra — 0/2 · 50.000/300.000 · -20%/rank.
 
 **Cooldown**
-8. Reflexo Furtivo — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-9. Instinto Silencioso — 0/3 · 1M/12M/144M · -8%/rank.
-10. Sombra Veloz — 0/3 · 100M/1,5B/22,5B · -10%/rank.
-11. Dissipação Rápida — 0/2 · 5B/100B · -15%/rank.
+8. Reflexo Furtivo — 0/5 · 3.000.000/18.000.000/108.000.000/648.000.000/3.888.000.000 ·
+   -5%/rank.
+9. Instinto Silencioso — 0/3 · 500/2.500/12.500 · -8%/rank.
+10. Sombra Veloz — 0/3 · 5.000/30.000/180.000 · -10%/rank.
+11. Dissipação Rápida — 0/2 · 50.000/300.000 · -15%/rank.
 
 **Armadilha do disfarce** (parado, mas não indefeso)
-12. Disfarce Perfeito — 0/3 · 1M/12M/144M · monstros que passam muito perto ficam %/rank mais
-    lentos, enganados pela armadilha.
-13. Emboscada Perfeita — 0/1 · 50T · o primeiro ataque depois de SAIR do disfarce é sempre
+12. Disfarce Perfeito — 0/3 · 3.000.000/18.000.000/108.000.000 · monstros que passam muito
+    perto ficam +10%/rank mais lentos, enganados pela armadilha.
+13. Emboscada Perfeita — 0/1 · 500 · o primeiro ataque depois de SAIR do disfarce é sempre
     crítico garantido (dano x2).
 
 **Evasão/sobrevivência**
-14. Reflexos de Emergência — 0/2 · 100M/1,5B · abaixo de 20% HP, a próxima vez que tomar dano,
-    esse dano é reduzido em %/rank.
-15. Retorno Sombrio — 0/3 · 1M/12M/144M · cancelar antes do teto devolve %/rank do cooldown
-    gasto.
-16. Véu Prolongado — 0/3 · 1M/12M/144M · imunidade continua por 0,5s/1s/1,5s depois de sair, por
-    rank — curto de propósito.
-17. Sombra Vingativa — 0/3 · 1M/12M/144M · ao reaparecer, monstros que estavam perseguindo
-    perdem o alvo por segundos/rank.
-18. Instinto de Sobrevivência — 0/2 · 100M/1,5B · abaixo de 30% HP, cooldown da camuflagem
-    -50%/rank.
-19. Fôlego Sombrio — 0/3 · 1M/12M/144M · ao sair do disfarce, HP máximo temporário +%/rank por
-    alguns segundos (não cura o atual, abre um colchão temporário).
-20. Reflexos nas Sombras — 0/3 · 1M/12M/144M · fases de entrar/sair do disfarce mais rápidas,
-    %/rank.
-21. Instinto Predador — 0/2 · 100M/1,5B · regen de HP passivo fora do disfarce (durante o
-    cooldown), %/rank.
-22. Última Linha de Defesa — 0/1 · 5T · abaixo de 10% HP, dano recebido -40% enquanto permanecer
-    nesse estado crítico — nunca aciona o disfarce, só resiste mais.
-23. Armadilha Camuflada — 0/1 · 50T · monstro que toca o disfarce sem saber (ex.: Slime de
+14. Reflexos de Emergência — 0/2 · 5.000/30.000 · abaixo de 20% HP, a próxima vez que tomar
+    dano, esse dano é reduzido em +10%/rank.
+15. Retorno Sombrio — 0/3 · 50.000/300.000/1.800.000 · cancelar antes do teto devolve
+    +15%/rank do cooldown gasto.
+16. Véu Prolongado — 0/3 · 3.000.000/18.000.000/108.000.000 · imunidade continua por
+    0,5s/1s/1,5s depois de sair, por rank — curto de propósito.
+17. Sombra Vingativa — 0/3 · 500/2.500/12.500 · ao reaparecer, monstros que estavam
+    perseguindo perdem o alvo por +1s/rank.
+18. Instinto de Sobrevivência — 0/2 · 100.000/600.000 · abaixo de 30% HP, cooldown da
+    camuflagem -50%/rank.
+19. Fôlego Sombrio — 0/3 · 7.000.000/42.000.000/252.000.000 · ao sair do disfarce, HP máximo
+    temporário +10%/rank por alguns segundos (não cura o atual, abre um colchão temporário).
+20. Reflexos nas Sombras — 0/3 · 50.000/300.000/1.800.000 · fases de entrar/sair do disfarce
+    mais rápidas, +10%/rank.
+21. Instinto Predador — 0/2 · 500/2.500 · regen de HP passivo fora do disfarce (durante o
+    cooldown), +1%/rank.
+22. Última Linha de Defesa — 0/1 · 500 · abaixo de 10% HP, dano recebido -40% enquanto
+    permanecer nesse estado crítico — nunca aciona o disfarce, só resiste mais.
+23. Armadilha Camuflada — 0/1 · 5.000 · monstro que toca o disfarce sem saber (ex.: Slime de
     contato) reflete dano nele mesmo.
 
 **Cross-branch**
-24. Instinto Caçador — 0/3 · 1M/12M/144M · ganho de energia da Ultimate +%/rank enquanto a
-    camuflagem estiver em cooldown.
+24. Instinto Caçador — 0/3 · 100.000/600.000/3.600.000 · ganho de energia da Ultimate
+    +10%/rank enquanto a camuflagem estiver em cooldown.
 
 **Topo da árvore — remove a necessidade de disfarce**
-25. **Veterano de Guerra** — 0/1 · 500T · remove a animação/necessidade de disfarce do Shift —
-    continua visível, se movendo e atacando normalmente durante toda a janela. Todos os efeitos
-    já comprados nos perks acima (cura, lentidão em área, HP temporário, imunidade breve, reset
-    de aggro) continuam disparando automaticamente, na mesma ordem/tempo de antes. Em troca, a
-    duração base do Shift (`secondaryAbilityMaxDuration`) cai 30%, compensando a perda do maior
-    custo real da habilidade (ficar vulnerável/parado).
-26. Postura de Combate — 0/3 · 1M/12M/144M · dano recebido -%/rank enquanto os efeitos do Shift
-    estiverem ativos.
-27. Fúria Curativa — 0/3 · 1M/12M/144M · dano causado +%/rank enquanto ativo.
-28. Vigor de Batalha — 0/3 · 1M/12M/144M · cura adicional exclusiva enquanto ativo, %/rank.
-29. Reflexos de Veterano — 0/2 · 100M/1,5B · cooldown do Shift ainda menor, %/rank.
-30. **Imortal em Combate** — 0/1 · **1 quadrilhão** · pré-requisito: Veterano de Guerra (#25) —
-    dano recebido drasticamente reduzido enquanto os efeitos do Shift estiverem ativos.
+25. **Veterano de Guerra** — 0/1 · 10.000 · remove a animação/necessidade de disfarce do Shift
+    — continua visível, se movendo e atacando normalmente durante toda a janela. Todos os
+    efeitos já comprados nos perks acima (cura, lentidão em área, HP temporário, imunidade
+    breve, reset de aggro) continuam disparando automaticamente, na mesma ordem/tempo de antes.
+    Em troca, a duração base do Shift (`secondaryAbilityMaxDuration`) cai 30%, compensando a
+    perda do maior custo real da habilidade (ficar vulnerável/parado).
+26. Postura de Combate — 0/3 · 50.000/300.000/1.800.000 · dano recebido -10%/rank enquanto os
+    efeitos do Shift estiverem ativos.
+27. Fúria Curativa — 0/3 · 10.000/60.000/360.000 · dano causado +15%/rank enquanto ativo.
+28. Vigor de Batalha — 0/3 · 100.000/600.000/3.600.000 · cura adicional exclusiva enquanto
+    ativo, +5%/rank.
+29. **Reflexos de Veterano** — 0/2 · 1B/15B (preço mantido — posição equivalente no Barbarian
+    é um gate binário de 1 rank, sem escada de 2 ranks pra reaproveitar) · cooldown do Shift
+    ainda menor, -20%/rank.
+30. **Imortal em Combate** — 0/1 · **900B** · pré-requisito: Veterano de Guerra (#25) — dano
+    recebido -60% enquanto os efeitos do Shift estiverem ativos.
 
 ---
 
@@ -938,63 +996,74 @@ próprio aqui), `bleedDamageMultiplier`, `knifeFlightSpeed`, `knifeMaxDistance`,
 `knifeFlightKnockbackForce`, `knifeGroundedDuration`, `knifeGroundedRadius`,
 `knifeBleedDuration`, e a carga/energia específica da Ultimate (mesmo padrão do Barbarian).
 
+_Sincronizado com o código real em 2026-11-13 — só o preço mudou (mesma lógica da Seção 12);
+ranks e %/rank são os que o `Ranger.cs` já implementa._
+
 **Dano em voo**
-1. Lâmina Certeira — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-2. Corte Profundo — 0/3 · 1M/12M/144M · +15%/rank.
-3. Fúria das Lâminas — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Tempestade de Aço — 0/2 · 5B/100B · +30%/rank.
-5. Lâmina Suprema — 0/1 · 50T · +40%.
+1. Lâmina Certeira — 0/5 · 100/500/2.500/12.500/62.500 · +8%/rank.
+2. Corte Profundo — 0/5 · 10.000/60.000/360.000/2.160.000/12.960.000 · +15%/rank.
+3. Fúria das Lâminas — 0/5 · 100.000/600.000/3.600.000/21.600.000/129.600.000 · +20%/rank.
+4. Tempestade de Aço — 0/5 · 7.000.000/42.000.000/252.000.000/1.512.000.000/9.072.000.000 ·
+   +30%/rank.
+5. Lâmina Suprema — 0/5 · 6B/60B/1,5T/150T/150 quadrilhões · tabela escalonada (mesma
+   proporção do Juízo Final do Barbarian): +40%/+400%/+20.000%/+4.000.000%/
+   +18.750.000.000.000%.
 
 **Dano no chão**
-6. Facas Fincadas — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-7. Lâminas Cravadas — 0/3 · 1M/12M/144M · +15%/rank.
-8. Armadilha Mortal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+6. Facas Fincadas — 0/5 · 50/250/1.250/6.250/31.250 · +8%/rank.
+7. Lâminas Cravadas — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +15%/rank.
+8. Armadilha Mortal — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Dano de sangramento**
-9. Sangramento Intenso — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-10. Hemorragia — 0/3 · 1M/12M/144M · +15%/rank.
-11. Ferida Fatal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+9. Sangramento Intenso — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+10. Hemorragia — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +15%/rank.
+11. Ferida Fatal — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Velocidade em voo**
-12. Voo Veloz — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-13. Lâmina Relâmpago — 0/3 · 1M/12M/144M · +15%/rank.
-14. Velocidade Mortal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+12. Voo Veloz — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+13. Lâmina Relâmpago — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+14. Velocidade Mortal — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Alcance em voo**
-15. Alcance da Lâmina — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-16. Longo Voo — 0/3 · 1M/12M/144M · +15%/rank.
-17. Horizonte de Aço — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+15. Alcance da Lâmina — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+16. Longo Voo — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+17. Horizonte de Aço — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Knockback em voo**
-18. Impacto da Lâmina — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-19. Força Cortante — 0/3 · 1M/12M/144M · +15%/rank.
+18. Impacto da Lâmina — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+19. Força Cortante — 0/3 · 5.000/30.000/180.000 · +15%/rank.
 
 **Duração no chão**
-20. Armadilha Duradoura — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-21. Lâmina Persistente — 0/3 · 1M/12M/144M · +15%/rank.
-22. Campo Minado — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+20. Armadilha Duradoura — 0/5 ·
+    50.000/300.000/1.800.000/10.800.000/64.800.000 · +10%/rank.
+21. Lâmina Persistente — 0/3 · 1.000/5.000/25.000 · +15%/rank.
+22. Campo Minado — 0/3 · 10.000/60.000/360.000 · +20%/rank.
 
 **Raio no chão**
-23. Área Ampliada — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-24. Zona de Perigo — 0/3 · 1M/12M/144M · +15%/rank.
+23. Área Ampliada — 0/5 · 100.000/600.000/3.600.000/21.600.000/129.600.000 · +10%/rank.
+24. Zona de Perigo — 0/3 · 100.000/600.000/3.600.000 · +15%/rank.
 
 **Duração do sangramento**
-25. Veneno Prolongado — 0/3 · 1M/12M/144M · +15%/rank.
+25. Veneno Prolongado — 0/3 · 100.000/600.000/3.600.000 · +15%/rank.
 
 **Carga/energia da Ultimate**
-26. Canalização Rápida — 0/5 · 10/80/640/5.120/40.960 · carga necessária -5%/rank.
-27. Instinto de Caça — 0/3 · 1M/12M/144M · ganho de energia da Ultimate +15%/rank.
+26. Canalização Rápida — 0/5 ·
+    3.000.000/18.000.000/108.000.000/648.000.000/3.888.000.000 · carga necessária -5%/rank.
+27. Instinto de Caça — 0/3 · 7.000.000/42.000.000/252.000.000 · ganho de energia da Ultimate
+    +15%/rank.
 
 **Crítico**
-28. Golpe Crítico Sombrio — 0/3 · 1M/12M/144M · +5% chance de crítico (dano x2)/rank.
+28. Golpe Crítico Sombrio — 0/3 · 10M/120M/1,44B (preço mantido — posição equivalente no
+    Barbarian é um gate binário de 1 rank, sem escada de 3 ranks pra reaproveitar) · +5%
+    chance de crítico (dano x2)/rank.
 
 **Gates finais**
-29. Segunda Rajada — 0/1 · 500T · as 8 facas são lançadas numa 2ª rodada automática, 1s depois
-    da primeira — dobra o total de facas por uso.
-30. **Chuva de Lâminas** — 0/1 · **1 quadrilhão** · cada um dos 8 lançamentos da Ultimate solta
-    2 facas em vez de 1, com um pequeno desvio angular entre elas (±11,25°) — dobra a densidade
-    de facas sem precisar de animação nova (mesma Animation Event, só a lógica manda 2 em vez de
-    1).
+29. Segunda Rajada — 0/1 · 1,5T · as 8 facas são lançadas numa 2ª rodada automática, 1s
+    depois da primeira — dobra o total de facas por uso.
+30. **Chuva de Lâminas** — 0/1 · **120M** · cada um dos 8 lançamentos da Ultimate solta 2
+    facas em vez de 1, com um pequeno desvio angular entre elas (±11,25°) — dobra a densidade
+    de facas sem precisar de animação nova (mesma Animation Event, só a lógica manda 2 em vez
+    de 1).
 
 ---
 
@@ -1122,10 +1191,13 @@ nos campos que já existem no Mage (`petSizeMultiplier`, `petActionSpeedMultipli
     %/rank.
 27. Fênix Vingativa — 0/2 · 100M/1,5B · quando o herói toma dano, o pet ganha dano extra
     temporário, %/rank.
-28. Renascimento — 0/2 · 100M/1,5B · ao morrer, cura %/rank do HP máximo instantaneamente no
-    respawn (além do pet já voltar sozinho, como já é hoje).
+28. Renascimento — ver Gates finais abaixo (redesenhado 2026-11-13, pedido do usuário: a versão
+    original confundia com o Segunda Chance de Mundo e virou gate final de 1 rank só).
 
 **Gates finais**
+28. **Renascimento** — 0/1 · 500T · ignora 1 morte por dia, sobrevive com 1 HP (igual ao Segunda
+    Chance de Mundo, mas exclusivo do Mage e com flag própria — tendo os 2 perks, sobrevive 2
+    mortes no mesmo dia).
 29. **Segunda Fênix** — 0/1 · 500T · summona um 2º Phoenix simultâneo, com metade das stats do
     primeiro.
 30. **Teleporte Instantâneo** — 0/1 · **1 quadrilhão** · `teleport_start` e `teleport_end`

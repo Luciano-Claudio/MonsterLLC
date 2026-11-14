@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 817d76bd30fd8be4daa850f1b43b90fe, type: 3}
-  m_Name: Muralha_de_Chamas
+  m_Name: Chama_Vital
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_esquerda_11
-  displayName: Wall of Flames
-  description: +20%/rank.
-  icon: {fileID: 0}
+  displayName: Vital Flame
+  description: Primary attack heals the Mage for 5%/rank of the damage dealt.
+  icon: {fileID: -490652372799386095, guid: 06c57cfe9edaa304ab116c0aba4036c5, type: 3}
   costPerRank:
   - 100000000
   - 1500000000

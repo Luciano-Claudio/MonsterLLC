@@ -36,6 +36,12 @@ public class PetController : MonoBehaviour
     private bool hasActionSpeedMultiplierParam;
     private AttackCooldown attackCooldown;
     private Transform currentTarget;
+    private float damageMultiplier = 1f;
+
+    // Fênix Vingativa (Mage, Survival #27, perk) — bônus TEMPORÁRIO de dano, decaindo sozinho
+    // (ver Update()), empilhado em CIMA do damageMultiplier normal (não substitui ele).
+    private float temporaryDamageBonusMultiplier = 1f;
+    private float temporaryDamageBonusRemaining;
     // Direção NE/NW/SE/SW só (Blend Tree de 4 pontos, mesmo esquema do quadrante do
     // Barbarian) — nunca fica em (0,0): precisa de um valor inicial não-zero pro Blend Tree
     // já nascer numa pose válida antes do primeiro movimento/ataque.
@@ -45,16 +51,35 @@ public class PetController : MonoBehaviour
     private bool isDead;
     private readonly List<EnemyController> hitTargets = new();
 
-    // sizeMultiplier/actionSpeedMultiplier vêm do Mage ou do Blood Mage (os 2 reaproveitam
-    // esta mesma classe) — upgrades de tamanho/velocidade de ataque do pet, decididos pelo
+    // sizeMultiplier/actionSpeedMultiplier/damageMult/cooldownMult/chaseRadiusMult vêm do Mage
+    // ou do Blood Mage (os 2 reaproveitam esta mesma classe) — upgrades do pet, decididos pelo
     // controlador do herói, não por este prefab (mesmo critério do resto do projeto — ver
     // comentário no PaladinHammer.cs/HeroProjectile.cs, por exemplo).
-    public void Initialize(Transform petOwner, Transform spawnPoint, float sizeMultiplier, float actionSpeedMultiplier)
+    // cooldownReductionMultiplier é um bônus EXTRA por cima do que actionSpeedMultiplier já
+    // implica (Garras Ágeis/Fúria sem Pausa, perks) — os 2 se multiplicam no DurationMultiplier
+    // final, mesmo critério de HeroController.SetActionSpeedMultiplier vs SetPrimaryCooldownMultiplier
+    // (velocidade de ANIMAÇÃO e redução de COOLDOWN são 2 perks/upgrades diferentes).
+    public void Initialize(Transform petOwner, Transform spawnPoint, float sizeMultiplier, float actionSpeedMultiplier, float damageMult = 1f, float cooldownReductionMultiplier = 1f, float chaseRadiusMultiplier = 1f)
     {
         owner = petOwner;
         teleportPoint = spawnPoint;
         transform.localScale = Vector3.one * sizeMultiplier;
+        damageMultiplier = damageMult;
+        chaseRadius *= chaseRadiusMultiplier;
         if (hasActionSpeedMultiplierParam) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
+        // Animação mais rápida sem reduzir o cooldown de verdade deixaria o pet "animando
+        // rápido mas atacando no mesmo ritmo de sempre" — igual ao Attack do herói, os 2
+        // andam juntos por padrão, e a redução extra dos perks de cooldown se soma em cima.
+        attackCooldown.DurationMultiplier = cooldownReductionMultiplier / actionSpeedMultiplier;
+    }
+
+    // Fênix Vingativa (Mage, Survival #27, perk) — chamado pelo Mage quando o HERÓI leva dano.
+    // Reaplicar enquanto já está ativo só reseta a duração (mesmo critério de
+    // StatusEffectController.ApplyStatusEffect) — nunca empilha o bônus em cima dele mesmo.
+    public void ApplyTemporaryDamageBonus(float bonusMultiplier, float duration)
+    {
+        temporaryDamageBonusMultiplier = bonusMultiplier;
+        temporaryDamageBonusRemaining = duration;
     }
 
     private void Awake()
@@ -89,6 +114,12 @@ public class PetController : MonoBehaviour
     private void Update()
     {
         if (!GameplayGate.IsActive || owner == null || isDead) return;
+
+        if (temporaryDamageBonusRemaining > 0f)
+        {
+            temporaryDamageBonusRemaining -= Time.deltaTime;
+            if (temporaryDamageBonusRemaining <= 0f) temporaryDamageBonusMultiplier = 1f;
+        }
 
         attackCooldown.Tick(Time.deltaTime);
         if (isAttacking) return; // golpe em andamento -- não se move nem re-escolhe alvo
@@ -200,7 +231,8 @@ public class PetController : MonoBehaviour
         int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
         // Dedup obrigatório — mesmo bug do primário do Mage (ver EnemyController.CollectDistinct()).
         EnemyController.CollectDistinct(results, count, hitTargets);
-        foreach (var enemy in hitTargets) enemy.TakeDamage(damage, isDirectPlayerHit: false); // dano de Pet, sem Game Feel (decisão do usuário: só o hit direto do jogador aciona)
+        float finalDamage = damage * damageMultiplier * temporaryDamageBonusMultiplier;
+        foreach (var enemy in hitTargets) enemy.TakeDamage(finalDamage, isDirectPlayerHit: false); // dano de Pet, sem Game Feel (decisão do usuário: só o hit direto do jogador aciona)
     }
 
     // Animation Event, fim do clipe de ataque.

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_esquerda_26
   displayName: Arcane Breath
-  description: Recovers Ultimate energy on every primary hit, %/rank.
-  icon: {fileID: 0}
+  description: Recovers 5%/rank of max Ultimate energy on every primary attack hit.
+  icon: {fileID: -1951608094899734780, guid: 06c57cfe9edaa304ab116c0aba4036c5, type: 3}
   costPerRank:
   - 100000000
   - 1500000000

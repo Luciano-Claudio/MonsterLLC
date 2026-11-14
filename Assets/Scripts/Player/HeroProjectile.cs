@@ -87,6 +87,19 @@ public class HeroProjectile : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
+    // Rede de segurança — bug real reportado pelo usuário: projétil nascido via fragmentação
+    // (SpawnFragment, Cima #30 "Fragmentação Sem Fim") clona o GameObject AO VIVO (Instantiate
+    // de "gameObject", não do prefab original) — diferente da fonte, nunca passou por teste
+    // garantindo que TODO campo relevante fica correto no clone antes de Launch() rodar. Se
+    // algum ficar com lixo (ex.: distanceTraveled herdado > novo maxDistance, já reduzido pela
+    // decaída de "maxDistance - distanceTraveled" do pai), o projétil não anda 1 pixel e nunca
+    // se autodestrói — fica "parado" na tela pra sempre. maxLifetimeSeconds é o mesmo padrão já
+    // usado em EnemyController.maxDieDuration/HeroController.maxActionDuration: nunca deveria
+    // disparar em uso normal (maxDistance/speed já cobre isso), só existe pra garantir que NADA
+    // fica preso pra sempre, aconteça o que aconteça.
+    private const float MaxLifetimeSeconds = 10f;
+    private float lifetimeElapsed;
+
     public void Launch(Vector2 dir, float reserve, float projectileSpeed, float projectileMaxDistance, float projectileKnockbackForce)
     {
         direction = dir.normalized;
@@ -94,6 +107,9 @@ public class HeroProjectile : MonoBehaviour
         speed = projectileSpeed;
         maxDistance = projectileMaxDistance;
         knockbackForce = projectileKnockbackForce;
+        distanceTraveled = 0f; // nunca assumir "já vem zerado" — este objeto pode ser um clone AO VIVO de outro projétil (ver SpawnFragment), não só uma instância fresca do prefab
+        lifetimeElapsed = 0f;
+        isDestroying = false;
         if (animator != null) animator.Play(DirectionUtility.GetDirectionName(direction));
     }
 
@@ -101,13 +117,26 @@ public class HeroProjectile : MonoBehaviour
     {
         if (!GameplayGate.IsActive) return;
 
+        lifetimeElapsed += Time.deltaTime;
+        if (lifetimeElapsed >= MaxLifetimeSeconds)
+        {
+            Debug.LogWarning($"[{GetType().Name}] Excedeu {MaxLifetimeSeconds}s sem se autodestruir (distanceTraveled={distanceTraveled}, maxDistance={maxDistance}) — forçando destruição.");
+            isDestroying = true;
+            Destroy(gameObject);
+            return;
+        }
+
         float step = speed * Time.deltaTime;
         transform.Translate(direction * step);
         distanceTraveled += step;
 
         TickGroundCrackTrail(Time.deltaTime);
 
-        if (distanceTraveled >= maxDistance) Destroy(gameObject);
+        if (distanceTraveled >= maxDistance)
+        {
+            isDestroying = true;
+            Destroy(gameObject);
+        }
     }
 
     private void TickGroundCrackTrail(float deltaTime)
@@ -126,8 +155,23 @@ public class HeroProjectile : MonoBehaviour
         Destroy(crackObj, groundCrackTrailDuration);
     }
 
+    // Bug real reportado pelo usuário (699 clones "(Clone)(Clone)(Clone)..." acumulados na
+    // tela, parados): Destroy() da Unity só remove o objeto no FIM do frame — até lá, o
+    // GameObject continua 100% vivo pra física. Um projétil que toca VÁRIOS inimigos ao mesmo
+    // tempo (comum num enxame denso), ou até 1 inimigo só com 2 Collider2D (corpo + trigger
+    // genérico — mesmo problema já documentado em EnemyController/GroundCrack), disparava
+    // OnTriggerEnter2D VÁRIAS vezes pro MESMO projétil DEPOIS de já ter decidido se destruir —
+    // e cada disparo extra, com a #30 "Fragmentação Sem Fim" ativa, criava mais 2 fragmentos.
+    // Explosão combinatória: um projétil tocando 5 inimigos no MESMO frame em que fragmenta
+    // virava 10 fragmentos em vez de 2, cada um podendo repetir o mesmo problema na geração
+    // seguinte. isDestroying só trava a partir do momento em que Destroy() é chamado — nunca
+    // antes, senão quebraria a perfuração normal (projétil sem fragmentação que atravessa
+    // vários inimigos em sequência, ao longo de VÁRIOS frames, enquanto sobra reserva).
+    private bool isDestroying;
+
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (isDestroying) return;
         if (!other.CompareTag("Enemy")) return;
 
         var enemy = other.GetComponent<EnemyController>();
@@ -144,12 +188,17 @@ public class HeroProjectile : MonoBehaviour
 
         if (fragmentOnHit && fragmentDepthRemaining > 0)
         {
+            isDestroying = true;
             SpawnFragments();
             Destroy(gameObject);
             return;
         }
 
-        if (damageReserve <= 0f) Destroy(gameObject);
+        if (damageReserve <= 0f)
+        {
+            isDestroying = true;
+            Destroy(gameObject);
+        }
     }
 
     // Dano em área no ponto de impacto, % do dano JÁ aplicado no alvo principal — nunca atinge

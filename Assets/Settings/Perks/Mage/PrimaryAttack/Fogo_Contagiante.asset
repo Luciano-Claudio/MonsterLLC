@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: mage_esquerda_23
   displayName: Contagious Fire
-  description: Burning enemies have a %/rank chance to spread the burn to nearby enemies.
-  icon: {fileID: 0}
+  description: Burning enemies (Fire status) have a 10%/rank chance per second to spread the burn to nearby enemies.
+  icon: {fileID: 7312846063598934002, guid: 06c57cfe9edaa304ab116c0aba4036c5, type: 3}
   costPerRank:
   - 1000000
   - 12000000

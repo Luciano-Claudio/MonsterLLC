@@ -63,6 +63,21 @@ public static class PerkState
         return true;
     }
 
+    // Clique direito no botão do perk (pedido do usuário) — compra o MÁXIMO de ranks que o
+    // gold atual permitir deste perk específico, 1 TryBuy() por vez (nunca pula direto pro
+    // rank final escrevendo gold/rank numa conta só). Isso é o que faz "Redefine" funcionar
+    // sem nenhuma mudança: cada rank comprado aqui entra em purchaseHistory exatamente como um
+    // clique normal entraria, então o Ctrl+Z desfaz rank por rank, na ordem certa, até voltar
+    // ao estado de antes do clique — simétrico a ter clicado o normal várias vezes em sequência.
+    // Devolve quantos ranks comprou de verdade (0 = não comprou nenhum, ex.: já maxado ou sem
+    // gold nem pro 1º rank).
+    public static int TryBuyMax(PerkDefinitionSO perk)
+    {
+        int bought = 0;
+        while (TryBuy(perk)) bought++;
+        return bought;
+    }
+
     // Botão "Redefine" — desfaz a ÚLTIMA compra desta visita à Loja (estorna o gold pago
     // naquele rank, volta o rank pra como estava) e a tira da pilha, então clicar de novo
     // desfaz a compra anterior a ela, e assim por diante — nunca passa do início desta visita
