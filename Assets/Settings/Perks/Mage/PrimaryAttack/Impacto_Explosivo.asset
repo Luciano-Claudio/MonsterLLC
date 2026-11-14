@@ -17,6 +17,6 @@ MonoBehaviour:
   description: If an enemy with the Fire status active (applied by the Ultimate or Residual Burn) is killed by the primary attack, it explodes dealing area damage equal to 20%/rank of the damage that killed it.
   icon: {fileID: -2510688690869214087, guid: 06c57cfe9edaa304ab116c0aba4036c5, type: 3}
   costPerRank:
-  - 1000000
-  - 12000000
-  - 144000000
+  - 10000
+  - 60000
+  - 360000

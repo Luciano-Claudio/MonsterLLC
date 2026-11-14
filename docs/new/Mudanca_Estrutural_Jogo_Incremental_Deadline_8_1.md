@@ -1075,65 +1075,74 @@ giratório, sem knockback nem perfuração (diferente do Barbarian/Ranger): `att
 novas de maior porte, grounded no precedente real do Gunslinger (`Attack_Start` → `Attack_Shoot`
 em loop → `Attack_End`, GDD Seção 17.8).
 
+_Sincronizado com o código real em 2026-11-14 (preço padronizado pra mesma economia do
+Barbarian/Ranger — por nº de ranks, sem mudar nenhum rank/mecânica). 2 perks (Fúria das Chamas,
+Chama Absoluta) mantiveram o preço antigo: são capstones de 1 rank só, sem gate equivalente no
+Barbarian pra reaproveitar (a posição lá é uma família de ranks normal, não um gate)._
+
 **Dano**
-1. Chama Ardente — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-2. Fogo Crescente — 0/3 · 1M/12M/144M · +15%/rank.
-3. Inferno Pessoal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Combustão Total — 0/2 · 5B/100B · +30%/rank.
-5. Fúria das Chamas — 0/1 · 50T · +40%.
+1. Chama Ardente — 0/5 · 100/500/2.500/12.500/62.500 · +8%/rank.
+2. Fogo Crescente — 0/3 · 10.000/60.000/360.000 · +15%/rank.
+3. Inferno Pessoal — 0/3 · 100.000/600.000/3.600.000 · +20%/rank.
+4. Combustão Total — 0/2 · 7.000.000/42.000.000 · +30%/rank.
+5. Fúria das Chamas — 0/1 · 50T (preço mantido) · +40%.
 
-**Alcance da chama**
-6. Alcance Ardente — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-7. Chama Longa — 0/3 · 1M/12M/144M · +15%/rank.
-8. Fogo Expansivo — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+**Alcance/Abertura da chama** (fundido em 2026-11-13, pedido do usuário: só existe 1
+crescimento, não largura/comprimento separados — 5 perks somando num só multiplicador)
+6. Alcance Ardente — 0/5 · 500/2.500/12.500/62.500/312.500 · +8%/rank.
+7. Chama Longa — 0/3 · 5.000/30.000/180.000 · +12%/rank.
+8. Fogo Expansivo — 0/3 · 50.000/300.000/1.800.000 · +16%/rank.
+9. Leque de Fogo — 0/5 · 500/2.500/12.500/62.500/312.500 · +8%/rank.
+10. Arco Flamejante — 0/3 · 5.000/30.000/180.000 · +12%/rank.
 
-**Abertura do arco** (separado do alcance — comprimento vs largura do trigger)
-9. Leque de Fogo — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-10. Arco Flamejante — 0/3 · 1M/12M/144M · +15%/rank.
-11. Muralha de Chamas — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+**Vida roubada**
+11. **Chama Vital** (ex-Muralha de Chamas, redesenhada 2026-11-13 — saiu da soma de
+    alcance/abertura e virou vida roubada) — 0/3 · 50.000/300.000/1.800.000 · cura 5%/rank do
+    dano causado como HP.
 
 **Cooldown real**
-12. Conjuração Rápida — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-13. Fluxo Arcano — 0/3 · 1M/12M/144M · -8%/rank.
-14. Domínio do Fogo — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+12. Conjuração Rápida — 0/5 · 500/2.500/12.500/62.500/312.500 · -5%/rank.
+13. Fluxo Arcano — 0/3 · 5.000/30.000/180.000 · -8%/rank.
+14. Domínio do Fogo — 0/3 · 3.000.000/18.000.000/108.000.000 · -10%/rank.
 
 **Aceleração da animação**
-15. Gesto Rápido — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-16. Fluidez Arcana — 0/3 · 1M/12M/144M · +15%/rank.
-17. Precisão Flamejante — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+15. Gesto Rápido — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
+16. Fluidez Arcana — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+17. Precisão Flamejante — 0/3 · 3.000.000/18.000.000/108.000.000 · +20%/rank.
 
 **Crítico**
-18. Faísca Crítica — 0/3 · 1M/12M/144M · +5% crítico/rank.
-19. Chama Perfeita — 0/3 · 100M/1,5B/22,5B · +8% crítico/rank.
+18. Faísca Crítica — 0/3 · 50/250/1.250 · +5% crítico/rank.
+19. Chama Perfeita — 0/3 · 50.000/300.000/1.800.000 · +8% crítico/rank.
 
 **Mecânicas novas (fogo)**
-20. Queimadura Residual — 0/3 · 1M/12M/144M · %/rank de chance do golpe aplicar o status Fire.
-21. Rastro Flamejante — 0/3 · 1M/12M/144M · deixa uma área de fogo persistente no chão, %/rank
-    de dano/segundo.
-22. **Rajada Dupla** — 0/2 · 100M/1,5B · %/rank de chance de tocar a animação do `FireTrigger`
-    2x mais rápido e disparar o `AnimationFireHitEvent` 2 vezes dentro do tempo de 1 cast
-    normal — 2 hits no lugar de 1, sem alongar o tempo total.
-23. Fogo Contagiante — 0/3 · 1M/12M/144M · inimigos queimando tem %/rank de chance de espalhar
-    a queimadura pros vizinhos.
-24. Eco Flamejante — 0/2 · 100M/1,5B · %/rank de chance de atingir 1 alvo adicional próximo ao
-    primeiro.
-25. **Impacto Explosivo** — 0/3 · 1M/12M/144M · se um inimigo com o status Fire ativo (aplicado
-    pela Ultimate ou pelo Queimadura Residual) for morto pelo ataque primário, ele explode
-    causando dano em área, %/rank do dano que o matou.
-26. Fôlego Arcano — 0/2 · 100M/1,5B · recupera energia da Ultimate a cada acerto do primário,
-    %/rank.
-27. Chama Vingativa — 0/2 · 100M/1,5B · ao receber dano, o próximo ataque primário causa dano
-    extra, %/rank.
+20. Queimadura Residual — 0/3 · 3.000.000/18.000.000/108.000.000 · 10%/rank de chance do golpe
+    aplicar o status Fire.
+21. Rastro Flamejante — 0/3 · 500/2.500/12.500 · deixa uma área de fogo persistente no chão,
+    10%/rank de dano/segundo.
+22. **Rajada Dupla** — 0/2 · 50.000/300.000 · 15%/rank de chance de tocar a animação do
+    `FireTrigger` 2x mais rápido e disparar o `AnimationFireHitEvent` 2 vezes dentro do tempo de
+    1 cast normal — 2 hits no lugar de 1, sem alongar o tempo total.
+23. Fogo Contagiante — 0/3 · 5.000/30.000/180.000 · inimigos queimando tem 10%/rank de chance de
+    espalhar a queimadura pros vizinhos.
+24. Eco Flamejante — 0/2 · 50.000/300.000 · 15%/rank de chance de atingir 1 alvo adicional
+    próximo ao primeiro.
+25. **Impacto Explosivo** — 0/3 · 10.000/60.000/360.000 · se um inimigo com o status Fire ativo
+    (aplicado pela Ultimate ou pelo Queimadura Residual) for morto pelo ataque primário, ele
+    explode causando dano em área, 20%/rank do dano que o matou.
+26. Fôlego Arcano — 0/2 · 100.000/600.000 · recupera energia da Ultimate a cada acerto do
+    primário, 5%/rank.
+27. Chama Vingativa — 0/2 · 100.000/600.000 · ao receber dano, o próximo ataque primário causa
+    dano extra, 25%/rank.
 
 **Gates finais**
-28. Chama Absoluta — 0/1 · 50T · dano do ataque primário +25%.
-29. **Chama Eterna** — 0/1 · **500T** · novo Animator state (`Attack_Start` → `Attack_Continuous`
-    em loop → `Attack_End`, mesmo padrão do Gunslinger — GDD Seção 17.8) — o ataque primário
-    vira um feixe contínuo enquanto o botão for mantido pressionado, disparando dano a cada
-    repetição do loop. O Mage fica **parado** durante a canalização (mesma trava de movimento de
-    qualquer ação) — esse é o custo real do perk.
-30. **Supernova** — 0/1 · **1 quadrilhão** · a cada 10 casts, o 10º causa uma explosão massiva
-    acumulando o dano dos 9 anteriores.
+28. Chama Absoluta — 0/1 · 50T (preço mantido) · dano do ataque primário +25%.
+29. **Chama Eterna** — 0/1 · **30M** (era 500T) · novo Animator state (`Attack_Start` →
+    `Attack_Continuous` em loop → `Attack_End`, mesmo padrão do Gunslinger — GDD Seção 17.8) —
+    o ataque primário vira um feixe contínuo enquanto o botão for mantido pressionado,
+    disparando dano a cada repetição do loop. O Mage fica **parado** durante a canalização
+    (mesma trava de movimento de qualquer ação) — esse é o custo real do perk.
+30. **Supernova** — 0/1 · **500B** (era 1 quadrilhão) · a cada 10 casts, o 10º causa uma
+    explosão massiva acumulando o dano dos 9 anteriores.
 
 ---
 
@@ -1144,66 +1153,74 @@ Phoenix — GDD Seção 17.3 confirma que a "Passiva" do Mage **é** o pet Phoen
 separadas. Grounded no `PetController` real (`damage`, `attackCooldownDuration`, `chaseRadius`) e
 nos campos que já existem no Mage (`petSizeMultiplier`, `petActionSpeedMultiplier`).
 
+_Sincronizado com o código real em 2026-11-14 — só o preço mudou (mesma lógica da Seção 15).
+Avatar da Fênix manteve o preço antigo (capstone de 1 rank, sem gate equivalente no
+Barbarian). Renascimento e Segunda Fênix foram deliberadamente mantidos no MESMO preço um do
+outro (eram iguais antes também) — se não fosse por essa amarração proposital, a posição de
+Renascimento no Barbarian também não tem gate equivalente._
+
 **Alcance do teleporte**
-1. Salto Arcano — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-2. Portal Expandido — 0/3 · 1M/12M/144M · +15%/rank.
-3. Distância Arcana — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Horizonte Místico — 0/2 · 5B/100B · +30%/rank.
+1. Salto Arcano — 0/5 · 100/500/2.500/12.500/62.500 · +10%/rank.
+2. Portal Expandido — 0/3 · 10.000/60.000/360.000 · +15%/rank.
+3. Distância Arcana — 0/3 · 100.000/600.000/3.600.000 · +20%/rank.
+4. Horizonte Místico — 0/2 · 7.000.000/42.000.000 · +30%/rank.
 
 **Velocidade do teleporte**
-5. Viagem Rápida — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-6. Fluxo Instantâneo — 0/3 · 1M/12M/144M · +15%/rank.
-7. Velocidade Arcana — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+5. Viagem Rápida — 0/5 · 50/250/1.250/6.250/31.250 · +10%/rank.
+6. Fluxo Instantâneo — 0/3 · 5.000/30.000/180.000 · +15%/rank.
+7. Velocidade Arcana — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
 
 **Cooldown do Shift**
-8. Recarga Mística — 0/5 · 10/80/640/5.120/40.960 · -5%/rank.
-9. Canal Aberto — 0/3 · 1M/12M/144M · -8%/rank.
-10. Domínio Arcano — 0/3 · 100M/1,5B/22,5B · -10%/rank.
+8. Recarga Mística — 0/5 · 3.000.000/18.000.000/108.000.000/648.000.000/3.888.000.000 ·
+   -5%/rank.
+9. Canal Aberto — 0/3 · 500/2.500/12.500 · -8%/rank.
+10. Domínio Arcano — 0/3 · 5.000/30.000/180.000 · -10%/rank.
 
 **Dano do pet (Phoenix)**
-11. Bico Flamejante — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-12. Garras Ardentes — 0/3 · 1M/12M/144M · +15%/rank.
-13. Fúria da Fênix — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-14. Chama Imortal — 0/2 · 5B/100B · +30%/rank.
-15. Avatar da Fênix — 0/1 · 50T · +40%.
+11. Bico Flamejante — 0/5 · 50.000/300.000/1.800.000/10.800.000/64.800.000 · +10%/rank.
+12. Garras Ardentes — 0/3 · 3.000.000/18.000.000/108.000.000 · +15%/rank.
+13. Fúria da Fênix — 0/3 · 500/2.500/12.500 · +20%/rank.
+14. Chama Imortal — 0/2 · 5.000/30.000 · +30%/rank.
+15. Avatar da Fênix — 0/1 · 50T (preço mantido) · +40%.
 
 **Velocidade de ataque do pet**
-16. Reflexos da Fênix — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-17. Instinto Rápido — 0/3 · 1M/12M/144M · +15%/rank.
-18. Fúria Instantânea — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+16. Reflexos da Fênix — 0/5 · 3.000.000/18.000.000/108.000.000/648.000.000/3.888.000.000 ·
+    +10%/rank.
+17. Instinto Rápido — 0/3 · 500/2.500/12.500 · +15%/rank.
+18. Fúria Instantânea — 0/3 · 100.000/600.000/3.600.000 · +20%/rank.
 
 **Tamanho do pet**
-19. Fênix Maior — 0/5 · 10/80/640/5.120/40.960 · +5%/rank.
-20. Fênix Gigante — 0/3 · 1M/12M/144M · +10%/rank.
-21. Fênix Colossal — 0/3 · 100M/1,5B/22,5B · +15%/rank.
+19. Fênix Maior — 0/5 · 7.000.000/42.000.000/252.000.000/1.512.000.000/9.072.000.000 ·
+    +5%/rank.
+20. Fênix Gigante — 0/3 · 50.000/300.000/1.800.000 · +10%/rank.
+21. Fênix Colossal — 0/3 · 500/2.500/12.500 · +15%/rank.
 
 **Cooldown de ataque do pet**
-22. Garras Ágeis — 0/3 · 1M/12M/144M · -10%/rank.
-23. Fúria sem Pausa — 0/2 · 100M/1,5B · -15%/rank.
+22. Garras Ágeis — 0/3 · 500/2.500/12.500 · -10%/rank.
+23. Fúria sem Pausa — 0/2 · 5.000/30.000 · -15%/rank.
 
 **Alcance de perseguição do pet**
-24. Vínculo Estendido — 0/3 · 1M/12M/144M · raio de perseguição (`chaseRadius`) +15%/rank.
+24. Vínculo Estendido — 0/3 · 100.000/600.000/3.600.000 · raio de perseguição
+    (`chaseRadius`) +15%/rank.
 
 **Mecânicas novas**
-25. Chama Residual — 0/3 · 1M/12M/144M · o teleporte deixa uma área de fogo no ponto de origem,
-    %/rank de dano/segundo.
-26. Pouso Explosivo — 0/3 · 1M/12M/144M · ao reaparecer, causa dano em área no ponto de chegada,
-    %/rank.
-27. Fênix Vingativa — 0/2 · 100M/1,5B · quando o herói toma dano, o pet ganha dano extra
-    temporário, %/rank.
-28. Renascimento — ver Gates finais abaixo (redesenhado 2026-11-13, pedido do usuário: a versão
-    original confundia com o Segunda Chance de Mundo e virou gate final de 1 rank só).
+25. Chama Residual — 0/3 · 10.000/60.000/360.000 · o teleporte deixa uma área de fogo no ponto
+    de origem, 10%/rank de dano/segundo.
+26. Pouso Explosivo — 0/3 · 50.000/300.000/1.800.000 · ao reaparecer, causa dano em área no
+    ponto de chegada, 20%/rank.
+27. Fênix Vingativa — 0/2 · 10.000/60.000 · quando o herói toma dano, o pet ganha dano extra
+    temporário, 25%/rank.
 
 **Gates finais**
-28. **Renascimento** — 0/1 · 500T · ignora 1 morte por dia, sobrevive com 1 HP (igual ao Segunda
-    Chance de Mundo, mas exclusivo do Mage e com flag própria — tendo os 2 perks, sobrevive 2
-    mortes no mesmo dia).
-29. **Segunda Fênix** — 0/1 · 500T · summona um 2º Phoenix simultâneo, com metade das stats do
-    primeiro.
-30. **Teleporte Instantâneo** — 0/1 · **1 quadrilhão** · `teleport_start` e `teleport_end`
-    continuam existindo, só que bem acelerados — o que desaparece é o projétil carregador que
-    viaja a distância combinada; sem ele, o Mage vai direto do fim do `teleport_start` pro
-    `teleport_end`, sem a janela de viagem intermediária.
+28. **Renascimento** — 0/1 · **450B** (era 500T) · ignora 1 morte por dia, sobrevive com 1 HP
+    (igual ao Segunda Chance de Mundo, mas exclusivo do Mage e com flag própria — tendo os 2
+    perks, sobrevive 2 mortes no mesmo dia).
+29. **Segunda Fênix** — 0/1 · **450B** (era 500T) · summona um 2º Phoenix simultâneo, com
+    metade das stats do primeiro.
+30. **Teleporte Instantâneo** — 0/1 · **900B** (era 1 quadrilhão) · `teleport_start` e
+    `teleport_end` continuam existindo, só que bem acelerados — o que desaparece é o projétil
+    carregador que viaja a distância combinada; sem ele, o Mage vai direto do fim do
+    `teleport_start` pro `teleport_end`, sem a janela de viagem intermediária.
 
 ---
 
@@ -1216,58 +1233,66 @@ completos pro 3º herói, incluindo o central). Grounded na bola de fogo real (`
 `fireballFireStatusDuration`), velocidade/alcance de voo, tamanho geral (`ultimateSizeMultiplier`,
 escala explosão + rastro juntos) e a carga/energia específica da Ultimate.
 
+_Sincronizado com o código real em 2026-11-14 — só o preço mudou (mesma lógica das Seções
+15-16). Fome Arcana e Faísca Devastadora mantiveram o preço antigo (a posição equivalente no
+Barbarian é um gate de 1 rank, sem escada de 3 ranks pra reaproveitar)._
+
 **Dano de impacto**
-1. Explosão Ardente — 0/5 · 10/80/640/5.120/40.960 · +8%/rank.
-2. Bola de Fogo Maior — 0/3 · 1M/12M/144M · +15%/rank.
-3. Inferno Absoluto — 0/3 · 100M/1,5B/22,5B · +20%/rank.
-4. Cataclismo Arcano — 0/2 · 5B/100B · +30%/rank.
+1. Explosão Ardente — 0/5 · 100/500/2.500/12.500/62.500 · +8%/rank.
+2. Bola de Fogo Maior — 0/3 · 10.000/60.000/360.000 · +15%/rank.
+3. Inferno Absoluto — 0/3 · 100.000/600.000/3.600.000 · +20%/rank.
+4. Cataclismo Arcano — 0/2 · 7.000.000/42.000.000 · +30%/rank.
 
 **Dano do rastro no chão**
-5. Rastro Ardente — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-6. Chamas Persistentes — 0/3 · 1M/12M/144M · +15%/rank.
-7. Fogo Eterno — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+5. Rastro Ardente — 0/5 · 6B/60B/1,5T/150T/150 quadrilhões · +10%/rank.
+6. Chamas Persistentes — 0/3 · 50/250/1.250 · +15%/rank.
+7. Fogo Eterno — 0/3 · 5.000/30.000/180.000 · +20%/rank.
 
 **Dano do status Fire**
-8. Queimadura Arcana — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-9. Combustão Interna — 0/3 · 1M/12M/144M · +15%/rank.
-10. Fogo Consumidor — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+8. Queimadura Arcana — 0/5 · 50.000/300.000/1.800.000/10.800.000/64.800.000 · +10%/rank.
+9. Combustão Interna — 0/3 · 500/2.500/12.500 · +15%/rank.
+10. Fogo Consumidor — 0/3 · 5.000/30.000/180.000 · +20%/rank.
 
 **Duração do status Fire**
-11. Queimadura Prolongada — 0/3 · 1M/12M/144M · +15%/rank.
-12. Chama Duradoura — 0/2 · 100M/1,5B · +20%/rank.
+11. Queimadura Prolongada — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+12. Chama Duradoura — 0/2 · 500/2.500 · +20%/rank.
 
 **Velocidade de voo**
-13. Voo Flamejante — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-14. Projétil Arcano — 0/3 · 1M/12M/144M · +15%/rank.
-15. Velocidade Infernal — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+13. Voo Flamejante — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +10%/rank.
+14. Projétil Arcano — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+15. Velocidade Infernal — 0/3 · 500/2.500/12.500 · +20%/rank.
 
 **Alcance de voo**
-16. Alcance Flamejante — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-17. Trajetória Longa — 0/3 · 1M/12M/144M · +15%/rank.
-18. Horizonte em Chamas — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+16. Alcance Flamejante — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +10%/rank.
+17. Trajetória Longa — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+18. Horizonte em Chamas — 0/3 · 500/2.500/12.500 · +20%/rank.
 
 **Tamanho geral da bola** (escala explosão + rastro no chão juntos)
-19. Bola Maior — 0/5 · 10/80/640/5.120/40.960 · +5%/rank.
-20. Esfera Flamejante — 0/3 · 1M/12M/144M · +10%/rank.
-21. Sol Pessoal — 0/3 · 100M/1,5B/22,5B · +15%/rank.
+19. Bola Maior — 0/5 · 5.000/30.000/180.000/1.080.000/6.480.000 · +5%/rank.
+20. Esfera Flamejante — 0/3 · 50.000/300.000/1.800.000 · +10%/rank.
+21. Sol Pessoal — 0/3 · 1.000/5.000/25.000 · +15%/rank.
 
 **Duração do rastro no chão**
-22. Chão em Chamas — 0/5 · 10/80/640/5.120/40.960 · +10%/rank.
-23. Fogo que Não Apaga — 0/3 · 1M/12M/144M · +15%/rank.
-24. Terra Arrasada — 0/3 · 100M/1,5B/22,5B · +20%/rank.
+22. Chão em Chamas — 0/5 · 10.000/60.000/360.000/2.160.000/12.960.000 · +10%/rank.
+23. Fogo que Não Apaga — 0/3 · 100.000/600.000/3.600.000 · +15%/rank.
+24. Terra Arrasada — 0/3 · 100.000/600.000/3.600.000 · +20%/rank.
 
 **Carga/energia da Ultimate**
-25. Conjuração Suprema — 0/5 · 10/80/640/5.120/40.960 · carga necessária -5%/rank.
-26. Fluxo Explosivo — 0/3 · 1M/12M/144M · -8%/rank.
-27. Instinto Arcano — 0/5 · 10/80/640/5.120/40.960 · ganho de energia da Ultimate +10%/rank.
-28. Fome Arcana — 0/3 · 1M/12M/144M · +15%/rank.
+25. Conjuração Suprema — 0/5 · 100.000/600.000/3.600.000/21.600.000/129.600.000 · carga
+    necessária -5%/rank.
+26. Fluxo Explosivo — 0/3 · 3.000.000/18.000.000/108.000.000 · -8%/rank.
+27. Instinto Arcano — 0/5 · 7.000.000/42.000.000/252.000.000/1.512.000.000/9.072.000.000 ·
+    ganho de energia da Ultimate +10%/rank.
+28. Fome Arcana — 0/3 · 1M/12M/144M (preço mantido) · +15%/rank.
 
 **Crítico**
-29. Faísca Devastadora — 0/3 · 1M/12M/144M · +5% chance de crítico (dano x2)/rank.
+29. Faísca Devastadora — 0/3 · 1M/12M/144M (preço mantido) · +5% chance de crítico (dano
+    x2)/rank.
 
 **Gate final**
-30. **Trindade Flamejante** — 0/1 · **1 quadrilhão** · a cada 3 usos da Ultimate, a bola de
-    fogo se divide em 3 projéteis simultâneos (ângulos próximos), todos com o dano cheio.
+30. **Trindade Flamejante** — 0/1 · **120M** (era 1 quadrilhão) · a cada 3 usos da Ultimate, a
+    bola de fogo se divide em 3 projéteis simultâneos (ângulos próximos), todos com o dano
+    cheio.
 
 ---
 
