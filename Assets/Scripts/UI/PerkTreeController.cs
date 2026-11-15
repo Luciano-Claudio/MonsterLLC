@@ -129,6 +129,14 @@ public class PerkTreeController : MonoBehaviour
         Debug.Log($"[PerkTreeController] (Debug) +1 trilhão de gold — total agora: {MainMenuUI.CurrentRun.gold}.");
     }
 
+    [ContextMenu("Debug: Zero Gold")]
+    public void DebugZeroGold()
+    {
+        MainMenuUI.CurrentRun.gold = 0;
+        GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
+        Debug.Log("[PerkTreeController] (Debug) Gold zerado.");
+    }
+
     // Nome do GameObject Content == heroKey sem "_" (mesma convenção de
     // MainMenuNavigationUI.WireHeroCards, ex. "Blood_Mage" -> "BloodMage") pra bater com
     // MainMenuUI.CurrentRun.hero.

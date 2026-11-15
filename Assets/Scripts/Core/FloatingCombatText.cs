@@ -46,10 +46,17 @@ public class FloatingCombatText : MonoBehaviour
         UpdateScreenPosition();
     }
 
+    // Pedido do usuário (2026-11-14): texto flutuante NUNCA pode ficar congelado na tela —
+    // nem no menu de pausa, nem numa cutscene de spawn de boss. De propósito, sem checar
+    // GameplayGate aqui (ao contrário de quase todo outro script do projeto): a pausa deste
+    // jogo nunca move Time.timeScale (só uma flag, ver TimeManager), então sem esse gate o
+    // texto simplesmente termina a própria animação e se destrói sozinho em ~1s, pausado ou
+    // não — resolve de raiz em vez de depender de DestroyAll() ser chamado em todo lugar que
+    // possa pausar o jogo (que é exatamente o problema que o usuário relatou: faltava cobrir
+    // o pause manual e o spawn de boss). DestroyAll() continua existindo como rede de
+    // segurança pros DayResolver/ShopHandler, mas não é mais a única forma de sumir.
     private void Update()
     {
-        if (!GameplayGate.IsActive) return;
-
         elapsed += Time.deltaTime;
         float t = Mathf.Clamp01(elapsed / lifetime);
 
@@ -69,11 +76,11 @@ public class FloatingCombatText : MonoBehaviour
         if (elapsed >= lifetime) Destroy(gameObject);
     }
 
-    // Achado real (usuário testando morte com o Cleric): como Update() acima já respeita
-    // GameplayGate, qualquer texto flutuante vivo no instante em que o dia acaba (morte ou
-    // sucesso) congela pra sempre — GameplayGate vira false (sai de GameState.Gameplay) antes
-    // do próprio lifetime zerar, e sem Update() rodando ele nunca chama Destroy() sozinho.
-    // Chamado por DayResolver junto com LootDrop.DestroyAllOnGround()/GameEvents.ClearAllEnemies.
+    // Rede de segurança pra sumir IMEDIATAMENTE na virada do dia (não esperar o ~1s de
+    // lifetime normal) — Update() agora sempre termina a própria animação sozinho (ver
+    // comentário lá), então isto não é mais estritamente necessário pra evitar congelamento,
+    // só deixa a troca de dia/loja visualmente limpa na hora. Chamado por DayResolver junto
+    // com LootDrop.DestroyAllOnGround()/GameEvents.ClearAllEnemies.
     public static void DestroyAll()
     {
         var texts = Object.FindObjectsByType<FloatingCombatText>(FindObjectsSortMode.None);

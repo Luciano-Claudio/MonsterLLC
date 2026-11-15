@@ -79,10 +79,12 @@ public static class WorldPerkEffects
         HeroController.LootMultiplier = 1f + lootBonusPercent / 100f;
         EnemyController.LootDropChanceBonusPercent = lootBonusPercent;
 
+        // Balanceamento (2026-11-14, pedido do usuário): dobro do %/rank original (era
+        // 10/20/30) — era 10f/20f/30f.
         int atracao = PerkState.GetRank(WorldPerkIds.Atracao);
         int campoAtracao = PerkState.GetRank(WorldPerkIds.CampoAtracao);
         int horizonteColeta = PerkState.GetRank(WorldPerkIds.HorizonteColeta);
-        float pickupBonusPercent = atracao * 10f + campoAtracao * 20f + horizonteColeta * 30f;
+        float pickupBonusPercent = atracao * 20f + campoAtracao * 40f + horizonteColeta * 60f;
         HeroController.PickupRadiusMultiplier = 1f + pickupBonusPercent / 100f;
 
         AutoSellOnPickup = PerkState.GetRank(WorldPerkIds.ImaVivo) > 0;
@@ -103,20 +105,26 @@ public static class WorldPerkEffects
 
         FreeTalentRerollCount = PerkState.GetRank(WorldPerkIds.RerollTalento);
 
-        // Balanceamento (2026-11-11, pedido do usuário): Fortitude e Pulso Vital ganharam 2
-        // ranks novos (3->5), mantendo o mesmo %/rank de sempre (rank*X já escala sozinho).
-        // Vitalidade Suprema também virou 2->5 ranks, mas com uma tabela ESCALANDO (não
-        // rank*X) — ela é quem carrega o "teto" novo de vida, pra bater os ~20 trilhões de
-        // vida máxima calibrados contra os monstros Tier9/10 (ver chat 2026-11-11). GDD/
-        // monstros desse tier têm vida/dano na faixa de 10^11-10^15 — nenhum %/rank linear
-        // sensato chega lá, só uma tabela com um salto gigante no rank final.
-        int vigor = PerkState.GetRank(WorldPerkIds.Vigor);
-        int fortitude = PerkState.GetRank(WorldPerkIds.Fortitude);
-        int pulsoVital = PerkState.GetRank(WorldPerkIds.PulsoVital);
+        // Rebalance (2026-11-14, discussão completa no GDD Seção 8-bis "Metodologia de
+        // Rebalance de Dano/Vida") — os 4 perks de Vida (20 ranks: 5+5+5+5) agora são TODOS
+        // tabela por rank (não mais rank*X linear), calibrados contra a meta "1 hit do monstro
+        // do dia tira só 8% do HP máximo = de boa, 1 hit do monstro do dia SEGUINTE tira só 15%
+        // = pode avançar", cruzada com a curva real de dano do bestiário (Tier1-10). Mesma
+        // decisão de design do lado de Dano: ranks iniciais baratos/fracos, poder concentrado
+        // nos ranks finais de cada perk, nunca mais um degrau de milhões de vezes só no
+        // capstone.
+        int vigorRank = PerkState.GetRank(WorldPerkIds.Vigor);
+        float[] vigorPercent = { 0f, 10.8f, 22.7f, 35.9f, 50.5f, 66.7f };
+        int fortitudeRank = PerkState.GetRank(WorldPerkIds.Fortitude);
+        float[] fortitudePercent = { 0f, 54.8f, 128f, 224f, 353f, 524f };
+        int pulsoVitalRank = PerkState.GetRank(WorldPerkIds.PulsoVital);
+        float[] pulsoVitalPercent = { 0f, 1470f, 6090f, 20500f, 65800f, 208000f };
         int vitalidadeSupremaRank = PerkState.GetRank(WorldPerkIds.VitalidadeSuprema);
-        float[] vitalidadeSupremaPercent = { 0f, 100f, 2000f, 100000f, 20000000f, 24000000000000f };
-        float vitalidadeSupremaBonus = vitalidadeSupremaPercent[Mathf.Clamp(vitalidadeSupremaRank, 0, 5)];
-        float maxHealthBonusPercent = vigor * 25f + fortitude * 40f + pulsoVital * 50f + vitalidadeSupremaBonus;
+        float[] vitalidadeSupremaPercent = { 0f, 14600000f, 2940000000f, 1780000000000f, 149000000000000f, 224000000000000f };
+        float maxHealthBonusPercent = vigorPercent[Mathf.Clamp(vigorRank, 0, 5)]
+            + fortitudePercent[Mathf.Clamp(fortitudeRank, 0, 5)]
+            + pulsoVitalPercent[Mathf.Clamp(pulsoVitalRank, 0, 5)]
+            + vitalidadeSupremaPercent[Mathf.Clamp(vitalidadeSupremaRank, 0, 5)];
         HeroController.MaxHealthMultiplier = 1f + maxHealthBonusPercent / 100f;
 
         int peleGrossa = PerkState.GetRank(WorldPerkIds.PeleGrossa);

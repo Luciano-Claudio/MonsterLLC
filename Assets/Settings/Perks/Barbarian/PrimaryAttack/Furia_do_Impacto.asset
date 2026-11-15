@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_esquerda_02
   displayName: Fury of Impact
-  description: Primary attack damage +75%/rank.
+  description: Primary attack damage, cumulative per rank (1-3) +170/445/892%.
   icon: {fileID: -3849167603533044001, guid: fde153b48e2caab41ba4f224dfa69baf, type: 3}
   costPerRank:
   - 10000
+  - 25000
   - 60000
-  - 360000

@@ -41,6 +41,14 @@ public class Barbarian : HeroController
     {
         public GameObject Instance;
         public Vector2 OriginPosition;
+        // Bug real reportado pelo usuário: ao se afastar, a fenda permanente sumia NA HORA em
+        // vez de só perder a permanência — o certo é ela passar a contar o tempo de vida normal
+        // (groundCrackDuration, já incluindo os perks de Duração que o jogador tiver comprado)
+        // a partir do instante em que o jogador se afasta, e essa contagem PAUSA (não reseta,
+        // não zera) se ele voltar pra perto antes de acabar. Só reseta de verdade quando o
+        // jogador volta — aí LeaveGraceRemaining nem é consultado, porque a fenda já saiu do
+        // "modo contagem" só de estar dentro do raio de novo (ver UpdatePermanentGroundCracks).
+        public float LeaveGraceRemaining;
     }
 
     [Header("Ultimate — salto + N projéteis retos")]
@@ -276,9 +284,14 @@ public class Barbarian : HeroController
         wasBelowCoracaoSelvagemThreshold = belowThreshold;
     }
 
-    // #29 "Fenda Permanente" — substitui o Destroy(crackObj, groundCrackDuration) normal por
-    // uma checagem contínua de distância; só entra na lista quando groundCrackPermanent=true no
-    // momento do spawn (ver AnimationAttackHitEvent).
+    // #29 "Fenda Permanente" — bug real reportado pelo usuário: antes, sair do raio destruía a
+    // fenda NA HORA (nunca era "permanente" de verdade enquanto o player tava longe, só enquanto
+    // ele ficava do lado). Comportamento certo (pedido do usuário): sair do raio começa uma
+    // contagem regressiva do tempo de vida NORMAL (groundCrackDuration, já com qualquer perk de
+    // Duração aplicado — o mesmo valor que seria usado no Destroy(..., groundCrackDuration) de
+    // uma fenda não-permanente). Essa contagem SÓ anda enquanto o player está FORA do raio; se
+    // ele voltar pra dentro antes de zerar, a contagem PAUSA onde estava (não reseta pro valor
+    // cheio) — e só volta a andar se ele saiar de novo. Zerou = a fenda finalmente desaparece.
     private void UpdatePermanentGroundCracks()
     {
         for (int i = activePermanentCracks.Count - 1; i >= 0; i--)
@@ -286,10 +299,24 @@ public class Barbarian : HeroController
             var tracker = activePermanentCracks[i];
             if (tracker.Instance == null) { activePermanentCracks.RemoveAt(i); continue; }
 
-            if (Vector2.Distance(transform.position, tracker.OriginPosition) > groundCrackPermanentLeaveRadius)
+            bool outsideRadius = Vector2.Distance(transform.position, tracker.OriginPosition) > groundCrackPermanentLeaveRadius;
+            if (!outsideRadius)
+            {
+                // Player voltou pra perto — pausa a contagem exatamente onde estava (struct é
+                // valor, então grava de volta na lista; não reseta pro cheio, só não decrementa).
+                activePermanentCracks[i] = tracker;
+                continue;
+            }
+
+            tracker.LeaveGraceRemaining -= Time.deltaTime;
+            if (tracker.LeaveGraceRemaining <= 0f)
             {
                 Destroy(tracker.Instance);
                 activePermanentCracks.RemoveAt(i);
+            }
+            else
+            {
+                activePermanentCracks[i] = tracker;
             }
         }
     }
@@ -399,12 +426,10 @@ public class Barbarian : HeroController
             // desconectado do personagem, resolvendo de vez o problema de "1 de dano pra
             // sempre" mesmo com os 2 perks dedicados comprados. Mathf.Max garante piso de 1.
             // #27 "Fenda Enfurecida" (dano +% durante o Shift) e #28 "Fenda Selvagem" (dano +X%
-            // por step de HP perdido) continuam multiplicando ESSE valor, nunca substituindo.
+            // por step de HP perdido) NÃO são mais aplicados aqui (bug real reportado pelo
+            // usuário: ficavam congelados no valor de quando a fenda nasceu) — GroundCrack lê
+            // os 2 em tempo real a cada tick via GetGroundCrackLiveBonusMultiplier() (ver lá).
             float crackDamage = Mathf.Max(1f, damage * 0.5f);
-            if (secondaryAbilityRemaining > 0f && groundCrackShiftBonusPercent > 0f)
-                crackDamage *= 1f + groundCrackShiftBonusPercent / 100f;
-            if (groundCrackHpLostBonusPerStep > 0f)
-                crackDamage *= 1f + GetPassiveDamageSteps() * groundCrackHpLostBonusPerStep / 100f;
 
             // Sempre no pé do Barbarian (transform.position — pivot do sprite já fica na base),
             // nunca no centro da hitbox diagonal (que fica deslocada pra longe dele). Só a
@@ -420,10 +445,26 @@ public class Barbarian : HeroController
     {
         var crackObj = Instantiate(groundCrackPrefab, position, Quaternion.identity, HeroController.HerosContainer);
         var crack = crackObj.GetComponent<GroundCrack>();
-        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier);
+        // "this" como dono — só o crack do golpe normal (não o do Eco do Impacto, ver
+        // SpawnGroundCrackAt abaixo) acompanha Shift/HP perdido em tempo real.
+        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier, this);
 
-        if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position });
+        if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position, LeaveGraceRemaining = groundCrackDuration });
         else Destroy(crackObj, groundCrackDuration);
+    }
+
+    // Lido por GroundCrack a cada tick (nunca travado no valor de quando a fenda nasceu — bug
+    // real reportado pelo usuário). #27 "Fenda Enfurecida" só conta enquanto o Shift estiver
+    // ATIVO NESTE EXATO INSTANTE; #28 "Fenda Selvagem" sempre reflete o step de HP perdido
+    // ATUAL. Os 2 multiplicam entre si, nunca substituem o dano base da fenda.
+    public float GetGroundCrackLiveBonusMultiplier()
+    {
+        float multiplier = 1f;
+        if (secondaryAbilityRemaining > 0f && groundCrackShiftBonusPercent > 0f)
+            multiplier *= 1f + groundCrackShiftBonusPercent / 100f;
+        if (groundCrackHpLostBonusPerStep > 0f)
+            multiplier *= 1f + GetPassiveDamageSteps() * groundCrackHpLostBonusPerStep / 100f;
+        return multiplier;
     }
 
     private void SpawnGroundCrackAt(Vector2 position, GroundCrack.Direction direction, float sizeOverride, bool permanent)
@@ -434,7 +475,7 @@ public class Barbarian : HeroController
         var crack = crackObj.GetComponent<GroundCrack>();
         if (crack != null) crack.Initialize(direction, sizeOverride, groundCrackDamagePerSecond, groundCrackTickInterval);
 
-        if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position });
+        if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position, LeaveGraceRemaining = groundCrackDuration });
         else Destroy(crackObj, groundCrackDuration);
     }
 
@@ -652,19 +693,28 @@ public class Barbarian : HeroController
 
     private void RecomputeEsquerda()
     {
-        // Balanceamento (2026-11-10): 5x o original — era 8/15/20/30/50.
-        //
-        // Balanceamento (2026-11-11, pedido do usuário): Fúria Definitiva virou 1->5 ranks e é
-        // quem carrega o "teto" de dano novo (igual Vitalidade Suprema do lado da vida) — tabela
-        // escalando, não rank*X, pra chegar no ~1,2 trilhão de dano calibrado contra os
-        // monstros Tier9/10 (ver chat 2026-11-11). Força Bruta ganhou 2 ranks novos (3->5) mas
-        // manteve o mesmo 100%/rank — rank*X já escala sozinho, sem precisar de tabela.
+        // Rebalance (2026-11-14, discussão completa no GDD Seção 8-bis "Metodologia de
+        // Rebalance de Dano/Vida") — os 5 perks de Dano da Esquerda (20 ranks: 5+3+5+2+5) agora
+        // são TODOS tabela por rank (não mais rank*X linear), calibrados contra a meta "1-2 hits
+        // pra matar o monstro do dia = de boa, 5-6 hits pro monstro do dia SEGUINTE = pode
+        // avançar", cruzada com a curva real de HP do bestiário (Tier1-10). Decisão explícita do
+        // usuário: ranks iniciais ficam baratos/fracos de propósito, o grosso do poder mora nos
+        // ranks finais de cada perk — nunca mais um "degrau" de 1 milhão de vezes concentrado só
+        // no capstone (bug real do rebalance anterior, corrigido agora).
+        float golpePesadoRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaGolpePesado);
+        float[] golpePesadoPercent = { 0f, 22.3f, 49.7f, 83.1f, 124f, 174f };
+        float furiaDoImpactoRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDoImpacto);
+        float[] furiaDoImpactoPercent = { 0f, 170f, 445f, 892f };
+        float forcaBrutaRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaForcaBruta);
+        float[] forcaBrutaPercent = { 0f, 2000f, 7460f, 22300f, 62600f, 172000f };
+        float devastacaoRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaDevastacao);
+        float[] devastacaoPercent = { 0f, 1300000f, 12400000f };
         float furiaDefinitivaRank = PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDefinitiva);
-        float[] furiaDefinitivaPercent = { 0f, 250f, 2500f, 125000f, 25000000f, 30000000000000f };
-        float danoPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaGolpePesado) * 40f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaFuriaDoImpacto) * 75f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaForcaBruta) * 100f
-            + PerkState.GetRank(BarbarianPerkIds.EsquerdaDevastacao) * 150f
+        float[] furiaDefinitivaPercent = { 0f, 2410000000f, 1320000000000f, 111000000000000f, 150000000000000f, 204000000000000f };
+        float danoPercent = golpePesadoPercent[Mathf.Clamp((int)golpePesadoRank, 0, 5)]
+            + furiaDoImpactoPercent[Mathf.Clamp((int)furiaDoImpactoRank, 0, 3)]
+            + forcaBrutaPercent[Mathf.Clamp((int)forcaBrutaRank, 0, 5)]
+            + devastacaoPercent[Mathf.Clamp((int)devastacaoRank, 0, 2)]
             + furiaDefinitivaPercent[Mathf.Clamp((int)furiaDefinitivaRank, 0, 5)];
         HeroController.PrimaryDamageMultiplier = 1f + danoPercent / 100f;
 
@@ -790,17 +840,24 @@ public class Barbarian : HeroController
 
     private void RecomputeCima()
     {
-        // Balanceamento (2026-11-10): 5x o original — era 10/15/20/30/40.
-        //
-        // Balanceamento (2026-11-11, pedido do usuário): Juízo Final virou 1->5 ranks, mesmo
-        // tratamento de Fúria Definitiva (tabela escalando, proporção 0,8x dela — era 200:250
-        // no design original). Poder Esmagador ganhou 2 ranks novos (3->5), mesmo 100%/rank.
+        // Rebalance (2026-11-14, GDD Seção 8-bis) — espelha RecomputeEsquerda() ponto a ponto:
+        // mesmas 5 tabelas por rank, mesmos valores (Cima e Esquerda são idênticos de propósito,
+        // decisão do usuário — dano sustentado do ataque normal e dano de burst da Ultimate
+        // escalam juntos, nunca um ficando pra trás do outro).
+        float golpeDivinoRank = PerkState.GetRank(BarbarianPerkIds.CimaGolpeDivino);
+        float[] golpeDivinoPercent = { 0f, 22.3f, 49.7f, 83.1f, 124f, 174f };
+        float iraAncestralRank = PerkState.GetRank(BarbarianPerkIds.CimaIraAncestral);
+        float[] iraAncestralPercent = { 0f, 170f, 445f, 892f };
+        float poderEsmagadorRank = PerkState.GetRank(BarbarianPerkIds.CimaPoderEsmagador);
+        float[] poderEsmagadorPercent = { 0f, 2000f, 7460f, 22300f, 62600f, 172000f };
+        float apocalipsePessoalRank = PerkState.GetRank(BarbarianPerkIds.CimaApocalipsePessoal);
+        float[] apocalipsePessoalPercent = { 0f, 1300000f, 12400000f };
         float juizoFinalRank = PerkState.GetRank(BarbarianPerkIds.CimaJuizoFinal);
-        float[] juizoFinalPercent = { 0f, 200f, 2000f, 100000f, 20000000f, 24000000000000f };
-        float ultDanoPercent = PerkState.GetRank(BarbarianPerkIds.CimaGolpeDivino) * 50f
-            + PerkState.GetRank(BarbarianPerkIds.CimaIraAncestral) * 75f
-            + PerkState.GetRank(BarbarianPerkIds.CimaPoderEsmagador) * 100f
-            + PerkState.GetRank(BarbarianPerkIds.CimaApocalipsePessoal) * 150f
+        float[] juizoFinalPercent = { 0f, 2410000000f, 1320000000000f, 111000000000000f, 150000000000000f, 204000000000000f };
+        float ultDanoPercent = golpeDivinoPercent[Mathf.Clamp((int)golpeDivinoRank, 0, 5)]
+            + iraAncestralPercent[Mathf.Clamp((int)iraAncestralRank, 0, 3)]
+            + poderEsmagadorPercent[Mathf.Clamp((int)poderEsmagadorRank, 0, 5)]
+            + apocalipsePessoalPercent[Mathf.Clamp((int)apocalipsePessoalRank, 0, 2)]
             + juizoFinalPercent[Mathf.Clamp((int)juizoFinalRank, 0, 5)];
         HeroController.UltimateDamageMultiplier = 1f + ultDanoPercent / 100f;
 

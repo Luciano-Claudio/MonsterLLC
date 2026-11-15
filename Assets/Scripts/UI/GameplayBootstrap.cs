@@ -134,5 +134,14 @@ public class GameplayBootstrap : MonoBehaviour
         if (currentHeroObj != null) Destroy(currentHeroObj);
         PetController.DestroyAll(); // owner (herói antigo) some — sem isso, o pet ficava congelado na cena
         SpawnHero(MainMenuUI.CurrentRun.hero); // já zera IsPlayerUntargetable por dentro; summon do pet novo é automático (AnimationSummonPetEvent)
+
+        // DIAGNÓSTICO TEMPORÁRIO (2026-11-14) — ver mesmo achado em HeroController.OnDeath().
+        // Confere o estado da Bag no instante do respawn (depois do Clear() da morte, antes de
+        // qualquer coleta nova) — se aparecer slot cheio aqui, o problema é ENTRE a morte e o
+        // respawn (ex.: algo re-adicionando item), não no Clear() em si.
+        int slotsAindaCheios = 0;
+        foreach (var slot in BagController.Instance.Bag.Slots)
+            if (!slot.IsEmpty) slotsAindaCheios++;
+        Debug.Log($"[DEBUG Bag] No instante do RespawnHeroFresh(): {slotsAindaCheios} slot(s) ainda com item.");
     }
 }

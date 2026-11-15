@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_cima_01
   displayName: Divine Strike
-  description: Ultimate damage +50%/rank.
+  description: Ultimate damage, cumulative per rank (1-5) +22.3/49.7/83.1/124/174%.
   icon: {fileID: 5604637610998105702, guid: 3772d95fc01fd4941aafd88a5af09e6e, type: 3}
   costPerRank:
-  - 100
-  - 500
+  - 200
+  - 400
+  - 1000
   - 2500
-  - 12500
-  - 62500
+  - 6000

@@ -179,7 +179,11 @@ public class WorldPopulationManager : MonoBehaviour
     private void HandleCrisis()
     {
         int missing = ActiveTarget - aliveEnemies.Count;
-        for (int i = 0; i < missing; i++) SpawnOne();
+        int spawnsThisFrame = Mathf.Min(missing, spawnSettings.maxCrisisSpawnsPerFrame);
+        for (int i = 0; i < spawnsThisFrame; i++) SpawnOne();
+        // O resto (missing - spawnsThisFrame) continua em déficit — Update() chama HandleCrisis()
+        // de novo no PRÓXIMO frame (mesma condição aliveEnemies.Count <= ActiveMinimum ainda vale
+        // enquanto a crise não acabar), fechando mais um lote por vez até normalizar.
     }
 
     private void SpawnOne()

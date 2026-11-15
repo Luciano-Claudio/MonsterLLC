@@ -60,6 +60,23 @@ public static class WorldSpawnUtility
         var constraint = NearestNodeConstraint.Walkable;
         constraint.graphMask = GraphMask.FromGraph(graph);
 
+        // Bug real reportado pelo usuário: o terreno nasce de ruído Perlin puro por célula
+        // (TerrainMask.ShouldPaintOverlay), sem nenhuma garantia de conectividade — uma "ilha"
+        // de terra 2x2+ cercada de água é um blob válido como qualquer outro, então os 3
+        // spawners (monstro/boss/baú) achavam nó caminhável nela e spawnavam normal, só que o
+        // Seeker do monstro (restrito ao grafo "OpenWorld") nunca encontra caminho até o
+        // jogador — fica parado pra sempre. O pacote A* já rastreia "componente conectado" de
+        // graça por nó (GraphNode.Area, recalculado a cada UpdateGraphs — já chamado por chunk
+        // em ChunkTerrainGenerator), então só precisa comparar a Area do candidato com a Area
+        // de `center` (sempre o jogador, nos 3 chamadores): Area diferente = sem caminho
+        // possível = rejeita e tenta outro ângulo, exatamente como as outras rejeições abaixo.
+        // Se nem o PRÓPRIO center tiver nó caminhável perto (não devia acontecer, já que é a
+        // posição do jogador), não tem Area de referência — desliga o filtro em vez de travar
+        // todo spawn por causa disso.
+        var centerInfo = AstarPath.active.GetNearest(center, constraint);
+        bool hasCenterArea = centerInfo.node != null;
+        uint centerArea = hasCenterArea ? centerInfo.node.Area : 0;
+
         float minDistanceFromOriginSqr = minDistanceFromOrigin * minDistanceFromOrigin;
         bool hasFallback = false;
         Vector3 fallbackPosition = default;
@@ -74,6 +91,7 @@ public static class WorldSpawnUtility
 
             var info = AstarPath.active.GetNearest(candidate, constraint);
             if (info.node == null) continue;
+            if (hasCenterArea && info.node.Area != centerArea) continue; // ilha isolada — sem caminho até o jogador
 
             // Bug real relatado pelo usuário ("monstro nascendo muito distante"): o AstarPath
             // da cena tem maxNearestNodeDistance=100 — se a vizinhança imediata do candidato

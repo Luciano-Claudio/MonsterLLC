@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_cima_02
   displayName: Ancestral Wrath
-  description: Ultimate damage +75%/rank.
+  description: Ultimate damage, cumulative per rank (1-3) +170/445/892%.
   icon: {fileID: 156001701487495524, guid: 3772d95fc01fd4941aafd88a5af09e6e, type: 3}
   costPerRank:
   - 10000
+  - 25000
   - 60000
-  - 360000

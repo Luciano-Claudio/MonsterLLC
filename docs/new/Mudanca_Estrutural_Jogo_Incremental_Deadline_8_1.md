@@ -551,9 +551,10 @@ pendência acima). Regras que valem só aqui:
 1. **Instinto de Caçador** — 0/5 · 10/80/640/5.120/40.960 · gold por kill +8%/rank.
 2. **Butim de Guerra** — 0/3 · 1M/12M/144M · gold por kill +15%/rank.
 3. **Faro de Saque** — 0/5 · 10/80/640/5.120/40.960 · chance/quantidade de drop de loot +8%/rank.
-4. **Atração** — 0/5 · 10/80/640/5.120/40.960 · PickupRadius +10%/rank.
-5. **Campo de Atração** — 0/3 · 1M/12M/144M · PickupRadius +20%/rank.
-6. **Horizonte de Coleta** — 0/3 · 100M/1,5B/22,5B · PickupRadius +30%/rank.
+4. **Atração** — 0/5 · 10/80/640/5.120/40.960 · PickupRadius +20%/rank (era +10%/rank, dobrado
+   em 2026-11-14 a pedido do usuário).
+5. **Campo de Atração** — 0/3 · 1M/12M/144M · PickupRadius +40%/rank (era +20%/rank).
+6. **Horizonte de Coleta** — 0/3 · 100M/1,5B/22,5B · PickupRadius +60%/rank (era +30%/rank).
 7. **Ímã Vivo** — 0/1 · 5T · auto-vende loot coletado, no instante da coleta, usando o
    PickupRadius atual do jogador como raio do imã. O buff mais forte da árvore — caro de
    propósito.
@@ -569,10 +570,16 @@ pendência acima). Regras que valem só aqui:
     1.048.576).
 16. **Reroll de Talento** — 0/3 · 10M/150M/2,25B · +1 reroll grátis por dia das 3 cartas de
     Talento mostradas/rank.
-17. **Vigor** — 0/5 · 10/80/640/5.120/40.960 · HP máximo +5%/rank.
-18. **Fortitude** — 0/3 · 1M/12M/144M · HP máximo +8%/rank.
-19. **Pulso Vital** — 0/3 · 100M/1,5B/22,5B · HP máximo +10%/rank.
-20. **Vitalidade Suprema** — 0/2 · 5B/100B · HP máximo +15%/rank.
+17. **Vigor** — 0/5 · 200/400/900/2.000/4.000 (triplicado 2026-11-14, pedido do usuário) · HP
+    máximo cumulativo por rank (1-5): +10,8/+22,7/
+    +35,9/+50,5/+66,7%. Ver Seção 8-bis (rebalance 2026-11-14).
+18. **Fortitude** — 0/5 · 7.000/15.000/25.000/40.000/70.000 (triplicado 2026-11-14) · HP máximo
+    cumulativo por rank (1-5): +54,8/+128/+224/+353/+524%. Ver Seção 8-bis.
+19. **Pulso Vital** — 0/5 · 150.000/250.000/400.000/1.000.000/3.000.000 (triplicado 2026-11-14) ·
+    HP máximo cumulativo por rank (1-5): +1.470/+6.090/+20.500/+65.800/+208.000%. Ver Seção 8-bis.
+20. **Vitalidade Suprema** — 0/5 · 6M/30M/200M/500M/1B · HP máximo cumulativo por rank (1-5):
+    +14.600.000/+2.940.000.000/+1.780.000.000.000/+149.000.000.000.000/+224.000.000.000.000%
+    (tabela escalonada, carrega o teto de vida — ver Seção 8-bis).
 21. **Pele Grossa** — 0/3 · 10K/100K/1M · dano recebido -3%/rank.
 22. **Couraça** — 0/3 · 1M/12M/144M · dano recebido -5%/rank.
 23. **Casco de Ferro** — 0/3 · 100M/1,5B/22,5B · dano recebido -7%/rank.
@@ -590,6 +597,125 @@ Regen ×3, Velocidade ×3, Gold por kill ×2, e 8 perks únicos sem repetição 
 Vivo, Baú Extra, Baú Duplo, Mais Espaço de Bag, Stack Maior, Reroll de Talento, Segunda Chance).
 
 ---
+
+## 8-bis. Metodologia de Rebalance de Dano/Vida (sessão 2026-11-14) — reaproveitar pros próximos 9 heróis
+
+Disparado por relato real do usuário: mesmo comprando TODOS os perks do Barbarian (tirando só os
+de aumento de Dano/Vida), ele não aguentava o Tier 4-5. Esta seção documenta o raciocínio inteiro,
+não só os números finais (esses já estão nas Seções 8/9/"Dano da Ultimate" acima) — é pra ser
+reaproveitado quando a gente for padronizar Ranger/Mage/os outros 7 na mesma régua.
+
+### 8-bis.1 — Estrutura confirmada (vale pra todo herói, não só Barbarian)
+
+Por herói: 2 famílias de **Dano** "de verdade" (Esquerda/Ataque Primário e Cima/Ultimate — a de
+Direita/Shift fica DE FORA de propósito, ver 8-bis.5), cada uma com 5 perks somando **20 ranks**
+(5+3+5+2+5: 4 perks lineares + 1 capstone de tabela não-linear). Fora isso, **4 perks de Vida**
+universais (Mundo, Seção 8: Vigor/Fortitude/Pulso Vital/Vitalidade Suprema), 5 ranks cada,
+**20 ranks**. Total: **60 ranks** de Dano/Vida por herói (40 Dano + 20 Vida), todos redistribuídos
+juntos numa curva de 10 dias.
+
+### 8-bis.2 — O bug real do rebalance anterior (2026-11-10/11): "degrau", não "rampa"
+
+Cada capstone (Fúria Definitiva/Juízo Final/Vitalidade Suprema) usava uma tabela MUITO exponencial
+(ex.: 250%/2.500%/125.000%/25.000.000%/30.000.000.000.000% — salto de até 1,2 milhão de vezes
+entre ranks 4 e 5). Resultado: o rank 5 sozinho valia **99,9999996%** do poder total da árvore
+inteira — por isso "comprar tudo menos o capstone" não mudava nada na prática. Fix: toda a curva
+de 20 ranks (não só o capstone) virou tabela por rank, com os primeiros ranks baratos/fracos de
+propósito e o grosso do poder nos ranks finais — mas DISTRIBUÍDO ao longo de vários ranks, nunca
+concentrado 1 só.
+
+### 8-bis.3 — A régua de calibragem ("de boa" vs "pode avançar")
+
+Pedido explícito do usuário, decisão de design central:
+
+- **De boa (dia atual)**: Dano — mata o monstro do dia em **1-2 hits**. Vida — 1 hit do monstro do
+  dia tira só **8% do HP máximo** (~12,5 hits pra morrer — "praticamente impossível morrer de 1
+  monstro só", o regen por fora ajuda ainda mais).
+- **Pode avançar (dia seguinte)**: Dano — mata o monstro do PRÓXIMO dia em **5-6 hits** ("duro, mas
+  possível"). Vida — 1 hit do monstro do PRÓXIMO dia tira só **15%** (~6-7 hits pra morrer).
+- **Teto do Dia 10 (tudo comprado)**: Dano — mata o Tier 10 em **2-4 hits** (nunca fica "de boa" de
+  verdade, mas perto disso — o boss final é brutal à parte). Vida — 1 hit do Tier 10 tira só
+  **10%** (~10 hits pra morrer) — **bem mais generoso que um cálculo ingênuo de "poucos hits"
+  sugeriria**, porque o pico de população noturna chega a ~150 monstros simultâneos (ver 8-bis.6);
+  3-4 hits pra morrer nesse cenário é inviável (confirmado pelo usuário).
+
+**Bug meu, corrigido durante a sessão**: a 1ª versão do cálculo comparava "pode avançar" contra o
+dano/HP do MESMO dia (só com um limiar de hits mais frouxo) — isso nunca vence o "de boa" (que usa
+um limiar mais rígido no mesmo valor), então o checkpoint nunca entrava em vigor de verdade. O
+certo é comparar "pode avançar do dia D" contra o monstro do dia **D+1**. Sem esse fix, a régua
+colapsava pra **quase 1-shot garantido** a partir do dia 4 (testável: ver fórmula abaixo).
+
+### 8-bis.4 — Fórmulas base usadas (Barbarian; refazer por herói — `stats.damage`/`stats.maxHealth`
+mudam)
+
+```
+dano_por_hit = stats.damage × PassiveDamageMultiplier(variável, HP perdido) × CentralDamageMultiplier(2,0x maxado)
+             × critMultiplier(~1,5x médio) × PrimaryDamageMultiplier(1 + danoPercent/100)
+HP_efetivo   = stats.maxHealth × CentralHealthMultiplier(2,0x maxado) × MaxHealthMultiplier(1 + vidaPercent/100)
+```
+Barbarian: `stats.damage=2`, `stats.maxHealth=42` (`Barbarian.prefab`) → baseline "tudo maxado
+menos Dano/Vida" ≈ **9 de dano/hit**, **84 HP efetivo**. Multiplicador-alvo por dia =
+`HP_monstro(dia) / (dano_por_hit × hits_alvo)` (Dano) ou `dmg_monstro(dia) × hits_alvo /
+HP_efetivo` (Vida) — usar SEMPRE o maior entre "de boa no dia D" e "pode avançar pro dia D+1"
+(`max()`, cumulativo) pra fechar a curva de 20 ranks por família.
+
+### 8-bis.5 — Por que a Direita/Shift fica de fora
+
+Decisão explícita do usuário: o teto de dano do Shift é fixo em 3x (nunca mexer), já nerfado antes
+por ser "tecla de matar tudo" sem desafio. Só Esquerda/Cima entram na conta de "Dano" pro
+propósito de progressão por dia.
+
+### 8-bis.6 — Achado colateral importante: risco de enxame à noite
+
+`DaySpawnTableSO`: dias 1-7 são 80% tier atual / 20% tier seguinte à noite (preview/teste de
+prontidão), dias 8-10 são 100% travado sem blend. `WorldPopulationManager` escala a população viva
+de 15 (dia) até **150 no pico da noite**. 20% de 150 ≈ **30 monstros do tier seguinte vivos ao
+mesmo tempo** — não é um "preview" raro, é um enxame. Isso é por que o teto de Vida do Dia 10
+precisou ficar mais generoso (10 hits, não 3-4) do que um cálculo 1-contra-1 sugeriria. Ainda
+pendente: considerar um teto FIXO de monstros do tier seguinte (ex.: 4-6), em vez de % de uma
+população que escala — não aplicado ainda, só a régua de Vida já compensa isso por ora.
+
+### 8-bis.7 — Pendência grave relacionada (não resolvida)
+
+Ver [[project_day_retry_softlock_risk]] (memória do projeto) — morrer retry o MESMO dia pra
+sempre, nunca um dia anterior. Isso significa que qualquer curva de perk mal calibrada em só 1 dos
+9 saltos de tier pode travar a run de vez, sem chance de correção pelo jogador. A régua desta seção
+foi desenhada com margem (`max(de_boa, pode_avancar)`) pra minimizar esse risco, mas a rede de
+segurança estrutural de verdade (opção escolhida: permitir recuar de dia de propósito) ainda não
+foi implementada.
+
+### 8-bis.8 — Regra de custo (gold) — **a mais importante pra não repetir o erro**
+
+1. **Nunca ancorar o custo de um rank no dia-ALVO que ele destrava** — o jogador ainda não consegue
+   farmar esse dia (é circular: precisa do rank pra chegar lá, mas precisa do dia pra pagar o
+   rank). Ancorar sempre no **último dia que ele já consegue limpar** (dia-alvo menos 1).
+2. Custo de cada rank ≈ poucas "tentativas" (ex. Z=4) do gold farmável naquele dia-âncora — gold
+   por kill/dia está na Seção de economia (`DayGoldTableSO`); estimar kills/tentativa (~30 comuns +
+   2 bosses) pra converter em gold/tentativa.
+3. **Nunca deixar todos os ranks de um mesmo perk com o mesmo custo** (achado/pedido do usuário) —
+   cada perk sobe gradativamente por dentro, e o último rank de um perk custa menos que o primeiro
+   rank do próximo (sem saltos bruscos entre perks vizinhos).
+4. **Arredondar pra números redondos** (1/1,5/2/2,5/3/4/5/6/7/8/9/10 × potência de 10) — custo
+   "quebrado" tipo 66 ou 143 não serve pra nada e só confunde.
+
+### 8-bis.9 — Checklist pro próximo herói
+
+1. Confirmar `stats.damage`/`stats.maxHealth` base do herói (varia por herói).
+2. Rodar a mesma fórmula da 8-bis.4 pra achar o multiplicador-alvo por dia (Dano e Vida).
+3. Decompor a curva de 20 ranks por família (ver 8-bis.2 — tabela por rank, nunca %/rank linear
+   flat, nunca tudo concentrado no capstone).
+4. Custo: aplicar a regra da 8-bis.8 à risca.
+5. Vida: considerar o achado de enxame (8-bis.6) — teto generoso, não um cálculo ingênuo de hits.
+6. Sincronizar código (`<Herói>.cs`/`WorldPerkEffects.cs` se aplicável) + os `.asset` de
+   `costPerRank` + esta doc, nessa ordem.
+
+### 8-bis.10 — Ajuste de custo pós-rebalance (2026-11-14, mesmo dia)
+
+Pedido do usuário: os perks "de entrada" de cada família de Dano/Vida (Golpe Pesado/Divino, Fúria
+do Impacto/Ira Ancestral, Força Bruta/Poder Esmagador, Vigor, Fortitude, Pulso Vital) tiveram o
+custo **triplicado** — só esses 6, não os capstones (Fúria Definitiva/Juízo Final/Vitalidade
+Suprema) nem Devastação/Apocalipse Pessoal, que ficam como calibrados na 8-bis. %/rank (efeito)
+não mudou em nenhum deles, só o preço. Valores já refletidos nas listas acima.
 
 ## 9. Perks de Esquerda (Ataque Primário) — Barbarian, 30 perks, fechado
 
@@ -621,16 +747,18 @@ balanceamento de 2026-11-10 só escalou dano/vida (nunca movespeed/tamanho/área
 aceleração/duração — ver nota em WorldPerkEffects.cs), por isso as famílias de dano aqui saltam
 5x e as outras famílias mantêm o %/rank antigo, só com custo renumerado._
 
-**Dano**
-1. Golpe Pesado — 0/5 · 100/500/2.500/12.500/62.500 · dano +40%/rank.
-2. Fúria do Impacto — 0/3 · 10.000/60.000/360.000 · dano +75%/rank.
-3. Força Bruta — 0/5 (ganhou 2 ranks novos em 2026-11-11, era 0/3) · 100.000/600.000/3.600.000/
-   21.600.000/129.600.000 · dano +100%/rank.
-4. Devastação — 0/2 · 7.000.000/42.000.000 · dano +150%/rank.
-5. Fúria Definitiva — 0/5 (ganhou 4 ranks novos em 2026-11-11, era 0/1 flat) ·
-   8.000.000.000/80.000.000.000/2.000.000.000.000/200.000.000.000.000/200.000.000.000.000.000 ·
-   tabela escalonada (não %/rank linear): dano do ataque primário +250%/+2.500%/+125.000%/
-   +25.000.000%/+30.000.000.000.000%, calibrada contra o teto de HP dos monstros Tier9/10.
+**Dano** (rebalance 2026-11-14 — todos os 5 perks viraram tabela por rank, não mais %/rank linear;
+ver metodologia completa e por quê na Seção 8-bis)
+1. Golpe Pesado — 0/5 · 200/400/1.000/2.500/6.000 (triplicado 2026-11-14) · dano do ataque
+   primário cumulativo por rank (1-5): +22,3/+49,7/+83,1/+124/+174%.
+2. Fúria do Impacto — 0/3 · 10.000/25.000/60.000 (triplicado 2026-11-14) · dano cumulativo por
+   rank (1-3): +170/+445/+892%.
+3. Força Bruta — 0/5 · 90.000/200.000/300.000/600.000/1M (triplicado 2026-11-14) · dano cumulativo
+   por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
+4. Devastação — 0/2 · 1M/3M · dano cumulativo por rank (1-2): +1.300.000/+12.400.000%.
+5. Fúria Definitiva — 0/5 · 10M/50M/200M/600M/1,5B · tabela escalonada (capstone, carrega o teto
+   de dano): dano cumulativo por rank (1-5) +2.410.000.000%/+1.320.000.000.000%/
+   +111.000.000.000.000%/+150.000.000.000.000%/+204.000.000.000.000%.
 
 **Knockback**
 6. Empurrão — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
@@ -773,15 +901,21 @@ que o texto antigo dizia, e a ordem crescente de preço que o texto afirmava nun
 verdade (28=80M é o 2º mais barato, 29=1,5T é o mais caro, 30=120M é o MAIS barato dos 3,
 apesar do texto chamar ele de "nó mais caro de toda a árvore").**
 
-1. Golpe Divino — 0/5 · 100/500/2.500/12.500/62.500 · dano +50%/rank.
-2. Ira Ancestral — 0/3 · 10.000/60.000/360.000 · +75%/rank.
-3. Poder Esmagador — 0/5 (ganhou 2 ranks novos em 2026-11-11, era 0/3) ·
-   100.000/600.000/3.600.000/21.600.000/129.600.000 · +100%/rank (mesmo %/rank, só mais ranks).
-4. Apocalipse Pessoal — 0/2 · 7.000.000/42.000.000 · +150%/rank.
-5. Juízo Final — 0/5 (ganhou 4 ranks novos em 2026-11-11, era 0/1 flat) ·
-   6.000.000.000/60.000.000.000/1.500.000.000.000/150.000.000.000.000/150.000.000.000.000.000 ·
-   tabela escalonada (não %/rank linear): dano +200%/+2.000%/+100.000%/+20.000.000%/
-   +24.000.000.000.000% (0,8x a proporção da Fúria Definitiva do Barbarian/Esquerda).
+**Dano da Ultimate (rebalance 2026-11-14 — espelha a Esquerda ponto a ponto, mesmos valores
+exatos de %/rank e custo, decisão explícita do usuário: dano sustentado e dano de burst escalam
+juntos. Ver metodologia na Seção 8-bis.)**
+
+1. Golpe Divino — 0/5 · 200/400/1.000/2.500/6.000 (triplicado 2026-11-14) · dano da Ultimate
+   cumulativo por rank (1-5): +22,3/+49,7/+83,1/+124/+174%.
+2. Ira Ancestral — 0/3 · 10.000/25.000/60.000 (triplicado 2026-11-14) · dano cumulativo por rank
+   (1-3): +170/+445/+892%.
+3. Poder Esmagador — 0/5 · 90.000/200.000/300.000/600.000/1M (triplicado 2026-11-14) · dano
+   cumulativo por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
+4. Apocalipse Pessoal — 0/2 · 1M/3M · dano cumulativo por rank (1-2): +1.300.000/+12.400.000%.
+5. Juízo Final — 0/5 · 10M/50M/200M/600M/1,5B · tabela escalonada (capstone, carrega o teto de
+   dano): dano cumulativo por rank (1-5) +2.410.000.000%/+1.320.000.000.000%/
+   +111.000.000.000.000%/+150.000.000.000.000%/+204.000.000.000.000% (igual à Fúria Definitiva —
+   não é mais 0,8x dela, os 2 branches agora são idênticos de propósito).
 6. Projétil Veloz — 0/5 · 50/250/1.250/6.250/31.250 · velocidade +10%/rank.
 7. Lança Relâmpago — 0/3 · 5.000/30.000/180.000 · +15%/rank.
 8. Velocidade Absoluta — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.

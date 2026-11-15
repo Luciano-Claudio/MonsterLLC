@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_cima_03
   displayName: Crushing Power
-  description: Ultimate damage +100%/rank.
+  description: "Ultimate damage, cumulative per rank (1-5): +2,000 / +7,460 / +22,300 / +62,600 / +172,000%."
   icon: {fileID: 2429700322435137236, guid: 3772d95fc01fd4941aafd88a5af09e6e, type: 3}
   costPerRank:
-  - 100000
+  - 90000
+  - 200000
+  - 300000
   - 600000
-  - 3600000
-  - 21600000
-  - 129600000
+  - 1000000

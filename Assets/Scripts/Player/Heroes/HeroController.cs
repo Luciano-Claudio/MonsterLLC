@@ -1130,6 +1130,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         BagController.Instance.Bag.Clear();
         GameEvents.BagChanged(BagController.Instance.Bag);
 
+        // DIAGNÓSTICO TEMPORÁRIO (2026-11-14) — usuário reportou que, depois de um retry por
+        // morte, a Bag aparece cheia de loot de antes da morte. Confirma aqui, no instante exato
+        // logo após Clear(), quantos slots ainda têm item (deveria ser sempre 0). Remover depois
+        // de confirmado.
+        int slotsAindaCheiosAposClear = 0;
+        foreach (var slot in BagController.Instance.Bag.Slots)
+            if (!slot.IsEmpty) slotsAindaCheiosAposClear++;
+        Debug.Log($"[DEBUG Bag] Logo após Bag.Clear() em OnDeath(): {slotsAindaCheiosAposClear} slot(s) ainda com item (deveria ser 0).");
+
         // 3. Zera Energia da Ultimate
         stats.energy = 0f;
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);

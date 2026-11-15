@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: world_vigor
   displayName: Vigor
-  description: Max HP +25%/rank.
+  description: Max HP, cumulative per rank (1-5) +10.8/22.7/35.9/50.5/66.7%.
   icon: {fileID: 7396133070535158269, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
   costPerRank:
-  - 50
-  - 250
-  - 1250
-  - 6250
-  - 31250
+  - 200
+  - 400
+  - 900
+  - 2000
+  - 4000

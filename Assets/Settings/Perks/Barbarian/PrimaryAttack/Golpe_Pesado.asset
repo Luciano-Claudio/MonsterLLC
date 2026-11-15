@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_esquerda_01
   displayName: Heavy Strike
-  description: Primary attack damage +40%/rank.
+  description: Primary attack damage, cumulative per rank (1-5) +22.3/49.7/83.1/124/174%.
   icon: {fileID: -1951608094899734780, guid: fde153b48e2caab41ba4f224dfa69baf, type: 3}
   costPerRank:
-  - 100
-  - 500
+  - 200
+  - 400
+  - 1000
   - 2500
-  - 12500
-  - 62500
+  - 6000

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_esquerda_04
   displayName: Devastation
-  description: Primary attack damage +150%/rank.
+  description: "Primary attack damage, cumulative per rank (1-2): +1,300,000 / +12,400,000%."
   icon: {fileID: 4387492711432913276, guid: fde153b48e2caab41ba4f224dfa69baf, type: 3}
   costPerRank:
-  - 7000000
-  - 42000000
+  - 1000000
+  - 3000000

@@ -107,6 +107,15 @@ public class LootDrop : MonoBehaviour
             // critério documentado em VendorCart (nunca atrasa nem bloqueia a economia real).
             Vendor.Instance.cart?.AcceptSale(loot.itemName, loot.quantity, transform.position);
 
+            // Bug real: Collect() é chamado por HeroController.OnTriggerStay2D, que dispara a
+            // CADA passo de física enquanto o herói ficar em cima do loot — e Destroy() só
+            // "vale" no fim do frame (mesmo padrão de deferred-Destroy já corrigido em outros
+            // lugares deste projeto, ex. HeroProjectile/GroundCrack). Sem travar aqui, mais de
+            // 1 FixedUpdate no mesmo frame (comum em qualquer soluço de frame rate) processava
+            // o MESMO loot de novo antes dele sumir de verdade, vendendo (e creditando gold)
+            // 2x ou mais pelo mesmo item. Reaproveita o mesmo guard que a fusão de pilhas já usa
+            // (mesmo significado: "este objeto já está saindo, ignora qualquer novo encontro").
+            beingDestroyed = true;
             Destroy(gameObject);
             return;
         }
@@ -120,6 +129,7 @@ public class LootDrop : MonoBehaviour
             return; // não destrói — a pilha remanescente continua existindo, com a quantidade reduzida
         }
 
+        beingDestroyed = true; // mesmo motivo do guard acima — coleta completa, não processar de novo neste frame
         Destroy(gameObject);
     }
 

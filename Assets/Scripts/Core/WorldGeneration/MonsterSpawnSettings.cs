@@ -24,6 +24,9 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Cooldown do repovoamento normal (1 por vez) — igual FloorPopulationManager, ignorado nos preenchimentos instantâneos (entrada/crise).")]
     public float respawnInterval = 3f;
 
+    [Tooltip("Bug real reportado pelo usuário (profiler, hitch forte logo após a Ultimate do Barbarian com todos os perks zerar o enxame inteiro): sem este teto, HandleCrisis() tentava instanciar de uma vez só TODA a diferença até o alvo de população (até ~150 à noite) no mesmo frame — cada Instantiate() carrega Awake/OnEnable/consulta no grafo A*, então isso virava um pico de dezenas de ms. Agora o repovoamento de crise também é espalhado, alguns por frame, até a população normalizar (continua MUITO mais rápido que o respawnInterval normal, só não é mais tudo instantâneo).")]
+    public int maxCrisisSpawnsPerFrame = 8;
+
     [Header("Distância (doc de design, Seção 2.1.3 / 11)")]
     [Tooltip("Somado a WorldGenerationSettings.safeZoneRadius pra decidir a distância mínima de spawn: MinimumSpawnDistanceFromCenter = safeZoneRadius + spawnSafetyPadding.")]
     public float spawnSafetyPadding = 0f;

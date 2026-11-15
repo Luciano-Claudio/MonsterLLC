@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::PerkDefinitionSO
   perkId: barbarian_esquerda_03
   displayName: Brute Force
-  description: Primary attack damage +100%/rank.
+  description: "Primary attack damage, cumulative per rank (1-5): +2,000 / +7,460 / +22,300 / +62,600 / +172,000%."
   icon: {fileID: 6985071713052961803, guid: fde153b48e2caab41ba4f224dfa69baf, type: 3}
   costPerRank:
-  - 100000
+  - 90000
+  - 200000
+  - 300000
   - 600000
-  - 3600000
-  - 21600000
-  - 129600000
+  - 1000000

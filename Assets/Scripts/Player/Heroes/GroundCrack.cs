@@ -45,6 +45,16 @@ public class GroundCrack : MonoBehaviour
     private float damagePerSecond;
     private float tickInterval;
 
+    // Bug real reportado pelo usuário: #27 "Fenda Enfurecida" (bônus durante o Shift) e #28
+    // "Fenda Selvagem" (bônus por HP perdido) ficavam CONGELADOS no valor do instante em que a
+    // fenda nasceu — se o Shift acabasse (ou começasse) depois, ou o HP mudasse, o dano/tick
+    // nunca acompanhava. `damagePerSecond` acima agora é só a metade-do-hit BASE (sem esses 2
+    // bônus condicionais); a cada tick, se existir dono, multiplica por
+    // `Barbarian.GetGroundCrackLiveBonusMultiplier()` — lido em tempo real, nunca travado.
+    // null = sem dono (ex.: o 2º crack do Eco do Impacto, #30 — decisão do usuário: o eco é
+    // sempre "o crack normal", nunca turbinado por Shift/HP perdido).
+    private Barbarian liveBonusOwner;
+
     private float tickElapsed;
     private readonly Dictionary<EnemyController, int> overlapCount = new();
     private readonly List<EnemyController> staleScratch = new();
@@ -59,10 +69,11 @@ public class GroundCrack : MonoBehaviour
     // areaMultiplier (default 1 — sem efeito em quem não passar) é INDEPENDENTE do
     // sizeMultiplier do Corpo (Esquerda #9-11) — Esquerda #15-17 ("Área do Ground Crack") escala
     // só a fenda, nunca o Barbarian. Os 2 se multiplicam juntos na escala final.
-    public void Initialize(Direction direction, float sizeMultiplier, float damagePerSecond, float tickInterval, float areaMultiplier = 1f)
+    public void Initialize(Direction direction, float sizeMultiplier, float damagePerSecond, float tickInterval, float areaMultiplier = 1f, Barbarian liveBonusOwner = null)
     {
         this.damagePerSecond = damagePerSecond;
         this.tickInterval = tickInterval;
+        this.liveBonusOwner = liveBonusOwner;
 
         transform.localScale = Vector3.one * sizeMultiplier * areaMultiplier;
         if (animator != null) animator.Play(direction.ToString());
@@ -178,7 +189,8 @@ public class GroundCrack : MonoBehaviour
 
     private void ApplyDamageTick()
     {
-        float damageThisTick = damagePerSecond * tickInterval;
+        float liveMultiplier = liveBonusOwner != null ? liveBonusOwner.GetGroundCrackLiveBonusMultiplier() : 1f;
+        float damageThisTick = damagePerSecond * tickInterval * liveMultiplier;
 
         // Snapshot — bug real reportado: TakeDamage pode matar o inimigo, que dispara
         // OnTriggerExit2D NA HORA (via o relay), que chama overlapCount.Remove() ainda dentro
