@@ -47,4 +47,15 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 4: FlushToDisk escreve JSON valido")]
+    public string TestFlushToDisk()
+    {
+        RunTelemetryRecorder.Instance?.FlushToDisk();
+        string dir = System.IO.Path.Combine(Application.persistentDataPath, "Telemetry");
+        bool exists = System.IO.Directory.Exists(dir) && System.IO.Directory.GetFiles(dir, "run_*.json").Length > 0;
+        string result = exists ? "[RunTelemetryTest] PASS: arquivo de telemetria existe" : "[RunTelemetryTest] FAIL: pasta/arquivo nao existe";
+        Debug.Log(result);
+        return result;
+    }
 }
