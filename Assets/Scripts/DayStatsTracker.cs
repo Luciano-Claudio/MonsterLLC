@@ -50,6 +50,8 @@ public static class DayStatsTracker
     // revelação de nome nunca volta a "???" depois disso, mesmo em dias seguintes.
     public static void RegisterItemSold(string itemName, long quantity, long subtotal)
     {
+        RunTelemetryRecorder.Instance?.RecordItemSold(itemName, quantity, subtotal);
+
         soldQuantityToday.TryGetValue(itemName, out long existingQty);
         soldQuantityToday[itemName] = existingQty + quantity;
 

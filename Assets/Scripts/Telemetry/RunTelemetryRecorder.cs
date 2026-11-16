@@ -29,6 +29,10 @@ public class RunTelemetryRecorder : MonoBehaviour
     private DayAttemptRecord currentDayAttempt;
     private ShopVisitRecord currentShopVisit;
     private readonly Dictionary<int, int> attemptsPerDay = new();
+    private float shopOpenRealtime;
+
+    // Só pra teste manual (Test 7) — nenhum código de produção lê isto.
+    public bool DebugLastSaleWentToDayAttempt { get; private set; }
 
     // Acumuladores de ociosidade — incrementados no Update() do sampler (Task 6), resetados
     // aqui a cada início de dia e em HandleDamageTaken conforme a direção do hit.
@@ -158,8 +162,58 @@ public class RunTelemetryRecorder : MonoBehaviour
         {
             goldAtOpen = MainMenuUI.CurrentRun.gold,
         };
+        shopOpenRealtime = Time.realtimeSinceStartup;
 
         FlushToDisk();
+    }
+
+    // Chamado por PerkState.TryBuy() — só grava se houver uma visita à loja em aberto (perks só
+    // se compram na Loja, nunca em pleno dia).
+    public void RecordPerkPurchased(PerkDefinitionSO perk, int rankAfter, long cost, long goldBefore, long goldAfter)
+    {
+        if (currentShopVisit == null) return;
+        currentShopVisit.perksPurchased.Add(new PerkPurchaseRecord
+        {
+            perkId = perk.perkId,
+            displayName = perk.displayName,
+            rankAfterPurchase = rankAfter,
+            cost = cost,
+            goldBefore = goldBefore,
+            goldAfter = goldAfter,
+            secondsSinceShopOpen = Time.realtimeSinceStartup - shopOpenRealtime,
+        });
+    }
+
+    // Chamado por PerkState.UndoLastPurchase() — mesma guarda de currentShopVisit acima.
+    public void RecordPerkUndone(PerkDefinitionSO perk, int rankAfter, long refund)
+    {
+        if (currentShopVisit == null) return;
+        currentShopVisit.perksUndone.Add(new PerkUndoRecord
+        {
+            perkId = perk.perkId,
+            displayName = perk.displayName,
+            rankAfterUndo = rankAfter,
+            refund = refund,
+        });
+    }
+
+    // Chamado por DayStatsTracker.RegisterItemSold() — cobre os 2 call sites existentes
+    // (Vendor.cs, venda manual na Loja; LootDrop.cs, auto-venda do Ímã Vivo em pleno dia).
+    // Roteia pelo que estiver aberto agora: visita à loja (venda manual) ou tentativa de dia
+    // (auto-venda mid-day) — nunca os 2 ao mesmo tempo (ver HandleDayStart/HandleDayEnd).
+    public void RecordItemSold(string itemName, long quantity, long subtotal)
+    {
+        var record = new ItemSoldRecord { itemName = itemName, quantity = quantity, subtotalGold = subtotal };
+        if (currentShopVisit != null)
+        {
+            currentShopVisit.itemsSold.Add(record);
+            DebugLastSaleWentToDayAttempt = false;
+        }
+        else if (currentDayAttempt != null)
+        {
+            currentDayAttempt.itemsSoldMidDay.Add(record);
+            DebugLastSaleWentToDayAttempt = true;
+        }
     }
 
     private void HandleEnemyKilled(string enemyName, bool isBoss, int directHits, int dotTicks, float maxHealth, int energyReward, Vector3 position)

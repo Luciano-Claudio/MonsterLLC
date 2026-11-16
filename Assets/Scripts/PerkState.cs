@@ -59,6 +59,7 @@ public static class PerkState
         SetRank(perk.perkId, rank + 1);
         purchaseHistory.Add(perk);
         GameEvents.GoldChanged(run.gold);
+        RunTelemetryRecorder.Instance?.RecordPerkPurchased(perk, rank + 1, cost, run.gold + cost, run.gold);
         RecomputeAllEffects();
         return true;
     }
@@ -98,6 +99,7 @@ public static class PerkState
         SetRank(perk.perkId, rank - 1);
 
         GameEvents.GoldChanged(run.gold);
+        RunTelemetryRecorder.Instance?.RecordPerkUndone(perk, rank - 1, refund);
         RecomputeAllEffects();
         return true;
     }

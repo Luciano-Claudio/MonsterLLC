@@ -85,4 +85,14 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 7: venda em pleno dia cai no dayAttempt, nao na loja")]
+    public string TestMidDaySaleRouting()
+    {
+        RunTelemetryRecorder.Instance.RecordItemSold("ItemTeste", 1, 100);
+        bool inDayAttempt = RunTelemetryRecorder.Instance.DebugLastSaleWentToDayAttempt;
+        string result = inDayAttempt ? "[RunTelemetryTest] PASS: venda em pleno dia roteada certo" : "[RunTelemetryTest] FAIL: venda roteada errado";
+        Debug.Log(result);
+        return result;
+    }
 }
