@@ -1050,9 +1050,18 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Rogue, dano de Pet) — HitFeelController usa isso pra só fazer shake/zoom no hit direto
     // do próprio jogador (ex.: impacto de projétil, explosão de habilidade), nunca em tick
     // repetido. Não afeta dano/combate/floating text, só o filtro de juice.
+    // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — contadores
+    // por instância, separados (golpe discreto vs tick de área/DoT, ex.: Ground Crack do
+    // Barbarian) pra não enviesar "quantos hits pra matar" com dano repetido. Reportados em
+    // Die(), nunca lidos/resetados manualmente (nova instância sempre nasce em 0).
+    private int directHitsThisLife;
+    private int dotTicksThisLife;
+
     public virtual void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
         if (isDead) return;
+
+        if (isDirectPlayerHit) directHitsThisLife++; else dotTicksThisLife++;
 
         // Aggro instantâneo — sofrer dano põe o monstro em combate na hora, independente
         // de distância/observationRadius. Sem isso, ataques à distância (ex.: leque do
@@ -1254,6 +1263,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward, isBoss);
+        GameEvents.EnemyKilledDetailed(gameObject.name, isBoss, directHitsThisLife, dotTicksThisLife, stats.maxHealth, energyReward, transform.position);
     }
 
     // Chamado por um Animation Event no último frame do clipe "die" — a animação é a

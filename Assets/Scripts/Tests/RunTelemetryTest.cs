@@ -6,6 +6,8 @@ using UnityEngine;
 // durante a implementacao, sem precisar clicar no Inspector.
 public class RunTelemetryTest : MonoBehaviour
 {
+    [SerializeField] private EnemyController testEnemyPrefab;
+
     [ContextMenu("Test 1: OnEnemyKilledDetailed fires")]
     public string TestEnemyKilledDetailedFires()
     {
@@ -13,6 +15,25 @@ public class RunTelemetryTest : MonoBehaviour
         GameEvents.OnEnemyKilledDetailed += (name, isBoss, direct, dot, maxHp, energy, pos) => fired = true;
         GameEvents.EnemyKilledDetailed("TestMonster", false, 3, 1, 50f, 20, Vector3.zero);
         string result = fired ? "[RunTelemetryTest] PASS: evento disparou" : "[RunTelemetryTest] FAIL: evento nao disparou";
+        Debug.Log(result);
+        return result;
+    }
+
+    [ContextMenu("Test 2: hits diretos x DoT ticks separados na morte")]
+    public string TestDirectVsDotHits()
+    {
+        var enemy = Instantiate(testEnemyPrefab);
+        string capture = "nao disparou";
+        System.Action<string, bool, int, int, float, int, Vector3> handler = (name, isBoss, direct, dot, maxHp, energy, pos) =>
+            capture = $"direct={direct} dot={dot}";
+        GameEvents.OnEnemyKilledDetailed += handler;
+
+        enemy.TakeDamage(1f, isDirectPlayerHit: true);   // 1 hit direto
+        enemy.TakeDamage(1f, isDirectPlayerHit: false);  // 1 tick de DoT
+        enemy.TakeDamage(9999f, isDirectPlayerHit: true); // golpe fatal, direto
+
+        GameEvents.OnEnemyKilledDetailed -= handler;
+        string result = capture == "direct=2 dot=1" ? $"[RunTelemetryTest] PASS: {capture}" : $"[RunTelemetryTest] FAIL: {capture}";
         Debug.Log(result);
         return result;
     }
