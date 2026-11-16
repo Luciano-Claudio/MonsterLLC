@@ -31,6 +31,12 @@ public class ShopUIController : MonoBehaviour
     private GameObject perkPainel;
     private GameObject talentPainel;
 
+    // GO "Save_Game" criado pelo usuário dentro do Resume_Painel — Animator com 1 estado só
+    // (Game_Save.anim: m_IsActive e m_fontColor.a do filho "Text (TMP)" animados 1->0 em 10s).
+    // O próprio clipe já cuida de reativar o texto, esmaecer e desativar de novo sozinho; só
+    // precisa recomeçar do frame 0 a cada vez (ver HandleStateChanged).
+    private Animator saveGameAnimator;
+
     // ShopHandler só existe em runtime, num GameObject que vem de outra cena (Main_Menu) via
     // DontDestroyOnLoad — não dá pra arrastar essa referência num arquivo de cena onde o objeto
     // nem existe ainda. Por isso liga por código aqui; o lookup de ShopHandler.Instance só
@@ -44,6 +50,7 @@ public class ShopUIController : MonoBehaviour
         resumePainel = shopRoot.transform.Find("Resume_Painel")?.gameObject;
         perkPainel = shopRoot.transform.Find("Perk_Painel")?.gameObject;
         talentPainel = shopRoot.transform.Find("Talent_Painel")?.gameObject;
+        saveGameAnimator = resumePainel?.transform.Find("Save_Game")?.GetComponent<Animator>();
 
         foreach (var button in shopRoot.GetComponentsInChildren<Button>(true))
         {
@@ -82,6 +89,12 @@ public class ShopUIController : MonoBehaviour
         confirmPopup?.SetActive(false); // reseta qualquer estado preso de uma visita anterior
         ShowOnlyPainel(resumePainel); // sempre reabre na aba Resume, nunca lembra a aba de uma visita anterior
         UpdateStartDayTexts();
+
+        // Pedido do usuário (2026-11-15): toda vez que a Loja abre, recomeça o texto "Save_Game"
+        // do frame 0 — garante que ele sempre reaparece e refaz o fade, mesmo se Resume_Painel
+        // já estivesse ativo desde antes (ex.: OnEnable do Animator não dispara de novo nesse
+        // caso) e não dependa de nenhuma ordem de ativação implícita.
+        saveGameAnimator?.Play("Game_Save", 0, 0f);
 
         // "Redefine" (Perk_Painel) nunca pode desfazer uma compra de uma visita ANTERIOR à
         // Loja — zera a pilha toda vez que ela abre (pedido do usuário).

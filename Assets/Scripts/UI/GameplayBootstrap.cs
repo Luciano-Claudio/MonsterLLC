@@ -135,13 +135,22 @@ public class GameplayBootstrap : MonoBehaviour
         PetController.DestroyAll(); // owner (herói antigo) some — sem isso, o pet ficava congelado na cena
         SpawnHero(MainMenuUI.CurrentRun.hero); // já zera IsPlayerUntargetable por dentro; summon do pet novo é automático (AnimationSummonPetEvent)
 
-        // DIAGNÓSTICO TEMPORÁRIO (2026-11-14) — ver mesmo achado em HeroController.OnDeath().
-        // Confere o estado da Bag no instante do respawn (depois do Clear() da morte, antes de
-        // qualquer coleta nova) — se aparecer slot cheio aqui, o problema é ENTRE a morte e o
-        // respawn (ex.: algo re-adicionando item), não no Clear() em si.
+        // Bug real reportado pelo usuário (2026-11-15): RespawnHeroFresh() roda nos 2 casos
+        // (retry OU avanço de dia — ver comentário da classe), mas Bag.Clear() só existia em
+        // HeroController.OnDeath() — no caminho de SOBREVIVER e avançar de dia, nada limpava a
+        // bag, então loot não vendido na loja atravessava pro dia seguinte. Decisão do usuário:
+        // a bag zera sempre que o dia vira, vendido ou não — igual já acontecia na morte, agora
+        // também aqui, cobrindo os 2 casos de uma vez só (no caso de morte isso é só redundante
+        // com o Clear() que OnDeath() já fez, inofensivo).
+        BagController.Instance.Bag.Clear();
+        GameEvents.BagChanged(BagController.Instance.Bag);
+
+        // DIAGNÓSTICO TEMPORÁRIO (2026-11-14, mantido) — confere se o Clear() acima realmente
+        // zerou tudo; se aparecer slot cheio aqui agora, é um bug NOVO (algo re-adicionando
+        // item entre o Clear() e este ponto), não mais o caso original já corrigido acima.
         int slotsAindaCheios = 0;
         foreach (var slot in BagController.Instance.Bag.Slots)
             if (!slot.IsEmpty) slotsAindaCheios++;
-        Debug.Log($"[DEBUG Bag] No instante do RespawnHeroFresh(): {slotsAindaCheios} slot(s) ainda com item.");
+        Debug.Log($"[DEBUG Bag] No instante do RespawnHeroFresh(), após Bag.Clear(): {slotsAindaCheios} slot(s) ainda com item (deveria ser 0).");
     }
 }

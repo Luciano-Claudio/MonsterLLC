@@ -31,6 +31,19 @@ public class SpiderQueenController : EnemyController
     private AttackCooldown webCooldown;
     private bool isAttacking; // true durante bite OU teia — trava movimento, mesmo critério de "ação real" usado em toda outra classe do projeto
 
+    // Bug real reportado pelo usuário (2026-11-15): Spider Queen travava parada pra sempre, sem
+    // fazer nada. Causa: EnemyController.TakeDamage() dispara "DamageTrigger" (Any State, SEM
+    // Exit Time) sempre que o boss leva dano fora do pipeline genérico de Attack (que ela nunca
+    // usa) — se o player acerta bem no meio do clipe de Bite/Web, o Animator salta pro estado
+    // Damage ANTES do Animation Event de fim (AnimationBiteEndEvent/AnimationWebEndEvent)
+    // disparar, e isAttacking nunca mais volta a false. Mesmo failsafe que o pipeline genérico
+    // já usa (EnemyController.maxAttackAnimationDuration, ver Update() base) — reaproveitado
+    // aqui, já que a Spider Queen tem seu próprio isAttacking fora desse pipeline. Nome diferente
+    // de propósito (não "attackAnimElapsed") — a base EnemyController já tem um campo privado com
+    // esse nome exato, e Unity não aceita 2 campos com o mesmo nome na cadeia de herança
+    // ("serialized multiple times", erro real visto no Console).
+    private float customAttackElapsed;
+
     protected override void Awake()
     {
         base.Awake();
@@ -43,6 +56,16 @@ public class SpiderQueenController : EnemyController
         if (isAttacking)
         {
             SetMoving(false);
+
+            // Failsafe (ver comentário na declaração de customAttackElapsed) — sem isso, um hit
+            // que interrompe o clipe de Bite/Web no meio prende a Spider Queen parada pra
+            // sempre, já que o Animation Event de fim nunca chega.
+            customAttackElapsed += deltaTime;
+            if (customAttackElapsed >= maxAttackAnimationDuration)
+            {
+                Debug.LogWarning($"[{GetType().Name}] AnimationBiteEndEvent/AnimationWebEndEvent nunca chegou — forçando fim do ataque (verifique o Animator Controller).");
+                isAttacking = false;
+            }
             return;
         }
 
@@ -89,6 +112,7 @@ public class SpiderQueenController : EnemyController
     private void StartBite()
     {
         isAttacking = true;
+        customAttackElapsed = 0f;
         SetMoving(false);
         if (animator != null) animator.SetTrigger("BiteTrigger");
     }
@@ -96,6 +120,7 @@ public class SpiderQueenController : EnemyController
     private void StartWeb()
     {
         isAttacking = true;
+        customAttackElapsed = 0f;
         SetMoving(false);
         if (animator != null) animator.SetTrigger("WebTrigger");
     }

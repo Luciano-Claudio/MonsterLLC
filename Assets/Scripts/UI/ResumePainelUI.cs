@@ -101,6 +101,7 @@ public class ResumePainelUI : MonoBehaviour
     private IEnumerator AnimateResume()
     {
         SetDayAndSurvivalStatusInstant();
+        SetBonusRowInstant();
         RevealKnownItemsInstant();
 
         yield return StartCoroutine(AnimateSurvivalTime());
@@ -112,12 +113,37 @@ public class ResumePainelUI : MonoBehaviour
         AddLootGrowCoroutines(combatAndLoot);
         foreach (var c in combatAndLoot) yield return c;
 
-        // Totals cresce 1 de cada vez, nesta ordem exata (pedido do usuário).
+        // Totals cresce 1 de cada vez, nesta ordem exata (pedido do usuário). Kill_Gold/Loot_Gold
+        // mostram sempre o valor normal (sem bônus) — só o Total reflete o bônus por sobreviver
+        // (pedido do usuário, 2026-11-15): "o resume vai mostrar tudo normal... no total value
+        // vai mostrar o valor exato do total". Mesma constante que GrantSurvivalGoldBonus usou
+        // pra creditar o gold de verdade (DayResolver.SurvivalGoldBonusMultiplier).
         long killGold = DayStatsTracker.GoldFromMonsters + DayStatsTracker.GoldFromBosses;
         long lootGold = SumAllLootSubtotals();
+        long total = DayResolver.PlayerSurvivedLastDay
+            ? (long)((killGold + lootGold) * DayResolver.SurvivalGoldBonusMultiplier)
+            : killGold + lootGold;
         yield return StartCoroutine(GrowNumber(FindTotalValue("Totals/Kill_Gold"), killGold));
         yield return StartCoroutine(GrowNumber(FindTotalValue("Totals/Loot_Gold"), lootGold));
-        yield return StartCoroutine(GrowNumber(FindTotalValue("Totals/Total"), killGold + lootGold));
+        yield return StartCoroutine(GrowNumber(FindTotalValue("Totals/Total"), total));
+    }
+
+    // GO "Bonus" (Totals/Bonus, inativo por padrão na cena) — só aparece quando o dia foi
+    // sobrevivido (nunca na morte/retry). Nome/ícone/texto são instantâneos (mesmo critério de
+    // RevealKnownItemsInstant) — não é um número que "cresce". O texto do Bonus_Value (ex.:
+    // "2x") vem direto de DayResolver.SurvivalGoldBonusMultiplier — nunca hardcoded aqui, pra
+    // mudar o multiplicador no futuro só precisar editar 1 canto (pedido do usuário).
+    private void SetBonusRowInstant()
+    {
+        var bonusRow = transform.Find("Totals/Bonus");
+        if (bonusRow == null) return;
+
+        bool survived = DayResolver.PlayerSurvivedLastDay;
+        bonusRow.gameObject.SetActive(survived);
+        if (!survived) return;
+
+        var bonusValueLabel = bonusRow.Find("Bonus_Value")?.GetComponent<TMP_Text>();
+        if (bonusValueLabel != null) bonusValueLabel.text = $"{DayResolver.SurvivalGoldBonusMultiplier:0.##}x";
     }
 
     // Voltou a ser 1 TMP_Text único (Day_X) — texto inteiro "Day x - Survived/Died" e cor

@@ -17,16 +17,39 @@ public static class DayResolver
     // IsPlayerUntargetable) — nunca mais de 1 jogador por vez.
     public static bool PlayerSurvivedLastDay { get; private set; } = true;
 
+    // Bônus de gold por sobreviver o dia (pedido do usuário, 2026-11-15) — dobra TUDO que foi
+    // coletado no dia (kill gold + loot vendido), nunca na morte/retry. Único "canto" que define
+    // o valor — ResumePainelUI lê esta mesma constante pro texto do GO "Bonus" (Totals/Bonus/
+    // Bonus_Value), então mudar aqui já atualiza o cálculo E o texto, sem precisar editar os 2
+    // lugares separadamente.
+    public const float SurvivalGoldBonusMultiplier = 2f; // 🔢 ajustável
+
     // Chamado por DayTimer.EndDay() — único jeito de sobreviver um dia, o timer chegar a 0
     // contando pra frente (não precisa fazer nada com o mundo: ele já está do jeito que o
     // jogador deixou, loot inclusive — só a morte perde o loot da Bag, GDD Seção 3).
     public static void ResolveEndOfDay()
     {
         PlayerSurvivedLastDay = true;
+        GrantSurvivalGoldBonus();
         FloatingCombatText.DestroyAll(); // sem isso, qualquer texto flutuante vivo na virada do dia congela pra sempre (GameplayGate desliga antes do próprio lifetime zerar)
         GameEvents.DayEnded();
         Debug.Log("[DayResolver] Dia sobrevivido — indo para Resultados.");
         GameStateManager.Instance.SetState(GameState.Results);
+    }
+
+    // Kill gold (KillGoldReward) e loot vendido (Vendor) já são creditados em MainMenuUI.
+    // CurrentRun.gold em tempo real, durante o dia — então só concede aqui a DIFERENÇA até o
+    // total valer SurvivalGoldBonusMultiplier vezes o que já foi ganho hoje. Precisa rodar ANTES
+    // de GameStateManager.SetState(Results), senão o Total do Resume (ResumePainelUI) já abriria
+    // sem o bônus refletido no gold real do jogador.
+    private static void GrantSurvivalGoldBonus()
+    {
+        long earnedToday = DayStatsTracker.GoldFromMonsters + DayStatsTracker.GoldFromBosses + DayStatsTracker.GetSoldGoldToday();
+        long bonusGold = (long)(earnedToday * (SurvivalGoldBonusMultiplier - 1f));
+        if (bonusGold <= 0) return;
+
+        MainMenuUI.CurrentRun.gold += bonusGold;
+        GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
     }
 
     // Chamado por HeroController.OnDeath() — IMEDIATO, não espera a animação de morte terminar

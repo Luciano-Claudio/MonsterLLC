@@ -35,6 +35,10 @@ public class InteractionManager : MonoBehaviour
 
     private void TryInteract()
     {
+        // Bug real reportado pelo usuário: o Interact não checava o GameplayGate — dava pra
+        // vender no Vendor/abrir baú durante a pausa (menu/cutscene), mesmo com todo o resto do
+        // jogo congelado.
+        if (!GameplayGate.IsActive) return;
         if (currentInteractable == null) return;
         currentInteractable.Interact(currentInteractor);
     }

@@ -17,9 +17,9 @@ MonoBehaviour:
   description: Raises the stack cap per item, per rank (16 -> 32 -> 128 -> 1,024 -> 8,192 -> 131,072 -> 1,048,576).
   icon: {fileID: -3882140759288099154, guid: d12aef3656206d54abadabbb1fd3dce5, type: 3}
   costPerRank:
-  - 250
-  - 5000
-  - 250000
+  - 1250
+  - 25000
+  - 625000
   - 25000000
   - 5000000000
   - 2500000000000

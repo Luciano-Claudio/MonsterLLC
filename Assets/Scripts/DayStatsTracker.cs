@@ -72,6 +72,17 @@ public static class DayStatsTracker
         return subtotal;
     }
 
+    // Soma de TODOS os itens vendidos hoje (os 15 do bestiário, não só os 14 com linha na cena
+    // de Resume — ver ResumePainelUI.LootItemNames) — usado pelo bônus de gold por sobreviver
+    // (DayResolver.GrantSurvivalGoldBonus), que precisa do gold REAL ganho, não só do que a UI
+    // consegue mostrar.
+    public static long GetSoldGoldToday()
+    {
+        long sum = 0;
+        foreach (var subtotal in soldSubtotalToday.Values) sum += subtotal;
+        return sum;
+    }
+
     public static bool IsItemKnown(string itemName) =>
         MainMenuUI.CurrentRun != null && MainMenuUI.CurrentRun.knownLootItems.Contains(itemName);
 

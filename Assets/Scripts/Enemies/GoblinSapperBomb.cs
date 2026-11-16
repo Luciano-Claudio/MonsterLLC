@@ -8,15 +8,30 @@ public class GoblinSapperBomb : MonoBehaviour
 {
     [SerializeField] private float explosionRadius = 1.5f; // 🔢 ajustável
     private float damage;
+    private Animator animator;
+
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     public void Initialize(float bombDamage)
     {
         damage = bombDamage;
     }
 
-    // [Limpeza sistema de Floor] Tinha um Update() aqui só com o gate de Floor Sleep (nenhuma
-    // lógica própria — o Animator já conduz o tempo até a explosão sozinho via Animation
-    // Event) — removido por inteiro, não fazia nada de observável.
+    // Bug real reportado pelo usuário (2026-11-15): a animação da bomba (e, por tabela, o
+    // Animation Event da explosão) continuava correndo em tempo real durante a pausa — esse
+    // projeto nunca usa Time.timeScale pra pausar (GameplayGate é só flag lógica), então o
+    // Animator de QUALQUER GameObject segue tocando sozinho a menos que algo pare ele de
+    // propósito (animator.speed). Antes (comentário removido) achávamos que não precisava de
+    // Update() nenhum aqui porque "o Animator já conduz o tempo sozinho" — verdade, mas isso é
+    // justamente o problema: ele conduz mesmo pausado.
+    private void Update()
+    {
+        if (animator == null) return;
+        animator.speed = GameplayGate.IsActive ? 1f : 0f;
+    }
 
     // Animation Event, no frame exato da explosão — só aplica o dano. A destruição real
     // fica pro fim de verdade do clipe (AnimationBombEndEvent), depois do estouro visual

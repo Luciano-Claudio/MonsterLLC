@@ -29,6 +29,19 @@ public class RatPeopleRoyaltyController : EnemyController
     private bool isAttacking; // melee em andamento
     private bool isThrowing; // arremesso em andamento
 
+    // Bug real (2026-11-15, mesmo achado da Spider Queen — "mesmo padrão arquitetural", ver
+    // comentário na classe acima): EnemyController.TakeDamage() dispara "DamageTrigger" (Any
+    // State, SEM Exit Time) sempre que o boss leva dano fora do pipeline genérico de Attack
+    // (que este controller nunca usa). Se o player acerta bem no meio do clipe de melee/
+    // arremesso, o Animator salta pro estado Damage ANTES do Animation Event de fim
+    // (AnimationMeleeEndEvent/AnimationThrowEndEvent) disparar, e isAttacking/isThrowing nunca
+    // mais voltam a false — Move() trava parado pra sempre. Mesmo failsafe que o pipeline
+    // genérico já usa (EnemyController.maxAttackAnimationDuration). Nome diferente de propósito
+    // (não "attackAnimElapsed") — a base EnemyController já tem um campo privado com esse nome
+    // exato, e Unity não aceita 2 campos com o mesmo nome na cadeia de herança ("serialized
+    // multiple times", erro real visto no Console).
+    private float customAttackElapsed;
+
     protected override void Awake()
     {
         base.Awake();
@@ -43,6 +56,17 @@ public class RatPeopleRoyaltyController : EnemyController
         if (isAttacking || isThrowing)
         {
             SetMoving(false);
+
+            // Failsafe (ver comentário na declaração de customAttackElapsed) — sem isso, um hit
+            // que interrompe o clipe de melee/arremesso no meio prende o Rat People Royalty
+            // parado pra sempre, já que o Animation Event de fim nunca chega.
+            customAttackElapsed += deltaTime;
+            if (customAttackElapsed >= maxAttackAnimationDuration)
+            {
+                Debug.LogWarning($"[{GetType().Name}] AnimationMeleeEndEvent/AnimationThrowEndEvent nunca chegou — forçando fim do ataque (verifique o Animator Controller).");
+                isAttacking = false;
+                isThrowing = false;
+            }
             return;
         }
 
@@ -93,6 +117,7 @@ public class RatPeopleRoyaltyController : EnemyController
     private void StartMeleeAttack()
     {
         isAttacking = true;
+        customAttackElapsed = 0f;
         SetMoving(false);
         if (animator != null) animator.SetTrigger("AttackTrigger");
     }
@@ -100,6 +125,7 @@ public class RatPeopleRoyaltyController : EnemyController
     private void StartThrow()
     {
         isThrowing = true;
+        customAttackElapsed = 0f;
         SetMoving(false);
         if (animator != null) animator.SetTrigger("ThrowTrigger");
     }

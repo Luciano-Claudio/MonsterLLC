@@ -24,6 +24,18 @@ public class LichController : RangedEnemyController
     private bool isCasting;
     private readonly List<EnemyController> summons = new();
 
+    // Bug real (2026-11-15, mesmo achado da Spider Queen/Rat People Royalty): EnemyController.
+    // TakeDamage() dispara "DamageTrigger" (Any State, SEM Exit Time) sempre que o boss leva
+    // dano fora do pipeline genérico de Attack (que o Lich nunca usa, InAttackRange()=>false
+    // abaixo). Se o player acerta bem no meio da conjuração, o Animator salta pro estado
+    // Damage ANTES do Animation Event de fim (AnimationCastEndEvent) disparar, e isCasting
+    // nunca mais volta a false — Move() trava parado pra sempre. Mesmo failsafe que o pipeline
+    // genérico já usa (EnemyController.maxAttackAnimationDuration). Nome diferente de propósito
+    // (não "attackAnimElapsed") — a base EnemyController já tem um campo privado com esse nome
+    // exato, e Unity não aceita 2 campos com o mesmo nome na cadeia de herança ("serialized
+    // multiple times", erro real visto no Console).
+    private float customAttackElapsed;
+
     protected override void Awake()
     {
         base.Awake();
@@ -35,6 +47,16 @@ public class LichController : RangedEnemyController
         if (isCasting)
         {
             SetMoving(false); // parado conjurando, igual qualquer outro cast do jogo
+
+            // Failsafe (ver comentário na declaração de customAttackElapsed) — sem isso, um hit
+            // que interrompe a conjuração no meio prende o Lich parado pra sempre, já que o
+            // Animation Event de fim nunca chega.
+            customAttackElapsed += deltaTime;
+            if (customAttackElapsed >= maxAttackAnimationDuration)
+            {
+                Debug.LogWarning($"[{GetType().Name}] AnimationCastEndEvent nunca chegou — forçando fim da conjuração (verifique o Animator Controller).");
+                isCasting = false;
+            }
             return;
         }
 
@@ -49,6 +71,7 @@ public class LichController : RangedEnemyController
     private void StartRandomCast()
     {
         isCasting = true;
+        customAttackElapsed = 0f;
         SetMoving(false);
         if (animator == null) return;
         if (Random.value < 0.5f) animator.SetTrigger("IceClawsTrigger");

@@ -273,6 +273,38 @@ forma.
   `DemandTracker.Instance.RegisterSale(...)` — a Seção 3 já decidiu remover Demanda do jogo;
   quando isso for implementado, essa chamada precisa sair junto.
 
+### 3.2 — Bônus de Gold por Sobreviver o Dia (2x) — Fechado (R15)
+
+**Implementado (pedido do usuário, 2026-11-15):** sobreviver o dia dobra TUDO que foi ganho nele
+(kill gold + loot vendido) — nunca na morte/retry. `DayResolver.SurvivalGoldBonusMultiplier`
+(const, hoje `2f`) é o único lugar que define o valor; `DayResolver.GrantSurvivalGoldBonus()`
+(chamado por `ResolveEndOfDay()`) credita a diferença em `MainMenuUI.CurrentRun.gold` — kill
+gold e loot vendido já são creditados em tempo real durante o dia (`KillGoldReward`/`Vendor`),
+essa chamada só completa até o total valer o multiplicador vigente. No Resume
+(`ResumePainelUI`), `Totals/Kill_Gold` e `Totals/Loot_Gold` continuam mostrando o valor normal
+(sem bônus); só `Totals/Total` mostra o valor já multiplicado. O GO `Totals/Bonus` (inativo por
+padrão na cena) é ativado só quando o dia foi sobrevivido, e o texto do `Bonus_Value` é escrito
+direto a partir da mesma constante — mudar o multiplicador no futuro atualiza cálculo e texto
+juntos, sem precisar editar os 2 lugares separadamente.
+
+Junto, toda vez que a Loja abre (`ShopUIController.HandleStateChanged`, `GameState.Shop`), o
+Animator do GO `Resume_Painel/Save_Game` é reiniciado do frame 0 (`Play("Game_Save", 0, 0f)`) —
+o próprio clipe (`Game_Save.anim`) já cuida de reativar o texto, esmaecer e desativar de novo
+sozinho (`m_fontColor.a` e `m_IsActive` do filho "Text (TMP)" animados 1→0 em 10s); o código só
+garante que ele sempre recomeça, mesmo que o Resume_Painel já estivesse ativo desde antes.
+
+> **Pendência pro futuro (usuário, 2026-11-15) — sem Sprint/Deadline atribuído ainda:** o bônus
+> só deve valer na 1ª vez que um número de dia é vencido. Hoje isso nunca é um problema porque
+> não existe nenhum jeito de sobreviver o MESMO número de dia duas vezes (ver exemplo na Seção
+> 3: morrer sempre repete o dia atual, sobreviver sempre avança). O problema só nasce quando
+> existir a feature de "recuar 1 dia" — já registrada como a solução escolhida pra
+> [[project_day_retry_softlock_risk]] (memória do projeto), mas ainda não implementada. Quando
+> essa feature existir, sobreviver de novo um dia já vencido antes NÃO deve conceder o bônus de
+> novo. Correção sugerida: guardar o maior dia já sobrevivido (ex. `RunState.
+> highestDaySurvived`) e `GrantSurvivalGoldBonus()` só conceder quando `MainMenuUI.CurrentRun.
+> day > RunState.highestDaySurvived`. Ver [[project_survival_gold_bonus_double_count_risk]]
+> (memória do projeto) — **não implementar agora**, só registrado.
+
 ---
 
 ## 4. Sistema de Target / Aggro Total — Fechado (R4)
@@ -548,28 +580,65 @@ pendência acima). Regras que valem só aqui:
   inteiro — ver Seção 3), e `Supressão de Ameaça` (não mapeia bem pro Tier-fixo-por-Dia da Seção
   2 — descartada, não entrou).
 
-1. **Instinto de Caçador** — 0/5 · 10/80/640/5.120/40.960 · gold por kill +8%/rank.
-2. **Butim de Guerra** — 0/3 · 1M/12M/144M · gold por kill +15%/rank.
-3. **Faro de Saque** — 0/5 · 10/80/640/5.120/40.960 · chance/quantidade de drop de loot +8%/rank.
-4. **Atração** — 0/5 · 10/80/640/5.120/40.960 · PickupRadius +20%/rank (era +10%/rank, dobrado
-   em 2026-11-14 a pedido do usuário).
-5. **Campo de Atração** — 0/3 · 1M/12M/144M · PickupRadius +40%/rank (era +20%/rank).
-6. **Horizonte de Coleta** — 0/3 · 100M/1,5B/22,5B · PickupRadius +60%/rank (era +30%/rank).
-7. **Ímã Vivo** — 0/1 · 5T · auto-vende loot coletado, no instante da coleta, usando o
-   PickupRadius atual do jogador como raio do imã. O buff mais forte da árvore — caro de
-   propósito.
-8. **Negociante Nato** — 0/5 · 10/80/640/5.120/40.960 · venda de loot +10%/rank.
-9. **Mercador Astuto** — 0/3 · 1M/12M/144M · venda +15%/rank.
-10. **Rede de Contatos** — 0/3 · 100M/1,5B/22,5B · venda +20%/rank.
-11. **Tesouraria Real** — 0/2 · 5B/100B · venda +30%/rank.
-12. **Baú Extra** — 0/3 · 10K/100K/1M · +1 baú sumonado no mapa/rank.
-13. **Baú Duplo** — 0/3 · 1M/12M/144M · +15% de chance do baú dar 2 recompensas/rank.
-14. **Mais Espaço de Bag** — 0/3 · 5K/50K/500K · +5 slots de inventário/rank.
-15. **Stack Maior** — 0/6 · 50K/750K/11M/169M/2,5B/38B · aumenta o teto de stack por item/rank —
-    mesma curva do antigo `Increase Inventory Stack Size` (16→32→128→1.024→8.192→131.072→
-    1.048.576).
-16. **Reroll de Talento** — 0/3 · 10M/150M/2,25B · +1 reroll grátis por dia das 3 cartas de
-    Talento mostradas/rank.
+> **Auditoria 2026-11-15**: ao sincronizar esta lista pro aumento de preço das linhas 2/3 (pedido
+> do usuário), achei que ELA INTEIRA estava desincronizada do `.asset` real, não só os perks
+> #3-14 — os custos abaixo nunca tinham sido conferidos contra o jogo de verdade antes de hoje
+> (pareciam placeholder arredondado, nunca os valores reais configurados). Corrigido TODO o custo
+> da lista pra bater com o `.asset` (fonte de verdade), além de aplicar a dobra pedida nos perks
+> #3-14 (linha 2/3) e só nos 2 primeiros ranks do Stack Maior (#15, pedido explícito do usuário,
+> mesmo ele estando fora do range #3-14). Também corrigi 3 descrições de efeito que diziam algo
+> diferente do que o `.asset` realmente implementa (Negociante Nato/Mercador Astuto/Rede de
+> Contatos/Tesouraria Real tinham %/rank errado; Baú Extra tinha mecânica errada — "+1 baú no
+> mapa" nunca existiu, é "+X% chance de baú spawnar por dia"; #13 não é mais "Baú Duplo" de
+> verdade, o `.asset` foi renomeado pra "Chamado do Baú"/`Chest's Call`, mesma mecânica de Baú
+> Extra só que outro %, `perkId` ainda diz `world_bau_duplo` por dentro — não mexi nisso, só
+> registro). `Pele Grossa` também tinha contagem de rank errada no texto antigo (dizia 0/3, o
+> `.asset` tem 0/5).
+>
+> **Ajuste 2026-11-15 (2ª rodada, mesmo dia)**: usuário achou o dobro pouco — os preços das
+> linhas 2/3 das 4 árvores (Mundo, Ataque Primário, Survival, Ultimate) foram multiplicados por
+> 2,5x em cima do valor já dobrado, ou seja, **5x o valor original** (não mais 2x). No Stack
+> Maior, o escopo também cresceu de 2 pra 3 primeiros ranks. Todos os números abaixo e nas
+> Seções 9-11 já refletem esse 5x; a tag mudou de "dobrado" pra "5x".
+
+1. **Instinto de Caçador** — 0/5 · 100/500/2.500/12.500/62.500 · gold por kill vira x(rank+1) —
+   multiplica com os outros perks de gold (não é um +%/rank somado).
+2. **Butim de Guerra** — 0/3 · 10.000/60.000/360.000 · gold por kill vira x(rank+1), mesmo
+   critério acima.
+3. **Faro de Saque** — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 2) ·
+   chance/quantidade de drop de loot +8%/rank.
+4. **Atração** — 0/5 · 25.000/150.000/900.000/5.400.000/32.400.000 (5x 2026-11-15, linha 2) ·
+   PickupRadius +20%/rank (era +10%/rank, dobrado em 2026-11-14).
+5. **Campo de Atração** — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 2) ·
+   PickupRadius +40%/rank (era +20%/rank).
+6. **Horizonte de Coleta** — 0/3 · 500.000/3.000.000/18.000.000 (5x 2026-11-15, linha 3) ·
+   PickupRadius +60%/rank (era +30%/rank).
+7. **Ímã Vivo** — 0/1 · 6T (5x 2026-11-15, linha 3) · auto-vende loot coletado, no instante
+   da coleta, usando o PickupRadius atual do jogador como raio do imã. O buff mais forte da
+   árvore — caro de propósito.
+8. **Negociante Nato** — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+   venda de loot +50%/rank (texto antigo dizia +10%/rank, errado).
+9. **Mercador Astuto** — 0/3 · 50.000/300.000/1.800.000 (5x 2026-11-15, linha 3) · venda
+   +75%/rank (era documentado errado como +15%/rank).
+10. **Rede de Contatos** — 0/3 · 500.000/3.000.000/18.000.000 (5x 2026-11-15, linha 3) ·
+    venda +100%/rank (era documentado errado como +20%/rank).
+11. **Tesouraria Real** — 0/2 · 35.000.000/210.000.000 (5x 2026-11-15, linha 3) · venda
+    +150%/rank (era documentado errado como +30%/rank).
+12. **Baú Extra** — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +5% de chance por
+    dia de um baú extra spawnar no mapa, por rank (texto antigo dizia "+1 baú garantido/rank",
+    mecânica errada).
+13. **Chamado do Baú** (era listado como "Baú Duplo" — `.asset` foi renomeado, `perkId` ainda diz
+    `world_bau_duplo` por dentro) — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3)
+    · +10% de chance por dia de um baú extra spawnar no mapa, por rank (mesma mecânica do Baú
+    Extra acima, não "baú dar 2 recompensas" como o texto antigo dizia).
+14. **Mais Espaço de Bag** — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +5 slots
+    de inventário/rank.
+15. **Stack Maior** — 0/6 · 1.250/25.000/625.000/25.000.000/5.000.000.000/2.500.000.000.000
+    (5x 2026-11-15 — agora os 3 primeiros ranks, pedido explícito do usuário ampliou de 2 pra 3
+    ranks — os outros 3 ranks ficam intocados) · aumenta o teto de stack por item/rank — mesma
+    curva do antigo `Increase Inventory Stack Size` (16→32→128→1.024→8.192→131.072→1.048.576).
+16. **Reroll de Talento** — 0/3 · 50.000/300.000/1.800.000 · +1 reroll grátis por dia das 3 cartas
+    de Talento mostradas/rank (inerte até o sistema de Talento existir, R10).
 17. **Vigor** — 0/5 · 200/400/900/2.000/4.000 (triplicado 2026-11-14, pedido do usuário) · HP
     máximo cumulativo por rank (1-5): +10,8/+22,7/
     +35,9/+50,5/+66,7%. Ver Seção 8-bis (rebalance 2026-11-14).
@@ -580,17 +649,21 @@ pendência acima). Regras que valem só aqui:
 20. **Vitalidade Suprema** — 0/5 · 6M/30M/200M/500M/1B · HP máximo cumulativo por rank (1-5):
     +14.600.000/+2.940.000.000/+1.780.000.000.000/+149.000.000.000.000/+224.000.000.000.000%
     (tabela escalonada, carrega o teto de vida — ver Seção 8-bis).
-21. **Pele Grossa** — 0/3 · 10K/100K/1M · dano recebido -3%/rank.
-22. **Couraça** — 0/3 · 1M/12M/144M · dano recebido -5%/rank.
-23. **Casco de Ferro** — 0/3 · 100M/1,5B/22,5B · dano recebido -7%/rank.
-24. **Recuperação** — 0/5 · 10K/100K/1M/10M/100M · regen de HP +%/rank.
-25. **Metabolismo Acelerado** — 0/3 · 1M/12M/144M · regen +%/rank.
-26. **Fôlego Eterno** — 0/3 · 100M/1,5B/22,5B · regen +%/rank.
-27. **Passo Leve** — 0/5 · 10/80/640/5.120/40.960 · velocidade de movimento +4%/rank.
-28. **Vento nas Costas** — 0/3 · 1M/12M/144M · velocidade +6%/rank.
-29. **Pés Ligeiros** — 0/3 · 100M/1,5B/22,5B · velocidade +8%/rank.
-30. **Segunda Chance** — 0/1 · 500B (alcançável "lá pro Tier 8", abaixo do Ímã Vivo) · 1x por dia,
-    sobrevive com 1 HP a um hit fatal.
+21. **Pele Grossa** — 0/5 (texto antigo dizia 0/3, errado) · 500/2.500/12.500/62.500/312.500 ·
+    dano recebido -3%/rank.
+22. **Couraça** — 0/3 · 50.000/300.000/1.800.000 · dano recebido -5%/rank.
+23. **Casco de Ferro** — 0/3 · 3.000.000/18.000.000/108.000.000 · dano recebido -7%/rank.
+24. **Recuperação** — 0/5 · 500/2.500/12.500/62.500/312.500 · regen de HP +%/rank (número exato
+    ainda não confirmado no código — ver `WorldPerkEffects.RegenPercentPerRankPerSecond`).
+25. **Metabolismo Acelerado** — 0/3 · 50.000/300.000/1.800.000 · regen +%/rank (mesma pendência
+    acima).
+26. **Fôlego Eterno** — 0/3 · 3.000.000/18.000.000/108.000.000 · regen +%/rank (mesma pendência
+    acima).
+27. **Passo Leve** — 0/5 · 500/2.500/12.500/62.500/312.500 · velocidade de movimento +4%/rank.
+28. **Vento nas Costas** — 0/3 · 50.000/300.000/1.800.000 · velocidade +6%/rank.
+29. **Pés Ligeiros** — 0/3 · 3.000.000/18.000.000/108.000.000 · velocidade +8%/rank.
+30. **Segunda Chance** — 0/1 · 400B (texto antigo dizia 500B, errado) · 1x por dia, sobrevive com
+    1 HP a um hit fatal.
 
 **Contagem por família** (confere 30: 4+4+3+3+3+3+2+8): Venda ×4, HP ×4, Coleta ×3, Defesa ×3,
 Regen ×3, Velocidade ×3, Gold por kill ×2, e 8 perks únicos sem repetição (Faro de Saque, Ímã
@@ -753,27 +826,31 @@ ver metodologia completa e por quê na Seção 8-bis)
    primário cumulativo por rank (1-5): +22,3/+49,7/+83,1/+124/+174%.
 2. Fúria do Impacto — 0/3 · 10.000/25.000/60.000 (triplicado 2026-11-14) · dano cumulativo por
    rank (1-3): +170/+445/+892%.
-3. Força Bruta — 0/5 · 90.000/200.000/300.000/600.000/1M (triplicado 2026-11-14) · dano cumulativo
-   por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
-4. Devastação — 0/2 · 1M/3M · dano cumulativo por rank (1-2): +1.300.000/+12.400.000%.
-5. Fúria Definitiva — 0/5 · 10M/50M/200M/600M/1,5B · tabela escalonada (capstone, carrega o teto
-   de dano): dano cumulativo por rank (1-5) +2.410.000.000%/+1.320.000.000.000%/
-   +111.000.000.000.000%/+150.000.000.000.000%/+204.000.000.000.000%.
+3. Força Bruta — 0/5 · 450.000/1.000.000/1.500.000/3.000.000/5.000.000 (5x 2026-11-15, linha 2) ·
+   dano cumulativo por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
+4. Devastação — 0/2 · 5.000.000/15.000.000 (5x 2026-11-15, linha 2) · dano cumulativo por rank
+   (1-2): +1.300.000/+12.400.000%.
+5. Fúria Definitiva — 0/5 · 50M/250M/1B/3B/7,5B (5x 2026-11-15, linha 2) · tabela
+   escalonada (capstone, carrega o teto de dano): dano cumulativo por rank (1-5)
+   +2.410.000.000%/+1.320.000.000.000%/+111.000.000.000.000%/+150.000.000.000.000%/
+   +204.000.000.000.000%.
 
 **Knockback**
-6. Empurrão — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
-7. Impacto Sísmico — 0/3 · 5.000/30.000/180.000 · +20%/rank.
-8. Onda de Choque — 0/3 · 50.000/300.000/1.800.000 · +30%/rank.
+6. Empurrão — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 2) · +10%/rank.
+7. Impacto Sísmico — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 2) · +20%/rank.
+8. Onda de Choque — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +30%/rank.
 
 **Corpo (`sizeMultiplier`)**
-9. Corpo Avantajado — 0/5 · 500/2.500/12.500/62.500/312.500 · +5%/rank.
-10. Crescimento Brutal — 0/3 · 5.000/30.000/180.000 · +10%/rank.
-11. Corpo de Titã — 0/3 · 50.000/300.000/1.800.000 · +15%/rank.
+9. Corpo Avantajado — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+   +5%/rank.
+10. Crescimento Brutal — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +10%/rank.
+11. Corpo de Titã — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +15%/rank.
 
 **Duração do Ground Crack**
-12. Fenda Duradoura — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
-13. Rachadura Profunda — 0/3 · 5.000/30.000/180.000 · +20%/rank.
-14. Abismo — 0/3 · 3.000.000/18.000.000/108.000.000 · +30%/rank.
+12. Fenda Duradoura — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+    +10%/rank.
+13. Rachadura Profunda — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +20%/rank.
+14. Abismo — 0/3 · 15.000.000/90.000.000/540.000.000 (5x 2026-11-15, linha 3) · +30%/rank.
 
 **Área do Ground Crack**
 15. Fenda Larga — 0/5 · 500/2.500/12.500/62.500/312.500 · +8%/rank.
@@ -830,24 +907,27 @@ do balanceamento de 2026-11-10/11). Aqui o %/rank do dano do Shift foi NERFADO (
 **Dano do Shift**
 1. Fúria Crescente — 0/5 · 100/500/2.500/12.500/62.500 · +5%/rank (era +10%/rank).
 2. Ímpeto Selvagem — 0/3 · 10.000/60.000/360.000 · +7%/rank (era +15%/rank).
-3. Avalanche de Golpes — 0/3 · 100.000/600.000/3.600.000 · +9%/rank (era +20%/rank).
-4. Fúria Sem Fim — 0/2 · 7.000.000/42.000.000 · +14%/rank (era +30%/rank).
+3. Avalanche de Golpes — 0/3 · 500.000/3M/18M (5x 2026-11-15, linha 2) · +9%/rank (era
+   +20%/rank).
+4. Fúria Sem Fim — 0/2 · 35M/210M (5x 2026-11-15, linha 2) · +14%/rank (era +30%/rank).
 
 **Velocidade do Shift**
-5. Passos Rápidos — 0/5 · 50/250/1.250/6.250/31.250 · +8%/rank.
-6. Rajada — 0/3 · 5.000/30.000/180.000 · +12%/rank.
-7. Vendaval — 0/3 · 50.000/300.000/1.800.000 · +16%/rank.
-8. Velocidade da Tempestade — 0/2 · 3.000.000/18.000.000 · +20%/rank.
+5. Passos Rápidos — 0/5 · 250/1.250/6.250/31.250/156.250 (5x 2026-11-15, linha 2) · +8%/rank.
+6. Rajada — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 2) · +12%/rank.
+7. Vendaval — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +16%/rank.
+8. Velocidade da Tempestade — 0/2 · 15M/90M (5x 2026-11-15, linha 3) · +20%/rank.
 
 **Duração do Shift**
-9. Fôlego Extra — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
-10. Resistência — 0/3 · 5.000/30.000/180.000 · +15%/rank.
-11. Perseverança — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
-12. Vontade de Ferro — 0/2 · 3.000.000/18.000.000 · +30%/rank.
+9. Fôlego Extra — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+   +10%/rank.
+10. Resistência — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +15%/rank.
+11. Perseverança — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +20%/rank.
+12. Vontade de Ferro — 0/2 · 15M/90M (5x 2026-11-15, linha 3) · +30%/rank.
 
 **Cooldown do Shift**
-13. Recuperação Rápida — 0/5 · 500/2.500/12.500/62.500/312.500 · -5%/rank.
-14. Fôlego Renovado — 0/3 · 5.000/30.000/180.000 · -8%/rank.
+13. Recuperação Rápida — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+    -5%/rank.
+14. Fôlego Renovado — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · -8%/rank.
 15. Instinto Ágil — 0/3 · 50.000/300.000/1.800.000 · -10%/rank.
 16. Reflexo de Batalha — 0/2 · 3.000.000/18.000.000 · -15%/rank.
 
@@ -909,22 +989,27 @@ juntos. Ver metodologia na Seção 8-bis.)**
    cumulativo por rank (1-5): +22,3/+49,7/+83,1/+124/+174%.
 2. Ira Ancestral — 0/3 · 10.000/25.000/60.000 (triplicado 2026-11-14) · dano cumulativo por rank
    (1-3): +170/+445/+892%.
-3. Poder Esmagador — 0/5 · 90.000/200.000/300.000/600.000/1M (triplicado 2026-11-14) · dano
-   cumulativo por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
-4. Apocalipse Pessoal — 0/2 · 1M/3M · dano cumulativo por rank (1-2): +1.300.000/+12.400.000%.
-5. Juízo Final — 0/5 · 10M/50M/200M/600M/1,5B · tabela escalonada (capstone, carrega o teto de
-   dano): dano cumulativo por rank (1-5) +2.410.000.000%/+1.320.000.000.000%/
-   +111.000.000.000.000%/+150.000.000.000.000%/+204.000.000.000.000% (igual à Fúria Definitiva —
-   não é mais 0,8x dela, os 2 branches agora são idênticos de propósito).
-6. Projétil Veloz — 0/5 · 50/250/1.250/6.250/31.250 · velocidade +10%/rank.
-7. Lança Relâmpago — 0/3 · 5.000/30.000/180.000 · +15%/rank.
-8. Velocidade Absoluta — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
-9. Alcance Ampliado — 0/5 · 500/2.500/12.500/62.500/312.500 · +10%/rank.
-10. Longo Alcance — 0/3 · 5.000/30.000/180.000 · +15%/rank.
-11. Horizonte de Guerra — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
-12. Impacto Devastador — 0/5 · 500/2.500/12.500/62.500/312.500 · knockback +10%/rank.
-13. Onda Expansiva — 0/3 · 5.000/30.000/180.000 · +15%/rank.
-14. Força Absoluta — 0/3 · 50.000/300.000/1.800.000 · +20%/rank.
+3. Poder Esmagador — 0/5 · 450.000/1.000.000/1.500.000/3.000.000/5.000.000 (5x 2026-11-15, linha 2)
+   · dano cumulativo por rank (1-5): +2.000/+7.460/+22.300/+62.600/+172.000%.
+4. Apocalipse Pessoal — 0/2 · 5.000.000/15.000.000 (5x 2026-11-15, linha 2) · dano cumulativo por
+   rank (1-2): +1.300.000/+12.400.000%.
+5. Juízo Final — 0/5 · 50M/250M/1B/3B/7,5B (5x 2026-11-15, linha 2) · tabela escalonada
+   (capstone, carrega o teto de dano): dano cumulativo por rank (1-5) +2.410.000.000%/
+   +1.320.000.000.000%/+111.000.000.000.000%/+150.000.000.000.000%/+204.000.000.000.000% (igual à
+   Fúria Definitiva — não é mais 0,8x dela, os 2 branches agora são idênticos de propósito).
+6. Projétil Veloz — 0/5 · 250/1.250/6.250/31.250/156.250 (5x 2026-11-15, linha 2) · velocidade
+   +10%/rank.
+7. Lança Relâmpago — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 2) · +15%/rank.
+8. Velocidade Absoluta — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +20%/rank.
+9. Alcance Ampliado — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+   +10%/rank.
+10. Longo Alcance — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +15%/rank.
+11. Horizonte de Guerra — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) ·
+    +20%/rank.
+12. Impacto Devastador — 0/5 · 2.500/12.500/62.500/312.500/1.562.500 (5x 2026-11-15, linha 3) ·
+    knockback +10%/rank.
+13. Onda Expansiva — 0/3 · 25.000/150.000/900.000 (5x 2026-11-15, linha 3) · +15%/rank.
+14. Força Absoluta — 0/3 · 250.000/1.500.000/9.000.000 (5x 2026-11-15, linha 3) · +20%/rank.
 15. Canalização Rápida — 0/5 · 500/2.500/12.500/62.500/312.500 · carga necessária -5%/rank.
 16. Fúria Contida — 0/3 · 5.000/30.000/180.000 · -8%/rank.
 17. Explosão Iminente — 0/3 · 50.000/300.000/1.800.000 · -10%/rank.
