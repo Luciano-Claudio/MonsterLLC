@@ -23,6 +23,21 @@ public class RunTelemetryRecorder : MonoBehaviour
     private RunTelemetryData data;
     private string filePath;
 
+    // Fronteiras em aberto — não-nulo entre GameEvents.OnDayStart e o OnDayEnd/abandono
+    // seguinte (currentDayAttempt) ou entre OnDayEnd e o próximo OnDayStart (currentShopVisit).
+    // Consumidos pelas Tasks 6/7 (sampler e registro de vendas/perks).
+    private DayAttemptRecord currentDayAttempt;
+    private ShopVisitRecord currentShopVisit;
+    private readonly Dictionary<int, int> attemptsPerDay = new();
+
+    // Acumuladores de ociosidade — incrementados no Update() do sampler (Task 6), resetados
+    // aqui a cada início de dia e em HandleDamageTaken conforme a direção do hit.
+    private float secondsSinceLastHitDealt;
+    private float secondsSinceLastHitReceived;
+
+    // Só pra teste manual (Test 5) — nenhum código de produção lê isto.
+    public int DebugCurrentAttemptIndex => currentDayAttempt?.attemptIndex ?? -1;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -38,7 +53,7 @@ public class RunTelemetryRecorder : MonoBehaviour
     public void Init(bool enabled)
     {
         telemetryEnabled = enabled;
-        if (!telemetryEnabled) return; // custo zero — nenhum dado criado, nenhum evento assinado (tasks seguintes)
+        if (!telemetryEnabled) return; // custo zero — nenhum dado criado, nenhum evento assinado
 
         string runId = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
         data = new RunTelemetryData
@@ -48,6 +63,94 @@ public class RunTelemetryRecorder : MonoBehaviour
             startedAtUtc = DateTime.UtcNow.ToString("o"),
         };
         filePath = Path.Combine(Application.persistentDataPath, "Telemetry", $"run_{runId}.json");
+
+        GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnDayEnd += HandleDayEnd;
+        GameEvents.OnEnemyKilledDetailed += HandleEnemyKilled;
+        GameEvents.OnDamageTaken += HandleDamageTaken;
+    }
+
+    // Fecha a visita à loja em aberto (se houver — não há na 1ª vez, Dia 1) e abre a tentativa
+    // de dia nova. attemptsPerDay conta por NÚMERO de dia (não globalmente) — um retry depois
+    // de morrer reabre o MESMO dayNumber, então a 2ª tentativa daquele número vira attemptIndex=2,
+    // enquanto o próximo número de dia (sobrevivência) começa do 1 de novo.
+    private void HandleDayStart()
+    {
+        if (currentShopVisit != null)
+        {
+            data.shopVisits.Add(currentShopVisit);
+            currentShopVisit = null;
+        }
+
+        int dayNumber = MainMenuUI.CurrentRun.day;
+        attemptsPerDay[dayNumber] = attemptsPerDay.GetValueOrDefault(dayNumber) + 1;
+        currentDayAttempt = new DayAttemptRecord
+        {
+            dayNumber = dayNumber,
+            attemptIndex = attemptsPerDay[dayNumber],
+            startedAtUtc = DateTime.UtcNow.ToString("o"),
+        };
+        secondsSinceLastHitDealt = 0f;
+        secondsSinceLastHitReceived = 0f;
+    }
+
+    // Fecha a tentativa de dia em aberto (sobrevivência OU morte — OnDayEnd dispara nos 2
+    // casos, DayResolver.PlayerSurvivedLastDay diferencia) e abre a visita à loja que segue.
+    private void HandleDayEnd()
+    {
+        if (currentDayAttempt == null) return; // segurança — não deveria disparar sem HandleDayStart antes
+
+        float elapsed = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining;
+        currentDayAttempt.outcome = DayResolver.PlayerSurvivedLastDay ? "survived" : "died";
+        currentDayAttempt.elapsedSeconds = elapsed;
+        if (!DayResolver.PlayerSurvivedLastDay) currentDayAttempt.deathAtSecond = elapsed;
+        currentDayAttempt.reachedNight = DayTimer.Instance.IsNight;
+        currentDayAttempt.creaturesSlain = DayStatsTracker.CreaturesSlain;
+        currentDayAttempt.bossesDefeated = DayStatsTracker.BossesDefeated;
+        currentDayAttempt.goldFromMonsters = DayStatsTracker.GoldFromMonsters;
+        currentDayAttempt.goldFromBosses = DayStatsTracker.GoldFromBosses;
+        data.dayAttempts.Add(currentDayAttempt);
+        currentDayAttempt = null;
+
+        currentShopVisit = new ShopVisitRecord
+        {
+            goldAtOpen = MainMenuUI.CurrentRun.gold,
+        };
+
+        FlushToDisk();
+    }
+
+    private void HandleEnemyKilled(string enemyName, bool isBoss, int directHits, int dotTicks, float maxHealth, int energyReward, Vector3 position)
+    {
+        if (currentDayAttempt == null) return;
+        currentDayAttempt.kills.Add(new KillRecord
+        {
+            secondOfDay = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining,
+            enemyName = enemyName,
+            isBoss = isBoss,
+            directHitsTaken = directHits,
+            dotTicksTaken = dotTicks,
+            maxHealth = maxHealth,
+            energyReward = energyReward,
+            position = new SerializableVector2(position),
+        });
+    }
+
+    private void HandleDamageTaken(Vector3 position, float amount, bool isPlayer, bool isDirectPlayerHit)
+    {
+        if (currentDayAttempt == null) return;
+        float secondOfDay = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining;
+        var record = new DamageEventRecord { secondOfDay = secondOfDay, amount = amount, isDirectHit = isDirectPlayerHit };
+        if (isPlayer)
+        {
+            currentDayAttempt.hitsTakenByPlayer.Add(record);
+            secondsSinceLastHitReceived = 0f;
+        }
+        else
+        {
+            currentDayAttempt.hitsDealtByPlayer.Add(record);
+            secondsSinceLastHitDealt = 0f;
+        }
     }
 
     // Regrava o JSON inteiro (overwrite) — chamado nas fronteiras naturais (fim de dia, fim de

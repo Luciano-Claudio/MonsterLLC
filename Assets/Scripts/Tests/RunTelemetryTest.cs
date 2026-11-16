@@ -58,4 +58,18 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 5: attemptIndex incrementa por dayNumber, nao globalmente")]
+    public string TestAttemptIndexPerDay()
+    {
+        // Simula 2 inicios de dia pro MESMO numero (retry) e 1 pro proximo numero.
+        GameEvents.DayStarted(); // dia N, tentativa 1
+        int a1 = RunTelemetryRecorder.Instance.DebugCurrentAttemptIndex;
+        GameEvents.DayEnded();   // morreu, mesmo dia
+        GameEvents.DayStarted(); // dia N, tentativa 2 (retry)
+        int a2 = RunTelemetryRecorder.Instance.DebugCurrentAttemptIndex;
+        string result = a1 == 1 && a2 == 2 ? $"[RunTelemetryTest] PASS: a1={a1} a2={a2}" : $"[RunTelemetryTest] FAIL: a1={a1} a2={a2}";
+        Debug.Log(result);
+        return result;
+    }
 }
