@@ -38,6 +38,48 @@ public class RunTelemetryRecorder : MonoBehaviour
     // Só pra teste manual (Test 5) — nenhum código de produção lê isto.
     public int DebugCurrentAttemptIndex => currentDayAttempt?.attemptIndex ?? -1;
 
+    private float sampleTimer;
+
+    // Só pra teste manual (Test 6) — nenhum código de produção lê isto.
+    public int DebugSnapshotCount => currentDayAttempt?.snapshots.Count ?? 0;
+    public void DebugTickSampler(float deltaTime) => TickSampler(deltaTime);
+
+    // Timer manual (não Coroutine — GameplayGate nunca pausa Time.timeScale, padrão repetido
+    // no resto do projeto) — amostra 1x por segundo de jogo ativo. Os 2 acumuladores de
+    // ociosidade incrementam junto, só enquanto o gate estiver ativo.
+    private void Update() => TickSampler(Time.deltaTime);
+
+    private void TickSampler(float deltaTime)
+    {
+        if (!telemetryEnabled) return;
+        if (!GameplayGate.IsActive || currentDayAttempt == null) return;
+
+        secondsSinceLastHitDealt += deltaTime;
+        secondsSinceLastHitReceived += deltaTime;
+
+        sampleTimer += deltaTime;
+        if (sampleTimer < 1f) return;
+        sampleTimer = 0f;
+        CaptureSnapshot();
+    }
+
+    private void CaptureSnapshot()
+    {
+        var hero = HeroController.Instance;
+        currentDayAttempt.snapshots.Add(new SnapshotRecord
+        {
+            secondOfDay = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining,
+            aliveMonsters = WorldPopulationManager.Instance != null ? WorldPopulationManager.Instance.AliveCount : 0,
+            aliveBosses = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.AliveCount : 0,
+            heroHpPercent = hero != null ? hero.stats.health / hero.EffectiveMaxHealth * 100f : 0f,
+            heroPosition = hero != null ? new SerializableVector2(hero.transform.position) : new SerializableVector2(),
+            gold = MainMenuUI.CurrentRun?.gold ?? 0,
+            secondsSinceLastHitDealt = secondsSinceLastHitDealt,
+            secondsSinceLastHitReceived = secondsSinceLastHitReceived,
+            isNight = DayTimer.Instance.IsNight,
+        });
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

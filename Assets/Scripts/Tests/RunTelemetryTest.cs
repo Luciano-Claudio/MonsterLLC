@@ -72,4 +72,17 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 6: sampler respeita GameplayGate")]
+    public string TestSamplerRespectsGate()
+    {
+        int before = RunTelemetryRecorder.Instance.DebugSnapshotCount;
+        // GameplayGate.IsActive só é true em GameState.Gameplay — fora disso, simula 2s de Update() manualmente.
+        for (int i = 0; i < 120; i++) RunTelemetryRecorder.Instance.DebugTickSampler(1f / 60f);
+        int after = RunTelemetryRecorder.Instance.DebugSnapshotCount;
+        bool gatedCorrectly = GameplayGate.IsActive ? after > before : after == before;
+        string result = gatedCorrectly ? $"[RunTelemetryTest] PASS: before={before} after={after} gate={GameplayGate.IsActive}" : $"[RunTelemetryTest] FAIL: before={before} after={after} gate={GameplayGate.IsActive}";
+        Debug.Log(result);
+        return result;
+    }
 }
