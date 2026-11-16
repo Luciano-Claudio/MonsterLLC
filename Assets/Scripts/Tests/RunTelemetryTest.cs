@@ -95,4 +95,24 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 8: retorno ao Main_Menu com tentativa aberta marca abandoned")]
+    public string TestAbandonedOnReturnToMenu()
+    {
+        RunTelemetryRecorder.Instance.DebugForceOpenDayAttempt(dayNumber: 99);
+        RunTelemetryRecorder.Instance.DebugSimulateSceneLoaded("Main_Menu");
+        string outcome = RunTelemetryRecorder.Instance.DebugLastClosedOutcome;
+        string result = outcome == "abandoned" ? $"[RunTelemetryTest] PASS: outcome={outcome}" : $"[RunTelemetryTest] FAIL: outcome={outcome}";
+        Debug.Log(result);
+        return result;
+    }
+
+    [ContextMenu("Test 8b: retorno ao menu SEM tentativa aberta nao quebra")]
+    public string TestReturnToMenuNoop()
+    {
+        RunTelemetryRecorder.Instance.DebugSimulateSceneLoaded("Main_Menu"); // sem tentativa aberta
+        string result = "[RunTelemetryTest] PASS: nao lancou excecao";
+        Debug.Log(result);
+        return result;
+    }
 }

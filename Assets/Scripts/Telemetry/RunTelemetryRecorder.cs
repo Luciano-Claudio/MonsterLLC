@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Telemetria de run pra discussao de balanceamento/diversao (foco no Barbarian) — grava um
 // JSON completo por sessao de jogo. Design: docs/superpowers/specs/2026-11-16-run-telemetry-design.md
@@ -114,7 +115,29 @@ public class RunTelemetryRecorder : MonoBehaviour
         GameEvents.OnDayEnd += HandleDayEnd;
         GameEvents.OnEnemyKilledDetailed += HandleEnemyKilled;
         GameEvents.OnDamageTaken += HandleDamageTaken;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
     }
+
+    // "Voltar ao Menu Principal" (PauseMenuUI.GoToMainMenu()) só faz SceneManager.LoadScene
+    // ("Main_Menu") — NUNCA passa por GameStateManager.SetState, então GameEvents.
+    // OnGameStateChanged não dispara nesse caminho; sceneLoaded é o único sinal confiável.
+    // Sem morte nem sobrevivência, OnDayEnd nunca dispara pra fechar a tentativa em andamento —
+    // fecha aqui como "abandoned" pra não perder o dia nem deixar ele vazar pra próxima run.
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode) => HandleSceneLoadedByName(scene.name);
+
+    private void HandleSceneLoadedByName(string sceneName)
+    {
+        if (sceneName != "Main_Menu" || currentDayAttempt == null) return;
+        currentDayAttempt.outcome = "abandoned";
+        data.dayAttempts.Add(currentDayAttempt);
+        currentDayAttempt = null;
+        FlushToDisk();
+    }
+
+    // Só pra teste manual (Test 8/8b) — nenhum código de produção lê/chama isto.
+    public string DebugLastClosedOutcome => data.dayAttempts.Count > 0 ? data.dayAttempts[^1].outcome : null;
+    public void DebugForceOpenDayAttempt(int dayNumber) => currentDayAttempt = new DayAttemptRecord { dayNumber = dayNumber, attemptIndex = 1 };
+    public void DebugSimulateSceneLoaded(string sceneName) => HandleSceneLoadedByName(sceneName);
 
     // Fecha a visita à loja em aberto (se houver — não há na 1ª vez, Dia 1) e abre a tentativa
     // de dia nova. attemptsPerDay conta por NÚMERO de dia (não globalmente) — um retry depois

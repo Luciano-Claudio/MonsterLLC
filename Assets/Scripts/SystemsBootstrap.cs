@@ -5,6 +5,9 @@ public class SystemsBootstrap : MonoBehaviour
     [Tooltip("Gold fixo por kill (monstro comum/boss), por dia — GDD Deadline 8.1, Seção 3.1. Mesmo critério de toda outra tabela de dia do projeto (Inspector, nunca Resources.Load).")]
     [SerializeField] private DayGoldTableSO goldTable;
 
+    [Tooltip("Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — grava um JSON completo da sessão pra análise de balanceamento/diversão. Desmarcado = custo zero (não assina nada, não escreve nada).")]
+    [SerializeField] private bool telemetryEnabled = true;
+
     private PlayerControls controls;
 
     private void Awake()
@@ -19,6 +22,7 @@ public class SystemsBootstrap : MonoBehaviour
         ProgressTracker.Init();
         KillGoldReward.Init(goldTable); // GDD Deadline 8.1, Seção 3.1 — gold fixo por kill/boss, por dia
         DayStatsTracker.Init(); // Resumo do Dia — contadores/gold/loot vendido, por dia
+        gameObject.AddComponent<RunTelemetryRecorder>().Init(telemetryEnabled);
         controls = new PlayerControls();
 
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
