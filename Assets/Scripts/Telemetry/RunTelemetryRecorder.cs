@@ -23,6 +23,17 @@ public class RunTelemetryRecorder : MonoBehaviour
     private bool telemetryEnabled;
     private RunTelemetryData data;
     private string filePath;
+    private RunState lastSeenRun;
+
+    // Revisão final (achado Crítico #1 do reviewer) — só vira true depois que Init() passa da
+    // guarda de singleton de verdade. Só pra teste manual — nenhum código de produção lê isto.
+    public bool DebugIsSubscribed { get; private set; }
+    public ShopVisitRecord DebugLastClosedShopVisit => data != null && data.shopVisits.Count > 0 ? data.shopVisits[^1] : null;
+    public DayAttemptRecord DebugLastClosedDayAttempt => data != null && data.dayAttempts.Count > 0 ? data.dayAttempts[^1] : null;
+    public string DebugRunId => data?.runId;
+    public string DebugHero => data?.hero;
+    public void DebugSimulateApplicationQuit() => HandleApplicationQuit();
+    public void DebugSimulateGameStateChanged(GameState state) => HandleGameStateChanged(state);
 
     // Fronteiras em aberto — não-nulo entre GameEvents.OnDayStart e o OnDayEnd/abandono
     // seguinte (currentDayAttempt) ou entre OnDayEnd e o próximo OnDayStart (currentShopVisit).
@@ -97,11 +108,56 @@ public class RunTelemetryRecorder : MonoBehaviour
 
     // Chamado 1x por SystemsBootstrap.Awake(), junto com os outros managers "globais" do
     // GameObject "Systems" (mesmo padrao de DayStatsTracker.Init()/KillGoldReward.Init()).
+    //
+    // Achado Crítico da revisão final: Destroy() (Awake() acima) só executa de verdade no FIM
+    // do frame — SystemsBootstrap chama Init() na cópia já condenada antes disso acontecer. Sem
+    // este guard, a cópia assinava os mesmos eventos estáticos que o original, criando um 2º
+    // arquivo incompleto (sem sampler, sem perks/vendas que só chegam via Instance) toda vez
+    // que "Voltar ao Menu Principal" recarrega a cena Main_Menu (que tem seu próprio
+    // SystemsBootstrap). Com o guard, Init() na cópia não faz nada — Instance continua apontando
+    // só pro original.
     public void Init(bool enabled)
     {
+        if (Instance != this) return;
+
         telemetryEnabled = enabled;
         if (!telemetryEnabled) return; // custo zero — nenhum dado criado, nenhum evento assinado
 
+        StartNewRunData();
+        DebugIsSubscribed = true;
+
+        GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnDayEnd += HandleDayEnd;
+        GameEvents.OnEnemyKilledDetailed += HandleEnemyKilled;
+        GameEvents.OnDamageTaken += HandleDamageTaken;
+        GameEvents.OnGameStateChanged += HandleGameStateChanged;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    // O original sobrevive indefinidamente (DontDestroyOnLoad via "Systems") — só desassina de
+    // verdade se ESTE for o singleton vivo (uma cópia condenada por Init()==no-op nunca assinou
+    // nada, então nunca precisa desassinar). Protege também contra "Enter Play Mode sem Reload
+    // Domain" (citado em GameplayBootstrap), onde Awake() não roda de novo do zero.
+    private void OnDestroy()
+    {
+        if (Instance != this) return;
+        if (telemetryEnabled)
+        {
+            GameEvents.OnDayStart -= HandleDayStart;
+            GameEvents.OnDayEnd -= HandleDayEnd;
+            GameEvents.OnEnemyKilledDetailed -= HandleEnemyKilled;
+            GameEvents.OnDamageTaken -= HandleDamageTaken;
+            GameEvents.OnGameStateChanged -= HandleGameStateChanged;
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+        }
+        Instance = null;
+    }
+
+    // Extraído pra ser reaproveitado quando uma run NOVA é detectada em pleno voo (achado
+    // Importante #6) — nunca mistura attemptIndex/shopVisits de 2 runs diferentes (New
+    // Game/Continue depois de "Voltar ao Menu Principal") no mesmo arquivo.
+    private void StartNewRunData()
+    {
         string runId = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
         data = new RunTelemetryData
         {
@@ -110,12 +166,49 @@ public class RunTelemetryRecorder : MonoBehaviour
             startedAtUtc = DateTime.UtcNow.ToString("o"),
         };
         filePath = Path.Combine(Application.persistentDataPath, "Telemetry", $"run_{runId}.json");
+        attemptsPerDay.Clear();
+        lastSeenRun = MainMenuUI.CurrentRun;
+    }
 
-        GameEvents.OnDayStart += HandleDayStart;
-        GameEvents.OnDayEnd += HandleDayEnd;
-        GameEvents.OnEnemyKilledDetailed += HandleEnemyKilled;
-        GameEvents.OnDamageTaken += HandleDamageTaken;
-        SceneManager.sceneLoaded += HandleSceneLoaded;
+    // Continue Game pula direto pra GameState.Shop sem passar por OnDayEnd (GameplayBootstrap.
+    // Start(), case GameState.Shop reemite OnGameStateChanged) — sem isso, a 1ª visita à loja de
+    // um "Continue" perdia toda compra de perk (currentShopVisit ficava null pra sempre nesse
+    // caminho, já que RecordPerkPurchased só grava se currentShopVisit != null).
+    private void HandleGameStateChanged(GameState state)
+    {
+        if (state != GameState.Shop || currentShopVisit != null) return;
+        currentShopVisit = new ShopVisitRecord { goldAtOpen = MainMenuUI.CurrentRun?.gold ?? 0 };
+        shopOpenRealtime = Time.realtimeSinceStartup;
+    }
+
+    // Fecha o que estiver em aberto (tentativa de dia + visita à loja) como "abandoned"/parcial
+    // e grava — reaproveitado por HandleSceneLoadedByName ("Voltar ao Menu") e por
+    // HandleApplicationQuit (achado Importante #4: sem isso, apertar Stop no Editor ou fechar o
+    // jogo no meio de um dia ou ainda dentro da Loja perdia os dois, silenciosamente).
+    private void CloseOpenRecordsAndFlush(string dayAttemptOutcome)
+    {
+        if (currentDayAttempt != null)
+        {
+            currentDayAttempt.outcome = dayAttemptOutcome;
+            data.dayAttempts.Add(currentDayAttempt);
+            currentDayAttempt = null;
+        }
+        if (currentShopVisit != null)
+        {
+            currentShopVisit.beforeDayNumber = MainMenuUI.CurrentRun?.day ?? 0;
+            currentShopVisit.goldAtClose = MainMenuUI.CurrentRun?.gold ?? 0;
+            data.shopVisits.Add(currentShopVisit);
+            currentShopVisit = null;
+        }
+        FlushToDisk();
+    }
+
+    private void OnApplicationQuit() => HandleApplicationQuit();
+
+    private void HandleApplicationQuit()
+    {
+        if (!telemetryEnabled) return;
+        CloseOpenRecordsAndFlush("abandoned");
     }
 
     // "Voltar ao Menu Principal" (PauseMenuUI.GoToMainMenu()) só faz SceneManager.LoadScene
@@ -127,11 +220,9 @@ public class RunTelemetryRecorder : MonoBehaviour
 
     private void HandleSceneLoadedByName(string sceneName)
     {
-        if (sceneName != "Main_Menu" || currentDayAttempt == null) return;
-        currentDayAttempt.outcome = "abandoned";
-        data.dayAttempts.Add(currentDayAttempt);
-        currentDayAttempt = null;
-        FlushToDisk();
+        if (sceneName != "Main_Menu") return;
+        if (currentDayAttempt == null && currentShopVisit == null) return; // nada pra fechar
+        CloseOpenRecordsAndFlush("abandoned");
     }
 
     // Só pra teste manual (Test 8/8b) — nenhum código de produção lê/chama isto.
@@ -145,11 +236,26 @@ public class RunTelemetryRecorder : MonoBehaviour
     // enquanto o próximo número de dia (sobrevivência) começa do 1 de novo.
     private void HandleDayStart()
     {
+        if (MainMenuUI.CurrentRun != lastSeenRun)
+        {
+            // Run nova detectada em pleno voo (achado Importante #6) — New Game/Continue depois
+            // de "Voltar ao Menu Principal" sem o jogo ser relançado. Uma visita à loja órfã da
+            // run anterior já devia ter sido fechada/gravada no arquivo ANTIGO por
+            // HandleSceneLoadedByName (ver lá) — nunca herdada pela run nova; descartar aqui é
+            // só uma rede de segurança caso essa fronteira não tenha disparado.
+            currentShopVisit = null;
+            StartNewRunData();
+        }
+
         if (currentShopVisit != null)
         {
+            currentShopVisit.beforeDayNumber = MainMenuUI.CurrentRun.day;
+            currentShopVisit.goldAtClose = MainMenuUI.CurrentRun.gold;
             data.shopVisits.Add(currentShopVisit);
             currentShopVisit = null;
         }
+
+        data.hero = MainMenuUI.CurrentRun.hero;
 
         int dayNumber = MainMenuUI.CurrentRun.day;
         attemptsPerDay[dayNumber] = attemptsPerDay.GetValueOrDefault(dayNumber) + 1;
@@ -161,6 +267,7 @@ public class RunTelemetryRecorder : MonoBehaviour
         };
         secondsSinceLastHitDealt = 0f;
         secondsSinceLastHitReceived = 0f;
+        FlushToDisk(); // achado Importante #4 — sem isso, a visita à loja que acabou de fechar acima só existia em memória
     }
 
     // Fecha a tentativa de dia em aberto (sobrevivência OU morte — OnDayEnd dispara nos 2
@@ -169,15 +276,24 @@ public class RunTelemetryRecorder : MonoBehaviour
     {
         if (currentDayAttempt == null) return; // segurança — não deveria disparar sem HandleDayStart antes
 
+        bool survived = DayResolver.PlayerSurvivedLastDay;
         float elapsed = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining;
-        currentDayAttempt.outcome = DayResolver.PlayerSurvivedLastDay ? "survived" : "died";
+        currentDayAttempt.outcome = survived ? "survived" : "died";
         currentDayAttempt.elapsedSeconds = elapsed;
-        if (!DayResolver.PlayerSurvivedLastDay) currentDayAttempt.deathAtSecond = elapsed;
+        if (!survived) currentDayAttempt.deathAtSecond = elapsed;
         currentDayAttempt.reachedNight = DayTimer.Instance.IsNight;
         currentDayAttempt.creaturesSlain = DayStatsTracker.CreaturesSlain;
         currentDayAttempt.bossesDefeated = DayStatsTracker.BossesDefeated;
         currentDayAttempt.goldFromMonsters = DayStatsTracker.GoldFromMonsters;
         currentDayAttempt.goldFromBosses = DayStatsTracker.GoldFromBosses;
+        if (survived)
+        {
+            // Mesma conta de DayResolver.GrantSurvivalGoldBonus() (privado lá) — achado
+            // Importante #3: sem isso, "gold ganho no dia" no JSON ficava sempre pela metade
+            // do que o jogador realmente recebeu nos dias sobrevividos.
+            long earnedToday = DayStatsTracker.GoldFromMonsters + DayStatsTracker.GoldFromBosses + DayStatsTracker.GetSoldGoldToday();
+            currentDayAttempt.survivalGoldBonusGranted = (long)(earnedToday * (DayResolver.SurvivalGoldBonusMultiplier - 1f));
+        }
         data.dayAttempts.Add(currentDayAttempt);
         currentDayAttempt = null;
 
