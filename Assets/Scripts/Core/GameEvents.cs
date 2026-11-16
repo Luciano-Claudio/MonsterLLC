@@ -11,6 +11,14 @@ public static class GameEvents
     public static event Action<int, bool> OnEnemyKilled;
     public static void EnemyKilled(int energyValue, bool isBoss) => OnEnemyKilled?.Invoke(energyValue, isBoss);
 
+    // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — versão
+    // detalhada do kill, só primitivos/Vector3 (regra do asmdef Core), complementa o
+    // OnEnemyKilled acima, nunca o substitui. directHits/dotTicks separados de propósito — ver
+    // "Revisão do builder-check" no design (misturar os 2 enviesaria a análise de balanceamento).
+    public static event Action<string, bool, int, int, float, int, Vector3> OnEnemyKilledDetailed;
+    public static void EnemyKilledDetailed(string enemyName, bool isBoss, int directHits, int dotTicks, float maxHealth, int energyReward, Vector3 position) =>
+        OnEnemyKilledDetailed?.Invoke(enemyName, isBoss, directHits, dotTicks, maxHealth, energyReward, position);
+
     public static event Action<float, float> OnEnergyChanged;
     public static void EnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
 
