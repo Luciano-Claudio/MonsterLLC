@@ -37,4 +37,14 @@ public class RunTelemetryTest : MonoBehaviour
         Debug.Log(result);
         return result;
     }
+
+    [ContextMenu("Test 3: getters de populacao viva existem")]
+    public string TestAliveCountGetters()
+    {
+        int pop = WorldPopulationManager.Instance != null ? WorldPopulationManager.Instance.AliveCount : -1;
+        int bosses = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.AliveCount : -1;
+        string result = $"[RunTelemetryTest] PASS: AliveCount monstros={pop}, bosses={bosses}";
+        Debug.Log(result);
+        return result;
+    }
 }

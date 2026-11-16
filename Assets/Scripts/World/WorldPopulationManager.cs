@@ -41,6 +41,10 @@ public class WorldPopulationManager : MonoBehaviour
 
     private Transform player;
     private readonly List<GameObject> aliveEnemies = new();
+
+    // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
+    // read-only, nenhuma mudança de comportamento.
+    public int AliveCount => aliveEnemies.Count;
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 

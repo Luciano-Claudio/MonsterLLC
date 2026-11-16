@@ -39,6 +39,10 @@ public class WorldBossSpawnManager : MonoBehaviour
 
     private Transform player;
     private readonly List<GameObject> aliveBosses = new();
+
+    // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
+    // read-only, nenhuma mudança de comportamento.
+    public int AliveCount => aliveBosses.Count;
     private readonly HashSet<BossDefinitionSO> usedBossIdsToday = new();
     private readonly List<BossDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickUnusedBossForTier
     private readonly List<Transform> spawnBatchScratch = new(); // reaproveitado em Update, pro Boss Timer periódico
