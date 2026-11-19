@@ -228,8 +228,35 @@ public static class AttackWalkAssetTools
                 Compare(errors, clipName, $"event[{i}].frame",
                     Mathf.RoundToInt(sourceEvents[i].time * source.frameRate), Mathf.RoundToInt(walkEvents[i].time * walk.frameRate));
             }
+
+            CheckSpriteReferencesOnDisk(errors, clipName, WalkClipPath(sourcePath));
         }
         return errors.Length == 0 ? $"PASS ({clipNames.Length} clipes)" : errors.ToString();
+    }
+
+    // Bug real (2026-11-19): o usuário re-fatiou a sheet walk depois dos clipes gerados — os
+    // sprites ganharam internalID novo, mas o Editor continuou resolvendo os antigos pela
+    // memória (validação acima passava, jogo funcionava), enquanto o .anim no disco apontava
+    // pra IDs que não existiam mais (quebraria ao reabrir o Unity). Por isso confere o TEXTO
+    // do .anim contra o .meta da textura, sem passar pelo AssetDatabase.
+    private static readonly System.Text.RegularExpressions.Regex SpriteReferencePattern =
+        new System.Text.RegularExpressions.Regex(@"fileID: (-?\d+), guid: ([0-9a-f]{32}), type: 3");
+
+    private static void CheckSpriteReferencesOnDisk(StringBuilder errors, string clipName, string clipPath)
+    {
+        var metaCache = new Dictionary<string, string>();
+        foreach (System.Text.RegularExpressions.Match match in SpriteReferencePattern.Matches(System.IO.File.ReadAllText(clipPath)))
+        {
+            string texturePath = AssetDatabase.GUIDToAssetPath(match.Groups[2].Value);
+            if (!texturePath.EndsWith(".png")) continue;
+            if (!metaCache.TryGetValue(texturePath, out string meta))
+            {
+                meta = System.IO.File.ReadAllText(texturePath + ".meta");
+                metaCache[texturePath] = meta;
+            }
+            if (!meta.Contains($"internalID: {match.Groups[1].Value}\n") && !meta.Contains($"internalID: {match.Groups[1].Value}\r\n"))
+                errors.AppendLine($"FAIL: {clipName} referencia sprite {match.Groups[1].Value} que não existe mais em {System.IO.Path.GetFileName(texturePath)} (no disco)");
+        }
     }
 
     // null quando a sheet não tem par cadastrado em SheetPairs.
