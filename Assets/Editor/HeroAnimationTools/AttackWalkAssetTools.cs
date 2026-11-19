@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
@@ -303,5 +304,183 @@ public static class AttackWalkAssetTools
             count++;
         }
         return $"Derivados: {count}";
+    }
+
+    // ===================== Estado gêmeo "<Estado>_Walk" =====================
+
+    public const string WalkTwinSuffix = "_Walk";
+
+    private static AnimatorState FindState(AnimatorController controller, string stateName)
+    {
+        foreach (var child in controller.layers[0].stateMachine.states)
+            if (child.state.name == stateName) return child.state;
+        return null;
+    }
+
+    // Destino de uma transição do gêmeo: igual ao do parado, exceto a transição pra ele
+    // mesmo (ex.: Attack_Continuous em loop), que no gêmeo aponta pro próprio gêmeo.
+    private static AnimatorState MapDestination(AnimatorState destination, AnimatorState stand, AnimatorState twin) =>
+        destination == stand ? twin : destination;
+
+    public static string ValidateTwin(AnimatorController controller, string standStateName)
+    {
+        var errors = new StringBuilder();
+        string label = $"{controller.name}/{standStateName}";
+        var stand = FindState(controller, standStateName);
+        if (stand == null) return $"FAIL: {label} estado parado não existe";
+        var twin = FindState(controller, standStateName + WalkTwinSuffix);
+        if (twin == null) return $"FAIL: {label} gêmeo {standStateName + WalkTwinSuffix} não existe";
+
+        Compare(errors, label, "speed", stand.speed, twin.speed);
+        Compare(errors, label, "speedParameterActive", stand.speedParameterActive, twin.speedParameterActive);
+        Compare(errors, label, "speedParameter", stand.speedParameter, twin.speedParameter);
+        Compare(errors, label, "tag", stand.tag, twin.tag);
+        Compare(errors, label, "writeDefaultValues", stand.writeDefaultValues, twin.writeDefaultValues);
+
+        if (stand.motion is BlendTree standTree)
+        {
+            if (!(twin.motion is BlendTree twinTree)) errors.AppendLine($"FAIL: {label} gêmeo sem BlendTree");
+            else
+            {
+                Compare(errors, label, "blendType", standTree.blendType, twinTree.blendType);
+                Compare(errors, label, "blendParameter", standTree.blendParameter, twinTree.blendParameter);
+                Compare(errors, label, "blendParameterY", standTree.blendParameterY, twinTree.blendParameterY);
+                Compare(errors, label, "children", standTree.children.Length, twinTree.children.Length);
+                for (int i = 0; i < Mathf.Min(standTree.children.Length, twinTree.children.Length); i++)
+                {
+                    var s = standTree.children[i];
+                    var t = twinTree.children[i];
+                    Compare(errors, label, $"child[{i}].position", s.position, t.position);
+                    Compare(errors, label, $"child[{i}].motion", s.motion != null ? "walk_" + s.motion.name : null, t.motion != null ? t.motion.name : null);
+                }
+            }
+        }
+        else
+        {
+            Compare(errors, label, "motion", stand.motion != null ? "walk_" + stand.motion.name : null, twin.motion != null ? twin.motion.name : null);
+        }
+
+        Compare(errors, label, "transitions", stand.transitions.Length, twin.transitions.Length);
+        for (int i = 0; i < Mathf.Min(stand.transitions.Length, twin.transitions.Length); i++)
+        {
+            var s = stand.transitions[i];
+            var t = twin.transitions[i];
+            var expected = MapDestination(s.destinationState, stand, twin);
+            Compare(errors, label, $"transition[{i}].destination", expected != null ? expected.name : "exit", t.destinationState != null ? t.destinationState.name : "exit");
+            Compare(errors, label, $"transition[{i}].hasExitTime", s.hasExitTime, t.hasExitTime);
+            Compare(errors, label, $"transition[{i}].exitTime", s.exitTime, t.exitTime);
+            Compare(errors, label, $"transition[{i}].duration", s.duration, t.duration);
+            Compare(errors, label, $"transition[{i}].conditions", s.conditions.Length, t.conditions.Length);
+        }
+
+        return errors.Length == 0 ? $"PASS ({label})" : errors.ToString();
+    }
+
+    // Cria "<standStateName>_Walk" ao lado do estado parado: mesma configuração, BlendTree
+    // espelhada com os clipes walk_*, mesmas saídas. Sem transição de AnyState — o gêmeo só é
+    // alcançado pela troca em runtime (HeroController, Animator.Play no mesmo normalizedTime).
+    // Idempotente: se o gêmeo já existe, ele é recriado do zero.
+    public static string AddWalkTwin(AnimatorController controller, string standStateName)
+    {
+        var stateMachine = controller.layers[0].stateMachine;
+        var stand = FindState(controller, standStateName);
+        if (stand == null) return $"FAIL: {controller.name}/{standStateName} não existe";
+
+        string twinName = standStateName + WalkTwinSuffix;
+        var old = FindState(controller, twinName);
+        Vector3 position = Vector3.zero;
+        bool hasOldPosition = false;
+        if (old != null)
+        {
+            foreach (var child in stateMachine.states)
+                if (child.state == old) { position = child.position; hasOldPosition = true; }
+            if (old.motion is BlendTree oldTree && AssetDatabase.GetAssetPath(oldTree) == AssetDatabase.GetAssetPath(controller))
+            {
+                AssetDatabase.RemoveObjectFromAsset(oldTree);
+                Object.DestroyImmediate(oldTree, true);
+            }
+            stateMachine.RemoveState(old);
+        }
+        if (!hasOldPosition)
+        {
+            foreach (var child in stateMachine.states)
+                if (child.state == stand) position = child.position + new Vector3(0f, 60f, 0f);
+        }
+
+        var twin = stateMachine.AddState(twinName, position);
+        twin.speed = stand.speed;
+        twin.speedParameterActive = stand.speedParameterActive;
+        twin.speedParameter = stand.speedParameter;
+        twin.cycleOffset = stand.cycleOffset;
+        twin.cycleOffsetParameterActive = stand.cycleOffsetParameterActive;
+        twin.cycleOffsetParameter = stand.cycleOffsetParameter;
+        twin.mirror = stand.mirror;
+        twin.mirrorParameterActive = stand.mirrorParameterActive;
+        twin.mirrorParameter = stand.mirrorParameter;
+        twin.tag = stand.tag;
+        twin.writeDefaultValues = stand.writeDefaultValues;
+        twin.iKOnFeet = stand.iKOnFeet;
+
+        if (stand.motion is BlendTree standTree)
+        {
+            var twinTree = new BlendTree
+            {
+                name = twinName,
+                blendType = standTree.blendType,
+                blendParameter = standTree.blendParameter,
+                blendParameterY = standTree.blendParameterY,
+                minThreshold = standTree.minThreshold,
+                maxThreshold = standTree.maxThreshold,
+                useAutomaticThresholds = standTree.useAutomaticThresholds,
+                hideFlags = HideFlags.HideInHierarchy,
+            };
+            AssetDatabase.AddObjectToAsset(twinTree, controller);
+            var children = standTree.children;
+            for (int i = 0; i < children.Length; i++)
+            {
+                var walkMotion = WalkMotionFor(children[i].motion);
+                if (walkMotion == null) return $"FAIL: clipe walk faltando pra {children[i].motion?.name}";
+                children[i].motion = walkMotion;
+            }
+            twinTree.children = children;
+            twin.motion = twinTree;
+        }
+        else
+        {
+            var walkMotion = WalkMotionFor(stand.motion);
+            if (walkMotion == null) return $"FAIL: clipe walk faltando pra {stand.motion?.name}";
+            twin.motion = walkMotion;
+        }
+
+        foreach (var source in stand.transitions)
+        {
+            AnimatorStateTransition copy;
+            if (source.isExit) copy = twin.AddExitTransition();
+            else if (source.destinationStateMachine != null) copy = twin.AddTransition(source.destinationStateMachine);
+            else copy = twin.AddTransition(MapDestination(source.destinationState, stand, twin));
+            copy.hasExitTime = source.hasExitTime;
+            copy.exitTime = source.exitTime;
+            copy.hasFixedDuration = source.hasFixedDuration;
+            copy.duration = source.duration;
+            copy.offset = source.offset;
+            copy.interruptionSource = source.interruptionSource;
+            copy.orderedInterruption = source.orderedInterruption;
+            copy.canTransitionToSelf = source.canTransitionToSelf;
+            copy.mute = source.mute;
+            copy.solo = source.solo;
+            foreach (var condition in source.conditions)
+                copy.AddCondition(condition.mode, condition.threshold, condition.parameter);
+        }
+
+        EditorUtility.SetDirty(controller);
+        AssetDatabase.SaveAssets();
+        return $"OK: {controller.name}/{twinName}";
+    }
+
+    private static Motion WalkMotionFor(Motion standMotion)
+    {
+        if (standMotion == null) return null;
+        string path = AssetDatabase.GetAssetPath(standMotion);
+        return AssetDatabase.LoadAssetAtPath<AnimationClip>(WalkClipPath(path));
     }
 }
