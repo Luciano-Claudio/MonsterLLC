@@ -55,20 +55,16 @@ public class Mage : HeroController
     // classes diferentes ("The same field name is serialized multiple times").
     private SpriteRenderer mageSpriteRenderer;
 
-    // Pet de início de dia (GDD: "Pets de início de dia (Mage/Blood Mage)") — sumona com
-    // animação própria do Mage (duração = a do próprio clipe "SummonPet", não um tempo fixo)
-    // e bloqueio de movimento (reaproveita isAttacking, igual toda ação real), não
-    // instantaneamente. Ao morrer o herói, o pet retorna junto (OnHeroDeath()).
+    // Pet (Phoenix) — D9.1 (2026-11-19): quem decide "tem pet / quantos" é o PetSummoner do
+    // prefab (hasPet false até o sistema de variantes existir — variante "Familiar"). O Mage só
+    // toca a própria animação de invocar (com bloqueio de movimento via isAttacking, igual toda
+    // ação real) quando o PetSummoner pedir, e decide os multiplicadores do pet.
     [Header("Pet — Phoenix")]
-    [SerializeField] private GameObject petPrefab; // precisa ter PetController
-    [SerializeField] private Transform petSpawnPoint;
+    [SerializeField] private PetSummoner petSummoner;
     // Upgrade futuro — tamanho e velocidade de ataque do pet, decididos aqui e repassados
     // em Initialize() (mesmo critério do resto do herói: controlador decide, prefab só recebe).
     [SerializeField] private float petSizeMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
     [SerializeField] private float petActionSpeedMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
-    private PetController currentPet;
-    // Direita #29 "Segunda Fênix" (perk) — 2º Phoenix simultâneo, metade do dano do primeiro.
-    private PetController secondPet;
 
     // Rede de segurança — mesmo padrão do Barbarian/Ranger: se o Animation Event de fim nunca
     // disparar, força o fim da ação em vez de travar isAttacking pra sempre. Também cobre a
@@ -187,13 +183,13 @@ public class Mage : HeroController
     protected override void OnEnable()
     {
         base.OnEnable();
-        GameEvents.OnDayStart += SummonPet;
+        GameEvents.OnDayStart += RequestPetCheck;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        GameEvents.OnDayStart -= SummonPet;
+        GameEvents.OnDayStart -= RequestPetCheck;
     }
 
     protected override void Update()
@@ -225,6 +221,7 @@ public class Mage : HeroController
         }
 
         UpdateUltimateFlyingTrail();
+        UpdatePetSummon();
         UpdateContagiousFire();
         StopFireIfActionCut();
     }
@@ -564,43 +561,37 @@ public class Mage : HeroController
         isUsingSecondaryAbility = false;
     }
 
-    // Chamado no Dia 1 e em todo GameEvents.OnDayStart seguinte (fonte única em
-    // DayTimer.ResetForNewDay()) — GDD não fala em persistir o pet entre dias, só em
-    // sumonar "no início do dia", então cada dia começa com uma Phoenix nova.
-    private void SummonPet()
+    // Pede a conferência de pets (início de cada dia, via GameEvents.OnDayStart — e, no futuro,
+    // a escolha da variante "Familiar": setar petSummoner.HasPet = true e chamar isto). Pet que
+    // já está em jogo continua; só invoca o que falta.
+    public void RequestPetCheck()
     {
-        if (isAttacking) return; // já sumonando ou em outra ação — não deveria acontecer no início do dia, mas evita sobrepor
+        if (petSummoner != null) petSummoner.RequestCheck();
+    }
+
+    // Todo frame (Update): se o PetSummoner pedir, toca 1 animação de invocar — só com o Mage
+    // livre (nunca corta ataque/habilidade). A próxima (se faltar mais de 1 pet) sai quando esta
+    // terminar (AnimationSummonPetEndEvent libera isAttacking).
+    private void UpdatePetSummon()
+    {
+        if (petSummoner == null) return;
+        bool busy = isAttacking || isTeleporting || HealthSystem.IsDead(stats.health);
+        if (!petSummoner.ShouldStartSummon(busy)) return;
         isAttacking = true;
         actionElapsed = 0f;
         AnimatorTrigger("SummonPetTrigger");
     }
 
-    // Animation Event, no meio do clipe de invocação do Mage — a
-    // animação do HERÓI conjurando, não a "summon" do próprio pet (essa é dele, tocada
-    // sozinha quando ele nasce). Se já existir uma Phoenix viva (dia anterior), destrói e
-    // sumona de novo.
+    // Animation Event, no meio do clipe de invocação do Mage — a animação do HERÓI conjurando,
+    // não a "summon" do próprio pet (essa é dele, tocada sozinha quando ele nasce). 1 pet por
+    // invocação. Direita #29 "Segunda Fênix" (perk, sai no D9.6) = ExtraPets: o pet além da
+    // quantidade base nasce com metade do dano (GDD: "metade dos stats" = metade do DANO).
     public void AnimationSummonPetEvent()
     {
-        if (currentPet != null) Destroy(currentPet.gameObject);
-        if (secondPet != null) Destroy(secondPet.gameObject);
-        if (petPrefab == null) return;
-
-        Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
-        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-        currentPet = obj.GetComponent<PetController>();
-        if (currentPet != null)
-            currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier, petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
-
-        // Direita #29 "Segunda Fênix" — 2º Phoenix simultâneo, metade do dano do 1º (mesmos
-        // tamanho/velocidade/cooldown/alcance — só o dano cai pela metade, GDD: "metade dos
-        // stats" interpretado como metade do DANO, o que de fato importa pro DPS do pet).
-        if (secondPhoenixEnabled)
-        {
-            var secondObj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-            secondPet = secondObj.GetComponent<PetController>();
-            if (secondPet != null)
-                secondPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier, petDamageMultiplier * 0.5f, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
-        }
+        if (petSummoner == null) return;
+        bool isExtra = petSummoner.Pets.Count >= petSummoner.BasePetCount;
+        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier,
+            isExtra ? petDamageMultiplier * 0.5f : petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
     }
 
     // Animation Event, no fim do clipe de invocação.
@@ -623,8 +614,8 @@ public class Mage : HeroController
         if (vengefulPhoenixDamagePercent > 0f)
         {
             float duration = 5f; // 🔢 ajustável — "por um tempo curto" (GDD)
-            currentPet?.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
-            secondPet?.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
+            if (petSummoner != null)
+                foreach (var pet in petSummoner.Pets) pet.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
         }
     }
 
@@ -831,6 +822,7 @@ public class Mage : HeroController
         explosiveLandingPercent = PerkState.GetRank(MagePerkIds.DireitaPousoExplosivo) * 20f;
         vengefulPhoenixDamagePercent = PerkState.GetRank(MagePerkIds.DireitaFenixVingativa) * 25f;
         secondPhoenixEnabled = PerkState.GetRank(MagePerkIds.DireitaSegundaFenix) > 0;
+        if (petSummoner != null) petSummoner.ExtraPets = secondPhoenixEnabled ? 1 : 0;
         instantTeleportEnabled = PerkState.GetRank(MagePerkIds.DireitaTeleporteInstantaneo) > 0;
 
         // Direita #28 "Renascimento" — redesenhado 2026-11-13 (pedido do usuário: a versão

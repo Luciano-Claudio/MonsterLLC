@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 6375903834917578240}
   - component: {fileID: 1137751000451965340}
   - component: {fileID: 8048400557567247715}
+  - component: {fileID: 243817099241737393}
   m_Layer: 8
   m_Name: Mage
   m_TagString: Player
@@ -231,6 +232,8 @@ MonoBehaviour:
   attackHitbox: {fileID: 6828866472260034055}
   attackDamageMultiplier: 1
   attackHitboxSizeMultiplier: 1
+  primaryExtraDuration: 0
+  fireTickInterval: 0.25
   fireballPrefab: {fileID: 1123546062510649833, guid: 80ff04dec6497a94e90a8f1158d923ab, type: 3}
   ultimateDamageMultiplier: 2
   ultimateTrailDamageMultiplier: 0.5
@@ -246,8 +249,7 @@ MonoBehaviour:
   teleportProjectilePrefab: {fileID: 1651467629525891566, guid: 229b3d194b1b40f47972b54e0b373498, type: 3}
   secondaryAbilityMaxRange: 10
   teleportProjectileSpeed: 12
-  petPrefab: {fileID: 5842852507566284858, guid: 16b39e6cf87c874409815f8f615320f1, type: 3}
-  petSpawnPoint: {fileID: 8631336237625606155}
+  petSummoner: {fileID: 243817099241737393}
   petSizeMultiplier: 1
   petActionSpeedMultiplier: 2
   maxActionDuration: 3
@@ -339,6 +341,22 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.5}
   m_Size: {x: 1, y: 1.5}
   m_Direction: 0
+--- !u!114 &243817099241737393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385074858891067883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e914ef6506fe6146adbbd417bf82e9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetSummoner
+  hasPet: 0
+  petCount: 1
+  petPrefab: {fileID: 5842852507566284858, guid: 16b39e6cf87c874409815f8f615320f1, type: 3}
+  petSpawnPoint: {fileID: 8631336237625606155}
 --- !u!1 &4817782963491996284
 GameObject:
   m_ObjectHideFlags: 0
