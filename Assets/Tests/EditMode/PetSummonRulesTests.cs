@@ -48,6 +48,28 @@ public class PetSummonRulesTests
     }
 
     [Test]
+    public void PickSpawn_OnlyAmongFreePoints()
+    {
+        // pontos 0 e 2 ocupados: o sorteio só pode cair em 1 ou 3
+        var occupied = new[] { true, false, true, false };
+        Assert.AreEqual(1, PetSummonRules.PickSpawnIndex(occupied, random01: 0f));
+        Assert.AreEqual(3, PetSummonRules.PickSpawnIndex(occupied, random01: 0.99f));
+    }
+
+    [Test]
+    public void PickSpawn_AllOccupied_FallsBackToAnyPoint()
+    {
+        var occupied = new[] { true, true };
+        Assert.AreEqual(1, PetSummonRules.PickSpawnIndex(occupied, random01: 0.99f));
+    }
+
+    [Test]
+    public void PickSpawn_NoPoints_ReturnsMinusOne()
+    {
+        Assert.AreEqual(-1, PetSummonRules.PickSpawnIndex(new bool[0], random01: 0.5f));
+    }
+
+    [Test]
     public void Idle_WhenNotPending()
     {
         Assert.AreEqual(PetSummonStep.Idle, PetSummonRules.Next(pending: false, heroBusy: false, missing: 1));
