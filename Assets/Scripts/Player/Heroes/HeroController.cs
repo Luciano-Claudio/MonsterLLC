@@ -1183,6 +1183,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // em seguida resetaria o Trigger já "gasto" sem nunca tocar animação de morte nenhuma.
         OnHeroDeath();
 
+        // Todo trigger ainda armado (Attack/Ultimate/Shift/Pet disparados neste mesmo frame)
+        // sai antes do DieTrigger — senão ele tira o herói do die no frame seguinte via AnyState
+        // e a animação de morte nunca termina (bug real, ver AnimatorTriggerUtility). Depois do
+        // OnHeroDeath() de propósito: o Druid troca de controller lá dentro.
+        AnimatorTriggerUtility.ResetAllTriggers(animator);
         AnimatorTrigger("DieTrigger");
         Debug.Log("[HeroController] Morreu — aguardando Animation Event de fim do die...");
 

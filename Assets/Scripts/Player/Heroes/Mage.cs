@@ -634,6 +634,10 @@ public class Mage : HeroController
     // instância (prestes a ser destruída junto) não precisa de nenhuma limpeza própria.
     protected override void OnHeroDeath()
     {
+        // Fogo aceso não pode continuar causando dano com o Mage morto (o Update() do Mage, que
+        // apagaria via StopFireIfActionCut, para quando o GameplayGate fecha no reset do mundo).
+        if (attackHitbox != null) attackHitbox.EndFire();
+
         // Morrer no meio do teleporte (entre a sprite sumir e o projétil chegar) não pode
         // deixar o Mage invisível pra sempre no respawn — o próprio HeroController.OnDeath()
         // já toca o DieTrigger, então a sprite precisa estar de volta pra morte aparecer.
