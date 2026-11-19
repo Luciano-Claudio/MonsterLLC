@@ -166,6 +166,22 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected bool isAttackResolving;
     private bool wasAttackResolving; // detecta a transição true -> false no Update(), ver comentário lá
 
+    // D9.1 (Atacar andando, Seção 1.1 da Deadline 9) — o herói anda durante o ataque primário.
+    // Cada estado listado em walkableAttackStates (ex.: "Attack") pode ter um gêmeo
+    // "<Estado>_Walk" no Animator (mesmos frames, mesmos Animation Events, sprites andando) —
+    // o Update() troca entre os dois no MESMO normalizedTime quando o jogador começa/para de
+    // andar (ver AttackWalkSwap). Sem gêmeo no controller atual, o herói anda tocando a
+    // animação parada. Ultimate/Shift nunca estão nesta lista, então continuam travando.
+    // Herói cujo estado de ataque é compartilhado com Ultimate/Shift (ex.: Attack_Start do
+    // Gunslinger) sobrescreve CanWalkDuringCurrentAction.
+    [SerializeField] private bool allowMoveDuringPrimaryAttack = false;
+    [SerializeField, Range(0f, 1f)] private float moveSpeedMultiplierDuringPrimaryAttack = 1f; // 🔢 ajustável
+    [SerializeField] private string[] walkableAttackStates = new string[0];
+    private int[] walkableStandHashes; // pré-calculados no Awake() — Update() não aloca nada
+    private int[] walkableTwinHashes;
+    public bool IsAttackWalking { get; private set; }
+    protected virtual bool CanWalkDuringCurrentAction => true;
+
     // Movimento só é permitido durante "Walk" (Seção 16) — sem isso, tomar dano de várias
     // fontes seguidas prende o herói na animação de "Damage" indefinidamente (cada hit
     // reativa o Trigger antes do anterior terminar), impedindo ele de sair da posição e
@@ -454,6 +470,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (statusGoldIndicator != null) statusGoldIndicator.SetActive(false);
 
         animator = GetComponent<Animator>();
+        walkableStandHashes = new int[walkableAttackStates.Length];
+        walkableTwinHashes = new int[walkableAttackStates.Length];
+        for (int i = 0; i < walkableAttackStates.Length; i++)
+        {
+            walkableStandHashes[i] = Animator.StringToHash(walkableAttackStates[i]);
+            walkableTwinHashes[i] = Animator.StringToHash(walkableAttackStates[i] + "_Walk");
+        }
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) spriteOriginalColor = spriteRenderer.color;
         bodyCollider = GetComponent<CapsuleCollider2D>();
@@ -683,7 +706,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // está no estado "Walk" — qualquer outra animação (attack, ultimate, summon etc.)
         // bloqueia o movimento até terminar. Sem Animator ainda wireado (heróis não
         // migrados), AnimatorStateCheck libera sempre, então nada muda pra eles.
-        bool canMove = wantsToMove && AnimatorStateCheck.IsInState(animator, "Walk");
+        // Exceção D9.1: estados de walkableAttackStates (e os gêmeos "_Walk") — ver campo.
+        bool attackMoveAllowed = allowMoveDuringPrimaryAttack && !isTrapped && CanWalkDuringCurrentAction
+            && UpdateAttackWalkState(wantsToMove);
+        bool canMove = wantsToMove && (AnimatorStateCheck.IsInState(animator, "Walk") || attackMoveAllowed);
+        IsAttackWalking = canMove && attackMoveAllowed;
+        float moveSpeed = attackMoveAllowed ? EffectiveMoveSpeed * moveSpeedMultiplierDuringPrimaryAttack : EffectiveMoveSpeed;
         if (rb != null)
         {
             // rb.linearVelocity (não Translate) — resolvido pelo motor de física de verdade,
@@ -691,18 +719,47 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             // vez de ser atravessado. Precisa zerar explicitamente quando canMove é falso —
             // diferente de Translate (que simplesmente não faz nada), velocity persiste entre
             // frames até ser trocada.
-            rb.linearVelocity = canMove ? moveInput * EffectiveMoveSpeed : Vector2.zero;
+            rb.linearVelocity = canMove ? moveInput * moveSpeed : Vector2.zero;
             Velocity = rb.linearVelocity;
         }
         else if (canMove)
         {
-            transform.Translate(moveInput * EffectiveMoveSpeed * Time.deltaTime);
-            Velocity = moveInput * EffectiveMoveSpeed;
+            transform.Translate(moveInput * moveSpeed * Time.deltaTime);
+            Velocity = moveInput * moveSpeed;
         }
         else
         {
             Velocity = Vector2.zero;
         }
+    }
+
+    // D9.1 — true se o Animator está num estado de walkableAttackStates ou no gêmeo dele; de
+    // quebra, troca parado <-> andando no mesmo normalizedTime quando o jogador começa/para
+    // de andar. Só é chamado com a flag ligada, sem Prisão e com CanWalkDuringCurrentAction.
+    // Durante uma transição do Animator não troca (o estado "atual" ainda é o de saída).
+    private bool UpdateAttackWalkState(bool wantsToMove)
+    {
+        if (animator == null || walkableStandHashes == null || walkableStandHashes.Length == 0) return false;
+
+        var info = animator.GetCurrentAnimatorStateInfo(0);
+        int current = info.shortNameHash;
+        for (int i = 0; i < walkableStandHashes.Length; i++)
+        {
+            bool inStand = current == walkableStandHashes[i];
+            bool inTwin = current == walkableTwinHashes[i];
+            if (!inStand && !inTwin) continue;
+
+            if (!animator.IsInTransition(0))
+            {
+                int target = inStand ? walkableTwinHashes[i] : walkableStandHashes[i];
+                var action = AttackWalkSwap.Decide(wantsToMove, isTrapped, CanWalkDuringCurrentAction,
+                    inStand, inTwin, animator.HasState(0, target), info.normalizedTime, info.loop);
+                if (action != AttackWalkAction.None)
+                    animator.Play(target, 0, AttackWalkSwap.ContinueTime(info.normalizedTime, info.loop));
+            }
+            return true;
+        }
+        return false;
     }
 
     private void UpdateAimDirection(Vector2 screenPosition)

@@ -667,6 +667,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -675,6 +679,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   attackHitboxNE: {fileID: 3806751581263164396}
   attackHitboxNW: {fileID: 3256150972072358283}
@@ -685,14 +690,54 @@ MonoBehaviour:
   groundCrackDamagePerSecond: 1
   groundCrackTickInterval: 1
   knockbackForce: 0
+  groundCrackAreaMultiplier: 1
+  furiaDiagonalBonusPerExtraTarget: 0
+  sangramentoPerfuranteDamagePerSecond: 0
+  sangramentoPerfuranteDuration: 3
+  groundCrackShiftBonusPercent: 0
+  groundCrackHpLostBonusPerStep: 0
+  groundCrackPermanent: 0
+  groundCrackPermanentLeaveRadius: 3
+  ecoDoImpactoEnabled: 0
+  ecoDoImpactoSizeMultiplier: 0.5
   ultimateProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
   ultimateDamageMultiplier: 2
   projectileSpeed: 10
   projectileMaxDistance: 8
   projectileKnockbackForce: 4
+  ultimateProjectileCount: 8
+  ultimateChargeRequiredPercent: 100
+  ultimateEnergyGainBonusPercent: 0
+  ultimateExplosionRadius: 0
+  ultimateExplosionDamagePercent: 0
+  ultimateGroundCrackTrailChance: 0
+  ultimateHealPercentPerHit: 0
+  ultimateLandingAreaRadius: 0
+  ultimateLandingAreaDamagePercent: 0
+  ultimateRepeatVolleyChance: 0
+  ultimateAutoFireInterval: 0
+  ultimateEveryFifthUseDoubled: 0
+  ultimateFragmentOnHit: 0
+  ultimateFragmentMaxDepth: 0
+  ultimateFragmentDamageDecayPercent: 50
   secondaryAbilityDamageMultiplier: 1.5
   secondaryAbilitySpeedMultiplier: 1.5
   secondaryAbilityDuration: 5
+  passiveDamagePerStepBonus: 0
+  passiveDamageStepCapBonus: 0
+  shiftDamageReductionPercent: 0
+  shiftLifestealPercent: 0
+  shiftCooldownReductionOnKillPercent: 0
+  shiftShieldPercentOfMaxHealth: 0
+  shiftRegenPercentPerSecond: 0
+  lowHpShiftCooldownReductionPercent: 0
+  lowHpShiftCooldownThresholdPercent: 30
+  shiftMaxHealthBonusPercent: 0
+  furiaFinalInvulnDuration: 0
+  furiaFinalHpThresholdPercent: 20
+  coracaoSelvagemEnabled: 0
+  coracaoSelvagemHpThresholdPercent: 10
+  avatarDaFuriaUncapSteps: 0
   maxActionDuration: 3
   sizeMultiplier: 1
 --- !u!114 &3565354531031999
