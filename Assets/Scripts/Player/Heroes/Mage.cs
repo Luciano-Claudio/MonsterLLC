@@ -13,11 +13,10 @@ public class Mage : HeroController
     // MageAttackHitbox, Collider2D incluso) até 2x o tamanho original. 1 = tamanho normal.
     [SerializeField] private float attackHitboxSizeMultiplier = 1f; // 🔢 upgradable — até 2x (ver OnValidate)
 
-    // Attack pode acabar sendo Blend Tree (igual Barbarian/Ranger) — cada clipe blendado
-    // carrega seu próprio Animation Event, então a trava é obrigatória por precaução (mesmo
-    // bug já corrigido em EnemyController/Barbarian/Ranger), mesmo que o Attack do Mage
-    // termine sendo um estado único.
-    private bool castFireFired;
+    // Canalização do primário (ver PrimaryAttack/UpdatePrimaryChannel).
+    private bool isChannelingPrimary;
+    private float lastChannelHitTime = float.NegativeInfinity;
+    private const float ChannelHitMinInterval = 0.3f; // < 1 volta do attack_continuous (12 frames @16fps = 0,75s), provisório até a M5
 
     [Header("Ultimate — bola de fogo em ângulo livre (GDD Seção 17.3)")]
     [SerializeField] private GameObject fireballPrefab; // precisa ter MageFireball
@@ -123,8 +122,6 @@ public class Mage : HeroController
     private float vengefulFlameDamagePercent; // #27 Chama Vingativa
     private bool vengefulFlameNextHitPending;
     private float lifestealPercent; // #11 Chama Vital (ex-Muralha de Chamas)
-    private bool eternalFlameEnabled; // #29 Chama Eterna
-    private bool isChannelingEternalFlame;
     private bool supernovaEnabled; // #30 Supernova
     private int supernovaCastCounter;
     private float supernovaAccumulatedDamage;
@@ -217,7 +214,10 @@ public class Mage : HeroController
             attackHitboxPivot.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
-        if (isAttacking && !isTeleporting)
+        // isChannelingPrimary fora: a canalização dura o quanto o jogador segurar o botão —
+        // sem isso o timer de segurança cortava o fogo depois de maxActionDuration (bug real,
+        // já existia com a antiga Chama Eterna).
+        if (isAttacking && !isTeleporting && !isChannelingPrimary)
         {
             actionElapsed += Time.deltaTime;
             if (actionElapsed >= maxActionDuration)
@@ -230,57 +230,48 @@ public class Mage : HeroController
 
         UpdateUltimateFlyingTrail();
         UpdateContagiousFire();
-        UpdateEternalFlameChannel();
+        UpdatePrimaryChannel();
     }
 
+    // D9.1 (2026-11-19) — o primário do Mage é SEMPRE canalização (a antiga "Chama Eterna",
+    // #29, virou o padrão; o estado "Attack" de cast único saiu do Animator): Attack_Start ->
+    // Attack_Continuous (self-loop enquanto o botão estiver segurado) -> Attack_End, cada um
+    // com o gêmeo "_Walk" (ver HeroController.walkableAttackStates).
     protected override void PrimaryAttack()
     {
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
-        castFireFired = false;
-
-        // #29 "Chama Eterna" — entra no estado dedicado (Attack_Start -> Attack_Continuous em
-        // loop -> Attack_End), em vez do Attack normal. isChannelingEternalFlame é checado no
-        // Update() pra saber a hora de soltar o EternalFlameEndTrigger (quando o jogador
-        // soltar o botão) — ver UpdateEternalFlameChannel().
-        if (eternalFlameEnabled)
-        {
-            isChannelingEternalFlame = true;
-            AnimatorTrigger("EternalFlameTrigger");
-        }
-        else
-        {
-            AnimatorTrigger("AttackTrigger");
-        }
+        isChannelingPrimary = true;
+        lastChannelHitTime = float.NegativeInfinity;
+        AnimatorTrigger("AttackTrigger");
     }
 
-    // Chama Eterna — enquanto estiver canalizando, solta o EternalFlameEndTrigger assim que o
-    // jogador soltar o botão (Attack_Continuous está num self-loop no Animator, sem condição
-    // de saída própria — só esse trigger, disparado de AnyState, tira ele de lá).
-    private void UpdateEternalFlameChannel()
+    // Solta o AttackEndTrigger assim que o jogador soltar o botão (Attack_Continuous está num
+    // self-loop no Animator, sem condição de saída própria — só esse trigger, de AnyState,
+    // tira ele de lá).
+    private void UpdatePrimaryChannel()
     {
-        if (!isChannelingEternalFlame) return;
+        if (!isChannelingPrimary) return;
+        // Ação cortada por fora (Prisão, morte — o HeroController zera isAttacking): encerra a
+        // canalização SEM disparar o Attack_End, senão ele tocaria do nada ao soltar o botão.
+        if (!isAttacking) { isChannelingPrimary = false; return; }
         if (IsAttackHeld) return;
 
-        isChannelingEternalFlame = false;
-        AnimatorTrigger("EternalFlameEndTrigger");
+        isChannelingPrimary = false;
+        AnimatorTrigger("AttackEndTrigger");
     }
 
-    // Animation Event, no meio do cast — dispara a animação de fogo do próprio filho, que
-    // decide o instante exato do dano na SUA própria animação (ver MageAttackHitbox).
-    public void AnimationCastFireEvent()
+    // Animation Event do clipe attack_continuous_XX — 1 por volta do loop. Trava por tempo
+    // (meia volta) porque a troca Attack_Continuous <-> Attack_Continuous_Walk no mesmo
+    // normalizedTime pode reentrar no frame 0 e disparar o evento 2x na mesma volta.
+    // Provisório: o dano vira tick por monstro na task M5 e este evento sai.
+    public void AnimationEternalFlameHitEvent()
     {
-        if (castFireFired) return;
-        castFireFired = true;
+        if (Time.time - lastChannelHitTime < ChannelHitMinInterval) return;
+        lastChannelHitTime = Time.time;
         DealPrimaryHit();
     }
-
-    // Animation Event do clipe attack_continuous_XX — 1 por repetição do loop (Chama Eterna).
-    // Sem guarda de "já disparou" de propósito: cada volta do loop é uma entrada NOVA no
-    // estado (ver self-transition Attack_Continuous -> Attack_Continuous no Animator), então
-    // o evento só dispara 1x por volta de qualquer jeito.
-    public void AnimationEternalFlameHitEvent() => DealPrimaryHit();
 
     private void DealPrimaryHit()
     {
@@ -779,7 +770,7 @@ public class Mage : HeroController
         explosiveImpactPercent = PerkState.GetRank(MagePerkIds.EsquerdaImpactoExplosivo) * 20f;
         arcaneBreathEnergyPercent = PerkState.GetRank(MagePerkIds.EsquerdaFolegoArcano) * 5f;
         vengefulFlameDamagePercent = PerkState.GetRank(MagePerkIds.EsquerdaChamaVingativa) * 25f;
-        eternalFlameEnabled = PerkState.GetRank(MagePerkIds.EsquerdaChamaEterna) > 0;
+        // #29 Chama Eterna virou o primário padrão (D9.1) — perk sem efeito até o D9.6 remover os perks.
         supernovaEnabled = PerkState.GetRank(MagePerkIds.EsquerdaSupernova) > 0;
     }
 
