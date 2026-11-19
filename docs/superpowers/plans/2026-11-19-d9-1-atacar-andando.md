@@ -227,9 +227,14 @@ Tasks:
   - `protected virtual bool CanAimDuringPrimaryAttack => false;` no `HeroController`, e o Mage sobrescreve com `true`.
   - O `UpdateAimDirection` deixa de travar quando `isAttackResolving && CanAimDuringPrimaryAttack`.
   - A BlendTree troca de direção no mesmo `normalizedTime`, e o pivô do fogo gira junto.
-- **M5. Fogo start/loop/end + tick por monstro** (espera a divisão do fogo, que o usuário vai passar):
-  - O rastreador por monstro é lógica pura testada em EditMode.
-  - O dano só existe no loop do fogo.
+- **M5. Ataque com DURAÇÃO + fogo start/continuous/end + tick por monstro** (redesenhado com o usuário em 2026-11-19; substitui o "segurar canaliza" da M2):
+  - **Clique e duração:** 1 clique = 1 ataque completo: `attack_start` → `attack_continuous` (repete enquanto a duração não acabou) → `attack_end`. Segurar o botão só dispara o próximo ataque, como nos outros heróis; não mexe na duração.
+  - **Fogo:** 16 frames, divididos em start 0–3, continuous 4–8 (loop) e end 9–15. Só existe durante o `attack_continuous` do corpo.
+  - **Frame 1 do continuous do corpo** (evento `AnimationFireStartEvent`): acende o start do fogo, se ele ainda não estiver aceso.
+  - **Frame 7 do continuous do corpo** (evento `AnimationFireDurationCheckEvent`): se o tempo desde que o fogo acendeu for maior ou igual à duração extra, o fogo entra no end e o corpo termina a volta e vai pro `attack_end` (bool `AttackDurationOver`). Senão, mais uma volta.
+  - **Duração extra:** começa em 0s, ou seja, 1 volta, igual ao ataque de antes do rework. É contada em segundos, então não depende da velocidade de animação. Fica no campo 🔢 `primaryExtraDuration`.
+  - **Dano:** só no continuous do fogo, com `PerTargetTickTracker` (tick de 0,25s por monstro, hit imediato na 1ª entrada). Dano por tick = dano × intervalo.
+  - **Nota pro D9.6:** pro Mage chegar a 100% de uptime, as cartas dele devem ser de duração e cooldown, não de velocidade de animação (que só encurta o start e o end do corpo).
 - **M6. Teleporte atravessa monstros:**
   - `TeleportUtility.ClampDistance` ignora colliders da layer `Enemy`.
   - Vale pro Mage e pro Assassin.
