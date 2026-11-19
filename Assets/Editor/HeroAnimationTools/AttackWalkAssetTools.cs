@@ -170,4 +170,138 @@ public static class AttackWalkAssetTools
         targetImporter.SaveAndReimport();
         return $"OK: {newRects.Length} sprites copiados";
     }
+
+    // ===================== Clipes walk_* =====================
+
+    public static string WalkClipPath(string sourceClipPath) =>
+        System.IO.Path.Combine(System.IO.Path.GetDirectoryName(sourceClipPath),
+            "walk_" + System.IO.Path.GetFileName(sourceClipPath)).Replace(System.IO.Path.DirectorySeparatorChar, '/');
+
+    private static EditorCurveBinding? SpriteBinding(AnimationClip clip)
+    {
+        foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            if (binding.propertyName == "m_Sprite") return binding;
+        return null;
+    }
+
+    // Confere cada par original/walk: frameRate, length, loop, keys de sprite (quantidade,
+    // tempos, índice do sprite vindo da sheet walk pareada) e eventos (função + frame).
+    public static string ValidateDerivedClips(string heroFolder, string[] clipNames)
+    {
+        var errors = new StringBuilder();
+        foreach (var clipName in clipNames)
+        {
+            string sourcePath = $"{heroFolder}/{clipName}.anim";
+            var source = AssetDatabase.LoadAssetAtPath<AnimationClip>(sourcePath);
+            if (source == null) { errors.AppendLine($"FAIL: original não encontrado {sourcePath}"); continue; }
+            var walk = AssetDatabase.LoadAssetAtPath<AnimationClip>(WalkClipPath(sourcePath));
+            if (walk == null) { errors.AppendLine($"FAIL: walk faltando pra {clipName}"); continue; }
+
+            Compare(errors, clipName, "frameRate", source.frameRate, walk.frameRate);
+            Compare(errors, clipName, "length", source.length, walk.length);
+            Compare(errors, clipName, "isLooping", source.isLooping, walk.isLooping);
+
+            var sourceBinding = SpriteBinding(source);
+            var walkBinding = SpriteBinding(walk);
+            if (sourceBinding == null || walkBinding == null) { errors.AppendLine($"FAIL: {clipName} sem curva de sprite"); continue; }
+            var sourceKeys = AnimationUtility.GetObjectReferenceCurve(source, sourceBinding.Value);
+            var walkKeys = AnimationUtility.GetObjectReferenceCurve(walk, walkBinding.Value);
+            Compare(errors, clipName, "spriteKeys", sourceKeys.Length, walkKeys.Length);
+            for (int i = 0; i < Mathf.Min(sourceKeys.Length, walkKeys.Length); i++)
+            {
+                Compare(errors, clipName, $"keyTime[{i}]", sourceKeys[i].time, walkKeys[i].time);
+                var sourceSprite = sourceKeys[i].value as Sprite;
+                var walkSprite = walkKeys[i].value as Sprite;
+                if (sourceSprite == null || walkSprite == null) { errors.AppendLine($"FAIL: {clipName} key {i} sem sprite"); continue; }
+                Compare(errors, clipName, $"spriteIndex[{i}]", ParseSpriteIndex(sourceSprite.name), ParseSpriteIndex(walkSprite.name));
+                string expectedWalkSheet = WalkSheetFor(AssetDatabase.GetAssetPath(sourceSprite));
+                Compare(errors, clipName, $"spriteSheet[{i}]", expectedWalkSheet, AssetDatabase.GetAssetPath(walkSprite));
+            }
+
+            var sourceEvents = AnimationUtility.GetAnimationEvents(source);
+            var walkEvents = AnimationUtility.GetAnimationEvents(walk);
+            Compare(errors, clipName, "events", sourceEvents.Length, walkEvents.Length);
+            for (int i = 0; i < Mathf.Min(sourceEvents.Length, walkEvents.Length); i++)
+            {
+                Compare(errors, clipName, $"event[{i}].function", sourceEvents[i].functionName, walkEvents[i].functionName);
+                Compare(errors, clipName, $"event[{i}].frame",
+                    Mathf.RoundToInt(sourceEvents[i].time * source.frameRate), Mathf.RoundToInt(walkEvents[i].time * walk.frameRate));
+            }
+        }
+        return errors.Length == 0 ? $"PASS ({clipNames.Length} clipes)" : errors.ToString();
+    }
+
+    // null quando a sheet não tem par cadastrado em SheetPairs.
+    public static string WalkSheetFor(string originalSheetPath)
+    {
+        foreach (var (original, walk) in SheetPairs)
+            if (original == originalSheetPath) return walk;
+        return null;
+    }
+
+    // Cria (ou sobrescreve, mantendo o GUID) "walk_<nome>.anim" na mesma pasta do original:
+    // mesmos tempos/curvas/eventos/configurações, só o sprite de cada key trocado pelo de
+    // mesmo índice na sheet walk pareada. Eventos iguais = golpe sai no mesmo frame.
+    public static AnimationClip DeriveWalkClip(AnimationClip source)
+    {
+        string sourcePath = AssetDatabase.GetAssetPath(source);
+        var clip = new AnimationClip { frameRate = source.frameRate };
+        AnimationUtility.SetAnimationClipSettings(clip, AnimationUtility.GetAnimationClipSettings(source));
+
+        foreach (var binding in AnimationUtility.GetCurveBindings(source))
+            AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(source, binding));
+
+        foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(source))
+        {
+            var keys = AnimationUtility.GetObjectReferenceCurve(source, binding);
+            if (binding.propertyName == "m_Sprite")
+            {
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var sprite = keys[i].value as Sprite;
+                    if (sprite == null) throw new System.InvalidOperationException($"{source.name}: key {i} sem sprite");
+                    string walkSheetPath = WalkSheetFor(AssetDatabase.GetAssetPath(sprite));
+                    if (walkSheetPath == null)
+                        throw new System.InvalidOperationException($"{source.name}: sheet sem par walk ({AssetDatabase.GetAssetPath(sprite)})");
+                    var walkSprite = SpriteAtIndex(AssetDatabase.LoadAssetAtPath<Texture2D>(walkSheetPath), ParseSpriteIndex(sprite.name));
+                    if (walkSprite == null)
+                        throw new System.InvalidOperationException($"{source.name}: índice {ParseSpriteIndex(sprite.name)} faltando em {walkSheetPath}");
+                    keys[i].value = walkSprite;
+                }
+            }
+            AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
+        }
+
+        AnimationUtility.SetAnimationEvents(clip, AnimationUtility.GetAnimationEvents(source));
+
+        string walkPath = WalkClipPath(sourcePath);
+        var existing = AssetDatabase.LoadAssetAtPath<AnimationClip>(walkPath);
+        clip.name = System.IO.Path.GetFileNameWithoutExtension(walkPath);
+        if (existing != null)
+        {
+            EditorUtility.CopySerialized(clip, existing);
+            EditorUtility.SetDirty(existing);
+            Object.DestroyImmediate(clip);
+            clip = existing;
+        }
+        else
+        {
+            AssetDatabase.CreateAsset(clip, walkPath);
+        }
+        AssetDatabase.SaveAssets();
+        return clip;
+    }
+
+    public static string DeriveForHero(string heroFolder, string[] clipNames)
+    {
+        int count = 0;
+        foreach (var clipName in clipNames)
+        {
+            var source = AssetDatabase.LoadAssetAtPath<AnimationClip>($"{heroFolder}/{clipName}.anim");
+            if (source == null) return $"FAIL: original não encontrado {heroFolder}/{clipName}.anim";
+            DeriveWalkClip(source);
+            count++;
+        }
+        return $"Derivados: {count}";
+    }
 }
