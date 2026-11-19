@@ -93,6 +93,7 @@ public class RunTelemetryRecorder : MonoBehaviour
             secondsSinceLastHitDealt = secondsSinceLastHitDealt,
             secondsSinceLastHitReceived = secondsSinceLastHitReceived,
             isNight = DayTimer.Instance.IsNight,
+            isAttackWalking = hero != null && hero.IsAttackWalking,
         });
     }
 
@@ -523,4 +524,5 @@ public class SnapshotRecord
     public float secondsSinceLastHitDealt;
     public float secondsSinceLastHitReceived;
     public bool isNight;
+    public bool isAttackWalking; // D9.1 — andando durante o ataque primário naquele segundo
 }
