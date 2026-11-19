@@ -25,6 +25,8 @@ public static class AttackWalkAssetTools
          "Assets/Sprites/Heros/Ranger/Attack/Walk_Attack_Diagonal.png"),
         ("Assets/Sprites/Heros/Ranger/Attack/Ranger_Shot_Orthogonal.png",
          "Assets/Sprites/Heros/Ranger/Attack/Walk_Attack_Orthogonal.png"),
+        ("Assets/Sprites/Heros/Mage/Attack/Wizard_Fire_Torrent.png",
+         "Assets/Sprites/Heros/Mage/Attack/Walk_Attack.png"),
     };
 
     // Índice = número depois do último "_" no nome do sprite (padrão do fatiamento da Unity:
@@ -348,10 +350,65 @@ public static class AttackWalkAssetTools
         return null;
     }
 
-    // Destino de uma transição do gêmeo: igual ao do parado, exceto a transição pra ele
-    // mesmo (ex.: Attack_Continuous em loop), que no gêmeo aponta pro próprio gêmeo.
-    private static AnimatorState MapDestination(AnimatorState destination, AnimatorState stand, AnimatorState twin) =>
-        destination == stand ? twin : destination;
+    // Destino de uma transição do gêmeo: igual ao do parado, exceto (1) a transição pra ele
+    // mesmo (ex.: Attack_Continuous em loop), que no gêmeo aponta pro próprio gêmeo, e (2) um
+    // destino que também tem gêmeo (cadeia do Mage: Attack_Start -> Attack_Continuous), que no
+    // gêmeo aponta pro gêmeo do destino — andando, a cadeia inteira continua andando.
+    private static AnimatorState MapDestination(AnimatorState destination, AnimatorState stand, AnimatorState twin,
+        Dictionary<string, AnimatorState> states = null)
+    {
+        if (destination == stand) return twin;
+        if (destination == null) return null;
+        if (states != null && states.TryGetValue(destination.name + WalkTwinSuffix, out var destinationTwin))
+            return destinationTwin;
+        return destination;
+    }
+
+    private static Dictionary<string, AnimatorState> StateLookup(AnimatorController controller)
+    {
+        var lookup = new Dictionary<string, AnimatorState>();
+        foreach (var child in controller.layers[0].stateMachine.states)
+            lookup[child.state.name] = child.state;
+        return lookup;
+    }
+
+    // Cadeia de estados de ataque (ex.: Mage: Attack_Start, Attack_Continuous, Attack_End):
+    // remove os gêmeos antigos de TODOS, cria todos de novo e só então religa as transições
+    // entre gêmeos. Recriar 1 gêmeo sozinho apagaria as transições que os outros gêmeos têm
+    // pra ele (RemoveState leva junto as transições que apontam pro estado removido).
+    public static string AddWalkTwinsForChain(AnimatorController controller, string[] standStateNames)
+    {
+        var log = new StringBuilder();
+        foreach (var name in standStateNames)
+        {
+            var old = FindState(controller, name + WalkTwinSuffix);
+            if (old == null) continue;
+            if (old.motion is BlendTree oldTree && AssetDatabase.GetAssetPath(oldTree) == AssetDatabase.GetAssetPath(controller))
+            {
+                AssetDatabase.RemoveObjectFromAsset(oldTree);
+                Object.DestroyImmediate(oldTree, true);
+            }
+            controller.layers[0].stateMachine.RemoveState(old);
+        }
+        foreach (var name in standStateNames)
+            log.Append(AddWalkTwin(controller, name)).Append("; ");
+
+        var states = StateLookup(controller);
+        foreach (var name in standStateNames)
+        {
+            var stand = FindState(controller, name);
+            var twin = FindState(controller, name + WalkTwinSuffix);
+            foreach (var transition in twin.transitions)
+            {
+                if (transition.isExit || transition.destinationState == null) continue;
+                var mapped = MapDestination(transition.destinationState, stand, twin, states);
+                if (mapped != transition.destinationState) transition.destinationState = mapped;
+            }
+        }
+        EditorUtility.SetDirty(controller);
+        AssetDatabase.SaveAssets();
+        return log.ToString();
+    }
 
     public static string ValidateTwin(AnimatorController controller, string standStateName)
     {
@@ -396,7 +453,7 @@ public static class AttackWalkAssetTools
         {
             var s = stand.transitions[i];
             var t = twin.transitions[i];
-            var expected = MapDestination(s.destinationState, stand, twin);
+            var expected = MapDestination(s.destinationState, stand, twin, StateLookup(controller));
             Compare(errors, label, $"transition[{i}].destination", expected != null ? expected.name : "exit", t.destinationState != null ? t.destinationState.name : "exit");
             Compare(errors, label, $"transition[{i}].hasExitTime", s.hasExitTime, t.hasExitTime);
             Compare(errors, label, $"transition[{i}].exitTime", s.exitTime, t.exitTime);
