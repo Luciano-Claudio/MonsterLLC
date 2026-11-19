@@ -1,5 +1,9 @@
 # Deadline 8.1 — Redesign Incremental (Fase 1: até a Loja)
 
+> **⚠️ SUBSTITUÍDO (2026-11-18)** pela `Mudanca_Estrutural_Deadline_9_XP_Cartas_Horda.md`. O loop
+> de Loja, perks, loot e retry do dia descrito aqui foi rejeitado depois de playtest com amigos.
+> Este documento fica só como histórico.
+
 _Decisões fechadas em sessão de planejamento pós-Deadline 8 (fechada em 2026-10-31). Cobre as
 mecânicas que já existem e só precisam de ajuste, o sistema de popups/tooltips, o pool de 30
 Talentos (fechado — Seção 7), os 30 perks de "Mundo" (fechado — Seção 8; **mudança de escopo
