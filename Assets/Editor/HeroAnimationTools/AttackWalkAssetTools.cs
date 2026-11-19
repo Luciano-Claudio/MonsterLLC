@@ -514,4 +514,69 @@ public static class AttackWalkAssetTools
         string path = AssetDatabase.GetAssetPath(standMotion);
         return AssetDatabase.LoadAssetAtPath<AnimationClip>(WalkClipPath(path));
     }
+
+    // ===================== Recorte por linha (Mage: start/continuous/end) =====================
+
+    // Linha (base) do sprite: índice - (índice % rowLength). Ex.: rowLength 20, índice 44 -> 40.
+    public static int RowBase(int spriteIndex, int rowLength) => spriteIndex - spriteIndex % rowLength;
+
+    // Confere se o clipe toca exatamente os sprites [base+startInRow, base+startInRow+count) da
+    // linha do 1º sprite, 1 por frame, com duração count/fps e todo evento dentro do clipe.
+    public static string ValidateRowSlice(string clipPath, int rowLength, int startInRow, int count)
+    {
+        var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+        if (clip == null) return $"FAIL: {clipPath} não encontrado\n";
+        var binding = SpriteBinding(clip);
+        if (binding == null) return $"FAIL: {clip.name} sem curva de sprite\n";
+        var keys = AnimationUtility.GetObjectReferenceCurve(clip, binding.Value);
+        var errors = new StringBuilder();
+        Compare(errors, clip.name, "keys", count, keys.Length);
+        if (keys.Length == 0) return errors.ToString();
+        int rowBase = RowBase(ParseSpriteIndex(keys[0].value.name), rowLength);
+        for (int i = 0; i < keys.Length; i++)
+        {
+            Compare(errors, clip.name, $"sprite[{i}]", rowBase + startInRow + i, ParseSpriteIndex(keys[i].value.name));
+            Compare(errors, clip.name, $"time[{i}]", Mathf.RoundToInt(i), Mathf.RoundToInt(keys[i].time * clip.frameRate));
+        }
+        foreach (var e in AnimationUtility.GetAnimationEvents(clip))
+        {
+            int frame = Mathf.RoundToInt(e.time * clip.frameRate);
+            if (frame >= count) errors.AppendLine($"FAIL: {clip.name} evento {e.functionName} no frame {frame} >= {count}");
+        }
+        return errors.ToString();
+    }
+
+    // Refaz a curva de sprite do clipe com [base+startInRow, +count) da MESMA linha e da MESMA
+    // sheet do 1º sprite atual (a linha = a direção, não muda). Eventos que passariam do
+    // último frame vão pro último frame (ex.: AnimationAttackEndEvent do end de 5 -> 4 frames).
+    public static string ReframeFromRow(string clipPath, int rowLength, int startInRow, int count)
+    {
+        var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+        if (clip == null) return $"FAIL: {clipPath} não encontrado";
+        var binding = SpriteBinding(clip);
+        if (binding == null) return $"FAIL: {clip.name} sem curva de sprite";
+        var oldKeys = AnimationUtility.GetObjectReferenceCurve(clip, binding.Value);
+        var firstSprite = (Sprite)oldKeys[0].value;
+        var sheet = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GetAssetPath(firstSprite));
+        int rowBase = RowBase(ParseSpriteIndex(firstSprite.name), rowLength);
+
+        var keys = new ObjectReferenceKeyframe[count];
+        for (int i = 0; i < count; i++)
+        {
+            var sprite = SpriteAtIndex(sheet, rowBase + startInRow + i);
+            if (sprite == null) return $"FAIL: {clip.name} índice {rowBase + startInRow + i} faltando";
+            keys[i] = new ObjectReferenceKeyframe { time = i / clip.frameRate, value = sprite };
+        }
+        AnimationUtility.SetObjectReferenceCurve(clip, binding.Value, keys);
+
+        var events = AnimationUtility.GetAnimationEvents(clip);
+        float lastFrameTime = (count - 1) / clip.frameRate;
+        for (int i = 0; i < events.Length; i++)
+            if (events[i].time > lastFrameTime) events[i].time = lastFrameTime;
+        AnimationUtility.SetAnimationEvents(clip, events);
+
+        EditorUtility.SetDirty(clip);
+        AssetDatabase.SaveAssets();
+        return $"OK: {clip.name} [{rowBase + startInRow}..{rowBase + startInRow + count - 1}]";
+    }
 }
