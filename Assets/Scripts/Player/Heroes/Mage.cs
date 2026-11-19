@@ -13,10 +13,11 @@ public class Mage : HeroController
     // MageAttackHitbox, Collider2D incluso) até 2x o tamanho original. 1 = tamanho normal.
     [SerializeField] private float attackHitboxSizeMultiplier = 1f; // 🔢 upgradable — até 2x (ver OnValidate)
 
-    // Canalização do primário (ver PrimaryAttack/UpdatePrimaryChannel).
-    private bool isChannelingPrimary;
-    private float lastChannelHitTime = float.NegativeInfinity;
-    private const float ChannelHitMinInterval = 0.3f; // < 1 volta do attack_continuous (12 frames @16fps = 0,75s), provisório até a M5
+    // Ataque com duração (ver PrimaryAttack e os eventos AnimationFire*Event).
+    [SerializeField] private float primaryExtraDuration = 0f; // 🔢 segundos extras de fogo além da 1ª volta (0 = ataque base, 1 volta)
+    [SerializeField] private float fireTickInterval = 0.25f; // 🔢 tick do dano do fogo, POR MONSTRO (PerTargetTickTracker)
+    private float fireStartTime = -1f; // -1 = fogo ainda não acendeu neste ataque
+    private System.Func<float> rollFireTickDamage; // cache do delegate (criado 1x, sem alocar por ataque)
 
     [Header("Ultimate — bola de fogo em ângulo livre (GDD Seção 17.3)")]
     [SerializeField] private GameObject fireballPrefab; // precisa ter MageFireball
@@ -112,12 +113,8 @@ public class Mage : HeroController
     private float basePetActionSpeedMultiplier;
 
     // ---- Esquerda (Ataque Primário) ----
-    private float residualBurnChancePercent; // #20 Queimadura Residual
     private float primaryGroundTrailDamagePercent; // #21 Rastro Flamejante
-    private float doubleBurstChancePercent; // #22 Rajada Dupla
     private float contagiousFireChancePercent; // #23 Fogo Contagiante
-    private float flamingEchoChancePercent; // #24 Eco Flamejante
-    private float explosiveImpactPercent; // #25 Impacto Explosivo
     private float arcaneBreathEnergyPercent; // #26 Fôlego Arcano
     private float vengefulFlameDamagePercent; // #27 Chama Vingativa
     private bool vengefulFlameNextHitPending;
@@ -214,13 +211,12 @@ public class Mage : HeroController
             attackHitboxPivot.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
-        // isChannelingPrimary fora: a canalização dura o quanto o jogador segurar o botão —
-        // sem isso o timer de segurança cortava o fogo depois de maxActionDuration (bug real,
-        // já existia com a antiga Chama Eterna).
-        if (isAttacking && !isTeleporting && !isChannelingPrimary)
+        // + primaryExtraDuration: o ataque com duração pode passar de maxActionDuration de
+        // propósito (mais voltas de fogo) — o timer de segurança só cobre o que sobra.
+        if (isAttacking && !isTeleporting)
         {
             actionElapsed += Time.deltaTime;
-            if (actionElapsed >= maxActionDuration)
+            if (actionElapsed >= maxActionDuration + primaryExtraDuration)
             {
                 Debug.LogWarning("[Mage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
@@ -230,14 +226,17 @@ public class Mage : HeroController
 
         UpdateUltimateFlyingTrail();
         UpdateContagiousFire();
-        UpdatePrimaryChannel();
+        StopFireIfActionCut();
     }
 
-    // D9.1 (2026-11-19) — o primário do Mage é SEMPRE canalização (a antiga "Chama Eterna",
-    // #29, virou o padrão; o estado "Attack" de cast único saiu do Animator): Attack_Start ->
-    // Attack_Continuous (self-loop enquanto o botão estiver segurado) -> Attack_End, cada um
-    // com o gêmeo "_Walk" (ver HeroController.walkableAttackStates).
-    // Mirar durante a canalização vira o corpo (AimX/AimY -> BlendTree troca a direção no mesmo
+    // D9.1 (2026-11-19, decisão do usuário) — o primário do Mage é um ataque com DURAÇÃO:
+    // 1 clique = 1 ataque completo, Attack_Start -> Attack_Continuous (dá voltas enquanto a
+    // duração não acabou, bool AttackDurationOver) -> Attack_End, cada um com o gêmeo "_Walk"
+    // (ver HeroController.walkableAttackStates). Segurar o botão só dispara o PRÓXIMO ataque
+    // (igual aos outros heróis), nunca mexe na duração. O fogo (MageAttackHitbox) só existe
+    // dentro do attack_continuous: acende no frame 1 e apaga no frame 7 da volta em que a
+    // duração acabou (ver os 2 Animation Events abaixo).
+    // Mirar durante o ataque vira o corpo (AimX/AimY -> BlendTree troca a direção no mesmo
     // frame, todas as direções têm o mesmo nº de frames) e gira o fogo (pivot, ver Update()).
     protected override bool CanAimDuringPrimaryAttack => true;
 
@@ -246,38 +245,53 @@ public class Mage : HeroController
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
-        isChannelingPrimary = true;
-        lastChannelHitTime = float.NegativeInfinity;
+        fireStartTime = -1f;
+        if (animator != null) animator.SetBool("AttackDurationOver", false);
         AnimatorTrigger("AttackTrigger");
     }
 
-    // Solta o AttackEndTrigger assim que o jogador soltar o botão (Attack_Continuous está num
-    // self-loop no Animator, sem condição de saída própria — só esse trigger, de AnyState,
-    // tira ele de lá).
-    private void UpdatePrimaryChannel()
+    // Animation Event, frame 1 do attack_continuous (parado ou walk) — acende o fogo. Dispara de
+    // novo a cada volta (e pode repetir na troca parado <-> walk), mas StartFire é idempotente.
+    public void AnimationFireStartEvent()
     {
-        if (!isChannelingPrimary) return;
-        // Ação cortada por fora (Prisão, morte — o HeroController zera isAttacking): encerra a
-        // canalização SEM disparar o Attack_End, senão ele tocaria do nada ao soltar o botão.
-        if (!isAttacking) { isChannelingPrimary = false; return; }
-        if (IsAttackHeld) return;
-
-        isChannelingPrimary = false;
-        AnimatorTrigger("AttackEndTrigger");
+        if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
+        if (fireStartTime >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
+        fireStartTime = Time.time;
+        rollFireTickDamage ??= RollFireTickDamage;
+        attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier);
+        ApplyPrimaryCastPerks();
     }
 
-    // Animation Event do clipe attack_continuous_XX — 1 por volta do loop. Trava por tempo
-    // (meia volta) porque a troca Attack_Continuous <-> Attack_Continuous_Walk no mesmo
-    // normalizedTime pode reentrar no frame 0 e disparar o evento 2x na mesma volta.
-    // Provisório: o dano vira tick por monstro na task M5 e este evento sai.
-    public void AnimationEternalFlameHitEvent()
+    // Animation Event, frame 7 do attack_continuous — se a duração acabou, apaga o fogo e manda
+    // o corpo terminar esta volta e ir pro Attack_End. Senão, mais uma volta (fogo segue aceso).
+    public void AnimationFireDurationCheckEvent()
     {
-        if (Time.time - lastChannelHitTime < ChannelHitMinInterval) return;
-        lastChannelHitTime = Time.time;
-        DealPrimaryHit();
+        if (fireStartTime < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
+        if (!PrimaryDuration.ShouldEnd(Time.time - fireStartTime, primaryExtraDuration)) return;
+        attackHitbox.EndFire();
+        if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
 
-    private void DealPrimaryHit()
+    // Ação cortada por fora (Prisão, morte — o HeroController zera isAttacking) com o fogo
+    // aceso: apaga, senão ele continuaria causando dano sem o Mage estar atacando.
+    private void StopFireIfActionCut()
+    {
+        if (isAttacking || attackHitbox == null || !attackHitbox.IsFireActive) return;
+        attackHitbox.EndFire();
+    }
+
+    // Dano de 1 tick do fogo (crit rolado por tick) — dano do Mage vira dano por segundo
+    // (decisão do usuário: dano × intervalo, mesmo critério do pulse do Rogue).
+    private float RollFireTickDamage()
+    {
+        float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
+        return stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier * fireTickInterval;
+    }
+
+    // Perks "por ataque" do primário (saem no D9.6 com o sistema de perks) — 1x quando o fogo
+    // acende. Os perks "por hit" (Queimadura Residual, Eco, Impacto Explosivo, Rajada Dupla)
+    // ficaram sem efeito: não combinam com dano por tick e o usuário não testa com perks.
+    private void ApplyPrimaryCastPerks()
     {
         float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
         // Bug real reportado pelo usuário: perk Central comprado, vida máx. subiu (EffectiveMaxHealth
@@ -294,9 +308,6 @@ public class Mage : HeroController
             vengefulFlameNextHitPending = false;
         }
 
-        if (attackHitbox != null)
-            attackHitbox.Fire(damage, ActionSpeedMultiplier, residualBurnChancePercent, damage, fireballFireStatusDuration, explosiveImpactPercent, flamingEchoChancePercent);
-
         // #11 "Chama Vital" — cura % do dano do golpe, aplicado no disparo (mesma granularidade
         // de Fôlego Arcano logo abaixo — não depende de quantos inimigos o hitbox realmente
         // acertou, é sobre a AÇÃO em si).
@@ -304,10 +315,6 @@ public class Mage : HeroController
 
         // #26 "Fôlego Arcano" — ganho de Energia por hit, independente de abate.
         GainEnergyPercentOfMax(arcaneBreathEnergyPercent);
-
-        // #22 "Rajada Dupla" — 2º hit manual, mesmo instante (ver MageAttackHitbox.FireDirectHit).
-        if (doubleBurstChancePercent > 0f && Random.Range(0f, 100f) < doubleBurstChancePercent)
-            attackHitbox?.FireDirectHit();
 
         // #21 "Rastro Flamejante" — trilha no chão no ponto do hit, 1 instância por vez (ver
         // TrySpawnGroundFirePatch).
@@ -766,12 +773,8 @@ public class Mage : HeroController
             + PerkState.GetRank(MagePerkIds.EsquerdaChamaPerfeita) * 8f;
         HeroController.PrimaryCritChance = Mathf.Clamp01(critPercent / 100f);
 
-        residualBurnChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaQueimaduraResidual) * 10f;
         primaryGroundTrailDamagePercent = PerkState.GetRank(MagePerkIds.EsquerdaRastroFlamejante) * 10f;
-        doubleBurstChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaRajadaDupla) * 15f;
         contagiousFireChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaFogoContagiante) * 10f;
-        flamingEchoChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaEcoFlamejante) * 15f;
-        explosiveImpactPercent = PerkState.GetRank(MagePerkIds.EsquerdaImpactoExplosivo) * 20f;
         arcaneBreathEnergyPercent = PerkState.GetRank(MagePerkIds.EsquerdaFolegoArcano) * 5f;
         vengefulFlameDamagePercent = PerkState.GetRank(MagePerkIds.EsquerdaChamaVingativa) * 25f;
         // #29 Chama Eterna virou o primário padrão (D9.1) — perk sem efeito até o D9.6 remover os perks.

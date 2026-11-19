@@ -636,4 +636,35 @@ public static class AttackWalkAssetTools
         AssetDatabase.SaveAssets();
         return $"OK: {clip.name} [{rowBase + startInRow}..{rowBase + startInRow + count - 1}]";
     }
+
+    // Cria (ou sobrescreve, mantendo o GUID) um clipe de sprite com [firstIndex, firstIndex+count)
+    // da sheet, 1 sprite por frame — ex.: fogo do Mage dividido em start/continuous/end.
+    public static string CreateSpriteClip(string clipPath, string sheetPath, int firstIndex, int count, float fps, bool loop)
+    {
+        var sheet = AssetDatabase.LoadAssetAtPath<Texture2D>(sheetPath);
+        if (sheet == null) return $"FAIL: sheet não encontrada {sheetPath}";
+        var keys = new ObjectReferenceKeyframe[count];
+        for (int i = 0; i < count; i++)
+        {
+            var sprite = SpriteAtIndex(sheet, firstIndex + i);
+            if (sprite == null) return $"FAIL: índice {firstIndex + i} faltando em {sheetPath}";
+            keys[i] = new ObjectReferenceKeyframe { time = i / fps, value = sprite };
+        }
+
+        var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+        if (clip == null)
+        {
+            clip = new AnimationClip { name = System.IO.Path.GetFileNameWithoutExtension(clipPath) };
+            AssetDatabase.CreateAsset(clip, clipPath);
+        }
+        clip.frameRate = fps;
+        var binding = new EditorCurveBinding { type = typeof(SpriteRenderer), path = "", propertyName = "m_Sprite" };
+        AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
+        var settings = AnimationUtility.GetAnimationClipSettings(clip);
+        settings.loopTime = loop;
+        AnimationUtility.SetAnimationClipSettings(clip, settings);
+        EditorUtility.SetDirty(clip);
+        AssetDatabase.SaveAssets();
+        return $"OK: {clip.name} [{firstIndex}..{firstIndex + count - 1}]";
+    }
 }

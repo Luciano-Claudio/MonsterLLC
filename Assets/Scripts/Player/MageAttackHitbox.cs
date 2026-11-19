@@ -1,36 +1,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// GameObject filho do Mage (girado pelo Mage.cs no Update(), não por si próprio) — trigger
-// retangular fixo, sempre grudado no Mage, que só existe pra guardar o dano pendente e
-// aplicá-lo no instante certo da PRÓPRIA animação de fogo saindo (GDD Seção 17.3). Não viaja
-// (ao contrário de HeroProjectile/RangerArrow) — é sempre a mesma instância, reaproveitada a
-// cada ataque.
+// GameObject filho do Mage (girado pelo Mage.cs no Update(), não por si próprio) — o fogo do
+// ataque primário. Não viaja (ao contrário de HeroProjectile/RangerArrow): é sempre a mesma
+// instância, grudada no Mage e reaproveitada a cada ataque.
 //
-// Esquerda #20/#24/#25 (Queimadura Residual/Eco Flamejante/Impacto Explosivo, perks) recebidos
-// aqui mesmo, não no Mage — mesmo critério da RangerArrow (que já recebe bleedChance/boomerang/
-// etc. como parâmetros de Launch()): quem aplica o hit já tem a lista de alvos e o status de
-// cada um ali mesmo, sem precisar expor isso de volta pro Mage.
+// D9.1 (2026-11-19, decisão do usuário) — o fogo tem 3 partes no próprio Animator:
+// Fire_Start (frames 0-3) -> Fire_Continuous (4-8, loop) -> Fire_End (9-15) -> Idle.
+// O Mage acende (StartFire) no frame 1 do attack_continuous do corpo e apaga (EndFire) no
+// frame 7 da volta em que a duração acabou. O dano só existe enquanto o fogo está no
+// Fire_Continuous, por tick POR MONSTRO (PerTargetTickTracker): quem entra leva dano na hora
+// e de novo a cada tickInterval enquanto continuar dentro.
 public class MageAttackHitbox : MonoBehaviour
 {
+    private static readonly int FireContinuousHash = Animator.StringToHash("Fire_Continuous");
+
     [SerializeField] private Collider2D hitbox;
     private Animator animator;
-    private float pendingDamage;
-    private bool hitFired;
-    private readonly List<EnemyController> hitTargets = new();
-    private readonly List<EnemyController> echoCandidates = new();
 
-    private float residualBurnChancePercent;
-    private float burnDamagePerSecond;
-    private float burnDuration;
-    private float explosiveImpactPercent;
-    private float echoChancePercent;
+    private bool fireActive; // entre StartFire() e EndFire() (fim da duração ou ação cortada)
+    private System.Func<float> rollTickDamage; // dano de 1 tick (crit rolado por tick) — fornecido pelo Mage
+    private readonly PerTargetTickTracker tickTracker = new PerTargetTickTracker(0.25f);
+    private readonly List<EnemyController> targets = new();
+    // 128 (não 16) — monstro tem 2 Collider2D; 16 saturava com só 8 monstros aglomerados
+    // (bug real, 2026-10-26).
+    private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
+    private float nextPruneTime;
+    private const float PruneInterval = 1f;
 
-    // Raio de busca do alvo extra do Eco Flamejante / da área da explosão do Impacto
-    // Explosivo — nenhum dos 2 perks define o próprio raio (GDD só fala em % de chance/dano),
-    // então usa um valor fixo modesto, coerente com o tamanho do hitbox normal do primário.
-    private const float EchoSearchRadius = 2f;
-    private const float ExplosiveImpactRadius = 1.5f;
+    public bool IsFireActive => fireActive;
 
     private void Awake()
     {
@@ -38,120 +36,55 @@ public class MageAttackHitbox : MonoBehaviour
     }
 
     // actionSpeedMultiplier vem do Mage (upgrade de velocidade de ação) — Animator próprio,
-    // separado do corpo do Mage, então o SetFloat do HeroController não chega aqui sozinho;
-    // repassado a cada Fire() pra sempre refletir o valor atual, sem depender de ordem de
-    // Awake() entre os dois GameObjects.
-    public void Fire(float damage, float actionSpeedMultiplier, float residualBurnChance = 0f, float burnDps = 0f, float burnDur = 0f, float explosiveImpactPct = 0f, float echoChance = 0f)
+    // separado do corpo do Mage, então o SetFloat do HeroController não chega aqui sozinho.
+    // Idempotente: o frame 1 do attack_continuous dispara de novo a cada volta, mas o fogo só
+    // acende uma vez por ataque.
+    public void StartFire(System.Func<float> tickDamage, float tickInterval, float actionSpeedMultiplier)
     {
-        pendingDamage = damage;
-        hitFired = false;
-        residualBurnChancePercent = residualBurnChance;
-        burnDamagePerSecond = burnDps;
-        burnDuration = burnDur;
-        explosiveImpactPercent = explosiveImpactPct;
-        echoChancePercent = echoChance;
+        if (fireActive) return;
+        fireActive = true;
+        rollTickDamage = tickDamage;
+        tickTracker.SetInterval(tickInterval);
+        if (animator == null) return;
+        animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
+        animator.ResetTrigger("FireEndTrigger");
+        animator.SetTrigger("FireStartTrigger");
+    }
 
-        if (animator != null)
+    // Fim normal (duração acabou): toca o Fire_End. O dano para no mesmo instante — só o
+    // Fire_Continuous causa dano.
+    public void EndFire()
+    {
+        if (!fireActive) return;
+        fireActive = false;
+        if (animator == null) return;
+        animator.ResetTrigger("FireStartTrigger");
+        animator.SetTrigger("FireEndTrigger");
+    }
+
+    private void Update()
+    {
+        if (!fireActive || hitbox == null || !GameplayGate.IsActive) return;
+        if (animator != null && animator.GetCurrentAnimatorStateInfo(0).shortNameHash != FireContinuousHash) return;
+
+        int count = hitbox.Overlap(ContactFilter2D.noFilter, OverlapBuffer);
+        // Dedup obrigatório — todo monstro tem 2 Collider2D (ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(OverlapBuffer, count, targets);
+
+        float now = Time.time;
+        foreach (var enemy in targets)
         {
-            animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
-            animator.SetTrigger("FireTrigger");
-        }
-    }
-
-    // Esquerda #22 "Rajada Dupla" (perk) — 2º hit manual chamado direto pelo Mage (sem passar
-    // pelo Animator de novo), mesmos parâmetros de perk já guardados do Fire() original desta
-    // mesma ação (residual burn/eco/impacto explosivo valem igual nos 2 hits).
-    public void FireDirectHit()
-    {
-        if (hitbox == null) return;
-        var results = new Collider2D[128];
-        int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        EnemyController.CollectDistinct(results, count, hitTargets);
-        ApplyHitToTargets(hitTargets);
-    }
-
-    // Animation Event, no instante exato em que o fogo sai de verdade (dentro do clipe deste
-    // próprio filho, não do Mage).
-    public void AnimationFireHitEvent()
-    {
-        if (hitFired) return;
-        hitFired = true;
-        if (hitbox == null) return;
-
-        // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
-        // perto do player, deixando o resto fora do hit sem erro nenhum (bug real, 2026-10-26).
-        var results = new Collider2D[128];
-        int count = hitbox.Overlap(ContactFilter2D.noFilter, results);
-        // Dedup obrigatório — todo monstro tem 2 Collider2D no mesmo GameObject (corpo +
-        // trigger genérico), então Overlap() sem isso acertava o mesmo monstro 2x (bug real:
-        // dano dobrado no primário do Mage). Ver EnemyController.CollectDistinct().
-        EnemyController.CollectDistinct(results, count, hitTargets);
-        ApplyHitToTargets(hitTargets);
-    }
-
-    private void ApplyHitToTargets(List<EnemyController> targets)
-    {
-        bool rolledEcho = echoChancePercent > 0f && Random.Range(0f, 100f) < echoChancePercent;
-        Vector3 firstTargetPos = targets.Count > 0 ? targets[0].transform.position : transform.position;
-
-        foreach (var enemy in targets) ApplyHitToSingleTarget(enemy);
-
-        // Eco Flamejante — só depois do(s) alvo(s) normal(is), pra não contar o eco como alvo
-        // "normal" de novo caso ele mesmo esteja perto o bastante de si próprio.
-        if (rolledEcho && targets.Count > 0)
-        {
-            var extra = FindEchoTarget(firstTargetPos, targets);
-            if (extra != null) ApplyHitToSingleTarget(extra);
-        }
-    }
-
-    private void ApplyHitToSingleTarget(EnemyController enemy)
-    {
-        var statusEffects = enemy.GetComponent<StatusEffectController>();
-        // Precisa saber se já estava queimando ANTES deste hit — Impacto Explosivo só conta
-        // o status que já estava rolando, não o que a Queimadura Residual acabou de aplicar
-        // no mesmo golpe (senão todo kill com os 2 perks comprados explodiria sempre).
-        bool wasBurning = statusEffects != null && statusEffects.IsEffectActive(StatusEffectType.Fire);
-
-        enemy.TakeDamage(pendingDamage);
-
-        if (explosiveImpactPercent > 0f && wasBurning && enemy.IsDead)
-        {
-            float explosionDamage = pendingDamage * explosiveImpactPercent / 100f;
-            ApplyExplosiveImpact(enemy.transform.position, explosionDamage);
+            if (enemy == null || enemy.IsDead) continue;
+            if (!tickTracker.TryHit(enemy.GetInstanceID(), now)) continue;
+            // Tick repetido: sem shake/zoom (isDirectPlayerHit false, mesmo critério do pulse
+            // do Rogue e das áreas "grounded") — só o filtro de juice muda, o dano não.
+            enemy.TakeDamage(rollTickDamage != null ? rollTickDamage() : 0f, isDirectPlayerHit: false);
         }
 
-        if (residualBurnChancePercent > 0f && statusEffects != null && Random.Range(0f, 100f) < residualBurnChancePercent)
-            statusEffects.ApplyStatusEffect(StatusEffectType.Fire, burnDuration, burnDamagePerSecond);
-    }
-
-    private void ApplyExplosiveImpact(Vector3 origin, float damage)
-    {
-        var results = Physics2D.OverlapCircleAll(origin, ExplosiveImpactRadius);
-        EnemyController.CollectDistinct(results, results.Length, echoCandidates);
-        foreach (var enemy in echoCandidates) enemy.TakeDamage(damage, isDirectPlayerHit: false);
-    }
-
-    // Procura o inimigo vivo mais próximo do 1º alvo, dentro de EchoSearchRadius, que NÃO
-    // esteja já na lista de alvos normais deste hit (senão "alvo extra" vira só dano dobrado
-    // no mesmo monstro, não um 2º monstro).
-    private EnemyController FindEchoTarget(Vector3 origin, List<EnemyController> alreadyHit)
-    {
-        var results = Physics2D.OverlapCircleAll(origin, EchoSearchRadius);
-        EnemyController.CollectDistinct(results, results.Length, echoCandidates);
-
-        EnemyController closest = null;
-        float closestDist = float.MaxValue;
-        foreach (var candidate in echoCandidates)
+        if (now >= nextPruneTime)
         {
-            if (alreadyHit.Contains(candidate)) continue;
-            float dist = Vector2.Distance(origin, candidate.transform.position);
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                closest = candidate;
-            }
+            nextPruneTime = now + PruneInterval;
+            tickTracker.Prune(now);
         }
-        return closest;
     }
 }
