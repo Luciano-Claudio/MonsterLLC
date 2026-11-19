@@ -21,6 +21,10 @@ public static class AttackWalkAssetTools
     {
         ("Assets/Sprites/Heros/Barbarian/Attack/Minifantasy_TrueHeroesBarbarianAttack.png",
          "Assets/Sprites/Heros/Barbarian/Attack/Walk_Attack.png"),
+        ("Assets/Sprites/Heros/Ranger/Attack/Ranger_Shot_Diagonal.png",
+         "Assets/Sprites/Heros/Ranger/Attack/Walk_Attack_Diagonal.png"),
+        ("Assets/Sprites/Heros/Ranger/Attack/Ranger_Shot_Orthogonal.png",
+         "Assets/Sprites/Heros/Ranger/Attack/Walk_Attack_Orthogonal.png"),
     };
 
     // Índice = número depois do último "_" no nome do sprite (padrão do fatiamento da Unity:

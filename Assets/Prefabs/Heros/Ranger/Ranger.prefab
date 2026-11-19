@@ -292,6 +292,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
