@@ -60,6 +60,37 @@ public class AttackWalkSwapTests
     }
 
     [Test]
+    public void AimLocked_DuringAction_ByDefault()
+    {
+        Assert.IsTrue(AttackWalkSwap.AimLocked(isAttacking: true, isAttackResolving: true, canAimDuringPrimaryAttack: false, trapped: false));
+    }
+
+    [Test]
+    public void AimFree_DuringPrimary_WhenHeroAllows()
+    {
+        Assert.IsFalse(AttackWalkSwap.AimLocked(isAttacking: true, isAttackResolving: true, canAimDuringPrimaryAttack: true, trapped: false));
+    }
+
+    [Test]
+    public void AimLocked_DuringNonPrimaryAction_EvenWhenHeroAllows()
+    {
+        // Ultimate/Shift: isAttacking sem isAttackResolving
+        Assert.IsTrue(AttackWalkSwap.AimLocked(isAttacking: true, isAttackResolving: false, canAimDuringPrimaryAttack: true, trapped: false));
+    }
+
+    [Test]
+    public void AimLocked_WhenTrapped()
+    {
+        Assert.IsTrue(AttackWalkSwap.AimLocked(isAttacking: true, isAttackResolving: true, canAimDuringPrimaryAttack: true, trapped: true));
+    }
+
+    [Test]
+    public void AimFree_WhenIdle()
+    {
+        Assert.IsFalse(AttackWalkSwap.AimLocked(isAttacking: false, isAttackResolving: false, canAimDuringPrimaryAttack: false, trapped: false));
+    }
+
+    [Test]
     public void ContinueTime_NonLooping_ReturnsSame()
     {
         Assert.AreEqual(0.4f, AttackWalkSwap.ContinueTime(0.4f, false), 0.0001f);

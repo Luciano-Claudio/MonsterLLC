@@ -205,9 +205,9 @@ public class Mage : HeroController
 
         base.Update();
 
-        // Gira o pivot todo frame acompanhando a mira em tempo real — RawAimDirection já
-        // congela sozinho durante isAttacking (HeroController.UpdateAimDirection), então o
-        // pivot também para de girar sozinho assim que uma ação começa, sem checagem extra.
+        // Gira o pivot todo frame acompanhando a mira em tempo real. D9.1: no primário a mira
+        // continua livre (CanAimDuringPrimaryAttack), então o fogo gira com o mouse durante a
+        // canalização; nas outras ações RawAimDirection congela (HeroController) e o pivot para junto.
         if (attackHitboxPivot != null)
         {
             float angle = Mathf.Atan2(RawAimDirection.y, RawAimDirection.x) * Mathf.Rad2Deg - 90f;
@@ -237,6 +237,10 @@ public class Mage : HeroController
     // #29, virou o padrão; o estado "Attack" de cast único saiu do Animator): Attack_Start ->
     // Attack_Continuous (self-loop enquanto o botão estiver segurado) -> Attack_End, cada um
     // com o gêmeo "_Walk" (ver HeroController.walkableAttackStates).
+    // Mirar durante a canalização vira o corpo (AimX/AimY -> BlendTree troca a direção no mesmo
+    // frame, todas as direções têm o mesmo nº de frames) e gira o fogo (pivot, ver Update()).
+    protected override bool CanAimDuringPrimaryAttack => true;
+
     protected override void PrimaryAttack()
     {
         if (isAttacking) return;

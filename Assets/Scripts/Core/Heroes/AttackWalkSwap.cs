@@ -20,6 +20,17 @@ public static class AttackWalkSwap
         return AttackWalkAction.None;
     }
 
+    // Mira travada durante qualquer ação (regra do Bestiário, Seção 22) e na Prisão — exceto no
+    // ataque PRIMÁRIO de herói que permite mirar enquanto ataca (Mage: o fogo segue o mouse e o
+    // corpo vira junto, no mesmo frame da BlendTree). isAttackResolving só é true no primário
+    // (Ultimate/Shift usam só isAttacking), então elas continuam travando.
+    public static bool AimLocked(bool isAttacking, bool isAttackResolving, bool canAimDuringPrimaryAttack, bool trapped)
+    {
+        if (trapped) return true;
+        if (!isAttacking) return false;
+        return !(isAttackResolving && canAimDuringPrimaryAttack);
+    }
+
     // Estado com loop acumula normalizedTime (3.25 = 4º ciclo, 25% dele) — Animator.Play
     // recebe só a fração; sem loop, o valor já está entre 0 e 1.
     public static float ContinueTime(float normalizedTime, bool looping) =>

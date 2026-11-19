@@ -181,6 +181,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private int[] walkableTwinHashes;
     public bool IsAttackWalking { get; private set; }
     protected virtual bool CanWalkDuringCurrentAction => true;
+    // Mage: o fogo do primário segue o mouse e o corpo vira junto (ver AttackWalkSwap.AimLocked).
+    protected virtual bool CanAimDuringPrimaryAttack => false;
 
     // Movimento só é permitido durante "Walk" (Seção 16) — sem isso, tomar dano de várias
     // fontes seguidas prende o herói na animação de "Damage" indefinidamente (cada hit
@@ -768,7 +770,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // direção de um ataque real não muda no meio da própria animação. Preso (Seção 33)
         // pelo mesmo motivo: incapacitado não vira nem olhando — AimX/AimY ficam
         // congelados na direção de quando o Trapped começou.
-        if (isAttacking || isTrapped) return;
+        // Exceção D9.1: herói com CanAimDuringPrimaryAttack (Mage) mira livre no primário.
+        if (AttackWalkSwap.AimLocked(isAttacking, isAttackResolving, CanAimDuringPrimaryAttack, isTrapped)) return;
         if (Camera.main == null) return;
 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(
