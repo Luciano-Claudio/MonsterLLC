@@ -251,18 +251,17 @@ MonoBehaviour:
   humanColliderSize: {x: 1.060346, y: 0.2532709}
   elkColliderOffset: {x: -0.61, y: 0.2}
   elkColliderSize: {x: 2.27, y: 0.37}
-  owlDuration: 8
+  owlDuration: 10
   elkHeadbuttHitbox: {fileID: 967585088228262325}
   elkHeadbuttLaunchSpeed: 24
   elkHeadbuttMaxRange: 12
   elkHeadbuttDamageMultiplier: 2
   elkHeadbuttKnockbackForce: 8
-  headbuttStunDuration: 2
   roarDamageReductionPercent: 50
-  roarDuration: 8
+  roarDuration: 5
   groundCrackPrefab: {fileID: 7030278775826116329, guid: 93904857f64de094a989ed7ee028fabf, type: 3}
   groundCrackDamagePercent: 50
-  groundCrackDuration: 8
+  groundCrackDuration: 3
   groundCrackTickInterval: 0.5
   groundCrackSizeMultiplier: 1
   leavesPoisonDuration: 4
