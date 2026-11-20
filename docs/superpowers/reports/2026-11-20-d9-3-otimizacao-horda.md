@@ -41,6 +41,6 @@ Os scripts dos monstros (`Update`) caíram de 23,3 ms pra 6,0 ms com 300 parados
 
 - **300 parado: 54 FPS.** Parado, a horda inteira fica perto do herói, dentro do anel de simulação completa. Por isso é o pior caso.
 - **Lixo de memória: 40–70 KB/frame.** Ainda não é zero, e a origem não foi investigada.
-- **`Auto Sync Transforms` ligado** nas configurações de física 2D: candidato a corte, ainda não alterado.
+- **`Auto Sync Transforms`: testado e descartado** (`DensityReports/density_20261120_074913.md`). Ligado, a sincronização custava no máximo 0,09 ms por frame. Desligado, tudo piorou: 300 andando caiu de 76 pra 61 FPS, e 200 monstros + 500 efeitos de 50 pra 11 FPS (a física subiu de 5,8 pra 59 ms). A configuração voltou a ficar ligada. Não tentar de novo sem um motivo novo.
 - **Um só collider de física por monstro:** não foi feito.
 - **Herói preso pelos monstros empilhados:** problema de jogo, fica pro D9.4.

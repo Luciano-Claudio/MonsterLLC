@@ -41,7 +41,9 @@ public class HordeDensityTest : MonoBehaviour
         "FixedUpdate.Physics2DFixedUpdate", "Physics2D.Simulate", "PreUpdate.Physics2DUpdate", "PreLateUpdate.Physics2DLateUpdate",
         "PreLateUpdate.DirectorUpdateAnimationBegin", "PreLateUpdate.DirectorUpdateAnimationEnd", "Update.DirectorUpdate",
         "PostLateUpdate.FinishFrameRendering", "UniversalRenderTotal", "Gfx.WaitForPresentOnGfxThread", "Gfx.WaitForPresent",
-        "GC.Collect", "Instantiate", "Destroy"
+        "GC.Collect", "Instantiate", "Destroy",
+        // D9.3: custo de sincronizar transforms com a física (Auto Sync Transforms).
+        "Physics2D.SyncTransformChanges", "SyncTransformChanges"
     };
     // A* Pathfinding Project: nomes não confirmados — casa por "contém", sem subtarefas/jobs.
     private static readonly string[] PathfindingKeywords = { "RVO", "Pathfinding", "AstarPath", "Seeker", "AIPath" };
