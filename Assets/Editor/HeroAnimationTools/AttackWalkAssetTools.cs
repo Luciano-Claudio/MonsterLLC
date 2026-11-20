@@ -52,6 +52,9 @@ public static class AttackWalkAssetTools
          "Assets/Sprites/Heros/Rogue/Attack/Walk_Attack.png"),
         ("Assets/Sprites/Heros/Rogue/Attack/Minifantasy_TrueHeroesRogueShurikens2-export.png",
          "Assets/Sprites/Heros/Rogue/Attack/Walk_Attack.png"),
+        // Rogue: Ultimate (bomba) também anda — walk_ult (decisão do usuário, 2026-11-20).
+        ("Assets/Sprites/Heros/Rogue/Ultimate/Minifantasy_TrueHeroesRogueThrowBomb.png",
+         "Assets/Sprites/Heros/Rogue/Ultimate/Walk_Ult.png"),
     };
 
     // Índice = número depois do último "_" no nome do sprite (padrão do fatiamento da Unity:

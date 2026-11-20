@@ -171,7 +171,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // "<Estado>_Walk" no Animator (mesmos frames, mesmos Animation Events, sprites andando) —
     // o Update() troca entre os dois no MESMO normalizedTime quando o jogador começa/para de
     // andar (ver AttackWalkSwap). Sem gêmeo no controller atual, o herói anda tocando a
-    // animação parada. Ultimate/Shift nunca estão nesta lista, então continuam travando.
+    // animação parada. Por padrão só o primário entra nesta lista (Ultimate/Shift travam); exceção
+    // decidida pelo usuário: a Ultimate do Rogue (bomba) também anda — "Ultimate" no prefab dele.
     // Herói cujo estado de ataque é compartilhado com Ultimate/Shift (ex.: Attack_Start do
     // Gunslinger) sobrescreve CanWalkDuringCurrentAction.
     [SerializeField] private bool allowMoveDuringPrimaryAttack = false;

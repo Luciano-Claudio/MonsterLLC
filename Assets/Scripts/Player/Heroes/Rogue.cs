@@ -27,6 +27,8 @@ public class Rogue : HeroController
     // no mesmo normalizedTime pode reentrar no frame do evento): sem ela o pulso era religado e o
     // tempo dele recomeçava (durava mais que pulseDuration).
     private bool attackStartEndFired;
+    // D9.1 — mesma trava pro lançamento da bomba (Ultimate também troca Ultimate <-> Ultimate_Walk).
+    private bool bombLaunchFired;
     private float pulseElapsed;
     // AttackEndTrigger é AnyState no controller — se o pulso esgotar durante a Cambalhota
     // (isAttacking fica true a viagem INTEIRA dela), disparar na hora arrancaria o Animator do
@@ -190,6 +192,7 @@ public class Rogue : HeroController
     {
         isAttacking = true;
         actionElapsed = 0f;
+        bombLaunchFired = false;
         AnimatorTrigger("UltimateTrigger");
     }
 
@@ -200,6 +203,8 @@ public class Rogue : HeroController
     // releitura da mira antes de chamar UseUltimate().
     public void AnimationBombLaunchEvent()
     {
+        if (bombLaunchFired) return;
+        bombLaunchFired = true;
         if (bombPrefab == null) return;
 
         var bombObj = Instantiate(bombPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
