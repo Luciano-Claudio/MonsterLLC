@@ -215,6 +215,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -223,6 +227,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 4
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   hammerProjectilePrefab: {fileID: 7200000000000001, guid: ebcc9244bc574441ac4088c12ccd7cb1, type: 3}
   enemyLayerMask:

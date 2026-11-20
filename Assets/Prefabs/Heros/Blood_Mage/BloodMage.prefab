@@ -209,6 +209,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -217,6 +221,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   projectilePrefab: {fileID: 7300000000000001, guid: 6f39de1e6954469daa94892a022fcd61, type: 3}
   enemyLayerMask:

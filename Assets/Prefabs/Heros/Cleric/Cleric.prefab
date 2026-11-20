@@ -627,6 +627,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -635,6 +639,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   projectilePrefab: {fileID: 947969317159260220, guid: 9e93d304a986f494e96347949bed8d64, type: 3}
   attackRadius: 13
