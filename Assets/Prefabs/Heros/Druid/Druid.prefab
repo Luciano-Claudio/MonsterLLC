@@ -213,6 +213,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -221,6 +225,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   vinePrefab: {fileID: 3357894662126226428, guid: 426548f72525c1944bbd91558d85032d, type: 3}
   vineCount: 5
@@ -231,11 +236,11 @@ MonoBehaviour:
   vineLifetime: 1.5
   vineHitRadius: 1
   maxActionDuration: 3
+  isFeral: 0
   elkAnimatorController: {fileID: 9100000, guid: 4417318626b6f9348aed7c8e543b48ee, type: 2}
   elkMaxHealthMultiplier: 2
   elkDamageMultiplier: 1.5
   elkMoveSpeedMultiplier: 0.8
-  elkFormMaxDuration: 30
   elkKnockbackForce: 4
   elkSizeMultiplier: 1
   elkClawHitboxNE: {fileID: 3798856756529210575}
@@ -252,8 +257,19 @@ MonoBehaviour:
   elkHeadbuttMaxRange: 12
   elkHeadbuttDamageMultiplier: 2
   elkHeadbuttKnockbackForce: 8
+  roarDamageReductionPercent: 50
+  roarDuration: 5
+  groundCrackPrefab: {fileID: 7030278775826116329, guid: 93904857f64de094a989ed7ee028fabf, type: 3}
+  groundCrackDamagePercent: 50
+  groundCrackDuration: 3
+  groundCrackTickInterval: 0.5
+  groundCrackSizeMultiplier: 1
+  leavesPoisonDuration: 4
+  leavesPoisonDamagePercent: 50
+  leavesFlashDuration: 1.25
   elkClawIcon: {fileID: -7165401095265530750, guid: 89b2f019e54c99946b979d40220d56f6, type: 3}
-  elkHeadbuttIcon: {fileID: -3875127785539040624, guid: 531e973501d21de49b649ab10d829480, type: 3}
+  elkRoarIcon: {fileID: -472739917, guid: 6fbe62faa462f7e479538ba9d0cada01, type: 3}
+  elkHeadbuttIcon: {fileID: -2028320283, guid: 531e973501d21de49b649ab10d829480, type: 3}
 --- !u!114 &4459035152162319188
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -215,6 +215,10 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -223,6 +227,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 4
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   hammerProjectilePrefab: {fileID: 7200000000000001, guid: ebcc9244bc574441ac4088c12ccd7cb1, type: 3}
   enemyLayerMask:
@@ -244,6 +249,7 @@ MonoBehaviour:
   shieldBashHitboxW: {fileID: 5118467130002766757}
   shieldBashDamageMultiplier: 2
   shieldBashKnockbackForce: 12
+  shieldBashStunDuration: 2
   maxShieldBashDuration: 2
   shieldFrontAnimator: {fileID: 7100000000000133}
   shieldBackAnimator: {fileID: 7100000000000123}
@@ -328,7 +334,7 @@ Transform:
   m_GameObject: {fileID: 7100000000000009}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -369,7 +375,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.5}
-  m_Size: {x: 2, y: 3.5}
+  m_Size: {x: 3, y: 4.5}
   m_Direction: 0
 --- !u!1 &7100000000000012
 GameObject:
@@ -397,7 +403,7 @@ Transform:
   m_GameObject: {fileID: 7100000000000012}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: 0, y: -2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -438,7 +444,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.5}
-  m_Size: {x: 2, y: 3.5}
+  m_Size: {x: 3, y: 4.5}
   m_Direction: 0
 --- !u!1 &7100000000000015
 GameObject:
@@ -466,7 +472,7 @@ Transform:
   m_GameObject: {fileID: 7100000000000015}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0, z: 0}
+  m_LocalPosition: {x: 2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -507,7 +513,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.5}
-  m_Size: {x: 3.5, y: 2}
+  m_Size: {x: 4.5, y: 3}
   m_Direction: 1
 --- !u!1 &7100000000000018
 GameObject:
@@ -535,7 +541,7 @@ Transform:
   m_GameObject: {fileID: 7100000000000018}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0, z: 0}
+  m_LocalPosition: {x: -2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -576,7 +582,7 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.5}
-  m_Size: {x: 3.5, y: 2}
+  m_Size: {x: 4.5, y: 3}
   m_Direction: 1
 --- !u!1 &7100000000000021
 GameObject:

@@ -23,6 +23,16 @@ public class Rogue : HeroController
     // lógica extra dentro do RoguePulseArea.cs, só aplicar o multiplicador aqui antes de ativar.
     [SerializeField] private float pulseSizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
     private bool isPulseActive;
+    // D9.1 — trava contra disparo duplo do fim do attack_start (troca AttackStart <-> AttackStart_Walk
+    // no mesmo normalizedTime pode reentrar no frame do evento): sem ela o pulso era religado e o
+    // tempo dele recomeçava (durava mais que pulseDuration).
+    private bool attackStartEndFired;
+    // D9.1 — mesma trava pro lançamento da bomba (Ultimate também troca Ultimate <-> Ultimate_Walk).
+    private bool bombLaunchFired;
+
+    // O pulso segue ativo durante a Prisão — o primário continua "resolvendo" (UI vermelha, sem
+    // novo clique) até o attack_end de verdade.
+    protected override bool PrimaryKeepsRunningWhenTrapped => isPulseActive || attackEndPending;
     private float pulseElapsed;
     // AttackEndTrigger é AnyState no controller — se o pulso esgotar durante a Cambalhota
     // (isAttacking fica true a viagem INTEIRA dela), disparar na hora arrancaria o Animator do
@@ -102,7 +112,7 @@ public class Rogue : HeroController
 
         // Só dispara o AttackEndTrigger de verdade quando a ação atual (ex.: Cambalhota) já
         // tiver terminado sozinha — nunca no meio dela.
-        if (attackEndPending && !isAttacking)
+        if (attackEndPending && !isAttacking && !isTrapped)
         {
             attackEndPending = false;
             BeginAttackEnd();
@@ -119,6 +129,7 @@ public class Rogue : HeroController
 
         isAttacking = true;
         actionElapsed = 0f;
+        attackStartEndFired = false;
         AnimatorTrigger("AttackTrigger"); // Animator decide AttackStart via AnyState
     }
 
@@ -128,6 +139,9 @@ public class Rogue : HeroController
     // dano-por-segundo do próprio filho, enquanto isPulseActive durar.
     public void AnimationAttackStartEndEvent()
     {
+        if (attackStartEndFired) return;
+        attackStartEndFired = true;
+
         isAttacking = false;
 
         if (pulseArea != null)
@@ -151,7 +165,8 @@ public class Rogue : HeroController
         isPulseActive = false;
         if (pulseArea != null) pulseArea.Deactivate();
 
-        if (isAttacking) attackEndPending = true;
+        // Preso: o attack_end espera a Prisão acabar (senão o AnyState tirava o Rogue do Trapped).
+        if (isAttacking || isTrapped) attackEndPending = true;
         else BeginAttackEnd();
     }
 
@@ -182,6 +197,7 @@ public class Rogue : HeroController
     {
         isAttacking = true;
         actionElapsed = 0f;
+        bombLaunchFired = false;
         AnimatorTrigger("UltimateTrigger");
     }
 
@@ -192,6 +208,8 @@ public class Rogue : HeroController
     // releitura da mira antes de chamar UseUltimate().
     public void AnimationBombLaunchEvent()
     {
+        if (bombLaunchFired) return;
+        bombLaunchFired = true;
         if (bombPrefab == null) return;
 
         var bombObj = Instantiate(bombPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);

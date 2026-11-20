@@ -1,5 +1,67 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1023001447225141345
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7030451572862307673}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_SW
+  m_TagString: Untagged
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7030451572862307673
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023001447225141345}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2, y: -0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 134436095861227057}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1699078099461474643
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 720630118097561592}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_SE
+  m_TagString: Untagged
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &720630118097561592
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1699078099461474643}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2, y: -0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 134436095861227057}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4385074858891067883
 GameObject:
   m_ObjectHideFlags: 0
@@ -17,6 +79,7 @@ GameObject:
   - component: {fileID: 6375903834917578240}
   - component: {fileID: 1137751000451965340}
   - component: {fileID: 8048400557567247715}
+  - component: {fileID: 243817099241737393}
   m_Layer: 8
   m_Name: Mage
   m_TagString: Player
@@ -39,6 +102,9 @@ Transform:
   m_Children:
   - {fileID: 8735852519746919689}
   - {fileID: 8631336237625606155}
+  - {fileID: 3519522145444653551}
+  - {fileID: 720630118097561592}
+  - {fileID: 7030451572862307673}
   - {fileID: 6626683197948073406}
   - {fileID: 7239240034813318962}
   - {fileID: 7437526502769373569}
@@ -211,6 +277,12 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 1
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates:
+  - Attack_Start
+  - Attack_Continuous
+  - Attack_End
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -219,11 +291,14 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 0.5
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 1
   attackHitboxPivot: {fileID: 8735852519746919689}
   attackHitbox: {fileID: 6828866472260034055}
   attackDamageMultiplier: 1
   attackHitboxSizeMultiplier: 1
+  primaryExtraDuration: 0
+  fireTickInterval: 0.25
   fireballPrefab: {fileID: 1123546062510649833, guid: 80ff04dec6497a94e90a8f1158d923ab, type: 3}
   ultimateDamageMultiplier: 2
   ultimateTrailDamageMultiplier: 0.5
@@ -239,8 +314,7 @@ MonoBehaviour:
   teleportProjectilePrefab: {fileID: 1651467629525891566, guid: 229b3d194b1b40f47972b54e0b373498, type: 3}
   secondaryAbilityMaxRange: 10
   teleportProjectileSpeed: 12
-  petPrefab: {fileID: 5842852507566284858, guid: 16b39e6cf87c874409815f8f615320f1, type: 3}
-  petSpawnPoint: {fileID: 8631336237625606155}
+  petSummoner: {fileID: 243817099241737393}
   petSizeMultiplier: 1
   petActionSpeedMultiplier: 2
   maxActionDuration: 3
@@ -332,6 +406,26 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.5}
   m_Size: {x: 1, y: 1.5}
   m_Direction: 0
+--- !u!114 &243817099241737393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4385074858891067883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e914ef6506fe6146adbbd417bf82e9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetSummoner
+  hasPet: 0
+  petCount: 1
+  petPrefab: {fileID: 5842852507566284858, guid: 16b39e6cf87c874409815f8f615320f1, type: 3}
+  petSpawnPoints:
+  - {fileID: 8631336237625606155}
+  - {fileID: 3519522145444653551}
+  - {fileID: 720630118097561592}
+  - {fileID: 7030451572862307673}
 --- !u!1 &4817782963491996284
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,6 +593,37 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!1 &5036441324614112880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3519522145444653551}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_NW
+  m_TagString: Untagged
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3519522145444653551
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5036441324614112880}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2, y: 0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 134436095861227057}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5909618122711402853
 GameObject:
   m_ObjectHideFlags: 0
@@ -684,9 +809,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8631336237625606155}
   m_Layer: 8
-  m_Name: PetSpawnPoint
+  m_Name: PetSpawnPoint_NE
   m_TagString: Untagged
-  m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1

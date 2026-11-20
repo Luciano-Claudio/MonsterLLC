@@ -71,13 +71,14 @@ public class BloodMage : HeroController
     private readonly List<EnemyController> extractTargets = new();
 
     // ===================== Passiva — pet Elemental de Sangue (idêntico à Phoenix do Mage) =====================
+    // D9.1 (2026-11-19): quem decide "tem pet / quantos" é o PetSummoner do prefab (hasPet false
+    // até o sistema de variantes existir) — mesmo mecanismo do Mage: confere no início do dia e
+    // sozinho quando hasPet/quantidade mudam, invoca 1x por pet que falta com o Blood Mage
+    // livre, cada pet num dos 4 PetSpawnPoints sorteado entre os livres.
     [Header("Pet — Elemental de Sangue")]
-    [SerializeField] private GameObject petPrefab; // precisa ter PetController
-    [SerializeField] private Transform petSpawnPoint;
+    [SerializeField] private PetSummoner petSummoner;
     [SerializeField] private float petSizeMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda, mesmo critério do Mage
     [SerializeField] private float petActionSpeedMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
-    private PetController currentPet;
-
 #if UNITY_EDITOR
     private void OnValidate()
     {
@@ -90,19 +91,20 @@ public class BloodMage : HeroController
     protected override void OnEnable()
     {
         base.OnEnable();
-        GameEvents.OnDayStart += SummonPet;
+        GameEvents.OnDayStart += RequestPetCheck;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        GameEvents.OnDayStart -= SummonPet;
+        GameEvents.OnDayStart -= RequestPetCheck;
     }
 
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
         base.Update();
+        UpdatePetSummon();
 
         if (isAttacking)
         {
@@ -353,26 +355,31 @@ public class BloodMage : HeroController
 
     // ===================== Passiva — pet Elemental de Sangue =====================
 
-    // Cópia 1:1 do SummonPet/AnimationSummonPetEvent/AnimationSummonPetEndEvent do Mage —
-    // mesmo PetController, mesma API (spawn-lock, multiplicador de tamanho e de velocidade de
-    // ataque já embutidos em PetController.Initialize).
-    private void SummonPet()
+    // Mesmo mecanismo do Mage (ver PetSummoner). Pede a conferência de pets — início do dia
+    // (GameEvents.OnDayStart) e, no futuro, a escolha da variante (setar HasPet e chamar isto).
+    public void RequestPetCheck()
     {
-        if (isAttacking) return;
+        if (petSummoner != null) petSummoner.RequestCheck();
+    }
+
+    // Todo frame (Update): se o PetSummoner pedir, toca 1 animação de invocar — só com o Blood
+    // Mage livre (nunca corta ataque/habilidade).
+    private void UpdatePetSummon()
+    {
+        if (petSummoner == null) return;
+        bool busy = PetSummonRules.HeroBusy(isAttacking, isUsingSecondaryAbility, isTrapped, HealthSystem.IsDead(stats.health));
+        if (!petSummoner.ShouldStartSummon(busy)) return;
         isAttacking = true;
         actionElapsed = 0f;
         AnimatorTrigger("SummonPetTrigger");
     }
 
+    // Animation Event, no meio do clipe de invocação — 1 pet por invocação (PetSummoner sorteia o
+    // ponto livre).
     public void AnimationSummonPetEvent()
     {
-        if (currentPet != null) Destroy(currentPet.gameObject);
-        if (petPrefab == null) return;
-
-        Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
-        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-        currentPet = obj.GetComponent<PetController>();
-        if (currentPet != null) currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier);
+        if (petSummoner == null) return;
+        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier, 1f, 1f, 1f);
     }
 
     public void AnimationSummonPetEndEvent()

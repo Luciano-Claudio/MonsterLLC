@@ -50,7 +50,12 @@ public enum StatusEffectType
     // é aplicado direto por BloodMage, fora daqui). Prioridade visual abaixo só de WordOfPain
     // (ver guarda em FlashStatus) — cancela Fire/Bleeding/etc. na tela, mas nunca escapa a
     // paralisia da Oração.
-    Drain
+    Drain,
+
+    // D9.1 (Druid Floresta, Ultimate) — mesmo padrão do Drain: toca 1x (FlashStatus) quando as
+    // folhas atingem o monstro; o efeito real é o Poison aplicado junto, que assume o visual
+    // em loop quando o flash termina. SEMPRE no fim do enum (valores salvos em prefab são int).
+    LeavesSpell
 }
 
 public class StatusEffectController : MonoBehaviour
@@ -63,14 +68,30 @@ public class StatusEffectController : MonoBehaviour
     // explosão em si da Ultimate do Mage) não passa por aqui, continua acertando normal —
     // quem decide se o dano de área/superfície também é bloqueado é a fonte do efeito (ex.:
     // MageFireball consulta IsImmuneTo antes de aplicar o tick do rastro no chão).
-    [SerializeField] private StatusEffectType[] immunities;
+    [SerializeField] private StatusEffectType[] immunities = new StatusEffectType[0]; // nunca nulo (AddComponent em runtime/teste não passa pela serialização)
 
-    public bool IsImmuneTo(StatusEffectType type) => System.Array.IndexOf(immunities, type) >= 0;
+    public bool IsImmuneTo(StatusEffectType type) => immunities != null && System.Array.IndexOf(immunities, type) >= 0;
 
     // Consultado por quem precisa saber "esse efeito está rolando agora" sem ser dono dele
     // (ex.: EnemyController checando WordOfPain pra decidir paralisia — ver comentário no
     // enum).
-    public bool IsEffectActive(StatusEffectType type) => activeEffects.Exists(e => e.type == type);
+    // Laço simples, sem lambda: o Exists(e => e.type == type) alocava um closure por chamada, e
+    // isto roda por monstro por frame (IsIncapacitated no EnemyController + UpdateVisual) — achado
+    // da revisão final do D9.1, antes do teste de densidade da horda.
+    public bool IsEffectActive(StatusEffectType type)
+    {
+        for (int i = 0; i < activeEffects.Count; i++)
+            if (activeEffects[i].type == type) return true;
+        return false;
+    }
+
+    // Efeito com dano 0 (ex.: Stun) não chama TakeDamage — senão cada tick mostrava "0" na tela,
+    // disparava a reação de dano do monstro e contava como tick de DoT (revisão final do D9.1).
+    public static bool DealsDamage(float damagePerSecond) => damagePerSecond > 0f;
+
+    // Incapacitação total (IA/ataque/movimento travam) — EnemyController consulta isto. D9.1:
+    // Stun (Ultimate do Druid Feral) entra na mesma mecânica da paralisia da Oração do Cleric.
+    public bool IsIncapacitated => IsEffectActive(StatusEffectType.WordOfPain) || IsEffectActive(StatusEffectType.Stun);
 
     private class StatusEffectInstance
     {
@@ -179,7 +200,7 @@ public class StatusEffectController : MonoBehaviour
             effect.tick.Tick(deltaTime);
             // isDirectPlayerHit: false — DoT nunca aciona o Game Feel de hit direto
             // (HitFeelController), só o hit de verdade aciona.
-            if (effect.tick.TryConsume() && target != null) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
+            if (effect.tick.TryConsume() && target != null && DealsDamage(effect.damagePerSecond)) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
         }
 
         // Enquanto o flash estiver tocando, ele manda no visual sozinho (FlashStatus já deu o
@@ -199,6 +220,9 @@ public class StatusEffectController : MonoBehaviour
 
         string stateName;
         if (IsEffectActive(StatusEffectType.WordOfPain)) stateName = StatusEffectType.WordOfPain.ToString();
+        // Stun logo abaixo da Oração (D9.1): incapacitação é o feedback mais importante — um
+        // monstro envenenado e stunado mostra o Stun, não o Poison.
+        else if (IsEffectActive(StatusEffectType.Stun)) stateName = StatusEffectType.Stun.ToString();
         else stateName = activeEffects.Count > 0 ? activeEffects[0].type.ToString() : "Empty";
 
         if (stateName == currentVisualState) return;

@@ -509,7 +509,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // sem flag própria: incapacitação total (IA/ataque/movimento travam) exatamente
         // enquanto o Efeito durar, sem risco de desincronizar com o fim dele. Dano/outros
         // Efeitos Nocivos continuam normais (Tick() acima já rodou antes desse return).
-        if (statusEffectController != null && statusEffectController.IsEffectActive(StatusEffectType.WordOfPain))
+        // D9.1: Stun (Ultimate do Druid Feral) usa a mesma paralisia (IsIncapacitated).
+        if (statusEffectController != null && statusEffectController.IsIncapacitated)
         {
             SetMoving(false); // trava o AIPath enquanto durar, mesmo critério de "parado de propósito"
             return;
@@ -577,6 +578,22 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
                 EndAttackAnimation();
             }
             return;
+        }
+
+        // D9.1 (Assassin, decisão do usuário): com projéteis do Assassin no ar, o monstro em combate
+        // (boss também) persegue o projétil MAIS PERTO DELE — recalculado a cada decisão — e não
+        // ataca; quando o projétil volta (HeroDecoys.Unregister), cai no fluxo normal abaixo e
+        // volta a perseguir o herói. Golpe já em andamento termina antes (return acima).
+        if (isInCombat && HeroDecoys.Count > 0)
+        {
+            var decoy = HeroDecoys.PickNearest(transform.position);
+            if (decoy != null)
+            {
+                SetMoving(true);
+                MoveInDirection(ApplyPackCohesion(((Vector2)decoy.position - (Vector2)transform.position).normalized));
+                UpdateStuckEscape(decisionDeltaTime);
+                return;
+            }
         }
 
         if (!isInCombat) UpdatePatrol(decisionDeltaTime);

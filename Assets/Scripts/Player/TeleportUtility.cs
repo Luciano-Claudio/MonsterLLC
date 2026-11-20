@@ -9,9 +9,26 @@ using UnityEngine;
 public static class TeleportUtility
 {
     private static readonly RaycastHit2D[] Buffer = new RaycastHit2D[8];
-    // useTriggers=false, useLayerMask=false (defaults) — qualquer Collider2D SÓLIDO (nunca um
-    // trigger de monstro/pickup) bloqueia, de qualquer layer (água, parede, prop...).
-    private static readonly ContactFilter2D SolidFilter = new ContactFilter2D();
+    // useTriggers=false — só Collider2D SÓLIDO bloqueia (água, parede, prop...). A layer "Enemy"
+    // sai já no filtro do Raycast (não só no loop): com a horda densa, os 8 primeiros hits
+    // poderiam ser todos monstros e esconder a parede logo atrás deles.
+    private static ContactFilter2D solidFilter;
+    private static bool solidFilterReady;
+
+    private static ContactFilter2D SolidFilter
+    {
+        get
+        {
+            if (!solidFilterReady)
+            {
+                solidFilter = new ContactFilter2D();
+                int enemyLayer = LayerMask.NameToLayer("Enemy");
+                if (enemyLayer >= 0) solidFilter.SetLayerMask(~(1 << enemyLayer));
+                solidFilterReady = true;
+            }
+            return solidFilter;
+        }
+    }
 
     private const float SafetyMargin = 0.2f; // 🔢 ajustável — pousa um pouco antes do collider sólido, nunca na borda/dentro dele
 
@@ -20,10 +37,13 @@ public static class TeleportUtility
         if (distance <= 0f) return 0f;
 
         int count = Physics2D.Raycast(origin, direction, SolidFilter, Buffer, distance);
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
         float closestHit = float.MaxValue;
         for (int i = 0; i < count; i++)
         {
-            if (Buffer[i].collider.transform == caster) continue; // ignora o próprio collider do herói
+            var collider = Buffer[i].collider;
+            // Monstro e o próprio herói não bloqueiam (ver TeleportBlockRule).
+            if (!TeleportBlockRule.Blocks(collider.gameObject.layer, collider.isTrigger, collider.transform == caster, enemyLayer)) continue;
             if (Buffer[i].distance < closestHit) closestHit = Buffer[i].distance;
         }
 

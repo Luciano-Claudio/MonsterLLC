@@ -48,6 +48,7 @@ public class Paladin : HeroController
     [SerializeField] private Collider2D shieldBashHitboxW;
     [SerializeField] private float shieldBashDamageMultiplier = 1f; // 🔢 ajustável
     [SerializeField] private float shieldBashKnockbackForce = 4f; // 🔢 ajustável
+    [SerializeField] private float shieldBashStunDuration = 2f; // 🔢 ajustável — D9.1: Stun em quem leva o shield bash
     [SerializeField] private float maxShieldBashDuration = 2f; // 🔢 rede de segurança
     private float shieldBashElapsed;
     private bool shieldBashHitFired;
@@ -260,6 +261,10 @@ public class Paladin : HeroController
             enemy.TakeDamage(damage);
             Vector2 direction = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
             enemy.ApplyKnockback(direction, shieldBashKnockbackForce);
+            // D9.1: quem leva o shield bash fica stunado — mesma paralisia da Oração do Cleric
+            // (EnemyController consulta StatusEffectController.IsIncapacitated).
+            var statusEffects = enemy.GetComponent<StatusEffectController>();
+            if (statusEffects != null) statusEffects.ApplyStatusEffect(StatusEffectType.Stun, shieldBashStunDuration, 0f);
         }
     }
 

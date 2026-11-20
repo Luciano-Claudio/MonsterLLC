@@ -13,11 +13,14 @@ public class Mage : HeroController
     // MageAttackHitbox, Collider2D incluso) até 2x o tamanho original. 1 = tamanho normal.
     [SerializeField] private float attackHitboxSizeMultiplier = 1f; // 🔢 upgradable — até 2x (ver OnValidate)
 
-    // Attack pode acabar sendo Blend Tree (igual Barbarian/Ranger) — cada clipe blendado
-    // carrega seu próprio Animation Event, então a trava é obrigatória por precaução (mesmo
-    // bug já corrigido em EnemyController/Barbarian/Ranger), mesmo que o Attack do Mage
-    // termine sendo um estado único.
-    private bool castFireFired;
+    // Ataque com duração (ver PrimaryAttack e os eventos AnimationFire*Event).
+    [SerializeField] private float primaryExtraDuration = 0f; // 🔢 segundos extras de fogo além da 1ª volta (0 = ataque base, 1 volta)
+    [SerializeField] private float fireTickInterval = 0.25f; // 🔢 tick do dano do fogo, POR MONSTRO (PerTargetTickTracker)
+    // Tempo de fogo aceso, somado só nos frames com o jogo ATIVO (Update sai cedo na pausa). Antes
+    // era Time.time - início: a pausa é só uma flag (GameplayGate, timeScale continua 1), então o
+    // tempo pausado contava como duração (revisão final do D9.1). -1 = ainda não acendeu.
+    private float fireElapsed = -1f;
+    private System.Func<float> rollFireTickDamage; // cache do delegate (criado 1x, sem alocar por ataque)
 
     [Header("Ultimate — bola de fogo em ângulo livre (GDD Seção 17.3)")]
     [SerializeField] private GameObject fireballPrefab; // precisa ter MageFireball
@@ -55,20 +58,16 @@ public class Mage : HeroController
     // classes diferentes ("The same field name is serialized multiple times").
     private SpriteRenderer mageSpriteRenderer;
 
-    // Pet de início de dia (GDD: "Pets de início de dia (Mage/Blood Mage)") — sumona com
-    // animação própria do Mage (duração = a do próprio clipe "SummonPet", não um tempo fixo)
-    // e bloqueio de movimento (reaproveita isAttacking, igual toda ação real), não
-    // instantaneamente. Ao morrer o herói, o pet retorna junto (OnHeroDeath()).
+    // Pet (Phoenix) — D9.1 (2026-11-19): quem decide "tem pet / quantos" é o PetSummoner do
+    // prefab (hasPet false até o sistema de variantes existir — variante "Familiar"). O Mage só
+    // toca a própria animação de invocar (com bloqueio de movimento via isAttacking, igual toda
+    // ação real) quando o PetSummoner pedir, e decide os multiplicadores do pet.
     [Header("Pet — Phoenix")]
-    [SerializeField] private GameObject petPrefab; // precisa ter PetController
-    [SerializeField] private Transform petSpawnPoint;
+    [SerializeField] private PetSummoner petSummoner;
     // Upgrade futuro — tamanho e velocidade de ataque do pet, decididos aqui e repassados
     // em Initialize() (mesmo critério do resto do herói: controlador decide, prefab só recebe).
     [SerializeField] private float petSizeMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
     [SerializeField] private float petActionSpeedMultiplier = 1f; // 🔢 upgradable — sem teto definido ainda
-    private PetController currentPet;
-    // Direita #29 "Segunda Fênix" (perk) — 2º Phoenix simultâneo, metade do dano do primeiro.
-    private PetController secondPet;
 
     // Rede de segurança — mesmo padrão do Barbarian/Ranger: se o Animation Event de fim nunca
     // disparar, força o fim da ação em vez de travar isAttacking pra sempre. Também cobre a
@@ -113,18 +112,12 @@ public class Mage : HeroController
     private float basePetActionSpeedMultiplier;
 
     // ---- Esquerda (Ataque Primário) ----
-    private float residualBurnChancePercent; // #20 Queimadura Residual
     private float primaryGroundTrailDamagePercent; // #21 Rastro Flamejante
-    private float doubleBurstChancePercent; // #22 Rajada Dupla
     private float contagiousFireChancePercent; // #23 Fogo Contagiante
-    private float flamingEchoChancePercent; // #24 Eco Flamejante
-    private float explosiveImpactPercent; // #25 Impacto Explosivo
     private float arcaneBreathEnergyPercent; // #26 Fôlego Arcano
     private float vengefulFlameDamagePercent; // #27 Chama Vingativa
     private bool vengefulFlameNextHitPending;
     private float lifestealPercent; // #11 Chama Vital (ex-Muralha de Chamas)
-    private bool eternalFlameEnabled; // #29 Chama Eterna
-    private bool isChannelingEternalFlame;
     private bool supernovaEnabled; // #30 Supernova
     private int supernovaCastCounter;
     private float supernovaAccumulatedDamage;
@@ -193,13 +186,13 @@ public class Mage : HeroController
     protected override void OnEnable()
     {
         base.OnEnable();
-        GameEvents.OnDayStart += SummonPet;
+        GameEvents.OnDayStart += RequestPetCheck;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        GameEvents.OnDayStart -= SummonPet;
+        GameEvents.OnDayStart -= RequestPetCheck;
     }
 
     protected override void Update()
@@ -208,19 +201,21 @@ public class Mage : HeroController
 
         base.Update();
 
-        // Gira o pivot todo frame acompanhando a mira em tempo real — RawAimDirection já
-        // congela sozinho durante isAttacking (HeroController.UpdateAimDirection), então o
-        // pivot também para de girar sozinho assim que uma ação começa, sem checagem extra.
+        // Gira o pivot todo frame acompanhando a mira em tempo real. D9.1: no primário a mira
+        // continua livre (CanAimDuringPrimaryAttack), então o fogo gira com o mouse durante a
+        // canalização; nas outras ações RawAimDirection congela (HeroController) e o pivot para junto.
         if (attackHitboxPivot != null)
         {
             float angle = Mathf.Atan2(RawAimDirection.y, RawAimDirection.x) * Mathf.Rad2Deg - 90f;
             attackHitboxPivot.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
+        // + primaryExtraDuration: o ataque com duração pode passar de maxActionDuration de
+        // propósito (mais voltas de fogo) — o timer de segurança só cobre o que sobra.
         if (isAttacking && !isTeleporting)
         {
             actionElapsed += Time.deltaTime;
-            if (actionElapsed >= maxActionDuration)
+            if (actionElapsed >= maxActionDuration + primaryExtraDuration)
             {
                 Debug.LogWarning("[Mage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
@@ -229,60 +224,75 @@ public class Mage : HeroController
         }
 
         UpdateUltimateFlyingTrail();
+        if (fireElapsed >= 0f && attackHitbox != null && attackHitbox.IsFireActive) fireElapsed += Time.deltaTime;
+        UpdatePetSummon();
         UpdateContagiousFire();
-        UpdateEternalFlameChannel();
+        StopFireIfActionCut();
     }
+
+    // D9.1 (2026-11-19, decisão do usuário) — o primário do Mage é um ataque com DURAÇÃO:
+    // 1 clique = 1 ataque completo, Attack_Start -> Attack_Continuous (dá voltas enquanto a
+    // duração não acabou, bool AttackDurationOver) -> Attack_End, cada um com o gêmeo "_Walk"
+    // (ver HeroController.walkableAttackStates). Segurar o botão só dispara o PRÓXIMO ataque
+    // (igual aos outros heróis), nunca mexe na duração. O fogo (MageAttackHitbox) só existe
+    // dentro do attack_continuous: acende no frame 1 e apaga no frame 7 da volta em que a
+    // duração acabou (ver os 2 Animation Events abaixo).
+    // Mirar durante o ataque vira o corpo (AimX/AimY -> BlendTree troca a direção no mesmo
+    // frame, todas as direções têm o mesmo nº de frames) e gira o fogo (pivot, ver Update()).
+    protected override bool CanAimDuringPrimaryAttack => true;
 
     protected override void PrimaryAttack()
     {
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
-        castFireFired = false;
-
-        // #29 "Chama Eterna" — entra no estado dedicado (Attack_Start -> Attack_Continuous em
-        // loop -> Attack_End), em vez do Attack normal. isChannelingEternalFlame é checado no
-        // Update() pra saber a hora de soltar o EternalFlameEndTrigger (quando o jogador
-        // soltar o botão) — ver UpdateEternalFlameChannel().
-        if (eternalFlameEnabled)
-        {
-            isChannelingEternalFlame = true;
-            AnimatorTrigger("EternalFlameTrigger");
-        }
-        else
-        {
-            AnimatorTrigger("AttackTrigger");
-        }
+        fireElapsed = -1f;
+        if (animator != null) animator.SetBool("AttackDurationOver", false);
+        AnimatorTrigger("AttackTrigger");
     }
 
-    // Chama Eterna — enquanto estiver canalizando, solta o EternalFlameEndTrigger assim que o
-    // jogador soltar o botão (Attack_Continuous está num self-loop no Animator, sem condição
-    // de saída própria — só esse trigger, disparado de AnyState, tira ele de lá).
-    private void UpdateEternalFlameChannel()
+    // Animation Event, frame 1 do attack_continuous (parado ou walk) — acende o fogo. Dispara de
+    // novo a cada volta (e pode repetir na troca parado <-> walk), mas StartFire é idempotente.
+    public void AnimationFireStartEvent()
     {
-        if (!isChannelingEternalFlame) return;
-        if (IsAttackHeld) return;
-
-        isChannelingEternalFlame = false;
-        AnimatorTrigger("EternalFlameEndTrigger");
+        if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
+        if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
+        fireElapsed = 0f;
+        rollFireTickDamage ??= RollFireTickDamage;
+        attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier);
+        ApplyPrimaryCastPerks();
     }
 
-    // Animation Event, no meio do cast — dispara a animação de fogo do próprio filho, que
-    // decide o instante exato do dano na SUA própria animação (ver MageAttackHitbox).
-    public void AnimationCastFireEvent()
+    // Animation Event, frame 7 do attack_continuous — se a duração acabou, apaga o fogo e manda
+    // o corpo terminar esta volta e ir pro Attack_End. Senão, mais uma volta (fogo segue aceso).
+    public void AnimationFireDurationCheckEvent()
     {
-        if (castFireFired) return;
-        castFireFired = true;
-        DealPrimaryHit();
+        if (fireElapsed < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
+        if (!PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration)) return;
+        attackHitbox.EndFire();
+        if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
 
-    // Animation Event do clipe attack_continuous_XX — 1 por repetição do loop (Chama Eterna).
-    // Sem guarda de "já disparou" de propósito: cada volta do loop é uma entrada NOVA no
-    // estado (ver self-transition Attack_Continuous -> Attack_Continuous no Animator), então
-    // o evento só dispara 1x por volta de qualquer jeito.
-    public void AnimationEternalFlameHitEvent() => DealPrimaryHit();
+    // Ação cortada por fora (Prisão, morte — o HeroController zera isAttacking) com o fogo
+    // aceso: apaga, senão ele continuaria causando dano sem o Mage estar atacando.
+    private void StopFireIfActionCut()
+    {
+        if (isAttacking || attackHitbox == null || !attackHitbox.IsFireActive) return;
+        attackHitbox.EndFire();
+    }
 
-    private void DealPrimaryHit()
+    // Dano de 1 tick do fogo (crit rolado por tick) — dano do Mage vira dano por segundo
+    // (decisão do usuário: dano × intervalo, mesmo critério do pulse do Rogue).
+    private float RollFireTickDamage()
+    {
+        float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
+        return stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier * fireTickInterval;
+    }
+
+    // Perks "por ataque" do primário (saem no D9.6 com o sistema de perks) — 1x quando o fogo
+    // acende. Os perks "por hit" (Queimadura Residual, Eco, Impacto Explosivo, Rajada Dupla)
+    // ficaram sem efeito: não combinam com dano por tick e o usuário não testa com perks.
+    private void ApplyPrimaryCastPerks()
     {
         float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
         // Bug real reportado pelo usuário: perk Central comprado, vida máx. subiu (EffectiveMaxHealth
@@ -299,9 +309,6 @@ public class Mage : HeroController
             vengefulFlameNextHitPending = false;
         }
 
-        if (attackHitbox != null)
-            attackHitbox.Fire(damage, ActionSpeedMultiplier, residualBurnChancePercent, damage, fireballFireStatusDuration, explosiveImpactPercent, flamingEchoChancePercent);
-
         // #11 "Chama Vital" — cura % do dano do golpe, aplicado no disparo (mesma granularidade
         // de Fôlego Arcano logo abaixo — não depende de quantos inimigos o hitbox realmente
         // acertou, é sobre a AÇÃO em si).
@@ -309,10 +316,6 @@ public class Mage : HeroController
 
         // #26 "Fôlego Arcano" — ganho de Energia por hit, independente de abate.
         GainEnergyPercentOfMax(arcaneBreathEnergyPercent);
-
-        // #22 "Rajada Dupla" — 2º hit manual, mesmo instante (ver MageAttackHitbox.FireDirectHit).
-        if (doubleBurstChancePercent > 0f && Random.Range(0f, 100f) < doubleBurstChancePercent)
-            attackHitbox?.FireDirectHit();
 
         // #21 "Rastro Flamejante" — trilha no chão no ponto do hit, 1 instância por vez (ver
         // TrySpawnGroundFirePatch).
@@ -562,43 +565,37 @@ public class Mage : HeroController
         isUsingSecondaryAbility = false;
     }
 
-    // Chamado no Dia 1 e em todo GameEvents.OnDayStart seguinte (fonte única em
-    // DayTimer.ResetForNewDay()) — GDD não fala em persistir o pet entre dias, só em
-    // sumonar "no início do dia", então cada dia começa com uma Phoenix nova.
-    private void SummonPet()
+    // Pede a conferência de pets (início de cada dia, via GameEvents.OnDayStart — e, no futuro,
+    // a escolha da variante "Familiar": setar petSummoner.HasPet = true e chamar isto). Pet que
+    // já está em jogo continua; só invoca o que falta.
+    public void RequestPetCheck()
     {
-        if (isAttacking) return; // já sumonando ou em outra ação — não deveria acontecer no início do dia, mas evita sobrepor
+        if (petSummoner != null) petSummoner.RequestCheck();
+    }
+
+    // Todo frame (Update): se o PetSummoner pedir, toca 1 animação de invocar — só com o Mage
+    // livre (nunca corta ataque/habilidade). A próxima (se faltar mais de 1 pet) sai quando esta
+    // terminar (AnimationSummonPetEndEvent libera isAttacking).
+    private void UpdatePetSummon()
+    {
+        if (petSummoner == null) return;
+        bool busy = PetSummonRules.HeroBusy(isAttacking, isUsingSecondaryAbility || isTeleporting, isTrapped, HealthSystem.IsDead(stats.health));
+        if (!petSummoner.ShouldStartSummon(busy)) return;
         isAttacking = true;
         actionElapsed = 0f;
         AnimatorTrigger("SummonPetTrigger");
     }
 
-    // Animation Event, no meio do clipe de invocação do Mage — a
-    // animação do HERÓI conjurando, não a "summon" do próprio pet (essa é dele, tocada
-    // sozinha quando ele nasce). Se já existir uma Phoenix viva (dia anterior), destrói e
-    // sumona de novo.
+    // Animation Event, no meio do clipe de invocação do Mage — a animação do HERÓI conjurando,
+    // não a "summon" do próprio pet (essa é dele, tocada sozinha quando ele nasce). 1 pet por
+    // invocação. Direita #29 "Segunda Fênix" (perk, sai no D9.6) = ExtraPets: o pet além da
+    // quantidade base nasce com metade do dano (GDD: "metade dos stats" = metade do DANO).
     public void AnimationSummonPetEvent()
     {
-        if (currentPet != null) Destroy(currentPet.gameObject);
-        if (secondPet != null) Destroy(secondPet.gameObject);
-        if (petPrefab == null) return;
-
-        Vector3 spawnPos = petSpawnPoint != null ? petSpawnPoint.position : transform.position;
-        var obj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-        currentPet = obj.GetComponent<PetController>();
-        if (currentPet != null)
-            currentPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier, petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
-
-        // Direita #29 "Segunda Fênix" — 2º Phoenix simultâneo, metade do dano do 1º (mesmos
-        // tamanho/velocidade/cooldown/alcance — só o dano cai pela metade, GDD: "metade dos
-        // stats" interpretado como metade do DANO, o que de fato importa pro DPS do pet).
-        if (secondPhoenixEnabled)
-        {
-            var secondObj = Instantiate(petPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
-            secondPet = secondObj.GetComponent<PetController>();
-            if (secondPet != null)
-                secondPet.Initialize(transform, petSpawnPoint, petSizeMultiplier, petActionSpeedMultiplier, petDamageMultiplier * 0.5f, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
-        }
+        if (petSummoner == null) return;
+        bool isExtra = petSummoner.Pets.Count >= petSummoner.BasePetCount;
+        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier,
+            isExtra ? petDamageMultiplier * 0.5f : petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
     }
 
     // Animation Event, no fim do clipe de invocação.
@@ -621,8 +618,8 @@ public class Mage : HeroController
         if (vengefulPhoenixDamagePercent > 0f)
         {
             float duration = 5f; // 🔢 ajustável — "por um tempo curto" (GDD)
-            currentPet?.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
-            secondPet?.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
+            if (petSummoner != null)
+                foreach (var pet in petSummoner.Pets) pet.ApplyTemporaryDamageBonus(1f + vengefulPhoenixDamagePercent / 100f, duration);
         }
     }
 
@@ -632,6 +629,10 @@ public class Mage : HeroController
     // instância (prestes a ser destruída junto) não precisa de nenhuma limpeza própria.
     protected override void OnHeroDeath()
     {
+        // Fogo aceso não pode continuar causando dano com o Mage morto (o Update() do Mage, que
+        // apagaria via StopFireIfActionCut, para quando o GameplayGate fecha no reset do mundo).
+        if (attackHitbox != null) attackHitbox.EndFire();
+
         // Morrer no meio do teleporte (entre a sprite sumir e o projétil chegar) não pode
         // deixar o Mage invisível pra sempre no respawn — o próprio HeroController.OnDeath()
         // já toca o DieTrigger, então a sprite precisa estar de volta pra morte aparecer.
@@ -771,15 +772,11 @@ public class Mage : HeroController
             + PerkState.GetRank(MagePerkIds.EsquerdaChamaPerfeita) * 8f;
         HeroController.PrimaryCritChance = Mathf.Clamp01(critPercent / 100f);
 
-        residualBurnChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaQueimaduraResidual) * 10f;
         primaryGroundTrailDamagePercent = PerkState.GetRank(MagePerkIds.EsquerdaRastroFlamejante) * 10f;
-        doubleBurstChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaRajadaDupla) * 15f;
         contagiousFireChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaFogoContagiante) * 10f;
-        flamingEchoChancePercent = PerkState.GetRank(MagePerkIds.EsquerdaEcoFlamejante) * 15f;
-        explosiveImpactPercent = PerkState.GetRank(MagePerkIds.EsquerdaImpactoExplosivo) * 20f;
         arcaneBreathEnergyPercent = PerkState.GetRank(MagePerkIds.EsquerdaFolegoArcano) * 5f;
         vengefulFlameDamagePercent = PerkState.GetRank(MagePerkIds.EsquerdaChamaVingativa) * 25f;
-        eternalFlameEnabled = PerkState.GetRank(MagePerkIds.EsquerdaChamaEterna) > 0;
+        // #29 Chama Eterna virou o primário padrão (D9.1) — perk sem efeito até o D9.6 remover os perks.
         supernovaEnabled = PerkState.GetRank(MagePerkIds.EsquerdaSupernova) > 0;
     }
 
@@ -829,6 +826,7 @@ public class Mage : HeroController
         explosiveLandingPercent = PerkState.GetRank(MagePerkIds.DireitaPousoExplosivo) * 20f;
         vengefulPhoenixDamagePercent = PerkState.GetRank(MagePerkIds.DireitaFenixVingativa) * 25f;
         secondPhoenixEnabled = PerkState.GetRank(MagePerkIds.DireitaSegundaFenix) > 0;
+        if (petSummoner != null) petSummoner.ExtraPets = secondPhoenixEnabled ? 1 : 0;
         instantTeleportEnabled = PerkState.GetRank(MagePerkIds.DireitaTeleporteInstantaneo) > 0;
 
         // Direita #28 "Renascimento" — redesenhado 2026-11-13 (pedido do usuário: a versão

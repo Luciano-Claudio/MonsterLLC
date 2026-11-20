@@ -50,8 +50,8 @@ public static class GameEvents
     public static void UltimateActiveChanged(bool isActive) => OnUltimateActiveChanged?.Invoke(isActive);
 
     // Troca temporária do ícone de uma skill na UI (ex.: Alce do Druid trocando a garra/
-    // cabeçada no lugar da vinha/Coruja enquanto transformado) — slot: 0 = Primary_Attack,
-    // 1 = Shift. icon null = volta pro ícone normal do herói (rework 2026-10-30).
+    // Rugido/Cabeçada no lugar da vinha/Coruja/Leaves_Spell na forma de urso) — slot: 0 = Primary_Attack,
+    // 1 = Shift, 2 = Ultimate (D9.1). icon null = volta pro ícone normal do herói.
     public static event Action<int, Sprite> OnActionIconOverrideChanged;
     public static void ActionIconOverrideChanged(int slot, Sprite icon) => OnActionIconOverrideChanged?.Invoke(slot, icon);
 

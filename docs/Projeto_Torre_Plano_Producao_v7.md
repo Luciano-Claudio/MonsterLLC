@@ -1,4 +1,9 @@
 # Projeto Torre — Plano de Produção (Revisão 3)
+
+> **⚠️ PARCIALMENTE SUBSTITUÍDO (2026-11-18):** tudo da Deadline 9 em diante (Economia Expandida,
+> Weapon Tier, Employees, Floor Variants) é do design antigo e foi substituído pela
+> `docs/new/Mudanca_Estrutural_Deadline_9_XP_Cartas_Horda.md`. As Deadlines anteriores ficam como
+> histórico.
 ## Etapa 1: Análise de Produção · Etapa 2: Ordem Macro · Etapa 3: 14 Deadlines Revisadas
 
 > Fonte de verdade de gameplay: **GDD Mestre v1.01238** (estruturalmente congelado). Este documento define **como construir**, nunca **o que o jogo é**. Revisão cirúrgica sobre a versão anterior: mesma profundidade de análise, distribuição de carga corrigida.

@@ -20,6 +20,10 @@ public class Cleric : HeroController
     [SerializeField] private float projectileMaxDistance = 12f; // 🔢 ajustável
     [SerializeField] private float projectileKnockbackForce = 2f; // 🔢 ajustável — Cleric não é um herói de empurrão forte
     private readonly List<EnemyController> pendingTargets = new List<EnemyController>();
+    // D9.1 — trava contra disparo duplo do Animation Event de lançamento (troca Attack <->
+    // Attack_Walk no mesmo normalizedTime pode reentrar no frame do evento). Sem ela, a 2ª
+    // chamada via pendingTargets já vazio e encerrava o ataque no meio da animação.
+    private bool projectileLaunchFired;
     private readonly List<EnemyController> prayerTargets = new List<EnemyController>();
 
     // Rede de segurança genérica — mesmo padrão do resto do elenco.
@@ -110,6 +114,7 @@ public class Cleric : HeroController
 
         isAttacking = true;
         actionElapsed = 0f;
+        projectileLaunchFired = false;
         AnimatorTrigger("AttackTrigger");
     }
 
@@ -145,6 +150,9 @@ public class Cleric : HeroController
     // pendingTargets (ver projectileCount).
     public void AnimationProjectileLaunchEvent()
     {
+        if (projectileLaunchFired) return;
+        projectileLaunchFired = true;
+
         if (projectilePrefab == null || pendingTargets.Count == 0) { isAttacking = false; isAttackResolving = false; return; }
 
         foreach (var target in pendingTargets)

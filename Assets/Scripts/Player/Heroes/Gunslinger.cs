@@ -10,6 +10,15 @@ public class Gunslinger : HeroController
     private enum ActiveAction { None, Primary, Ultimate, Shift }
     private ActiveAction activeAction = ActiveAction.None;
 
+    // D9.1 — Attack_Start/Attack_Shoot/Attack_End são compartilhados pelo primário, pela
+    // Ultimate e pelo Shift (mesmos estados, gatilhos diferentes). Só o primário anda (gêmeos
+    // "_Walk" + movimento); Ultimate e Shift continuam travando, como em todo herói.
+    // Flag própria (não activeAction): o AnimationAttackEndEvent zera activeAction no frame 1 de 2
+    // do Attack_End, e o herói parava 1 frame no fim de toda rajada andando (revisão final do
+    // D9.1). Só muda quando uma ação NOVA começa — primário liga, Ultimate/Shift desligam.
+    private bool primaryWalkAllowed;
+    protected override bool CanWalkDuringCurrentAction => primaryWalkAllowed;
+
     // ===================== Primário — rajada Hitscan (GDD Seção 17.8) =====================
     [Header("Ataque primário — rajada Hitscan (mira em 1 das 8 direções)")]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -165,6 +174,7 @@ public class Gunslinger : HeroController
         isAttacking = true;
         actionElapsed = 0f;
         activeAction = ActiveAction.Primary;
+        primaryWalkAllowed = true;
         shotsFiredThisAction = 0;
         shotsRequiredThisAction = shotCount;
         lastShotFireFrame = -1;
@@ -188,6 +198,7 @@ public class Gunslinger : HeroController
         isAttacking = true;
         actionElapsed = 0f;
         activeAction = ActiveAction.Ultimate;
+        primaryWalkAllowed = false;
         shotsFiredThisAction = 0;
         shotsRequiredThisAction = ultimateHitCount;
         lastShotFireFrame = -1;
@@ -249,6 +260,7 @@ public class Gunslinger : HeroController
         isAttacking = true; // trava tudo durante start+shoot+end (mesmo padrão do shield bash do Paladin)
         actionElapsed = 0f;
         activeAction = ActiveAction.Shift;
+        primaryWalkAllowed = false;
         lastShotFireFrame = -1;
 
         SetGunAimDirection(RawAimDirection);
