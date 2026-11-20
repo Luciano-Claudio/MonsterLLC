@@ -68,14 +68,18 @@ public class StatusEffectController : MonoBehaviour
     // explosão em si da Ultimate do Mage) não passa por aqui, continua acertando normal —
     // quem decide se o dano de área/superfície também é bloqueado é a fonte do efeito (ex.:
     // MageFireball consulta IsImmuneTo antes de aplicar o tick do rastro no chão).
-    [SerializeField] private StatusEffectType[] immunities;
+    [SerializeField] private StatusEffectType[] immunities = new StatusEffectType[0]; // nunca nulo (AddComponent em runtime/teste não passa pela serialização)
 
-    public bool IsImmuneTo(StatusEffectType type) => System.Array.IndexOf(immunities, type) >= 0;
+    public bool IsImmuneTo(StatusEffectType type) => immunities != null && System.Array.IndexOf(immunities, type) >= 0;
 
     // Consultado por quem precisa saber "esse efeito está rolando agora" sem ser dono dele
     // (ex.: EnemyController checando WordOfPain pra decidir paralisia — ver comentário no
     // enum).
     public bool IsEffectActive(StatusEffectType type) => activeEffects.Exists(e => e.type == type);
+
+    // Incapacitação total (IA/ataque/movimento travam) — EnemyController consulta isto. D9.1:
+    // Stun (Ultimate do Druid Feral) entra na mesma mecânica da paralisia da Oração do Cleric.
+    public bool IsIncapacitated => IsEffectActive(StatusEffectType.WordOfPain) || IsEffectActive(StatusEffectType.Stun);
 
     private class StatusEffectInstance
     {
@@ -204,6 +208,9 @@ public class StatusEffectController : MonoBehaviour
 
         string stateName;
         if (IsEffectActive(StatusEffectType.WordOfPain)) stateName = StatusEffectType.WordOfPain.ToString();
+        // Stun logo abaixo da Oração (D9.1): incapacitação é o feedback mais importante — um
+        // monstro envenenado e stunado mostra o Stun, não o Poison.
+        else if (IsEffectActive(StatusEffectType.Stun)) stateName = StatusEffectType.Stun.ToString();
         else stateName = activeEffects.Count > 0 ? activeEffects[0].type.ToString() : "Empty";
 
         if (stateName == currentVisualState) return;

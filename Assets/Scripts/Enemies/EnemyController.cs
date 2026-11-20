@@ -509,7 +509,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // sem flag própria: incapacitação total (IA/ataque/movimento travam) exatamente
         // enquanto o Efeito durar, sem risco de desincronizar com o fim dele. Dano/outros
         // Efeitos Nocivos continuam normais (Tick() acima já rodou antes desse return).
-        if (statusEffectController != null && statusEffectController.IsEffectActive(StatusEffectType.WordOfPain))
+        // D9.1: Stun (Ultimate do Druid Feral) usa a mesma paralisia (IsIncapacitated).
+        if (statusEffectController != null && statusEffectController.IsIncapacitated)
         {
             SetMoving(false); // trava o AIPath enquanto durar, mesmo critério de "parado de propósito"
             return;

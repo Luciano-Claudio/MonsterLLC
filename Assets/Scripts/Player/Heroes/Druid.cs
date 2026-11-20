@@ -108,6 +108,7 @@ public class Druid : HeroController
     [SerializeField] private float elkHeadbuttMaxRange = 12f; // 🔢 ajustável
     [SerializeField] private float elkHeadbuttDamageMultiplier = 2f; // 🔢 ajustável
     [SerializeField] private float elkHeadbuttKnockbackForce = 8f; // 🔢 ajustável
+    [SerializeField] private float headbuttStunDuration = 2f; // 🔢 ajustável — Stun em quem leva a Cabeçada
     private bool isHeadbuttCharging; // true do Launch até chegar no destino (ou até o Stop, rede de segurança) — Update() reaplica a velocidade todo frame (base já zera por não estar em "Walk")
     private Vector2 headbuttDirection;
     private Vector3 headbuttTargetPosition;
@@ -762,6 +763,10 @@ public class Druid : HeroController
         foreach (var enemy in elkHeadbuttTargets)
         {
             enemy.TakeDamage(stats.damage * elkHeadbuttDamageMultiplier); // já é o dano do Alce (multiplicado em AnimationElkTransformInEndEvent)
+            // D9.1: quem leva a Cabeçada (Ultimate do Feral) fica stunado — mesma paralisia da
+            // Oração do Cleric (EnemyController consulta StatusEffectController.IsIncapacitated).
+            var statusEffects = enemy.GetComponent<StatusEffectController>();
+            if (statusEffects != null) statusEffects.ApplyStatusEffect(StatusEffectType.Stun, headbuttStunDuration, 0f);
             Vector2 direction = ((Vector2)enemy.transform.position - (Vector2)transform.position).normalized;
             enemy.ApplyKnockback(direction, elkHeadbuttKnockbackForce);
         }
