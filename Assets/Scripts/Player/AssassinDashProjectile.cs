@@ -42,6 +42,10 @@ public class AssassinDashProjectile : MonoBehaviour
         // PaladinHammer/RangerArrow/MageFireball.
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+        // D9.1 (decisão do usuário): enquanto este projétil estiver no ar, os monstros perseguem o
+        // projétil mais perto deles (HeroDecoys) em vez do Assassin.
+        HeroDecoys.Register(transform);
     }
 
     private void Update()
@@ -87,7 +91,12 @@ public class AssassinDashProjectile : MonoBehaviour
     // tiverem avisado) e se destrói.
     public void AnimationProjectileReturnedEvent()
     {
+        HeroDecoys.Unregister(transform); // voltou — os monstros voltam a perseguir o Assassin
         if (owner != null) owner.OnDashProjectileReturned(this);
         Destroy(gameObject);
     }
+
+    // Qualquer outro fim (troca de andar, reset, morte do Assassin destruindo a leva) também
+    // libera a isca — senão os monstros ficariam perseguindo um ponto morto.
+    private void OnDestroy() => HeroDecoys.Unregister(transform);
 }
