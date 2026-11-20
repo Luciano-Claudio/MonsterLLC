@@ -270,7 +270,31 @@ Tasks:
 - `CanWalkDuringCurrentAction => activeAction == ActiveAction.Primary`, porque a Ultimate e o Shift usam o mesmo `Attack_Start`.
 
 ### Druid
-- Gêmeo do `Attack` nos 2 controllers (`Druid.controller` e `Druid/Ultimate/Druid_Elk.controller`). A troca de controller é coberta pelo `HasState`.
+
+**Rework do Druid (decidido com o usuário em 2026-11-19): 2 heróis em 1, escolhidos por um bool.**
+
+No código e nas sprites o "urso" se chama Alce/ForestBeast. Os nomes ficam como estão.
+
+Variante pelo bool `isFeral` no prefab, falso por enquanto:
+- A escolha da variante (no futuro, dentro do jogo) só seta o bool.
+- O Druid nota a mudança sozinho, no mesmo padrão do `PetSummoner`.
+
+| | **Floresta** (`isFeral = false`) | **Feral** (`isFeral = true`) |
+|---|---|---|
+| Forma | Humano, sempre | Urso permanente. Toca a transformação humano→urso uma vez quando a variante é escolhida, e de novo no início de todo dia. Stats e vida seguem a regra do Alce de hoje (`elkMaxHealthMultiplier` etc.), sem timer e sem voltar a humano. |
+| Primário | Vinhas (igual hoje) | Garra do urso (igual hoje) |
+| Shift | Coruja (igual hoje) | **Rugido** (sprite `Roar`, 4 dir × 14 frames). Trava o movimento só durante a animação. Depois dá 🔢 50% de redução de dano por 🔢 5s, via `GetConditionalDamageReductionPercent`, igual ao Shift do Barbarian. |
+| Ultimate | **Leaves_Spell**. O corpo reaproveita a animação das vinhas, com clipes próprios `ult_*`, sem o evento de vinha. No frame da vinha: todo monstro visível na câmera recebe `FlashStatus(LeavesSpell)` (toca 1x) e `Poison` (🔢 4s, 🔢 50% do dano por segundo). Quando o flash acaba, aparece o Poison em loop, que já existe no `Status.controller`. | **Cabeçada** (o Shift atual do urso vira a Ultimate) + **Ground Crack** no último frame. O crack funciona igual ao do Barbarian (área de dano por segundo por alguns segundos), com a sprite `Druid/Ultimate/Ground_Crack`. |
+| Walk attack | `walk_attack_*` (4 diag) no `Druid.controller` | `walk_elk_attack_*` (4 diag) no `Druid_Elk.controller` |
+
+Sai a Ultimate de transformação com duração: o `elkFormMaxDuration`, o `CancelUltimate`/`IsUltimateActive` do Alce e o bloqueio de energia durante a forma.
+
+Tasks:
+- **Dr1.** Walk attack nos 2 controllers (ferramentas da Parte A).
+- **Dr2.** `isFeral` com detecção de mudança. Transformação na escolha e no início do dia. Forma permanente.
+- **Dr3.** Rugido: clipes, estado e redução de dano.
+- **Dr4.** Ultimate Feral: Cabeçada pelo `UltimateTrigger` + Ground Crack no fim.
+- **Dr5.** `LeavesSpell`: enum, clipe e estado no `Status.controller` (padrão do `Drain` do Blood Mage) + Ultimate Floresta.
 
 ### Cleric, Paladin, Blood Mage
 - Estado `Attack` (8 direções), 2 sheets cada (diagonal e ortogonal). Sem particularidade conhecida.
