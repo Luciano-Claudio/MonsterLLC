@@ -10,6 +10,11 @@ public class Gunslinger : HeroController
     private enum ActiveAction { None, Primary, Ultimate, Shift }
     private ActiveAction activeAction = ActiveAction.None;
 
+    // D9.1 — Attack_Start/Attack_Shoot/Attack_End são compartilhados pelo primário, pela
+    // Ultimate e pelo Shift (mesmos estados, gatilhos diferentes). Só o primário anda (gêmeos
+    // "_Walk" + movimento); Ultimate e Shift continuam travando, como em todo herói.
+    protected override bool CanWalkDuringCurrentAction => activeAction == ActiveAction.Primary;
+
     // ===================== Primário — rajada Hitscan (GDD Seção 17.8) =====================
     [Header("Ataque primário — rajada Hitscan (mira em 1 das 8 direções)")]
     [SerializeField] private LayerMask enemyLayerMask;

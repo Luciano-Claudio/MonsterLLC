@@ -43,6 +43,10 @@ public static class AttackWalkAssetTools
          "Assets/Sprites/Heros/Blood_Mage/Attack/Walk_Attack_Diagonal.png"),
         ("Assets/Sprites/Heros/Blood_Mage/Attack/Blood_Shards_Orthogonal.png",
          "Assets/Sprites/Heros/Blood_Mage/Attack/Walk_Attack_Orthogonal.png"),
+        ("Assets/Sprites/Heros/Gunslinger/Attack/Shot_Diagonal.png",
+         "Assets/Sprites/Heros/Gunslinger/Attack/Walk_Attack_Diagonal.png"),
+        ("Assets/Sprites/Heros/Gunslinger/Attack/Shot_Orthogonal.png",
+         "Assets/Sprites/Heros/Gunslinger/Attack/Walk_Attack_Orthogonal.png"),
     };
 
     // Índice = número depois do último "_" no nome do sprite (padrão do fatiamento da Unity:
