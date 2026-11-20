@@ -23,6 +23,10 @@ public class Rogue : HeroController
     // lógica extra dentro do RoguePulseArea.cs, só aplicar o multiplicador aqui antes de ativar.
     [SerializeField] private float pulseSizeMultiplier = 1f; // 🔢 upgradable — até 3x (ver OnValidate)
     private bool isPulseActive;
+    // D9.1 — trava contra disparo duplo do fim do attack_start (troca AttackStart <-> AttackStart_Walk
+    // no mesmo normalizedTime pode reentrar no frame do evento): sem ela o pulso era religado e o
+    // tempo dele recomeçava (durava mais que pulseDuration).
+    private bool attackStartEndFired;
     private float pulseElapsed;
     // AttackEndTrigger é AnyState no controller — se o pulso esgotar durante a Cambalhota
     // (isAttacking fica true a viagem INTEIRA dela), disparar na hora arrancaria o Animator do
@@ -119,6 +123,7 @@ public class Rogue : HeroController
 
         isAttacking = true;
         actionElapsed = 0f;
+        attackStartEndFired = false;
         AnimatorTrigger("AttackTrigger"); // Animator decide AttackStart via AnyState
     }
 
@@ -128,6 +133,9 @@ public class Rogue : HeroController
     // dano-por-segundo do próprio filho, enquanto isPulseActive durar.
     public void AnimationAttackStartEndEvent()
     {
+        if (attackStartEndFired) return;
+        attackStartEndFired = true;
+
         isAttacking = false;
 
         if (pulseArea != null)

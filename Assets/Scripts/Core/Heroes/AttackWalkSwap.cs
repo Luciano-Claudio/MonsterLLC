@@ -31,6 +31,12 @@ public static class AttackWalkSwap
         return !(isAttackResolving && canAimDuringPrimaryAttack);
     }
 
+    // O primário só recomeça quando o anterior terminou de VERDADE: isAttackResolving fica true
+    // do clique até o fim real (é o que deixa a UI vermelha). Bug real (Rogue, 2026-11-20): o
+    // Rogue solta isAttacking durante o pulso (pra andar) e o clique passava no meio dele.
+    public static bool CanStartPrimary(bool isAttacking, bool isAttackResolving, bool trapped) =>
+        !isAttacking && !isAttackResolving && !trapped;
+
     // Estado com loop acumula normalizedTime (3.25 = 4º ciclo, 25% dele) — Animator.Play
     // recebe só a fração; sem loop, o valor já está entre 0 e 1.
     public static float ContinueTime(float normalizedTime, bool looping) =>

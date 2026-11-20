@@ -47,6 +47,11 @@ public static class AttackWalkAssetTools
          "Assets/Sprites/Heros/Gunslinger/Attack/Walk_Attack_Diagonal.png"),
         ("Assets/Sprites/Heros/Gunslinger/Attack/Shot_Orthogonal.png",
          "Assets/Sprites/Heros/Gunslinger/Attack/Walk_Attack_Orthogonal.png"),
+        // Rogue: start (0-7) vem da Shurikens, end (10-14) da Shurikens2-export — a walk é UMA sheet só pras 2.
+        ("Assets/Sprites/Heros/Rogue/Attack/Minifantasy_TrueHeroesRogueShurikens.png",
+         "Assets/Sprites/Heros/Rogue/Attack/Walk_Attack.png"),
+        ("Assets/Sprites/Heros/Rogue/Attack/Minifantasy_TrueHeroesRogueShurikens2-export.png",
+         "Assets/Sprites/Heros/Rogue/Attack/Walk_Attack.png"),
     };
 
     // Índice = número depois do último "_" no nome do sprite (padrão do fatiamento da Unity:

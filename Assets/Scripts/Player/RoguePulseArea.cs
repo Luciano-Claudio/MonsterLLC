@@ -10,16 +10,22 @@ using UnityEngine;
 // Ativa aqui (Activate()) quando o clipe "attack_start" do Rogue termina — fica tocando
 // "Cycle" em loop (igual à Ultimate do Paladin) enquanto durar, aplicando dano por segundo a
 // quem estiver dentro do próprio CircleCollider2D (trigger). Mesmo critério do rastro
-// "Grounded" da bola de fogo do Mage: enemiesInRange (HashSet, mantido via Enter/Exit) + tick
-// por AttackCooldown, não 1 hit só por entrada — quem fica parado dentro continua recebendo
-// dano a cada intervalo.
+// "Grounded" da bola de fogo do Mage: enemiesInRange (HashSet, mantido via Enter/Exit).
+//
+// D9.1 (2026-11-20, decisão do usuário) — tick POR MONSTRO (PerTargetTickTracker, mesma regra
+// do fogo do Mage), não mais um timer único da área: o monstro leva dano NA HORA em que entra
+// pela 1ª vez e de novo a cada tickInterval enquanto continuar dentro. Antes, quem entrava
+// entre 2 ticks esperava o próximo ("entrou e não levou dano"). Sair e entrar de novo não zera
+// o timer do monstro (o registro sobrevive entre pulsos seguidos).
 public class RoguePulseArea : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private Collider2D triggerCollider;
 
     private float damagePerTick;
-    private AttackCooldown tick;
+    private readonly PerTargetTickTracker tickTracker = new PerTargetTickTracker(1f);
+    private float nextPruneTime;
+    private const float PruneInterval = 1f;
     private readonly HashSet<EnemyController> enemiesInRange = new();
     private readonly List<EnemyController> tickTargets = new();
     // 128 (não 16) — monstro tem 2 Collider2D, 16 saturava com só 8 monstros aglomerados
@@ -29,7 +35,7 @@ public class RoguePulseArea : MonoBehaviour
     public void Activate(float damagePerSecond, float tickInterval)
     {
         damagePerTick = damagePerSecond * tickInterval;
-        tick = new AttackCooldown(tickInterval);
+        tickTracker.SetInterval(tickInterval);
         enemiesInRange.Clear();
 
         gameObject.SetActive(true);
@@ -63,10 +69,8 @@ public class RoguePulseArea : MonoBehaviour
     {
         if (!GameplayGate.IsActive) return;
 
-        tick.Tick(Time.deltaTime);
-        if (!tick.TryConsume()) return;
-
-        enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu desde o último tick
+        enemiesInRange.RemoveWhere(e => e == null); // limpa quem morreu
+        float now = Time.time;
 
         // Cópia pro foreach — TakeDamage() pode matar o monstro, o que desliga o Collider2D dele
         // e dispara OnTriggerExit2D NESTA MESMA RoguePulseArea de volta, que faz
@@ -75,7 +79,18 @@ public class RoguePulseArea : MonoBehaviour
         // já corrigido no rastro "Grounded" do MageFireball).
         tickTargets.Clear();
         tickTargets.AddRange(enemiesInRange);
-        foreach (var enemy in tickTargets) enemy.TakeDamage(damagePerTick, isDirectPlayerHit: false); // área pulsante, sem Game Feel — mesmo critério do rastro do MageFireball
+        foreach (var enemy in tickTargets)
+        {
+            if (enemy == null || enemy.IsDead) continue;
+            if (!tickTracker.TryHit(enemy.GetInstanceID(), now)) continue;
+            enemy.TakeDamage(damagePerTick, isDirectPlayerHit: false); // área pulsante, sem Game Feel — mesmo critério do rastro do MageFireball
+        }
+
+        if (now >= nextPruneTime)
+        {
+            nextPruneTime = now + PruneInterval;
+            tickTracker.Prune(now);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)

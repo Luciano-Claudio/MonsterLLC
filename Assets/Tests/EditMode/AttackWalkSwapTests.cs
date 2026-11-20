@@ -90,6 +90,28 @@ public class AttackWalkSwapTests
         Assert.IsFalse(AttackWalkSwap.AimLocked(isAttacking: false, isAttackResolving: false, canAimDuringPrimaryAttack: false, trapped: false));
     }
 
+    // Bug real (Rogue, 2026-11-20): durante o pulso o Rogue solta isAttacking (pra andar), e o
+    // clique no primário passava — mesmo com a UI vermelha (isAttackResolving). O primário não
+    // pode recomeçar enquanto o anterior ainda está resolvendo.
+    [Test]
+    public void CanStartPrimary_BlockedWhileResolving_EvenIfNotAttacking()
+    {
+        Assert.IsFalse(AttackWalkSwap.CanStartPrimary(isAttacking: false, isAttackResolving: true, trapped: false));
+    }
+
+    [Test]
+    public void CanStartPrimary_FreeWhenIdle()
+    {
+        Assert.IsTrue(AttackWalkSwap.CanStartPrimary(isAttacking: false, isAttackResolving: false, trapped: false));
+    }
+
+    [Test]
+    public void CanStartPrimary_BlockedWhileAttackingOrTrapped()
+    {
+        Assert.IsFalse(AttackWalkSwap.CanStartPrimary(isAttacking: true, isAttackResolving: false, trapped: false));
+        Assert.IsFalse(AttackWalkSwap.CanStartPrimary(isAttacking: false, isAttackResolving: false, trapped: true));
+    }
+
     [Test]
     public void ContinueTime_NonLooping_ReturnsSame()
     {

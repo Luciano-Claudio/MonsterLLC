@@ -867,7 +867,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // TryConsume() virou IsReady (só checa, não arma mais o timer na hora do clique) —
         // o timer real só começa em Update(), quando isAttackResolving volta a false de
         // verdade (ver comentário no campo e AttackCooldown.Start()).
-        if (!(!isAttacking && !isTrapped && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.IsReady)))
+        // CanStartPrimary inclui isAttackResolving (D9.1, bug do Rogue clicando no meio do pulso).
+        if (!(AttackWalkSwap.CanStartPrimary(isAttacking, isAttackResolving, isTrapped) && ShouldConsumeCooldownOnAttack() && (IsAttackCooldownBypassed() || attackCooldown.IsReady)))
             return false;
 
         isAttackResolving = true;
