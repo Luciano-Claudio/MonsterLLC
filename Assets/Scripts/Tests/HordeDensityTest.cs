@@ -120,7 +120,7 @@ public class HordeDensityTest : MonoBehaviour
         foreach (int n in MonsterCounts)
             yield return RunStage($"{n} monstros — herói PARADO", n, 0, "Fique PARADO (não ande, não ataque).");
         foreach (int n in MonsterCounts)
-            yield return RunStage($"{n} monstros — herói ANDANDO", n, 0, "ANDE EM CÍRCULO o tempo todo (sem atacar).");
+            yield return RunStage($"{n} monstros — herói ANDANDO", n, 0, "ANDE EM CÍRCULO o tempo todo (sem atacar). Você atravessa os monstros nesta etapa.", passThroughMonsters: true);
         foreach (int k in EffectCounts)
             yield return RunStage($"{EffectsStageMonsters} monstros + {k} efeitos", EffectsStageMonsters, k, "Fique PARADO.");
 
@@ -131,8 +131,11 @@ public class HordeDensityTest : MonoBehaviour
         running = null;
     }
 
-    private IEnumerator RunStage(string name, int monsters, int effectCount, string todo)
+    private IEnumerator RunStage(string name, int monsters, int effectCount, string todo, bool passThroughMonsters = false)
     {
+        // Etapas andando: com 300 monstros grudados os colliders prendem o herói — desliga só a
+        // colisão herói x monstro (mesmo recurso da Coruja do Druid); monstros seguem perseguindo.
+        SetHeroPassThrough(passThroughMonsters);
         var pop = WorldPopulationManager.Instance;
         pop.spawnSettings.populationMinimum = monsters;
         pop.spawnSettings.populationTarget = monsters;
@@ -203,6 +206,18 @@ public class HordeDensityTest : MonoBehaviour
             go.AddComponent<DensityEffectMover>().Init(hero.transform, Random.Range(2f, 9f), Random.Range(-3f, 3f));
             effects.Add(go);
         }
+    }
+
+    private bool passThroughActive;
+
+    private void SetHeroPassThrough(bool enabled)
+    {
+        if (passThroughActive == enabled) return;
+        var hero = HeroController.Instance;
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+        if (hero == null || enemyLayer < 0) return;
+        Physics2D.IgnoreLayerCollision(hero.gameObject.layer, enemyLayer, enabled);
+        passThroughActive = enabled;
     }
 
     private static void KeepHeroAlive()
@@ -288,6 +303,7 @@ public class HordeDensityTest : MonoBehaviour
     {
         if (running != null) StopCoroutine(running);
         running = null;
+        if (results.Count > 0) WriteReport(); // relatório parcial: as etapas já medidas não se perdem
         Restore();
         status = $"Teste {reason}. F8 = começar de novo";
         instruction = "";
@@ -295,6 +311,7 @@ public class HordeDensityTest : MonoBehaviour
 
     private void Restore()
     {
+        SetHeroPassThrough(false);
         var pop = WorldPopulationManager.Instance;
         if (pop != null && originalSettings != null) pop.spawnSettings = originalSettings;
         originalSettings = null;
