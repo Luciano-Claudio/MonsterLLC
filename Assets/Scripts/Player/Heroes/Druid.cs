@@ -29,8 +29,6 @@ public class Druid : HeroController
     // ficar livre. Depois disso, a transformação toca de novo no início de todo dia.
     [Header("Variante (Floresta x Feral)")]
     [SerializeField] private bool isFeral = false; // false até o sistema de variantes existir
-    private bool lastIsFeral;
-    private bool feralTransformPending;
     public bool IsFeral
     {
         get => isFeral;
@@ -237,25 +235,17 @@ public class Druid : HeroController
 
     // ===================== VARIANTE (Floresta x Feral) =====================
 
-    // Mudança no bool notada sozinha (escolha da variante dentro do jogo, ou Inspector em Play
-    // Mode). Virou Feral: transforma assim que o Druid ficar livre (nunca corta ação). Deixou de
-    // ser Feral: volta a humano com a animação de transformar-de-volta.
+    // A forma acompanha o bool isFeral (escolha da variante dentro do jogo, ou Inspector em Play
+    // Mode) comparando, todo frame, a forma desejada com a atual (DruidVariantRules): troca
+    // assim que o Druid ficar livre, nunca corta ação, nunca no meio de uma transformação.
     private void UpdateFeralVariant()
     {
-        if (isFeral != lastIsFeral)
+        bool busy = isAttacking || isUsingSecondaryAbility || isTrapped || HealthSystem.IsDead(stats.health);
+        switch (DruidVariantRules.Next(isFeral, isElkForm, isTransformImmune, busy))
         {
-            lastIsFeral = isFeral;
-            if (isFeral) feralTransformPending = true;
-            else
-            {
-                feralTransformPending = false;
-                if (isElkForm && !isAttacking) EndElkForm();
-            }
+            case DruidFormAction.TransformIn: StartFeralTransform(); break;
+            case DruidFormAction.TransformOut: EndElkForm(); break;
         }
-
-        if (!feralTransformPending || isElkForm) return;
-        if (isAttacking || isUsingSecondaryAbility || isTransformImmune || HealthSystem.IsDead(stats.health)) return;
-        StartFeralTransform();
     }
 
     // Início de todo dia (decisão do usuário): o Feral toca a transformação de novo. Volta a
@@ -263,9 +253,8 @@ public class Druid : HeroController
     // entre dias) antes de aplicar os multiplicadores do urso.
     private void HandleDayStart()
     {
-        if (!isFeral) return;
-        if (isElkForm) RestoreHumanForm(keepHealthRatio: false);
-        feralTransformPending = true;
+        // Volta a humano na hora; UpdateFeralVariant vê "quer urso, está humano" e transforma.
+        if (isFeral && isElkForm) RestoreHumanForm(keepHealthRatio: false);
     }
 
     // Era o UseUltimate antigo (transformação com duração) — agora só a entrada na forma
@@ -273,7 +262,6 @@ public class Druid : HeroController
     // então trocar o controller já toca a animação (AnimationElkTransformInEndEvent no fim).
     private void StartFeralTransform()
     {
-        feralTransformPending = false;
         isAttacking = true;
         actionElapsed = 0f;
         isTransformImmune = true;
@@ -604,7 +592,6 @@ public class Druid : HeroController
     protected override void OnHeroDeath()
     {
         roarRemaining = 0f;
-        feralTransformPending = false;
         if (!isElkForm) return;
 
         // Mesmo critério do EndRoll do Rogue — morrer no meio da cabeçada não pode deixar o

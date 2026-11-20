@@ -144,6 +144,9 @@ public class Assassin : HeroController
             if (projectile != null) Destroy(projectile.gameObject);
         }
         activeDashProjectiles.Clear();
+        // Destroy() só acontece no fim do frame — limpa as iscas JÁ, senão os monstros seguiriam
+        // perseguindo os projéteis por mais 1 frame (rede de segurança e morte do Assassin).
+        HeroDecoys.Clear();
         if (bodySpriteRenderer != null) bodySpriteRenderer.enabled = true;
         isDashInvisible = false;
         isThousandBladesVariant = false;
