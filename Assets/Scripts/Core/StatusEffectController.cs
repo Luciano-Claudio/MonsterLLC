@@ -75,7 +75,19 @@ public class StatusEffectController : MonoBehaviour
     // Consultado por quem precisa saber "esse efeito está rolando agora" sem ser dono dele
     // (ex.: EnemyController checando WordOfPain pra decidir paralisia — ver comentário no
     // enum).
-    public bool IsEffectActive(StatusEffectType type) => activeEffects.Exists(e => e.type == type);
+    // Laço simples, sem lambda: o Exists(e => e.type == type) alocava um closure por chamada, e
+    // isto roda por monstro por frame (IsIncapacitated no EnemyController + UpdateVisual) — achado
+    // da revisão final do D9.1, antes do teste de densidade da horda.
+    public bool IsEffectActive(StatusEffectType type)
+    {
+        for (int i = 0; i < activeEffects.Count; i++)
+            if (activeEffects[i].type == type) return true;
+        return false;
+    }
+
+    // Efeito com dano 0 (ex.: Stun) não chama TakeDamage — senão cada tick mostrava "0" na tela,
+    // disparava a reação de dano do monstro e contava como tick de DoT (revisão final do D9.1).
+    public static bool DealsDamage(float damagePerSecond) => damagePerSecond > 0f;
 
     // Incapacitação total (IA/ataque/movimento travam) — EnemyController consulta isto. D9.1:
     // Stun (Ultimate do Druid Feral) entra na mesma mecânica da paralisia da Oração do Cleric.
@@ -188,7 +200,7 @@ public class StatusEffectController : MonoBehaviour
             effect.tick.Tick(deltaTime);
             // isDirectPlayerHit: false — DoT nunca aciona o Game Feel de hit direto
             // (HitFeelController), só o hit de verdade aciona.
-            if (effect.tick.TryConsume() && target != null) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
+            if (effect.tick.TryConsume() && target != null && DealsDamage(effect.damagePerSecond)) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
         }
 
         // Enquanto o flash estiver tocando, ele manda no visual sozinho (FlashStatus já deu o

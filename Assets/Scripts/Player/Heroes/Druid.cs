@@ -144,7 +144,9 @@ public class Druid : HeroController
     [SerializeField] private float leavesPoisonDamagePercent = 50f; // 🔢 % do dano do Druid, por segundo
     [SerializeField] private float leavesFlashDuration = 1.25f; // = clipe LeavesSpell (15 frames @12fps)
     private bool leavesSpellFired;
-    private static readonly Collider2D[] ScreenOverlapBuffer = new Collider2D[512];
+    // Cresce sozinho (dobra) quando enche — com a horda densa, 512 cabia só ~256 monstros (2
+    // colliders cada) e o resto ficava sem veneno sem erro nenhum (revisão final do D9.1).
+    private static Collider2D[] screenOverlapBuffer = new Collider2D[512];
     private readonly List<EnemyController> leavesTargets = new();
 
     [Header("Ícones alternativos (Skills HUD) — forma de urso (Feral)")]
@@ -400,9 +402,14 @@ public class Druid : HeroController
 
         var filter = new ContactFilter2D { useTriggers = true };
         filter.SetLayerMask(enemyLayerMask);
-        int count = Physics2D.OverlapArea(min, max, filter, ScreenOverlapBuffer);
+        int count = Physics2D.OverlapArea(min, max, filter, screenOverlapBuffer);
+        while (count == screenOverlapBuffer.Length)
+        {
+            screenOverlapBuffer = new Collider2D[screenOverlapBuffer.Length * 2];
+            count = Physics2D.OverlapArea(min, max, filter, screenOverlapBuffer);
+        }
         // Dedup obrigatório — todo monstro tem 2 Collider2D (ver EnemyController.CollectDistinct()).
-        EnemyController.CollectDistinct(ScreenOverlapBuffer, count, leavesTargets);
+        EnemyController.CollectDistinct(screenOverlapBuffer, count, leavesTargets);
 
         float poisonDps = stats.damage * leavesPoisonDamagePercent / 100f;
         foreach (var enemy in leavesTargets)

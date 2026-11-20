@@ -712,7 +712,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // Exceção D9.1: estados de walkableAttackStates (e os gêmeos "_Walk") — ver campo.
         bool attackMoveAllowed = allowMoveDuringPrimaryAttack && !isTrapped && CanWalkDuringCurrentAction
             && UpdateAttackWalkState(wantsToMove);
-        bool canMove = wantsToMove && (AnimatorStateCheck.IsInState(animator, "Walk") || attackMoveAllowed);
+        bool canMove = AttackWalkSwap.CanMove(wantsToMove, AnimatorStateCheck.IsInState(animator, "Walk"), attackMoveAllowed, isTrapped);
         IsAttackWalking = canMove && attackMoveAllowed;
         float moveSpeed = attackMoveAllowed ? EffectiveMoveSpeed * moveSpeedMultiplierDuringPrimaryAttack : EffectiveMoveSpeed;
         if (rb != null)

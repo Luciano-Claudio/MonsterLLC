@@ -37,6 +37,12 @@ public static class AttackWalkSwap
     public static bool CanStartPrimary(bool isAttacking, bool isAttackResolving, bool trapped) =>
         !isAttacking && !isAttackResolving && !trapped;
 
+    // Movimento do herói: andando (estado "Walk") ou num estado de ataque andável — e NUNCA
+    // preso. Revisão final do D9.1: controller sem estado Trapped (urso do Druid, Paladin)
+    // deixava o herói em "Walk" durante a Prisão e ele andava livre.
+    public static bool CanMove(bool wantsToMove, bool inWalkState, bool attackMoveAllowed, bool trapped) =>
+        wantsToMove && !trapped && (inWalkState || attackMoveAllowed);
+
     // Estado com loop acumula normalizedTime (3.25 = 4º ciclo, 25% dele) — Animator.Play
     // recebe só a fração; sem loop, o valor já está entre 0 e 1.
     public static float ContinueTime(float normalizedTime, bool looping) =>

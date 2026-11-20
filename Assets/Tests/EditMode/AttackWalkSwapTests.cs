@@ -112,6 +112,32 @@ public class AttackWalkSwapTests
         Assert.IsFalse(AttackWalkSwap.CanStartPrimary(isAttacking: false, isAttackResolving: false, trapped: true));
     }
 
+    // Revisão final D9.1 (achado Important #2): controller sem estado Trapped (urso do Druid,
+    // Paladin) deixava o herói em "Walk" e ele andava preso na teia.
+    [Test]
+    public void CanMove_TrappedNeverMoves_EvenInWalkState()
+    {
+        Assert.IsFalse(AttackWalkSwap.CanMove(wantsToMove: true, inWalkState: true, attackMoveAllowed: false, trapped: true));
+    }
+
+    [Test]
+    public void CanMove_WalkingFreely()
+    {
+        Assert.IsTrue(AttackWalkSwap.CanMove(wantsToMove: true, inWalkState: true, attackMoveAllowed: false, trapped: false));
+    }
+
+    [Test]
+    public void CanMove_DuringWalkableAttack()
+    {
+        Assert.IsTrue(AttackWalkSwap.CanMove(wantsToMove: true, inWalkState: false, attackMoveAllowed: true, trapped: false));
+    }
+
+    [Test]
+    public void CanMove_NoInput_DoesNotMove()
+    {
+        Assert.IsFalse(AttackWalkSwap.CanMove(wantsToMove: false, inWalkState: true, attackMoveAllowed: true, trapped: false));
+    }
+
     [Test]
     public void ContinueTime_NonLooping_ReturnsSame()
     {
