@@ -41,6 +41,12 @@ Os scripts dos monstros (`Update`) caíram de 23,3 ms pra 6,0 ms com 300 parados
 
 - **300 parado: 54 FPS.** Parado, a horda inteira fica perto do herói, dentro do anel de simulação completa. Por isso é o pior caso.
 - **Lixo de memória: 40–70 KB/frame.** Ainda não é zero, e a origem não foi investigada.
+- **Lixo de memória: investigado e corrigido** (commit `636a4773`, medição `density_20261120_080247.md`). O harness gravou capturas do Profiler com pilha de chamada. A soma por função apontou:
+  - `HeroPickupRadius.OnTriggerStay2D`: 74 KB/frame com 300 parados. Todo monstro encostado no trigger de coleta disparava a chamada, e cada `GetComponent` nulo gera lixo no Editor. Corrigido com a layer `Pickup` (colide só com `Default`, onde o loot está) e `TryGetComponent`.
+  - `ChunkStreamer`/`ChunkTerrainGenerator`: ~5 KB/frame. Corrigido: só recalcula quando o herói troca de chunk, os buffers são reaproveitados e o `ChunkCoord` virou `IEquatable`.
+
+  Depois disso, o lixo medido caiu pra 31–40 KB/frame, e quase tudo é ferramenta: overlay do harness (~20 KB) e pacotes LevelPlay/IAP do Editor (~7,5 KB). Do jogo, sobra só lixo por evento: números de dano no herói (~5 KB/frame parado) e projéteis de monstro (~1 KB). Os dois resolvem com pooling, se um dia valer a pena.
+- **Etapa "200 monstros + 500 efeitos" é instável** (50 FPS numa rodada; 2, 6 e 11 FPS em outras, sem mudança relevante de código). A causa é a espiral do `FixedUpdate`: os scripts de física subiram de 1,1 pra 9 ms por frame, ou seja, uns 8 passos de física por frame. Com 500 colliders de efeito, o jogo fica no limite, e pequenas diferenças (quantos monstros grudam no herói) decidem se ele despenca. Isso confirma a decisão do usuário: o efeito de chamas no jogo é só animação, e dano em área é por consulta (`Overlap`), nunca por centenas de triggers.
 - **`Auto Sync Transforms`: testado e descartado** (`DensityReports/density_20261120_074913.md`). Ligado, a sincronização custava no máximo 0,09 ms por frame. Desligado, tudo piorou: 300 andando caiu de 76 pra 61 FPS, e 200 monstros + 500 efeitos de 50 pra 11 FPS (a física subiu de 5,8 pra 59 ms). A configuração voltou a ficar ligada. Não tentar de novo sem um motivo novo.
 - **Um só collider de física por monstro:** não foi feito.
 - **Herói preso pelos monstros empilhados:** problema de jogo, fica pro D9.4.
