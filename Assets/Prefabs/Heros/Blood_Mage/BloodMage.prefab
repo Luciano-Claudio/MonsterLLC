@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7800000000000007}
   - component: {fileID: 7800000000000008}
   - component: {fileID: 5823028145157732412}
+  - component: {fileID: 3466336260222560363}
   m_Layer: 8
   m_Name: BloodMage
   m_TagString: Player
@@ -40,6 +41,9 @@ Transform:
   - {fileID: 8946962623367080796}
   - {fileID: 7800000000000021}
   - {fileID: 7800000000000031}
+  - {fileID: 7296436484401366752}
+  - {fileID: 6721580416975213064}
+  - {fileID: 8371871824884962894}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7800000000000003
@@ -246,8 +250,7 @@ MonoBehaviour:
   orbSpeed: 10
   drainFlashDuration: 0.5
   consumeBloodCooldown: 0.15
-  petPrefab: {fileID: 7600000000000001, guid: 6da51838120242bfb2844774420ace2c, type: 3}
-  petSpawnPoint: {fileID: 7800000000000031}
+  petSummoner: {fileID: 3466336260222560363}
   petSizeMultiplier: 1
   petActionSpeedMultiplier: 1
 --- !u!114 &7800000000000008
@@ -302,6 +305,26 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.5}
   m_Size: {x: 1, y: 1.5}
   m_Direction: 0
+--- !u!114 &3466336260222560363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7800000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e914ef6506fe6146adbbd417bf82e9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetSummoner
+  hasPet: 0
+  petCount: 1
+  petPrefab: {fileID: 7600000000000001, guid: 6da51838120242bfb2844774420ace2c, type: 3}
+  petSpawnPoints:
+  - {fileID: 7800000000000031}
+  - {fileID: 7296436484401366752}
+  - {fileID: 6721580416975213064}
+  - {fileID: 8371871824884962894}
 --- !u!1 &7800000000000009
 GameObject:
   m_ObjectHideFlags: 0
@@ -563,7 +586,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7800000000000031}
   m_Layer: 8
-  m_Name: PetSpawnPoint
+  m_Name: PetSpawnPoint_NE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -579,6 +602,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2, y: 0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7800000000000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2748992422339198918
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8371871824884962894}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_SW
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8371871824884962894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2748992422339198918}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -751,3 +805,65 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!1 &5289081200118534659
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6721580416975213064}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_SE
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6721580416975213064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5289081200118534659}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2, y: -0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7800000000000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5400155352313121058
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7296436484401366752}
+  m_Layer: 8
+  m_Name: PetSpawnPoint_NW
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7296436484401366752
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5400155352313121058}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2, y: 0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7800000000000002}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
