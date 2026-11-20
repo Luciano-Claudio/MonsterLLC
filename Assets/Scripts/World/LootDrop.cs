@@ -51,8 +51,9 @@ public class LootDrop : MonoBehaviour
     {
         if (beingDestroyed) return;
 
-        var otherDrop = other.GetComponent<LootDrop>();
-        if (otherDrop == null || otherDrop == this || otherDrop.beingDestroyed) return;
+        // TryGetComponent: monstro passando por cima do loot não gera lixo de memória.
+        if (!other.TryGetComponent(out LootDrop otherDrop)) return;
+        if (otherDrop == this || otherDrop.beingDestroyed) return;
         if (otherDrop.loot.itemName != loot.itemName) return; // só funde com o MESMO material
 
         // Só quem tem o InstanceID menor age — evita os 2 OnTriggerEnter2D (1 por lado) tentarem

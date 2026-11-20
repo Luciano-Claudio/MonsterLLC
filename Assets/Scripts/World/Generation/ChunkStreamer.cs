@@ -40,9 +40,19 @@ public class ChunkStreamer : MonoBehaviour
     public void RefreshAroundTarget(Vector2 worldPosition)
     {
         var center = ChunkCoord.FromWorldPosition(worldPosition, settings.chunkSize);
-        var desired = new HashSet<ChunkCoord>();
-
         int radius = settings.streamingRadiusInChunks;
+
+        // D9.3 (lixo de memória, medido: 3 KB/frame): o conjunto desejado só muda quando o alvo
+        // troca de chunk (ou o raio muda, ou alguém mexeu em activeChunks por fora) — no resto
+        // dos frames não há nada a fazer. Buffers reaproveitados, sem new por chamada.
+        int expectedCount = (2 * radius + 1) * (2 * radius + 1);
+        if (hasLastRefresh && center.Equals(lastCenter) && radius == lastRadius && activeChunks.Count == expectedCount) return;
+        hasLastRefresh = true;
+        lastCenter = center;
+        lastRadius = radius;
+
+        var desired = desiredBuffer;
+        desired.Clear();
         for (int dx = -radius; dx <= radius; dx++)
         {
             for (int dy = -radius; dy <= radius; dy++)
@@ -57,13 +67,24 @@ public class ChunkStreamer : MonoBehaviour
                 activeChunks[coord] = GenerateChunkData(coord);
         }
 
-        var toRemove = new List<ChunkCoord>();
+        var toRemove = toRemoveBuffer;
+        toRemove.Clear();
         foreach (var coord in activeChunks.Keys)
         {
             if (!desired.Contains(coord)) toRemove.Add(coord);
         }
         foreach (var coord in toRemove) activeChunks.Remove(coord);
     }
+
+    private readonly HashSet<ChunkCoord> desiredBuffer = new();
+    private readonly List<ChunkCoord> toRemoveBuffer = new();
+    private bool hasLastRefresh;
+    private ChunkCoord lastCenter;
+    private int lastRadius;
+
+    // D9.3: chaves sem alocar — foreach sobre IReadOnlyDictionary.Keys (interface) cria um
+    // enumerador novo a cada chamada; KeyCollection usa o enumerador struct.
+    public Dictionary<ChunkCoord, ChunkRuntimeData>.KeyCollection ActiveChunkKeys => activeChunks.Keys;
 
     // Gera (ou consulta, se já existir) os dados determinísticos de 1 chunk. Nunca depende de
     // quais outros chunks já foram gerados nem da ordem em que foi chamado — só de

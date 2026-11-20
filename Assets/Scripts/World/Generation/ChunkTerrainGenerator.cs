@@ -505,7 +505,8 @@ public class ChunkTerrainGenerator : MonoBehaviour
 
         var active = ChunkStreamer.Instance.ActiveChunks;
 
-        foreach (var coord in active.Keys)
+        // D9.3: ActiveChunkKeys (enumerador struct) — active.Keys via interface alocava todo frame.
+        foreach (var coord in ChunkStreamer.Instance.ActiveChunkKeys)
         {
             if (!paintedChunks.Contains(coord) && !queuedChunks.Contains(coord))
             {

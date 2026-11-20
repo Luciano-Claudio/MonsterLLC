@@ -191,8 +191,32 @@ public class HordeDensityTest : MonoBehaviour
         r.monstersAlive = pop.AliveCount;
         CountAgents(r);
         results.Add(r);
+
+        // D9.3 (lixo de memória que sobrou): grava uma captura do Profiler, com pilha de chamada
+        // das alocações, DEPOIS da janela de medição (o Profiler ligado distorce o FPS). Só nas
+        // etapas de 300 sem efeitos. A análise (memória por script/função) é feita no Editor.
+        if (monsters == 300 && effectCount == 0 && !skipStage)
+        {
+            string dir = Path.Combine(Application.dataPath, "..", "DensityReports");
+            Directory.CreateDirectory(dir);
+            string tag = passThroughMonsters ? "andando" : "parado";
+            string file = Path.GetFullPath(Path.Combine(dir, $"gc_300_{tag}_{System.DateTime.Now:HHmmss}"));
+            UnityEngine.Profiling.Profiler.logFile = file;
+            UnityEngine.Profiling.Profiler.enableBinaryLog = true;
+            UnityEngine.Profiling.Profiler.enableAllocationCallstacks = true;
+            UnityEngine.Profiling.Profiler.enabled = true;
+            t = 0f;
+            while (t < CaptureSeconds && !skipStage) { status = $"{name}: CAPTURANDO (continue igual)"; t += Time.unscaledDeltaTime; yield return null; }
+            UnityEngine.Profiling.Profiler.enabled = false;
+            UnityEngine.Profiling.Profiler.enableBinaryLog = false;
+            UnityEngine.Profiling.Profiler.enableAllocationCallstacks = false;
+            UnityEngine.Profiling.Profiler.logFile = "";
+            Debug.Log($"[HordeDensityTest] captura do Profiler: {file}.raw");
+        }
         skipStage = false;
     }
+
+    private const float CaptureSeconds = 3f;
 
     private void CountAgents(StageResult r)
     {
