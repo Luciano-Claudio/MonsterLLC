@@ -138,6 +138,20 @@ public class AttackWalkSwapTests
         Assert.IsFalse(AttackWalkSwap.CanMove(wantsToMove: false, inWalkState: true, attackMoveAllowed: true, trapped: false));
     }
 
+    // Prisão durante o pulso do Rogue zerava isAttackResolving e reabria o clique no meio do
+    // pulso. Primário ainda rodando (pulso) = continua resolvendo.
+    [Test]
+    public void Trap_KeepsResolving_WhilePrimaryStillRunning()
+    {
+        Assert.IsFalse(AttackWalkSwap.ClearsResolvingOnTrap(primaryStillRunning: true));
+    }
+
+    [Test]
+    public void Trap_ClearsResolving_ForNormalAttack()
+    {
+        Assert.IsTrue(AttackWalkSwap.ClearsResolvingOnTrap(primaryStillRunning: false));
+    }
+
     [Test]
     public void ContinueTime_NonLooping_ReturnsSame()
     {

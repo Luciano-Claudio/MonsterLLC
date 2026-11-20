@@ -43,6 +43,11 @@ public static class AttackWalkSwap
     public static bool CanMove(bool wantsToMove, bool inWalkState, bool attackMoveAllowed, bool trapped) =>
         wantsToMove && !trapped && (inWalkState || attackMoveAllowed);
 
+    // Prisão encerra o primário (isAttackResolving false) — exceto quando ele continua rodando
+    // sozinho, sem o herói: o pulso do Rogue segue ativo durante a Prisão, e zerar aqui reabria
+    // o clique no meio dele (achado da revisão final do D9.1).
+    public static bool ClearsResolvingOnTrap(bool primaryStillRunning) => !primaryStillRunning;
+
     // Estado com loop acumula normalizedTime (3.25 = 4º ciclo, 25% dele) — Animator.Play
     // recebe só a fração; sem loop, o valor já está entre 0 e 1.
     public static float ContinueTime(float normalizedTime, bool looping) =>

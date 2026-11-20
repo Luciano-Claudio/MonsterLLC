@@ -29,6 +29,10 @@ public class Rogue : HeroController
     private bool attackStartEndFired;
     // D9.1 — mesma trava pro lançamento da bomba (Ultimate também troca Ultimate <-> Ultimate_Walk).
     private bool bombLaunchFired;
+
+    // O pulso segue ativo durante a Prisão — o primário continua "resolvendo" (UI vermelha, sem
+    // novo clique) até o attack_end de verdade.
+    protected override bool PrimaryKeepsRunningWhenTrapped => isPulseActive || attackEndPending;
     private float pulseElapsed;
     // AttackEndTrigger é AnyState no controller — se o pulso esgotar durante a Cambalhota
     // (isAttacking fica true a viagem INTEIRA dela), disparar na hora arrancaria o Animator do
@@ -108,7 +112,7 @@ public class Rogue : HeroController
 
         // Só dispara o AttackEndTrigger de verdade quando a ação atual (ex.: Cambalhota) já
         // tiver terminado sozinha — nunca no meio dela.
-        if (attackEndPending && !isAttacking)
+        if (attackEndPending && !isAttacking && !isTrapped)
         {
             attackEndPending = false;
             BeginAttackEnd();
@@ -161,7 +165,8 @@ public class Rogue : HeroController
         isPulseActive = false;
         if (pulseArea != null) pulseArea.Deactivate();
 
-        if (isAttacking) attackEndPending = true;
+        // Preso: o attack_end espera a Prisão acabar (senão o AnyState tirava o Rogue do Trapped).
+        if (isAttacking || isTrapped) attackEndPending = true;
         else BeginAttackEnd();
     }
 

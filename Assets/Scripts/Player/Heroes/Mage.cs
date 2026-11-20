@@ -16,7 +16,10 @@ public class Mage : HeroController
     // Ataque com duração (ver PrimaryAttack e os eventos AnimationFire*Event).
     [SerializeField] private float primaryExtraDuration = 0f; // 🔢 segundos extras de fogo além da 1ª volta (0 = ataque base, 1 volta)
     [SerializeField] private float fireTickInterval = 0.25f; // 🔢 tick do dano do fogo, POR MONSTRO (PerTargetTickTracker)
-    private float fireStartTime = -1f; // -1 = fogo ainda não acendeu neste ataque
+    // Tempo de fogo aceso, somado só nos frames com o jogo ATIVO (Update sai cedo na pausa). Antes
+    // era Time.time - início: a pausa é só uma flag (GameplayGate, timeScale continua 1), então o
+    // tempo pausado contava como duração (revisão final do D9.1). -1 = ainda não acendeu.
+    private float fireElapsed = -1f;
     private System.Func<float> rollFireTickDamage; // cache do delegate (criado 1x, sem alocar por ataque)
 
     [Header("Ultimate — bola de fogo em ângulo livre (GDD Seção 17.3)")]
@@ -221,6 +224,7 @@ public class Mage : HeroController
         }
 
         UpdateUltimateFlyingTrail();
+        if (fireElapsed >= 0f && attackHitbox != null && attackHitbox.IsFireActive) fireElapsed += Time.deltaTime;
         UpdatePetSummon();
         UpdateContagiousFire();
         StopFireIfActionCut();
@@ -242,7 +246,7 @@ public class Mage : HeroController
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
-        fireStartTime = -1f;
+        fireElapsed = -1f;
         if (animator != null) animator.SetBool("AttackDurationOver", false);
         AnimatorTrigger("AttackTrigger");
     }
@@ -252,8 +256,8 @@ public class Mage : HeroController
     public void AnimationFireStartEvent()
     {
         if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
-        if (fireStartTime >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
-        fireStartTime = Time.time;
+        if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
+        fireElapsed = 0f;
         rollFireTickDamage ??= RollFireTickDamage;
         attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier);
         ApplyPrimaryCastPerks();
@@ -263,8 +267,8 @@ public class Mage : HeroController
     // o corpo terminar esta volta e ir pro Attack_End. Senão, mais uma volta (fogo segue aceso).
     public void AnimationFireDurationCheckEvent()
     {
-        if (fireStartTime < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
-        if (!PrimaryDuration.ShouldEnd(Time.time - fireStartTime, primaryExtraDuration)) return;
+        if (fireElapsed < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
+        if (!PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration)) return;
         attackHitbox.EndFire();
         if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
@@ -575,7 +579,7 @@ public class Mage : HeroController
     private void UpdatePetSummon()
     {
         if (petSummoner == null) return;
-        bool busy = isAttacking || isTeleporting || HealthSystem.IsDead(stats.health);
+        bool busy = PetSummonRules.HeroBusy(isAttacking, isUsingSecondaryAbility || isTeleporting, isTrapped, HealthSystem.IsDead(stats.health));
         if (!petSummoner.ShouldStartSummon(busy)) return;
         isAttacking = true;
         actionElapsed = 0f;

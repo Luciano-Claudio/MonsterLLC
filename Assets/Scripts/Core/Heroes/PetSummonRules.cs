@@ -32,6 +32,11 @@ public static class PetSummonRules
         return count - 1;
     }
 
+    // Herói "ocupado" pra invocação: em ação, no Shift, preso (a invocação disparava o
+    // SummonPetTrigger e travava isAttacking durante a Prisão — revisão final do D9.1) ou morto.
+    public static bool HeroBusy(bool isAttacking, bool isUsingSecondaryAbility, bool isTrapped, bool isDead) =>
+        isAttacking || isUsingSecondaryAbility || isTrapped || isDead;
+
     public static PetSummonStep Next(bool pending, bool heroBusy, int missing)
     {
         if (!pending) return PetSummonStep.Idle;

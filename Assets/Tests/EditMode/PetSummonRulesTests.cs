@@ -69,6 +69,20 @@ public class PetSummonRulesTests
         Assert.AreEqual(-1, PetSummonRules.PickSpawnIndex(new bool[0], random01: 0.5f));
     }
 
+    // Revisão final do D9.1: invocar com o herói preso disparava o SummonPetTrigger e travava
+    // isAttacking durante a Prisão.
+    [Test]
+    public void HeroBusy_WhenTrapped()
+    {
+        Assert.IsTrue(PetSummonRules.HeroBusy(isAttacking: false, isUsingSecondaryAbility: false, isTrapped: true, isDead: false));
+    }
+
+    [Test]
+    public void HeroFree_WhenNothingGoingOn()
+    {
+        Assert.IsFalse(PetSummonRules.HeroBusy(isAttacking: false, isUsingSecondaryAbility: false, isTrapped: false, isDead: false));
+    }
+
     [Test]
     public void Idle_WhenNotPending()
     {

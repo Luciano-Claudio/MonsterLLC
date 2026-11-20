@@ -923,13 +923,17 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // qualquer ação em andamento na hora (igual o Die já faz hoje) e reseta as flags internas
     // de Attack/Damage, senão o jogador ficaria incapaz de agir pra sempre depois que a
     // Prisão passasse.
+    // Primário que continua sozinho durante a Prisão (pulso do Rogue) — a Prisão não pode zerar
+    // isAttackResolving nesse caso, senão o clique reabre no meio dele.
+    protected virtual bool PrimaryKeepsRunningWhenTrapped => false;
+
     public void SetTrapped(bool trapped)
     {
         isTrapped = trapped;
         if (trapped)
         {
             isAttacking = false;
-            isAttackResolving = false;
+            if (AttackWalkSwap.ClearsResolvingOnTrap(PrimaryKeepsRunningWhenTrapped)) isAttackResolving = false;
             isReactingToDamage = false;
             damageSpeedMultiplier = 1f;
             if (animator != null) animator.SetFloat("DamageSpeedMultiplier", 1f);

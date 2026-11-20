@@ -367,7 +367,7 @@ public class BloodMage : HeroController
     private void UpdatePetSummon()
     {
         if (petSummoner == null) return;
-        bool busy = isAttacking || isUsingSecondaryAbility || HealthSystem.IsDead(stats.health);
+        bool busy = PetSummonRules.HeroBusy(isAttacking, isUsingSecondaryAbility, isTrapped, HealthSystem.IsDead(stats.health));
         if (!petSummoner.ShouldStartSummon(busy)) return;
         isAttacking = true;
         actionElapsed = 0f;
