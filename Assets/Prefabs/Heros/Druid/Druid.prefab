@@ -251,25 +251,26 @@ MonoBehaviour:
   humanColliderSize: {x: 1.060346, y: 0.2532709}
   elkColliderOffset: {x: -0.61, y: 0.2}
   elkColliderSize: {x: 2.27, y: 0.37}
-  owlDuration: 10
+  owlDuration: 8
   elkHeadbuttHitbox: {fileID: 967585088228262325}
   elkHeadbuttLaunchSpeed: 24
   elkHeadbuttMaxRange: 12
   elkHeadbuttDamageMultiplier: 2
   elkHeadbuttKnockbackForce: 8
+  headbuttStunDuration: 2
   roarDamageReductionPercent: 50
-  roarDuration: 5
+  roarDuration: 8
   groundCrackPrefab: {fileID: 7030278775826116329, guid: 93904857f64de094a989ed7ee028fabf, type: 3}
   groundCrackDamagePercent: 50
-  groundCrackDuration: 3
+  groundCrackDuration: 8
   groundCrackTickInterval: 0.5
   groundCrackSizeMultiplier: 1
   leavesPoisonDuration: 4
   leavesPoisonDamagePercent: 50
   leavesFlashDuration: 1.25
   elkClawIcon: {fileID: -7165401095265530750, guid: 89b2f019e54c99946b979d40220d56f6, type: 3}
-  elkRoarIcon: {fileID: 0}
-  elkHeadbuttIcon: {fileID: -3875127785539040624, guid: 531e973501d21de49b649ab10d829480, type: 3}
+  elkRoarIcon: {fileID: -472739917, guid: 6fbe62faa462f7e479538ba9d0cada01, type: 3}
+  elkHeadbuttIcon: {fileID: -2028320283, guid: 531e973501d21de49b649ab10d829480, type: 3}
 --- !u!114 &4459035152162319188
 MonoBehaviour:
   m_ObjectHideFlags: 0
