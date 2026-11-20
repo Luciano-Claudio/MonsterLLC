@@ -37,6 +37,10 @@ public class GroundCrack : MonoBehaviour
     [SerializeField] private CircleCollider2D nwCollider;
     [SerializeField] private CircleCollider2D seCollider;
     [SerializeField] private CircleCollider2D swCollider;
+    // D9.1 (Druid Feral) — crack RADIAL, nascido no centro do impacto: 1 collider só, no centro.
+    // Preenchido = usa só ele e desliga os 4 direcionais (que no Druid são herdados do prefab
+    // do Barbarian como variante). Vazio = comportamento do Barbarian (1 dos 4 por direção).
+    [SerializeField] private CircleCollider2D centerCollider;
 
     // Dano e tick NÃO ficam aqui de propósito — vêm do Barbarian via Initialize() (pedido do
     // usuário: perks futuros de Esquerda só precisam alterar o herói, nunca o prefab da fenda).
@@ -78,10 +82,12 @@ public class GroundCrack : MonoBehaviour
         transform.localScale = Vector3.one * sizeMultiplier * areaMultiplier;
         if (animator != null) animator.Play(direction.ToString());
 
-        if (neCollider != null) neCollider.enabled = direction == Direction.NE;
-        if (nwCollider != null) nwCollider.enabled = direction == Direction.NW;
-        if (seCollider != null) seCollider.enabled = direction == Direction.SE;
-        if (swCollider != null) swCollider.enabled = direction == Direction.SW;
+        bool radial = centerCollider != null;
+        if (neCollider != null) neCollider.enabled = !radial && direction == Direction.NE;
+        if (nwCollider != null) nwCollider.enabled = !radial && direction == Direction.NW;
+        if (seCollider != null) seCollider.enabled = !radial && direction == Direction.SE;
+        if (swCollider != null) swCollider.enabled = !radial && direction == Direction.SW;
+        if (radial) centerCollider.enabled = true;
 
         // Os 4 colliders moraram num GameObject filho cada (Crack_NE/NW/SE/SW) — Unity só
         // entrega OnTrigger Enter/Exit pro script que está no MESMO objeto do collider, nunca
@@ -91,6 +97,7 @@ public class GroundCrack : MonoBehaviour
         AttachRelay(nwCollider);
         AttachRelay(seCollider);
         AttachRelay(swCollider);
+        AttachRelay(centerCollider);
 
         var myCollider = GetActiveCollider(direction);
         if (myCollider != null)
@@ -118,7 +125,7 @@ public class GroundCrack : MonoBehaviour
         ActiveCracks.Add(this);
     }
 
-    private CircleCollider2D GetActiveCollider(Direction direction) => direction switch
+    private CircleCollider2D GetActiveCollider(Direction direction) => centerCollider != null ? centerCollider : direction switch
     {
         Direction.NE => neCollider,
         Direction.NW => nwCollider,
@@ -131,6 +138,7 @@ public class GroundCrack : MonoBehaviour
     // (cada uma já decidiu sua direção no próprio Initialize(), não precisa guardar à parte).
     private CircleCollider2D GetCurrentlyEnabledCollider()
     {
+        if (centerCollider != null && centerCollider.enabled) return centerCollider;
         if (neCollider != null && neCollider.enabled) return neCollider;
         if (nwCollider != null && nwCollider.enabled) return nwCollider;
         if (seCollider != null && seCollider.enabled) return seCollider;
