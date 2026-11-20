@@ -69,7 +69,7 @@ public class PossessableMeleeEnemyController : MeleeEnemyController
     {
         if (!isPossessed) return base.IsPlayerTouchingAnyHitbox();
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return false;
 
         if (attackHitboxPossessedNE != null && attackHitboxPossessedNE.IsTouching(heroCollider)) return true;

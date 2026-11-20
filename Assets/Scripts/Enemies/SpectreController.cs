@@ -16,11 +16,11 @@ public class SpectreController : MeleeEnemyController
         var hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!hitbox.IsTouching(heroCollider)) return; // player fora do trigger nesse frame exato -> o golpe erra
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero == null) return;
 
         hero.TakeDamage(stats.attackDamage);

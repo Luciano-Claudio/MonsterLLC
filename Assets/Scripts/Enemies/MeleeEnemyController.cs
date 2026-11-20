@@ -131,7 +131,9 @@ public class MeleeEnemyController : EnemyController
             flankAngleInitialized = true;
         }
 
-        flankAI.Tick(deltaTime, PickNextFlankPoint);
+        // D9.3: delegate cacheado — o method group criava um delegate novo a cada chamada.
+        if (pickNextFlankPoint == null) pickNextFlankPoint = PickNextFlankPoint;
+        flankAI.Tick(deltaTime, pickNextFlankPoint);
 
         bool orbiting = flankAI.CurrentPhase == PatrolPhase.Walking;
         SetMoving(orbiting);
@@ -142,6 +144,8 @@ public class MeleeEnemyController : EnemyController
         if (MeleeAttackSlotManager.Instance == null || MeleeAttackSlotManager.Instance.TryReserveSlot())
             hasAttackSlot = true;
     }
+
+    private System.Func<Vector2> pickNextFlankPoint;
 
     private Vector2 PickNextFlankPoint()
     {
@@ -160,7 +164,7 @@ public class MeleeEnemyController : EnemyController
     // exato do Animation Hit Event.
     protected virtual bool IsPlayerTouchingAnyHitbox()
     {
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return false;
 
         if (attackHitboxNE != null && attackHitboxNE.IsTouching(heroCollider)) return true;
@@ -177,11 +181,11 @@ public class MeleeEnemyController : EnemyController
         var hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!hitbox.IsTouching(heroCollider)) return; // player fora do trigger nesse frame exato -> o golpe erra
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero == null) return;
 
         hero.TakeDamage(stats.attackDamage);

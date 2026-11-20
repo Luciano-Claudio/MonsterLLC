@@ -69,11 +69,11 @@ public class DivineGodController : EnemyController
     protected override void ExecuteAttackHit()
     {
         if (meleeHitbox == null) return;
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!meleeHitbox.IsTouching(heroCollider)) return;
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero != null) hero.TakeDamage(stats.attackDamage);
     }
 

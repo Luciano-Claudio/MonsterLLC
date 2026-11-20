@@ -116,7 +116,7 @@ public class SlugController : EnemyController
     private bool IsPlayerTouchingContactHitbox()
     {
         if (contactHitbox == null) return false;
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         return heroCollider != null && contactHitbox.IsTouching(heroCollider);
     }
 
@@ -132,7 +132,7 @@ public class SlugController : EnemyController
 
         if (projectilePrefab == null)
         {
-            var heroFallback = player.GetComponent<HeroController>();
+            var heroFallback = PlayerHero;
             if (heroFallback != null) heroFallback.TakeDamage(grownAttackDamage);
             return;
         }

@@ -36,11 +36,11 @@ public class DragonController : MeleeEnemyController
         var hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!hitbox.IsTouching(heroCollider)) return; // player fora do trigger nesse frame exato -> o golpe erra
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero == null) return;
 
         hero.TakeDamage(stats.attackDamage);
@@ -56,8 +56,8 @@ public class DragonController : MeleeEnemyController
         if (!isContinuousAttacking || IsDead || !GameplayGate.IsActive) return;
 
         var hitbox = GetHitboxForFacing();
-        var heroCollider = player != null ? player.GetComponent<Collider2D>() : null;
-        var hero = player != null ? player.GetComponent<HeroController>() : null;
+        var heroCollider = player != null ? PlayerCollider : null;
+        var hero = player != null ? PlayerHero : null;
 
         bool stillTouching = hitbox != null && heroCollider != null && hitbox.IsTouching(heroCollider);
         bool heroGone = hero == null || hero.IsCurrentlyDamageImmune;

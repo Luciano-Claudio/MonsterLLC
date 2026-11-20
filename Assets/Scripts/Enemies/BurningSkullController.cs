@@ -29,7 +29,7 @@ public class BurningSkullController : EnemyController
     private bool IsPlayerTouchingContact()
     {
         if (contactHitbox == null) return false;
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         return heroCollider != null && contactHitbox.IsTouching(heroCollider);
     }
 
@@ -55,7 +55,7 @@ public class BurningSkullController : EnemyController
         float radius = explosionArea != null ? explosionArea.FinalRadius : 0f;
         if (Vector2.Distance(transform.position, player.position) > radius) return;
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero != null) hero.TakeDamage(stats.attackDamage);
     }
 }

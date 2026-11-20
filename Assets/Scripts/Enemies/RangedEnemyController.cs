@@ -40,7 +40,7 @@ public class RangedEnemyController : EnemyController
         if (projectilePrefab == null)
         {
             Debug.LogWarning("[RangedEnemyController] Sem projectilePrefab — dano aplicado direto como fallback.");
-            var heroFallback = player.GetComponent<HeroController>();
+            var heroFallback = PlayerHero;
             if (heroFallback != null) heroFallback.TakeDamage(stats.attackDamage);
             return;
         }

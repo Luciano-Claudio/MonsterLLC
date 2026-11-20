@@ -13,7 +13,7 @@ public class GroundCasterEnemyController : RangedEnemyController
         if (groundHazardPrefab == null)
         {
             Debug.LogWarning("[GroundCasterEnemyController] Sem groundHazardPrefab — dano aplicado direto como fallback.");
-            var heroFallback = player.GetComponent<HeroController>();
+            var heroFallback = PlayerHero;
             if (heroFallback != null) heroFallback.TakeDamage(stats.attackDamage);
             return;
         }

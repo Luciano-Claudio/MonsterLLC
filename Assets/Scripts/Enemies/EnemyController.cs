@@ -275,9 +275,28 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
     }
 
+    // D9.3: as consultas de vizinhança só pegam a layer Enemy (todo collider com tag Enemy está
+    // nela — conferido nos 69 do projeto). Antes era noFilter: props, herói e projéteis também
+    // ocupavam o buffer de 16 e depois eram descartados pela tag.
+    private static ContactFilter2D enemyOnlyFilter;
+    private static bool enemyOnlyFilterReady;
+
+    private static ContactFilter2D EnemyOnlyFilter
+    {
+        get
+        {
+            if (!enemyOnlyFilterReady)
+            {
+                enemyOnlyFilter = new ContactFilter2D { useLayerMask = true, layerMask = 1 << LayerMask.NameToLayer("Enemy"), useTriggers = true };
+                enemyOnlyFilterReady = true;
+            }
+            return enemyOnlyFilter;
+        }
+    }
+
     private int CountNeighbors(Vector2 point)
     {
-        int hitCount = Physics2D.OverlapCircle(point, crowdCheckRadius, ContactFilter2D.noFilter, crowdOverlapBuffer);
+        int hitCount = Physics2D.OverlapCircle(point, crowdCheckRadius, EnemyOnlyFilter, crowdOverlapBuffer);
         CollectDistinct(crowdOverlapBuffer, hitCount, crowdResultsBuffer);
         int count = 0;
         for (int i = 0; i < crowdResultsBuffer.Count; i++)
@@ -302,31 +321,48 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Reaproveita a mesma varredura/dedup de CountNeighbors, com raio e propósito diferentes
     // (aqui é "ficar junto", lá é "evitar lotação"). packCohesionStrength=0 sai antes de
     // qualquer OverlapCircle — desliga de graça, sem custo.
+    //
+    // D9.3 (medido no D9.2): a varredura rodava todo frame, por monstro — gargalo nº 1 da horda.
+    // Agora a direção "rumo ao bando" é recalculada a cada packCohesionInterval (fase sorteada
+    // por monstro, ver Awake) e reaproveitada nos frames do meio; o bando se move devagar
+    // comparado a isso, a diferença não aparece.
     protected Vector2 ApplyPackCohesion(Vector2 baseDirection)
     {
         if (packCohesionStrength <= 0f) return baseDirection;
 
-        int hitCount = Physics2D.OverlapCircle(transform.position, packCohesionRadius, ContactFilter2D.noFilter, crowdOverlapBuffer);
+        if (packCohesionTimer.TryTick(Time.time)) packCohesionPull = ComputePackPull();
+        if (packCohesionPull == Vector2.zero) return baseDirection;
+
+        return (baseDirection.normalized + packCohesionPull * packCohesionStrength).normalized;
+    }
+
+    [SerializeField] private float packCohesionInterval = 0.25f; // 🔢 de quanto em quanto tempo (s) reavalia o centro do bando
+    private IntervalTimer packCohesionTimer;
+    private Vector2 packCohesionPull; // direção normalizada rumo ao centro do bando, ou zero se não há vizinho da mesma espécie
+
+    private Vector2 ComputePackPull()
+    {
+        int hitCount = Physics2D.OverlapCircle(transform.position, packCohesionRadius, EnemyOnlyFilter, crowdOverlapBuffer);
         CollectDistinct(crowdOverlapBuffer, hitCount, crowdResultsBuffer);
 
         Vector2 centroid = Vector2.zero;
         int sameSpeciesCount = 0;
+        int mySpecies = SpeciesId;
         for (int i = 0; i < crowdResultsBuffer.Count; i++)
         {
             var other = crowdResultsBuffer[i];
             if (other == this) continue;
-            if (SpeciesKey(other.gameObject) != SpeciesKey(gameObject)) continue;
+            if (other.SpeciesId != mySpecies) continue;
             centroid += (Vector2)other.transform.position;
             sameSpeciesCount++;
         }
 
-        if (sameSpeciesCount == 0) return baseDirection;
+        if (sameSpeciesCount == 0) return Vector2.zero;
         centroid /= sameSpeciesCount;
 
         Vector2 towardPack = centroid - (Vector2)transform.position;
-        if (towardPack.sqrMagnitude < 0.0001f) return baseDirection;
-
-        return (baseDirection.normalized + towardPack.normalized * packCohesionStrength).normalized;
+        if (towardPack.sqrMagnitude < 0.0001f) return Vector2.zero;
+        return towardPack.normalized;
     }
 
     // Heurística: o projeto não tem um campo de "espécie" dedicado — Rat/Wolf/Bat etc. são
@@ -335,11 +371,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // sufixo já separa espécies corretamente sem precisar adicionar um campo novo em todo
     // prefab do Bestiário. Se algum dia um prefab for renomeado sem bater com a espécie
     // real, isso para de funcionar — trocar por um campo explícito nesse caso.
-    private static string SpeciesKey(GameObject go)
+    // D9.3: lido 1x por monstro (na 1ª consulta, depois do Instantiate já ter dado o nome) e
+    // guardado como número — antes, cada leitura de go.name criava uma string nova.
+    private int speciesId;
+    private int SpeciesId
     {
-        const string cloneSuffix = "(Clone)";
-        string n = go.name;
-        return n.EndsWith(cloneSuffix) ? n.Substring(0, n.Length - cloneSuffix.Length) : n;
+        get
+        {
+            if (speciesId == 0) speciesId = SpeciesRegistry.IdFor(gameObject.name);
+            return speciesId;
+        }
     }
 
     private static Vector2 AngleToOffset(float angleDeg)
@@ -418,6 +459,56 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             rvo.priority = rvoBasePriority;
         }
         stuckCheckPosition = transform.position;
+
+        // D9.3: fase sorteada por monstro nas consultas espaçadas — sem isso, a horda nascida
+        // no mesmo frame consultaria toda junta, em pico.
+        packCohesionTimer = new IntervalTimer(packCohesionInterval, Time.time, Random.value);
+        nextApproachReevalTime = Time.time + Random.value * ApproachReevalInterval;
+
+        // D9.3, Animator desligado fora da tela. Só com o SpriteRenderer na raiz (é ele que diz
+        // se o monstro está visível — ver IsAnimatorCulled).
+        animatorCullingActive = cullAnimatorOffscreen && animator != null && spriteRenderer != null;
+        if (animatorCullingActive) animator.cullingMode = AnimatorCullingMode.CullCompletely;
+    }
+
+    // D9.3 (medido no D9.2): com AnimatorCullingMode.CullCompletely o Animator para de rodar com o
+    // monstro fora da tela. Efeitos disso, tratados aqui:
+    // - o estado não avança, então o gate "só anda quando o Animator já está em Walk"
+    //   (MoveInDirection) é dispensado enquanto o monstro está fora da tela, senão a horda de
+    //   fora nunca andaria;
+    // - Animation Events não disparam, então morte e fim de ataque fora da tela resolvem na hora
+    //   (ver Update), em vez de esperar o timeout de segurança.
+    // Atenção na medição no Editor: a Scene view também conta como "visível".
+    [Header("Performance (D9.3)")]
+    [Tooltip("Desliga o Animator do monstro enquanto ele está fora da tela (AnimatorCullingMode.CullCompletely). Desligue pra comparar na medição.")]
+    [SerializeField] private bool cullAnimatorOffscreen = true;
+    private bool animatorCullingActive;
+
+    protected bool IsAnimatorCulled => animatorCullingActive && !spriteRenderer.isVisible;
+
+    // D9.3: referências do herói cacheadas — antes, todo Melee fazia player.GetComponent<...>()
+    // todo frame (IsPlayerTouchingAnyHitbox). Refaz só quando o player muda (herói novo) ou o
+    // collider cacheado foi destruído.
+    private Transform cachedPlayerFor;
+    private Collider2D cachedPlayerCollider;
+    private HeroController cachedPlayerHero;
+
+    private void RefreshPlayerCache()
+    {
+        if (ReferenceEquals(cachedPlayerFor, player) && cachedPlayerCollider != null) return;
+        cachedPlayerFor = player;
+        cachedPlayerCollider = player != null ? player.GetComponent<Collider2D>() : null;
+        cachedPlayerHero = player != null ? player.GetComponent<HeroController>() : null;
+    }
+
+    protected Collider2D PlayerCollider
+    {
+        get { RefreshPlayerCache(); return cachedPlayerCollider; }
+    }
+
+    protected HeroController PlayerHero
+    {
+        get { RefreshPlayerCache(); return cachedPlayerHero; }
     }
 
     private const float RvoPriorityReferenceDamage = 25f; // 🔢 dano "alto" de referência — igual/acima disso, satura em prioridade máxima
@@ -472,6 +563,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     [SerializeField] private float simulationNearRingRadius = 15f; // 🔢 ajustável
     [Tooltip("Com que intervalo (segundos) a IA do monstro é reavaliada quando está fora do anel próximo. AIPath continua se movendo normalmente nesse meio tempo em direção ao último destino setado — só a DECISÃO (pra onde ir, quando atacar) fica mais espaçada, imperceptível a essa distância.")]
     [SerializeField] private float midRingUpdateInterval = 0.3f; // 🔢 ajustável
+    [Tooltip("D9.3 — mesmo corte, pra monstro EM COMBATE: além deste raio (fora da tela; a câmera mostra ~36x20 unidades), decide com frequência reduzida e fica sem RVO. Boss nunca.")]
+    [SerializeField] private float combatNearRingRadius = 20f; // 🔢 ajustável
     private float midRingAccumulator;
 
     protected virtual void Update()
@@ -494,6 +587,13 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             // a destruição real só acontece via AnimationDieEndEvent (Animation Event).
             // Timer manual, não Coroutine: Coroutine não respeita o GameplayGate (decisão
             // da Sprint 13) — continuaria contando durante a pausa.
+            // D9.3: fora da tela o Animator está desligado (culling) e o evento nunca chegaria —
+            // ninguém vê o clipe de morte, então resolve na hora (loot + destroy).
+            if (IsAnimatorCulled)
+            {
+                AnimationDieEndEvent();
+                return;
+            }
             dieElapsed += Time.deltaTime;
             if (dieElapsed >= maxDieDuration)
             {
@@ -524,11 +624,15 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // throttle) e reduz a FREQUÊNCIA da decisão de IA abaixo (nunca desliga — o monstro
         // continua vivo, patrulhando/perseguindo, só reavaliado com menos frequência).
         //
-        // GDD Deadline 8.1, Seção 4 — "Simulation Rings só valem pra quem NÃO tem target":
-        // isInCombat=true sempre conta como "near ring", não importa a distância real — um
-        // monstro com target não pode perseguir em câmera lenta só porque ficou longe.
+        // GDD Deadline 8.1, Seção 4 — "Simulation Rings só valem pra quem NÃO tem target".
+        // D9.3 (medido no D9.2) troca isso: com a horda, os 300 em combate ficavam todos "perto"
+        // (RVO + IA todo frame). Agora o monstro em combate fora de combatNearRingRadius (fora
+        // da tela) decide a cada midRingUpdateInterval e fica sem RVO. Não é perseguição em
+        // câmera lenta: o AIPath continua andando até o último destino no meio tempo, e o tempo
+        // acumulado entra nos timers (decisionDeltaTime). Boss continua sempre em full.
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        bool isNearRing = distanceToPlayer <= simulationNearRingRadius || isInCombat;
+        bool isNearRing = SimulationRingRules.IsFullSimulation(distanceToPlayer, isInCombat, isBoss,
+            simulationNearRingRadius, combatNearRingRadius);
         if (rvo != null) rvo.enabled = isNearRing;
 
         float decisionDeltaTime;
@@ -572,6 +676,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             // Comprometido com a animação de ataque de verdade — não persegue, não
             // reinicia outro ataque no meio dela.
             attackAnimElapsed += decisionDeltaTime;
+            // D9.3: golpe em andamento quando o monstro saiu da tela — com o Animator desligado
+            // (culling), o evento de fim nunca chegaria. Encerra sem golpear (fora da tela ele
+            // não alcança o herói).
+            if (IsAnimatorCulled)
+            {
+                EndAttackAnimation();
+                return;
+            }
             if (attackAnimElapsed >= maxAttackAnimationDuration)
             {
                 Debug.LogWarning($"[{GetType().Name}] AnimationAttackEndEvent nunca chegou — forçando fim do ataque (verifique o Animator Controller).");
@@ -717,7 +829,10 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
             return;
         }
 
-        patrolAI.Tick(deltaTime, () => spawnOrigin + Random.insideUnitCircle * patrolRadius);
+        // D9.3: delegate cacheado — o lambda captura "this" e criava um delegate novo (lixo de
+        // memória) a cada chamada.
+        if (pickPatrolTarget == null) pickPatrolTarget = PickPatrolTarget;
+        patrolAI.Tick(deltaTime, pickPatrolTarget);
 
         // A fase "Walking" do PatrolAI dura um tempo aleatório fixo, sem saber a
         // distância real até o alvo — se o monstro chega no alvo antes desse tempo
@@ -735,6 +850,9 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
     }
 
+    private System.Func<Vector2> pickPatrolTarget;
+    private Vector2 PickPatrolTarget() => spawnOrigin + Random.insideUnitCircle * patrolRadius;
+
     // Move o transform de verdade só quando o Animator já entrou no estado "Walk" — nunca
     // no frame em que só a intenção (IsMoving) foi marcada. Sem isso, a entidade desliza
     // pela tela ainda com a pose de Idle enquanto a transição (que tem Exit Time) espera
@@ -747,7 +865,8 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected void MoveInDirection(Vector2 direction, string walkStateName = "Walk")
     {
         SetMoveDirection(direction);
-        bool canWalk = AnimatorStateCheck.IsInState(animator, walkStateName);
+        // D9.3: fora da tela o Animator está desligado (culling) e nunca entraria em Walk.
+        bool canWalk = IsAnimatorCulled || AnimatorStateCheck.IsInState(animator, walkStateName);
 
         if (ai != null)
         {

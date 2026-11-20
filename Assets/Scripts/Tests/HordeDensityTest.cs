@@ -131,6 +131,18 @@ public class HordeDensityTest : MonoBehaviour
         running = null;
     }
 
+    private static void TrimPopulation(int target)
+    {
+        var enemies = new List<EnemyController>(FindObjectsByType<EnemyController>(FindObjectsSortMode.None));
+        enemies.RemoveAll(e => e.IsDead || e.IsBoss);
+        if (enemies.Count <= target) return;
+        var hero = GameObject.FindGameObjectWithTag("Player");
+        Vector2 heroPos = hero != null ? (Vector2)hero.transform.position : Vector2.zero;
+        enemies.Sort((a, b) => ((Vector2)b.transform.position - heroPos).sqrMagnitude
+            .CompareTo(((Vector2)a.transform.position - heroPos).sqrMagnitude));
+        for (int i = 0; i < enemies.Count - target; i++) Destroy(enemies[i].gameObject);
+    }
+
     private IEnumerator RunStage(string name, int monsters, int effectCount, string todo, bool passThroughMonsters = false)
     {
         // Etapas andando: com 300 monstros grudados os colliders prendem o herói — desliga só a
@@ -143,6 +155,12 @@ public class HordeDensityTest : MonoBehaviour
         SetEffects(effectCount);
         instruction = todo;
         skipStage = false;
+
+        // Correção do D9.2: baixar a meta não some com quem já existe — sem isso, as etapas
+        // depois da de 300 rodavam com 300. Destrói o excedente (mais longe do herói primeiro);
+        // o WorldPopulationManager limpa as referências nulas sozinho.
+        TrimPopulation(monsters);
+        yield return null;
 
         float t = 0f;
         while (pop.AliveCount < monsters * 0.95f && t < FillTimeout && !skipStage)
@@ -192,6 +210,10 @@ public class HordeDensityTest : MonoBehaviour
         while (effects.Count < count && hero != null)
         {
             var go = new GameObject("DensityEffect");
+            // D9.3: na layer dos ataques do herói (colide só com Enemy), igual aos projéteis
+            // reais depois da matriz de colisão. No D9.2 estava na Default (colide com tudo).
+            int heroAttackLayer = LayerMask.NameToLayer("HeroAttack");
+            if (heroAttackLayer >= 0) go.layer = heroAttackLayer;
             go.transform.position = hero.transform.position + (Vector3)(Random.insideUnitCircle * 8f);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sortingOrder = 50;
