@@ -365,12 +365,16 @@ resposta do usuário: atacar andando e **muita coisa acontecendo na tela ao mesm
   - Cada chama orbita o herói num **raio sorteado entre 2 e 9 unidades**, com **velocidade
     angular sorteada entre -3 e 3 rad/s** (no mínimo 1 em módulo) e um ângulo inicial aleatório.
     Tem chama girando nos dois sentidos, em distâncias diferentes.
-  - O movimento usa um `Rigidbody2D` cinemático com `MovePosition` no `FixedUpdate` e um
-    `CircleCollider2D` trigger de raio 0,4.
-  - **Cuidado de performance, medido no D9.2:** com 500 chamas na layer `Default`, que colide com
-    tudo e entre si, o jogo caiu pra 1 FPS por causa da física. Com 200, foram +14 ms. A versão
-    do jogo precisa de uma layer que colida só com `Enemy`, ou de dano por consulta (`Overlap`
-    a cada tick) sem trigger persistente, e de um teto de quantidade.
+  - No teste, o movimento usava um `Rigidbody2D` cinemático com `MovePosition` no `FixedUpdate`
+    e um `CircleCollider2D` trigger de raio 0,4.
+  - **No jogo, o que importa é só a ANIMAÇÃO das chamas, sem collider** (decisão do usuário,
+    2026-11-20). O collider do teste existia só pra medir o custo de física: com 500 chamas na
+    layer `Default`, o jogo caiu pra 1 FPS. Sem collider, basta mover o `Transform`. Se a versão
+    do jogo causar dano, que seja por consulta (`Overlap` a cada tick), nunca por trigger em cada chama.
+- **PENDENTE — laboratório de animações** (2026-11-20). Fazer testes com as animações e efeitos
+  que já existem no projeto (status, projéteis, hazards de monstros, pets), combinando e repetindo
+  do jeito que o efeito das chamas surgiu, pra dar inspiração de "poderes" novos (itens, talentos
+  e cartas). Fazer antes do debate da lista de itens (D9.7).
 - Exemplos do usuário:
   - **aumentar o tamanho do herói** (no lugar da carta de tamanho do Barbarian); também pode
     existir como talento que aumenta o tamanho a cada nível;
