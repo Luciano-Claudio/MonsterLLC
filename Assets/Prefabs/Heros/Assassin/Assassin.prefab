@@ -208,6 +208,9 @@ MonoBehaviour:
     energy: 0
     maxEnergy: 100
   maxDieDuration: 6
+  allowMoveDuringPrimaryAttack: 0
+  moveSpeedMultiplierDuringPrimaryAttack: 1
+  walkableAttackStates: []
   damageSpeedStepPerHit: 0.5
   maxDamageSpeedMultiplier: 3
   damageReactionDuration: 0.5
@@ -216,6 +219,7 @@ MonoBehaviour:
   secondaryAbilityCooldownDuration: 8
   basePickupRadius: 1
   floatingTextHeightAdjust: -0.5
+  hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   enemyLayerMask:
     serializedVersion: 2
@@ -232,6 +236,8 @@ MonoBehaviour:
   maxActionDuration: 3
   shadowAnimatorController: {fileID: 9100000, guid: 4b0b55bd6c604da5b7696e964e5c6644, type: 2}
   stealthDuration: 10
+  stealthAttackIcon: {fileID: 8251029957949415804, guid: b173a8b3a6b2660428731b74fab78c14, type: 3}
+  stealthShiftIcon: {fileID: 4037517563857934031, guid: 1c97804d5ea8f1b46ac9784493ac66bc, type: 3}
   teleportMaxRange: 5
 --- !u!114 &7400000000000008
 MonoBehaviour:
@@ -245,7 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a52fd1931b87c104f9b996842d8a0118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Core::StatusEffectController
-  statusAnimator: {fileID: 0}
+  statusAnimator: {fileID: 7400000000000013}
   tickInterval: 1
   immunities: 
 --- !u!70 &6784846387163197395

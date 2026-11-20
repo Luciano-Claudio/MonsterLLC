@@ -67,6 +67,10 @@ public class Assassin : HeroController
     [Header("Ultimate — forma sombria (GDD Seção 17.9)")]
     [SerializeField] private RuntimeAnimatorController shadowAnimatorController; // substitui TODAS as animações durante a forma sombria
     [SerializeField] private float stealthDuration = 10f; // 🔢 GDD não dá número — placeholder ajustável
+    // Ícones da forma sombria (Skills HUD) — mesmo mecanismo do urso do Druid: trocam quando a
+    // forma sombria começa (o primário vira Thousand Blades) e voltam ao normal no fim/morte.
+    [SerializeField] private Sprite stealthAttackIcon; // slot 0 (Primary_Attack) — Ult_Attack.png
+    [SerializeField] private Sprite stealthShiftIcon;  // slot 1 (Shift) — Ult_Shitt.png
     private RuntimeAnimatorController humanController;
     private bool isStealthActive; // só true na fase "during" (depois de entrar, antes de sair)
     // Imune a dano nas 2 transições E na forma sombria INTEIRA (decisão do usuário, diferente
@@ -300,6 +304,15 @@ public class Assassin : HeroController
         stealthElapsed = 0f;
         // Mesmo campo estático já usado pela Coruja do Druid / camuflagem do Ranger.
         IsPlayerUntargetable = true;
+        GameEvents.ActionIconOverrideChanged(0, stealthAttackIcon);
+        GameEvents.ActionIconOverrideChanged(1, stealthShiftIcon);
+    }
+
+    // null = volta pro ícone normal do herói (SkillsHUDUI).
+    private void ClearStealthIcons()
+    {
+        GameEvents.ActionIconOverrideChanged(0, null);
+        GameEvents.ActionIconOverrideChanged(1, null);
     }
 
     // Compartilhado entre cancelamento manual e o teto de stealthDuration.
@@ -307,6 +320,7 @@ public class Assassin : HeroController
     {
         isStealthActive = false;
         IsPlayerUntargetable = false;
+        ClearStealthIcons();
         isAttacking = true; // bloqueia de novo durante o clipe de voltar ao normal
         isTransformImmune = true;
 
@@ -340,6 +354,7 @@ public class Assassin : HeroController
         {
             isStealthActive = false;
             IsPlayerUntargetable = false;
+            ClearStealthIcons();
         }
         stealthEndPending = false; // sem isso, o respawn (isAttacking volta a false) dispararia um EndStealthForm() póstumo
         ForceEndAction();
