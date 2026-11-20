@@ -35,6 +35,7 @@ public class SkillsHUDUI : MonoBehaviour
     // voltar (ex.: Alce do Druid saindo da forma).
     private Sprite defaultPrimaryIcon;
     private Sprite defaultShiftIcon;
+    private Sprite defaultUltimateIcon;
 
     private void OnEnable()
     {
@@ -79,11 +80,12 @@ public class SkillsHUDUI : MonoBehaviour
             if (ultimateIcon != null) ultimateIcon.sprite = set.ultimate;
             defaultPrimaryIcon = set.primary;
             defaultShiftIcon = set.shift;
+            defaultUltimateIcon = set.ultimate;
             return;
         }
     }
 
-    // slot: 0 = Primary_Attack, 1 = Shift (ver GameEvents.ActionIconOverrideChanged). icon
+    // slot: 0 = Primary_Attack, 1 = Shift, 2 = Ultimate (ver GameEvents.ActionIconOverrideChanged). icon
     // null = volta pro ícone de fábrica guardado em ApplyIcons().
     private void HandleActionIconOverrideChanged(int slot, Sprite icon)
     {
@@ -94,6 +96,9 @@ public class SkillsHUDUI : MonoBehaviour
                 break;
             case 1:
                 if (shiftIcon != null) shiftIcon.sprite = icon != null ? icon : defaultShiftIcon;
+                break;
+            case 2:
+                if (ultimateIcon != null) ultimateIcon.sprite = icon != null ? icon : defaultUltimateIcon;
                 break;
         }
     }

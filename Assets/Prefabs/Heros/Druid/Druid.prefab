@@ -236,11 +236,11 @@ MonoBehaviour:
   vineLifetime: 1.5
   vineHitRadius: 1
   maxActionDuration: 3
+  isFeral: 0
   elkAnimatorController: {fileID: 9100000, guid: 4417318626b6f9348aed7c8e543b48ee, type: 2}
   elkMaxHealthMultiplier: 2
   elkDamageMultiplier: 1.5
   elkMoveSpeedMultiplier: 0.8
-  elkFormMaxDuration: 30
   elkKnockbackForce: 4
   elkSizeMultiplier: 1
   elkClawHitboxNE: {fileID: 3798856756529210575}
@@ -257,7 +257,18 @@ MonoBehaviour:
   elkHeadbuttMaxRange: 12
   elkHeadbuttDamageMultiplier: 2
   elkHeadbuttKnockbackForce: 8
+  roarDamageReductionPercent: 50
+  roarDuration: 5
+  groundCrackPrefab: {fileID: 7030278775826116329, guid: 93904857f64de094a989ed7ee028fabf, type: 3}
+  groundCrackDamagePercent: 50
+  groundCrackDuration: 3
+  groundCrackTickInterval: 0.5
+  groundCrackSizeMultiplier: 1
+  leavesPoisonDuration: 4
+  leavesPoisonDamagePercent: 50
+  leavesFlashDuration: 1.25
   elkClawIcon: {fileID: -7165401095265530750, guid: 89b2f019e54c99946b979d40220d56f6, type: 3}
+  elkRoarIcon: {fileID: 0}
   elkHeadbuttIcon: {fileID: -3875127785539040624, guid: 531e973501d21de49b649ab10d829480, type: 3}
 --- !u!114 &4459035152162319188
 MonoBehaviour:

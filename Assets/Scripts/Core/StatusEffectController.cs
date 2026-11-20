@@ -50,7 +50,12 @@ public enum StatusEffectType
     // é aplicado direto por BloodMage, fora daqui). Prioridade visual abaixo só de WordOfPain
     // (ver guarda em FlashStatus) — cancela Fire/Bleeding/etc. na tela, mas nunca escapa a
     // paralisia da Oração.
-    Drain
+    Drain,
+
+    // D9.1 (Druid Floresta, Ultimate) — mesmo padrão do Drain: toca 1x (FlashStatus) quando as
+    // folhas atingem o monstro; o efeito real é o Poison aplicado junto, que assume o visual
+    // em loop quando o flash termina. SEMPRE no fim do enum (valores salvos em prefab são int).
+    LeavesSpell
 }
 
 public class StatusEffectController : MonoBehaviour

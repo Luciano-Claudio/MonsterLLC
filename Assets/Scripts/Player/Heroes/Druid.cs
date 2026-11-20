@@ -21,13 +21,28 @@ public class Druid : HeroController
     [SerializeField] private float maxActionDuration = 3f; // 🔢 ajustável
     private float actionElapsed;
 
-    // ---------- Ultimate — transformação em Alce (GDD Seção 17.4) ----------
-    [Header("Ultimate — Alce")]
+    // ---------- Variante (D9.1, 2026-11-19, decisão do usuário) — 2 heróis em 1 ----------
+    // Floresta (isFeral false): humano — vinhas / Coruja / Leaves_Spell (veneno na tela).
+    // Feral (isFeral true): urso (Alce no código) PERMANENTE — garra / Rugido / Cabeçada + Ground Crack.
+    // A escolha da variante (futuro, dentro do jogo, com o dia rolando) só seta o bool: a
+    // mudança é notada sozinha (mesmo critério do PetSummoner) e o Druid se transforma assim que
+    // ficar livre. Depois disso, a transformação toca de novo no início de todo dia.
+    [Header("Variante (Floresta x Feral)")]
+    [SerializeField] private bool isFeral = false; // false até o sistema de variantes existir
+    private bool lastIsFeral;
+    private bool feralTransformPending;
+    public bool IsFeral
+    {
+        get => isFeral;
+        set => isFeral = value;
+    }
+
+    // ---------- Forma de urso (Alce no código/sprites) — Feral ----------
+    [Header("Forma de urso (Alce) — Feral")]
     [SerializeField] private RuntimeAnimatorController elkAnimatorController; // substitui TODAS as animações durante a forma Alce
     [SerializeField] private float elkMaxHealthMultiplier = 2f; // 🔢 GDD marca como "TBD" — ajustável em teste
     [SerializeField] private float elkDamageMultiplier = 1.5f; // 🔢 GDD: "mais dano", sem número — ajustável
     [SerializeField] private float elkMoveSpeedMultiplier = 1.3f; // 🔢 GDD: "mais velocidade", sem número — ajustável
-    [SerializeField] private float elkFormMaxDuration = 30f; // 🔢 GDD: 30s
     [SerializeField] private float elkKnockbackForce = 4f; // 🔢 ajustável, mesmo padrão do Barbarian
     // Upgrade futuro — escala o transform.localScale INTEIRO durante a forma Alce (visual +
     // CapsuleCollider2D, que é definido em espaço LOCAL e já escala junto automaticamente, +
@@ -70,7 +85,6 @@ public class Druid : HeroController
     private RuntimeAnimatorController humanController;
     private bool isElkForm;
     private bool isTransformImmune; // só true durante os clipes de transformar-em/transformar-de-volta
-    private float elkFormElapsed;
     private float humanMaxHealth, humanDamage, humanMoveSpeed;
     private bool elkClawHitFired;
     private readonly List<EnemyController> elkClawTargets = new();
@@ -81,14 +95,11 @@ public class Druid : HeroController
     private bool isOwlForm; // só true na fase "during"
     private float owlElapsed;
 
-    // ---------- Habilidade Secundária (Shift) EM FORMA ALCE — Cabeçada (rework 2026-10-30) ----------
-    // Mutuamente exclusiva com a Coruja (só existe enquanto isElkForm) — mesmo botão/cooldown
-    // de Shift de sempre, só muda o comportamento (ver UseSecondaryAbility). Pose trava numa
-    // das 4 diagonais (DiagonalAimX/Y, já travado pela base antes de chamar este método — mesmo
-    // critério do StartElkClawAttack, que também não precisa setar pose manual), mas a
-    // trajetória real da carga segue a mira livre (RawAimDirection), mesmo critério da
-    // Cambalhota do Rogue.
-    [Header("Habilidade Secundária (Shift, Alce) — Cabeçada: impulso forte + freada + dano em área")]
+    // ---------- ULTIMATE do Feral — Cabeçada (era o Shift do Alce até o D9.1) ----------
+    // Pose trava numa das 4 diagonais (DiagonalAimX/Y, já travado pela base antes de chamar
+    // este método), mas a trajetória real da carga segue a mira livre (RawAimDirection), mesmo
+    // critério da Cambalhota do Rogue. No fim, deixa um Ground Crack no chão (ver Dr4).
+    [Header("Ultimate (Feral) — Cabeçada: impulso forte + freada + dano em área")]
     [SerializeField] private CircleCollider2D elkHeadbuttHitbox; // trigger circular dedicado — ver AnimationElkHeadbuttHitEvent
     [SerializeField] private float elkHeadbuttLaunchSpeed = 32f; // 🔢 ajustável — rápido o bastante pra cobrir elkHeadbuttMaxRange inteiro antes do frame de freio da animação
     // Rework (2026-10-30, pedido do usuário) — não é mais distância fixa: vai até a posição do
@@ -104,9 +115,41 @@ public class Druid : HeroController
     private readonly List<EnemyController> elkHeadbuttTargets = new();
 
     // ---------- Ícones alternativos (Primary_Attack/Shift) durante a forma Alce — Skills HUD ----------
-    [Header("Ícones alternativos (Skills HUD) — Primary_Attack/Shift durante a forma Alce")]
-    [SerializeField] private Sprite elkClawIcon;
-    [SerializeField] private Sprite elkHeadbuttIcon;
+    // ---------- SHIFT do Feral — Rugido (D9.1) ----------
+    // Mesmo papel do Shift do Barbarian, só que defensivo: trava o movimento só durante a
+    // animação (estado "Roar" não é andável) e depois o urso recebe menos dano por roarDuration.
+    [Header("Shift (Feral) — Rugido: menos dano recebido por um tempo")]
+    [SerializeField] private float roarDamageReductionPercent = 50f; // 🔢 ajustável
+    [SerializeField] private float roarDuration = 5f; // 🔢 ajustável — conta desde o clique
+    private float roarRemaining;
+
+    // ---------- ULTIMATE do Feral — Ground Crack no fim da Cabeçada (D9.1) ----------
+    // Mesmo GroundCrack do Barbarian (área de dano por segundo por um tempo), com a sprite
+    // radial do Druid (prefab variante Druid_Ground_Crack — as 4 direções tocam o mesmo clipe).
+    [Header("Ultimate (Feral) — Ground Crack no fim da Cabeçada")]
+    [SerializeField] private GameObject groundCrackPrefab; // precisa ter GroundCrack
+    [SerializeField] private float groundCrackDamagePercent = 50f; // 🔢 % do dano do urso, por segundo
+    [SerializeField] private float groundCrackDuration = 3f; // 🔢 ajustável
+    [SerializeField] private float groundCrackTickInterval = 0.5f; // 🔢 ajustável
+    [SerializeField] private float groundCrackSizeMultiplier = 1f; // 🔢 ajustável
+
+    // ---------- ULTIMATE da Floresta — Leaves_Spell (D9.1) ----------
+    // Mesmo papel da Oração do Cleric, mas em TODO monstro visível na câmera: o corpo toca a
+    // animação das vinhas (clipes próprios ult_leaves_*, sem o evento de vinha), as folhas
+    // tocam 1x em cada monstro (FlashStatus LeavesSpell) e ele fica envenenado (Poison, que
+    // assume o visual em loop quando o flash termina).
+    [Header("Ultimate (Floresta) — Leaves_Spell: veneno em todo monstro na tela")]
+    [SerializeField] private float leavesPoisonDuration = 4f; // 🔢 ajustável
+    [SerializeField] private float leavesPoisonDamagePercent = 50f; // 🔢 % do dano do Druid, por segundo
+    [SerializeField] private float leavesFlashDuration = 1.25f; // = clipe LeavesSpell (15 frames @12fps)
+    private bool leavesSpellFired;
+    private static readonly Collider2D[] ScreenOverlapBuffer = new Collider2D[512];
+    private readonly List<EnemyController> leavesTargets = new();
+
+    [Header("Ícones alternativos (Skills HUD) — forma de urso (Feral)")]
+    [SerializeField] private Sprite elkClawIcon;     // slot 0 (Primary_Attack)
+    [SerializeField] private Sprite elkRoarIcon;     // slot 1 (Shift) — Rugido
+    [SerializeField] private Sprite elkHeadbuttIcon; // slot 2 (Ultimate) — Cabeçada
 
 #if UNITY_EDITOR
     private void OnValidate()
@@ -148,10 +191,13 @@ public class Druid : HeroController
         base.Update();
         ApplyCurrentColliderShape(); // mira pode mudar a qualquer frame — reaplica o espelhamento sempre
 
-        // Rede de segurança genérica — suprimida durante as fases "during" longas (cada uma
-        // tem o próprio teto de tempo, tratado abaixo), mesmo padrão do
-        // "if (isAttacking && !isCamouflaged)" do Ranger.
-        if (isAttacking && !isOwlForm && !isElkForm)
+        UpdateFeralVariant();
+
+        // Rede de segurança genérica — suprimida só durante a Coruja (fase "during" longa, com
+        // teto próprio abaixo), mesmo padrão do "if (isAttacking && !isCamouflaged)" do Ranger.
+        // A forma de urso agora é permanente (Feral), então as ações dela (garra, Rugido,
+        // Cabeçada, transformação) são todas curtas e passam pela rede normal.
+        if (isAttacking && !isOwlForm)
         {
             actionElapsed += Time.deltaTime;
             if (actionElapsed >= maxActionDuration)
@@ -170,13 +216,71 @@ public class Druid : HeroController
             UpdateOwlMoveParams();
         }
 
-        if (isElkForm)
+        if (isHeadbuttCharging) UpdateHeadbuttCharge();
+        UpdateRoar();
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        GameEvents.OnDayStart += HandleDayStart;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        GameEvents.OnDayStart -= HandleDayStart;
+    }
+
+    // ===================== VARIANTE (Floresta x Feral) =====================
+
+    // Mudança no bool notada sozinha (escolha da variante dentro do jogo, ou Inspector em Play
+    // Mode). Virou Feral: transforma assim que o Druid ficar livre (nunca corta ação). Deixou de
+    // ser Feral: volta a humano com a animação de transformar-de-volta.
+    private void UpdateFeralVariant()
+    {
+        if (isFeral != lastIsFeral)
         {
-            elkFormElapsed += Time.deltaTime;
-            if (elkFormElapsed >= elkFormMaxDuration) EndElkForm();
+            lastIsFeral = isFeral;
+            if (isFeral) feralTransformPending = true;
+            else
+            {
+                feralTransformPending = false;
+                if (isElkForm && !isAttacking) EndElkForm();
+            }
         }
 
-        if (isHeadbuttCharging) UpdateHeadbuttCharge();
+        if (!feralTransformPending || isElkForm) return;
+        if (isAttacking || isUsingSecondaryAbility || isTransformImmune || HealthSystem.IsDead(stats.health)) return;
+        StartFeralTransform();
+    }
+
+    // Início de todo dia (decisão do usuário): o Feral toca a transformação de novo. Volta a
+    // humano na hora (sem animação) e reentra — assim os stats de humano são relidos (upgrades
+    // entre dias) antes de aplicar os multiplicadores do urso.
+    private void HandleDayStart()
+    {
+        if (!isFeral) return;
+        if (isElkForm) RestoreHumanForm(keepHealthRatio: false);
+        feralTransformPending = true;
+    }
+
+    // Era o UseUltimate antigo (transformação com duração) — agora só a entrada na forma
+    // permanente do Feral. O clipe de transformar-em é o estado padrão do controller do urso,
+    // então trocar o controller já toca a animação (AnimationElkTransformInEndEvent no fim).
+    private void StartFeralTransform()
+    {
+        feralTransformPending = false;
+        isAttacking = true;
+        actionElapsed = 0f;
+        isTransformImmune = true;
+
+        humanMaxHealth = stats.maxHealth;
+        humanDamage = stats.damage;
+        humanMoveSpeed = stats.moveSpeed;
+
+        if (animator != null) animator.runtimeAnimatorController = elkAnimatorController;
+        RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
     }
 
     // ===================== PRIMÁRIO =====================
@@ -256,42 +360,106 @@ public class Druid : HeroController
         isAttackResolving = false;
     }
 
-    // ===================== ULTIMATE — ALCE =====================
+    // ===================== ULTIMATE =====================
 
-    // isAttacking/isUsingSecondaryAbility agora são checados por CanUseUltimate()
-    // (HeroController), ANTES de gastar energia — sem isso, apertar Ultimate durante a Coruja
-    // (Shift) era recusado por dentro de UseUltimate(), mas a energia já tinha sido zerada por
-    // quem chamou, um jeito real de perder toda a energia sem nunca virar Alce.
-    protected override bool CanUseUltimate() => !isAttacking && !isUsingSecondaryAbility;
+    // Checado ANTES de gastar energia (HeroController) — sem isso, apertar Ultimate durante a
+    // Coruja/transformação era recusado por dentro, mas a energia já tinha sido zerada.
+    // isUsingSecondaryAbility só bloqueia na Coruja (Floresta) — o buff do Rugido (Feral) dura
+    // 5s com isUsingSecondaryAbility ligado e não pode travar a Cabeçada.
+    protected override bool CanUseUltimate() => !isAttacking && !isTransformImmune && !(isUsingSecondaryAbility && !isElkForm);
 
+    // D9.1 — Feral (urso): Cabeçada + Ground Crack. Floresta (humano): Leaves_Spell (Dr5).
+    // A transformação em urso NÃO é mais a Ultimate (virou a variante Feral, permanente).
     protected override void UseUltimate()
     {
-        isAttacking = true;
-        isTransformImmune = true;
-        elkFormElapsed = 0f;
-
-        humanMaxHealth = stats.maxHealth;
-        humanDamage = stats.damage;
-        humanMoveSpeed = stats.moveSpeed;
-
-        // Troca o controller inteiro — a animação de transformar-em já é o estado padrão do
-        // controller do Alce (configurar no Editor, ver Seção 5), não precisa de Trigger extra.
-        if (animator != null) animator.runtimeAnimatorController = elkAnimatorController;
-        RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
+        if (isElkForm) { StartHeadbutt(); return; }
+        StartLeavesSpell();
     }
 
-    protected override bool IsUltimateActive => isElkForm;
+    // ---------- Floresta: Leaves_Spell ----------
 
-    // Rework 2026-10-30 — a Energia da próxima Ultimate não pode carregar enquanto a atual
-    // ainda está rolando (senão matar monstro DURANTE o Alce já paga a próxima de graça).
-    // Cobre a forma inteira + as 2 transições (isTransformImmune), não só o "during".
-    protected override bool CanGainUltimateEnergy => !isElkForm && !isTransformImmune;
-
-    protected override void CancelUltimate()
+    private void StartLeavesSpell()
     {
-        if (!isElkForm) return;
-        EndElkForm();
+        isAttacking = true;
+        actionElapsed = 0f;
+        leavesSpellFired = false;
+        AnimatorTrigger("UltimateTrigger"); // AnyState -> LeavesSpellCast (clipes ult_leaves_*)
     }
+
+    // Animation Event, no frame em que as vinhas sairiam do chão (frame 3 do ult_leaves_*).
+    public void AnimationLeavesSpellEvent()
+    {
+        if (leavesSpellFired) return;
+        leavesSpellFired = true;
+
+        var cam = Camera.main;
+        if (cam == null) return;
+        Vector2 min = cam.ViewportToWorldPoint(new Vector3(0f, 0f, 0f));
+        Vector2 max = cam.ViewportToWorldPoint(new Vector3(1f, 1f, 0f));
+
+        var filter = new ContactFilter2D { useTriggers = true };
+        filter.SetLayerMask(enemyLayerMask);
+        int count = Physics2D.OverlapArea(min, max, filter, ScreenOverlapBuffer);
+        // Dedup obrigatório — todo monstro tem 2 Collider2D (ver EnemyController.CollectDistinct()).
+        EnemyController.CollectDistinct(ScreenOverlapBuffer, count, leavesTargets);
+
+        float poisonDps = stats.damage * leavesPoisonDamagePercent / 100f;
+        foreach (var enemy in leavesTargets)
+        {
+            if (enemy == null || enemy.IsDead) continue;
+            var statusEffects = enemy.GetComponent<StatusEffectController>();
+            if (statusEffects == null) continue;
+            // Ordem importa: o Poison primeiro (ApplyStatusEffect já troca o visual pro Poison),
+            // o flash das folhas por cima — quando o flash acaba, o Tick volta pro Poison em loop.
+            statusEffects.ApplyStatusEffect(StatusEffectType.Poison, leavesPoisonDuration, poisonDps);
+            statusEffects.FlashStatus(StatusEffectType.LeavesSpell, leavesFlashDuration);
+        }
+    }
+
+    // Animation Event, no último frame do ult_leaves_*.
+    public void AnimationLeavesSpellEndEvent()
+    {
+        isAttacking = false;
+    }
+
+    // ---------- Feral: Ground Crack no fim da Cabeçada ----------
+
+    private void SpawnUltimateGroundCrack()
+    {
+        if (groundCrackPrefab == null) return;
+        var crackObj = Instantiate(groundCrackPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+        var crack = crackObj.GetComponent<GroundCrack>();
+        // Direção irrelevante: o override do Druid toca o mesmo clipe radial nas 4.
+        if (crack != null) crack.Initialize(GroundCrack.Direction.SE, groundCrackSizeMultiplier, stats.damage * groundCrackDamagePercent / 100f, groundCrackTickInterval);
+        Destroy(crackObj, groundCrackDuration);
+    }
+
+    // ---------- Feral: Rugido (Shift) ----------
+
+    private void StartRoar()
+    {
+        isAttacking = true; // trava ataque/movimento só durante a animação (AnimationRoarEndEvent)
+        actionElapsed = 0f;
+        roarRemaining = roarDuration;
+        AnimatorTrigger("SecondaryAbilityTrigger"); // AnyState -> Roar (controller do urso)
+    }
+
+    // Animation Event, último frame do roar_* — libera o urso; a redução de dano segue até
+    // roarRemaining acabar (UpdateRoar), e só aí o cooldown do Shift começa a contar.
+    public void AnimationRoarEndEvent()
+    {
+        isAttacking = false;
+    }
+
+    private void UpdateRoar()
+    {
+        if (roarRemaining <= 0f) return;
+        roarRemaining -= Time.deltaTime;
+        if (roarRemaining <= 0f) isUsingSecondaryAbility = false;
+    }
+
+    protected override float GetConditionalDamageReductionPercent() =>
+        roarRemaining > 0f ? roarDamageReductionPercent : 0f;
 
     // Animation Event, no fim do clipe de transformar-em-Alce.
     public void AnimationElkTransformInEndEvent()
@@ -369,42 +537,45 @@ public class Druid : HeroController
         return east ? elkClawHitboxSE : elkClawHitboxSW;
     }
 
-    // Compartilhado entre o cancelamento manual e o teto de 30s — os dois terminam do mesmo jeito.
+    // Só quando a variante deixa de ser Feral (isFeral false com o urso ativo) — toca o clipe de
+    // transformar-de-volta.
     private void EndElkForm()
     {
         isElkForm = false;
         isAttacking = true; // bloqueia de novo durante o clipe de transformar-de-volta
         isTransformImmune = true;
-
-        // GDD: cancelar zera toda a Energia da Ultimate — mesmo custo de deixar o timer
-        // acabar (já está em 0 desde a ativação, mas setar explícito documenta a intenção e
-        // cobre qualquer fonte futura de recarga de energia durante o "during").
-        stats.energy = 0f;
-        GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
-
         AnimatorTrigger("ElkTransformOutTrigger");
     }
 
     // Animation Event, no fim do clipe de transformar-de-volta.
     public void AnimationElkTransformOutEndEvent()
     {
-        // GDD: HumanCurrentHealth = HumanMaxHealth × (CurrentElkHealth/ElkMaxHealth) — nunca
-        // absoluto, nunca cura cheia.
+        RestoreHumanForm(keepHealthRatio: true);
+        isTransformImmune = false;
+        isAttacking = false;
+    }
+
+    // Volta stats/controller/collider/tamanho/ícones pro humano. keepHealthRatio (GDD):
+    // HumanCurrentHealth = HumanMaxHealth × (CurrentElkHealth/ElkMaxHealth) — nunca cura cheia.
+    // false = início do dia: a transformação logo em seguida cura pra 100% do urso de qualquer jeito.
+    private void RestoreHumanForm(bool keepHealthRatio)
+    {
         float ratio = stats.maxHealth > 0f ? stats.health / stats.maxHealth : 0f;
 
         stats.maxHealth = humanMaxHealth;
         stats.damage = humanDamage;
         stats.moveSpeed = humanMoveSpeed;
-        stats.health = stats.maxHealth * ratio;
+        stats.health = keepHealthRatio ? stats.maxHealth * ratio : Mathf.Min(stats.health, stats.maxHealth);
         GameEvents.HealthChanged(stats.health, stats.maxHealth);
 
-        if (animator != null) animator.runtimeAnimatorController = humanController;
-        RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
+        isElkForm = false;
+        if (animator != null && animator.runtimeAnimatorController != humanController)
+        {
+            animator.runtimeAnimatorController = humanController;
+            RefreshActionSpeedMultiplier(); // trocar de controller reseta os parâmetros pro default dele
+        }
         ApplyColliderShape(humanColliderOffset, humanColliderSize);
-        transform.localScale = Vector3.one; // volta ao tamanho humano normal — size do Alce só vale durante ele
-        isTransformImmune = false;
-        isAttacking = false;
-
+        transform.localScale = Vector3.one; // volta ao tamanho humano normal — size do urso só vale nele
         ClearElkActionIcons();
     }
 
@@ -412,7 +583,9 @@ public class Druid : HeroController
     // si o Alce toma dano normal) — isUsingSecondaryAbility cobre a Coruja inteira (start +
     // during + end), pedido explícito do usuário: um Slime de contato ou um golpe que já
     // estava a caminho não pode contar enquanto o Druid está escondido/em transição.
-    protected override bool IsDamageImmune => isTransformImmune || isUsingSecondaryAbility;
+    // D9.1: a imunidade do Shift vale só pra Coruja (Floresta). O Shift do urso (Rugido) usa
+    // isUsingSecondaryAbility pro buff inteiro e dá REDUÇÃO de dano, não imunidade.
+    protected override bool IsDamageImmune => isTransformImmune || (isUsingSecondaryAbility && !isElkForm);
 
     // GDD: morrer DURANTE a transformação é a única exceção — pula a conversão proporcional e
     // segue o fluxo universal de morte (stats.maxHealth já volta a ser o humano aqui, embora a
@@ -422,6 +595,8 @@ public class Druid : HeroController
     // tocar de verdade em vez de sumir sem animação nenhuma.
     protected override void OnHeroDeath()
     {
+        roarRemaining = 0f;
+        feralTransformPending = false;
         if (!isElkForm) return;
 
         // Mesmo critério do EndRoll do Rogue — morrer no meio da cabeçada não pode deixar o
@@ -460,7 +635,7 @@ public class Druid : HeroController
 
     protected override void UseSecondaryAbility()
     {
-        if (isElkForm) { StartHeadbutt(); return; } // forma Alce usa a Cabeçada, não a Coruja
+        if (isElkForm) { StartRoar(); return; } // Feral (urso): Rugido — a Coruja é só da Floresta
 
         // Ao contrário do Alce, aqui isAttacking fica true a viagem INTEIRA (start+during+end)
         // — a Coruja bloqueia SÓ ataque (GDD), então isAttacking nunca vira false até o fim;
@@ -544,7 +719,7 @@ public class Druid : HeroController
         float distance = Mathf.Min(RawAimDistance, elkHeadbuttMaxRange);
         headbuttTargetPosition = transform.position + (Vector3)(headbuttDirection * distance);
 
-        AnimatorTrigger("SecondaryAbilityTrigger");
+        AnimatorTrigger("UltimateTrigger"); // D9.1: Cabeçada virou a Ultimate do Feral (era o Shift do Alce)
     }
 
     // Animation Event — só LIGA a carga; o movimento de verdade (e a parada exatamente no
@@ -592,11 +767,12 @@ public class Druid : HeroController
         }
     }
 
-    // Animation Event, no último frame do clipe de verdade — fecha a ação.
+    // Animation Event, no último frame do clipe de verdade — fecha a ação e deixa o Ground
+    // Crack no chão (ver SpawnUltimateGroundCrack, Dr4).
     public void AnimationElkHeadbuttEndEvent()
     {
         isAttacking = false;
-        isUsingSecondaryAbility = false; // arma o cooldown no próximo Update() da base
+        SpawnUltimateGroundCrack();
     }
 
     // Move em direção a headbuttTargetPosition todo frame (base.Update() já zera
@@ -629,12 +805,14 @@ public class Druid : HeroController
     private void ApplyElkActionIcons()
     {
         GameEvents.ActionIconOverrideChanged(0, elkClawIcon);
-        GameEvents.ActionIconOverrideChanged(1, elkHeadbuttIcon);
+        GameEvents.ActionIconOverrideChanged(1, elkRoarIcon);
+        GameEvents.ActionIconOverrideChanged(2, elkHeadbuttIcon);
     }
 
     private void ClearElkActionIcons()
     {
         GameEvents.ActionIconOverrideChanged(0, null);
         GameEvents.ActionIconOverrideChanged(1, null);
+        GameEvents.ActionIconOverrideChanged(2, null);
     }
 }
