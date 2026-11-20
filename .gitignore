@@ -115,3 +115,7 @@ TestResults*.xml
 
 # Capturas do Profiler — podem passar de 100MB cada, nunca devem ir pro repositório
 /ProfilerCaptures/
+
+# Ferramentas locais do agente e relatórios/capturas do teste de densidade (D9.2/D9.3)
+/.superpowers/
+/DensityReports/
