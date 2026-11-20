@@ -488,6 +488,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         PickupRadius = basePickupRadius;
         var pickupRadiusObj = new GameObject("PickupRadius");
+        // D9.3 (lixo de memória, medido): na layer Default o trigger de coleta recebia
+        // OnTriggerStay2D de todo monstro encostado, todo passo de física (74 KB/frame com 300
+        // parados). A layer Pickup colide só com Default, onde o loot está.
+        int pickupLayer = LayerMask.NameToLayer("Pickup");
+        if (pickupLayer >= 0) pickupRadiusObj.layer = pickupLayer;
         pickupRadiusObj.transform.SetParent(transform, false);
         pickupRadius = pickupRadiusObj.AddComponent<HeroPickupRadius>();
         pickupRadius.SetRadius(PickupRadius);

@@ -357,6 +357,24 @@ resposta do usuário: atacar andando e **muita coisa acontecendo na tela ao mesm
     player, então uma build de vida passa a aumentar o dano. O objetivo é deixar "roubado" quem
     souber combar.
 - A lista de itens vai ser pensada com calma mais pra frente (debate próprio, antes do D9.7).
+- **PENDENTE — efeito "chamas orbitando o herói"** (2026-11-20). O usuário gostou muito do
+  efeito falso do teste de densidade (D9.2) e quer algo no jogo com ele: item, talento ou carta,
+  ainda sem definir. Receita do teste, pra recriar igual, já que o script `HordeDensityTest` vai ser apagado:
+  - Cada chama é um sprite com o clipe **`Fire`** do `Assets/Animation/Status/Status.controller`,
+    que é a animação de fogo dos status, em loop. Foi desenhada com `sortingOrder` 50.
+  - Cada chama orbita o herói num **raio sorteado entre 2 e 9 unidades**, com **velocidade
+    angular sorteada entre -3 e 3 rad/s** (no mínimo 1 em módulo) e um ângulo inicial aleatório.
+    Tem chama girando nos dois sentidos, em distâncias diferentes.
+  - No teste, o movimento usava um `Rigidbody2D` cinemático com `MovePosition` no `FixedUpdate`
+    e um `CircleCollider2D` trigger de raio 0,4.
+  - **No jogo, o que importa é só a ANIMAÇÃO das chamas, sem collider** (decisão do usuário,
+    2026-11-20). O collider do teste existia só pra medir o custo de física: com 500 chamas na
+    layer `Default`, o jogo caiu pra 1 FPS. Sem collider, basta mover o `Transform`. Se a versão
+    do jogo causar dano, que seja por consulta (`Overlap` a cada tick), nunca por trigger em cada chama.
+- **PENDENTE — laboratório de animações** (2026-11-20). Fazer testes com as animações e efeitos
+  que já existem no projeto (status, projéteis, hazards de monstros, pets), combinando e repetindo
+  do jeito que o efeito das chamas surgiu, pra dar inspiração de "poderes" novos (itens, talentos
+  e cartas). Fazer antes do debate da lista de itens (D9.7).
 - Exemplos do usuário:
   - **aumentar o tamanho do herói** (no lugar da carta de tamanho do Barbarian); também pode
     existir como talento que aumenta o tamanho a cada nível;

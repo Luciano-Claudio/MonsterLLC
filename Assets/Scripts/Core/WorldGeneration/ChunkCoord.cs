@@ -3,7 +3,7 @@ using UnityEngine;
 // Identidade de um chunk no mundo único — puramente por coordenadas globais, nunca por
 // ordem de carregamento (docs/new/Mudanca_Estrutural_Geracao_Procedural..., Seção 12:
 // "Chaves e seeds derivadas de coordenadas globais, sem depender da ordem de carregamento").
-public readonly struct ChunkCoord
+public readonly struct ChunkCoord : System.IEquatable<ChunkCoord>
 {
     public readonly int X;
     public readonly int Y;
@@ -46,10 +46,13 @@ public readonly struct ChunkCoord
         return new Vector2Int(X * chunkSize - half, Y * chunkSize - half);
     }
 
-    public override bool Equals(object obj) => obj is ChunkCoord other && X == other.X && Y == other.Y;
+    // D9.3 (lixo de memória, medido): IEquatable<ChunkCoord> — sem ele, Dictionary/HashSet com
+    // ChunkCoord de chave caem no Equals(object) e empacotam a struct a cada comparação.
+    public bool Equals(ChunkCoord other) => X == other.X && Y == other.Y;
+    public override bool Equals(object obj) => obj is ChunkCoord other && Equals(other);
     public override int GetHashCode() => (X, Y).GetHashCode();
     public override string ToString() => $"({X}, {Y})";
 
-    public static bool operator ==(ChunkCoord a, ChunkCoord b) => a.Equals(b);
-    public static bool operator !=(ChunkCoord a, ChunkCoord b) => !a.Equals(b);
+    public static bool operator ==(ChunkCoord a, ChunkCoord b) => a.X == b.X && a.Y == b.Y;
+    public static bool operator !=(ChunkCoord a, ChunkCoord b) => !(a == b);
 }

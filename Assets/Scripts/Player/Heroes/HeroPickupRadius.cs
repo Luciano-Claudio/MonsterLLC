@@ -24,7 +24,7 @@ public class HeroPickupRadius : MonoBehaviour
     {
         if (!GameplayGate.IsActive) return;
 
-        var lootDrop = other.GetComponent<LootDrop>();
-        if (lootDrop != null) lootDrop.Collect();
+        // TryGetComponent: não gera lixo quando o collider não é loot (GetComponent nulo gera, no Editor).
+        if (other.TryGetComponent(out LootDrop lootDrop)) lootDrop.Collect();
     }
 }

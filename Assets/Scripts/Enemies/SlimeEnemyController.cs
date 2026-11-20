@@ -47,7 +47,7 @@ public class SlimeEnemyController : EnemyController
     private bool IsPlayerTouchingHitbox()
     {
         if (attackHitbox == null) return false;
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         return heroCollider != null && attackHitbox.IsTouching(heroCollider);
     }
 

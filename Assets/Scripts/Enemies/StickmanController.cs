@@ -16,11 +16,11 @@ public class StickmanController : MeleeEnemyController
     {
         if (areaHitbox == null) return;
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!areaHitbox.IsTouching(heroCollider)) return;
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero != null) hero.TakeDamage(stats.attackDamage);
     }
 }

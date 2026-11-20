@@ -99,7 +99,7 @@ public class SpiderQueenController : EnemyController
     // trigger de GetHitboxForFacing(), no frame exato do Animation Event.
     private bool IsPlayerTouchingAnyHitbox()
     {
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return false;
 
         if (attackHitboxNE != null && attackHitboxNE.IsTouching(heroCollider)) return true;
@@ -131,11 +131,11 @@ public class SpiderQueenController : EnemyController
         var hitbox = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        var heroCollider = player.GetComponent<Collider2D>();
+        var heroCollider = PlayerCollider;
         if (heroCollider == null) return;
         if (!hitbox.IsTouching(heroCollider)) return; // player fora do trigger nesse frame exato -> o golpe erra
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero != null) hero.TakeDamage(stats.attackDamage);
     }
 

@@ -124,7 +124,7 @@ public class GoblinSapperController : EnemyController
         if (phase != SapperPhase.Armed) return;
         if (Vector2.Distance(DieExplosionCenter, player.position) > dieExplosionRadius) return;
 
-        var hero = player.GetComponent<HeroController>();
+        var hero = PlayerHero;
         if (hero != null) hero.TakeDamage(stats.attackDamage * dieExplosionDamageMultiplier);
     }
 
