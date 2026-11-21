@@ -14,12 +14,10 @@ using UnityEngine;
 // simula em full — aceitável porque a população é pequena, Min/Target/Max, e o despawn por
 // distância já limita o total de monstros vivos ao mesmo tempo).
 //
-// População gradativa (GDD Deadline 8.1, Seção 2.1): Min/Target/Max deixam de ser um degrau
-// permanente disparado por crisisStreak e passam a ser uma RAMPA linear amarrada a
-// DayTimer.ElapsedFraction01 — Minimum/Target do Inspector valem no início do dia (fração 0),
-// Target/Maximum valem a partir do instante em que vira noite (fração 0.5) e ficam platôs o
-// resto da noite inteira (fração 1 nunca passa de Maximum). "A população máxima é sempre à
-// noite, todo dia" deixa de ser uma emergência rara e vira o ritmo normal de qualquer dia.
+// D9.4 (docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md): a população segue a
+// curva da horda — meta por dia da run e TEMPO REAL do dia (não pausa com boss vivo), com picos
+// e teto — e é reposta em fluxo contínuo (spawnsPerSecond). Substitui a rampa Min/Target/Max da
+// D8.1 e a crise.
 public class WorldPopulationManager : MonoBehaviour
 {
     public static WorldPopulationManager Instance { get; private set; }
@@ -48,17 +46,13 @@ public class WorldPopulationManager : MonoBehaviour
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 
-    private float respawnTimer;
+    // D9.4 — fluxo contínuo: acumulador fracionário de spawnsPerSecond (no máximo 3 guardados,
+    // pra nunca sair rajada depois de um período sem lugar válido).
+    private float spawnAccumulator;
+    private const float MaxSpawnAccumulator = 3f;
 
-    // 0 no início do dia -> 1 no instante exato que vira noite (metade do dia) -> continua 1
-    // (platô) pelo resto da noite. Mesma curva pros 2 pares Min->Target e Target->Max, então a
-    // "escalada" de antes (minimum := target, target := maximum) acontece sozinha, suave, em vez
-    // de precisar de crisisStreak contando crises.
-    private float PopulationCurve01() =>
-        DayTimer.Instance != null ? Mathf.Clamp01(DayTimer.Instance.ElapsedFraction01 / 0.5f) : 0f;
-
-    private int ActiveMinimum => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationMinimum, spawnSettings.populationTarget, PopulationCurve01()));
-    private int ActiveTarget => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationTarget, spawnSettings.populationMaximum, PopulationCurve01()));
+    // D9.4 — meta atual de monstros comuns vivos (curva por dia + tempo real do dia + picos).
+    public int CurrentTarget { get; private set; }
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
@@ -134,9 +128,8 @@ public class WorldPopulationManager : MonoBehaviour
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
     // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill/energia,
-    // mesmo critério do Distance Despawn). A população volta a 0, que já é <= ActiveMinimum,
-    // então a crise de repovoamento dispara sozinha no próximo Update() (mesmo mecanismo que já
-    // cobre o preenchimento inicial do jogo, ver HandleCrisis).
+    // mesmo critério do Distance Despawn). A população volta a 0, abaixo da meta, e o fluxo
+    // contínuo do Update() repõe sozinho no ritmo de spawnsPerSecond.
     private void HandleClearAllEnemies()
     {
         foreach (var enemy in aliveEnemies)
@@ -172,37 +165,21 @@ public class WorldPopulationManager : MonoBehaviour
             SpawnOne(); // 1 despawn = 1 replacement imediato, sem resetar o cooldown normal abaixo
         }
 
-        if (aliveEnemies.Count <= ActiveMinimum)
+        // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
+        // no lugar do "1 a cada respawnInterval" e das rajadas da crise.
+        CurrentTarget = spawnSettings.horde.TargetAlive(HordeElapsed, ActualDay);
+        if (aliveEnemies.Count >= CurrentTarget)
         {
-            HandleCrisis();
+            spawnAccumulator = 0f;
             return;
         }
 
-        if (aliveEnemies.Count >= ActiveTarget) return;
-
-        respawnTimer += Time.deltaTime;
-        if (respawnTimer < spawnSettings.respawnInterval) return;
-        respawnTimer = 0f;
-
-        SpawnOne();
-    }
-
-    // Mesmo modelo do FloorPopulationManager: crise = caiu até o mínimo (ou abaixo), reabastece
-    // na hora (sem cooldown) direto até o ActiveTarget do instante — que já reflete a curva de
-    // população (Seção 2.1), então reabastecer "até o alvo" de dia é bem menos monstro do que à
-    // noite, sem precisar de nenhum contador de crise. Também cobre o preenchimento inicial: a
-    // população começa em 0, que já é <= ActiveMinimum, então a primeira crise acontece sozinha
-    // no primeiro Update() depois do herói nascer, sem precisar de um gatilho de "entrada"
-    // separado (diferente do FloorPopulationManager, que precisava detectar a borda de "Floor
-    // ativou agora").
-    private void HandleCrisis()
-    {
-        int missing = ActiveTarget - aliveEnemies.Count;
-        int spawnsThisFrame = Mathf.Min(missing, spawnSettings.maxCrisisSpawnsPerFrame);
-        for (int i = 0; i < spawnsThisFrame; i++) SpawnOne();
-        // O resto (missing - spawnsThisFrame) continua em déficit — Update() chama HandleCrisis()
-        // de novo no PRÓXIMO frame (mesma condição aliveEnemies.Count <= ActiveMinimum ainda vale
-        // enquanto a crise não acabar), fechando mais um lote por vez até normalizar.
+        spawnAccumulator = Mathf.Min(MaxSpawnAccumulator, spawnAccumulator + spawnSettings.spawnsPerSecond * Time.deltaTime);
+        while (spawnAccumulator >= 1f && aliveEnemies.Count < CurrentTarget)
+        {
+            spawnAccumulator -= 1f;
+            SpawnOne();
+        }
     }
 
     private void SpawnOne()
@@ -271,11 +248,13 @@ public class WorldPopulationManager : MonoBehaviour
     {
         chosen = null;
         candidateScratch.Clear();
+        bool rangedBlocked = RangedGate.Blocks(ActualDay, HordeElapsed, spawnSettings.rangedUnlockSeconds);
         float totalWeight = 0f;
 
         foreach (var def in spawnSettings.roster)
         {
             if (def == null || def.prefab == null || def.tier != tierNumber1Based) continue;
+            if (rangedBlocked && def.isRanged) continue; // D9.4 — Dia 1: sem quem atira de longe nos primeiros segundos
             candidateScratch.Add(def);
             totalWeight += Mathf.Max(0f, def.weight);
         }

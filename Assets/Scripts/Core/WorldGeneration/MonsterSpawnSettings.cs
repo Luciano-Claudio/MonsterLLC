@@ -12,27 +12,22 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Todo EnemyDefinitionSO disponível pro mundo aberto, qualquer tier (1-10). Tier sem nenhuma entrada aqui simplesmente nunca spawna, mesmo com peso > 0 na tabela de dia (ver WorldPopulationManager.SpawnOne).")]
     public List<EnemyDefinitionSO> roster = new();
 
-    // 3 campos soltos, não a classe PopulationConfig (FloorPopulationManager) — esse script
-    // vive no assembly "Core" (Assets/Scripts/Core/Core.asmdef), que não referencia o
-    // assembly padrão onde PopulationConfig mora; duplicar 3 ints é mais simples que mover
-    // arquivo/assembly só por causa disso.
-    [Header("População global (substitui FloorPopulationManager por-Floor)")]
-    public int populationMinimum = 3;
-    public int populationTarget = 8;
-    public int populationMaximum = 12;
+    [Header("Horda (D9.4 — docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md)")]
+    [Tooltip("Meta de monstros comuns vivos por (dia da run, tempo REAL do dia): começo e teto por dia, forma da subida, picos e limite absoluto. O tempo real não pausa com boss vivo — quem demora pra matar boss enfrenta mais monstros.")]
+    public HordeCurveSettings horde = new HordeCurveSettings();
 
-    [Tooltip("Cooldown do repovoamento normal (1 por vez) — igual FloorPopulationManager, ignorado nos preenchimentos instantâneos (entrada/crise).")]
-    public float respawnInterval = 3f;
+    [Tooltip("Quantos monstros podem nascer por segundo enquanto os vivos estão abaixo da meta (fluxo contínuo, espalhado pelos frames — nunca em rajada). Acima da velocidade de kill, o jogador forte nunca espera.")]
+    public float spawnsPerSecond = 10f; // 🔢
 
-    [Tooltip("Bug real reportado pelo usuário (profiler, hitch forte logo após a Ultimate do Barbarian com todos os perks zerar o enxame inteiro): sem este teto, HandleCrisis() tentava instanciar de uma vez só TODA a diferença até o alvo de população (até ~150 à noite) no mesmo frame — cada Instantiate() carrega Awake/OnEnable/consulta no grafo A*, então isso virava um pico de dezenas de ms. Agora o repovoamento de crise também é espalhado, alguns por frame, até a população normalizar (continua MUITO mais rápido que o respawnInterval normal, só não é mais tudo instantâneo).")]
-    public int maxCrisisSpawnsPerFrame = 8;
+    [Tooltip("Só no Dia 1: segundos de tempo real em que monstros que atiram de longe (EnemyDefinitionSO.isRanged) não nascem.")]
+    public float rangedUnlockSeconds = 30f; // 🔢
 
     [Header("Distância (doc de design, Seção 2.1.3 / 11)")]
     [Tooltip("Somado a WorldGenerationSettings.safeZoneRadius pra decidir a distância mínima de spawn: MinimumSpawnDistanceFromCenter = safeZoneRadius + spawnSafetyPadding.")]
     public float spawnSafetyPadding = 0f;
 
     [Tooltip("Monstro comum mais longe que isso do jogador é removido sem loot/kill/energia (Distance Despawn, nunca morte de verdade) e substituído por 1 novo dentro do anel abaixo.")]
-    public float enemyDespawnDistance = 40f;
+    public float enemyDespawnDistance = 30f;
 
     [Tooltip("Anel de spawn/replacement ao redor do jogador — Spawn Annulus (doc, Seção 11.5/14).")]
     public float replacementSpawnMinDistance = 15f;

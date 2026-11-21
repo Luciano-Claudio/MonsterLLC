@@ -69,6 +69,10 @@ public class HordeCurveTests
         Assert.AreEqual(s.TargetAlive(0f, 10), s.TargetAlive(0f, 15));
     }
 
+    // Entre as chaves a subida é linear (sem "estacionar" em cada chave): 75 s = 1/4 do caminho
+    // entre 60 s (30 vivos) e 120 s (60 vivos) -> 37,5.
+    [Test] public void DefaultShape_IsLinearBetweenKeys() => Assert.AreEqual(38, new HordeCurveSettings().TargetAlive(75f, 1), 1);
+
     [Test]
     public void RangedGate_Day1_BlocksBefore30()
     {

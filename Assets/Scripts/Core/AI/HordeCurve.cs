@@ -16,9 +16,25 @@ public struct DayPopulation
 public class HordeCurveSettings
 {
     [Tooltip("Forma da subida, compartilhada por todos os dias: tempo normalizado (0 = início do dia, 1 = secondsToCeiling) -> fração entre o começo e o teto do dia.")]
-    public AnimationCurve shape = new AnimationCurve(
-        new Keyframe(0f, 0f), new Keyframe(0.125f, 0.0357f), new Keyframe(0.25f, 0.1429f),
-        new Keyframe(0.5f, 0.3571f), new Keyframe(0.75f, 0.6429f), new Keyframe(1f, 1f));
+    public AnimationCurve shape = LinearCurve(
+        new Vector2(0f, 0f), new Vector2(0.125f, 0.0357f), new Vector2(0.25f, 0.1429f),
+        new Vector2(0.5f, 0.3571f), new Vector2(0.75f, 0.6429f), new Vector2(1f, 1f));
+
+    // Curva com tangentes lineares (a subida não "estaciona" em cada chave, como faria com
+    // inclinação zero). Valores do usuário pro Dia 1: 10/15/30/60/100/150 em 0/30/60/120/180/240 s.
+    public static AnimationCurve LinearCurve(params Vector2[] points)
+    {
+        var keys = new Keyframe[points.Length];
+        for (int i = 0; i < points.Length; i++)
+        {
+            float inSlope = i > 0 ? (points[i].y - points[i - 1].y) / (points[i].x - points[i - 1].x) : 0f;
+            float outSlope = i < points.Length - 1 ? (points[i + 1].y - points[i].y) / (points[i + 1].x - points[i].x) : 0f;
+            if (i == 0) inSlope = outSlope;
+            if (i == points.Length - 1) outSlope = inSlope;
+            keys[i] = new Keyframe(points[i].x, points[i].y, inSlope, outSlope);
+        }
+        return new AnimationCurve(keys);
+    }
 
     [Tooltip("Segundos de tempo real até a meta chegar no teto do dia. Depois disso fica no teto.")]
     public float secondsToCeiling = 240f; // 🔢

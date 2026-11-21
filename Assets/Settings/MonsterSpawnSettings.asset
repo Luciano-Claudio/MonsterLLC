@@ -89,11 +89,95 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 95a4b505dc8e4a92a11c43f7609b5475, type: 2}
   - {fileID: 11400000, guid: f2b2b4081b52418b9c50d486997c7476, type: 2}
   - {fileID: 11400000, guid: 857fe820cc884a719cf3bd392b45e1d7, type: 2}
-  populationMinimum: 10
-  populationTarget: 15
-  populationMaximum: 150
-  respawnInterval: 3
-  maxCrisisSpawnsPerFrame: 20
+  horde:
+    shape:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0.2856
+        outSlope: 0.2856
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.125
+        value: 0.0357
+        inSlope: 0.2856
+        outSlope: 0.85760003
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.25
+        value: 0.1429
+        inSlope: 0.85760003
+        outSlope: 0.8568
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.5
+        value: 0.3571
+        inSlope: 0.8568
+        outSlope: 1.1431999
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.75
+        value: 0.6429
+        inSlope: 1.1431999
+        outSlope: 1.4284
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1.4284
+        outSlope: 1.4284
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    secondsToCeiling: 240
+    days:
+    - start: 10
+      ceiling: 150
+    - start: 15
+      ceiling: 180
+    - start: 25
+      ceiling: 210
+    - start: 30
+      ceiling: 240
+    - start: 40
+      ceiling: 270
+    - start: 50
+      ceiling: 300
+    - start: 50
+      ceiling: 300
+    - start: 50
+      ceiling: 300
+    - start: 50
+      ceiling: 300
+    - start: 50
+      ceiling: 300
+    spikeInterval: 60
+    spikeDuration: 15
+    spikeMultiplier: 1.5
+    hardCap: 300
+  spawnsPerSecond: 10
+  rangedUnlockSeconds: 30
   spawnSafetyPadding: 0
   enemyDespawnDistance: 30
   replacementSpawnMinDistance: 10
