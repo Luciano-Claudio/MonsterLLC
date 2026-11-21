@@ -137,6 +137,13 @@ tasks 1 e 2 entram de qualquer jeito, as outras só se o teste mostrar que são 
 
 ## D9.4 — Horda: spawn em cerco, fluxo contínuo e anti-kite
 
+> **Implementado em 2026-11-21** (branch `d9-4-horda-cerco`): design
+> `docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md`, plano
+> `docs/superpowers/plans/2026-11-20-d9-4-horda-cerco.md`. Mudou em relação às tasks abaixo: a
+> curva segue o **tempo real** do dia (não o cronômetro), com começo/teto por dia; o anti-kite fica
+> sempre ligado; a task 6 caiu (a regra já não existia); entraram o "herói empurra a horda", o "dia
+> conta desde o começo" e o reposicionamento sem destruir.
+
 **Objetivo:** o mundo sempre cheio, os monstros sempre vindo de fora da tela e de todos os lados.
 
 **Tasks:**

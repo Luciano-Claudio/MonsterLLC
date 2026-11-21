@@ -11,6 +11,7 @@ public class BurningSkullController : EnemyController
 
     [Header("Área de explosão (filho — BurningSkullExplosionArea)")]
     [SerializeField] private BurningSkullExplosionArea explosionArea;
+    [SerializeField] private float warningDistance = 6f; // 🔢 D9.4 — distância do herói em que o raio aparece
 
     protected override void Move(float deltaTime)
     {
@@ -22,6 +23,8 @@ public class BurningSkullController : EnemyController
         }
 
         Vector2 toPlayer = player.position - transform.position;
+        // D9.4 — perto do herói, mostra o raio real da explosão antes de explodir.
+        if (explosionArea != null) explosionArea.SetPreview(toPlayer.sqrMagnitude <= warningDistance * warningDistance);
         SetMoving(true);
         MoveInDirection(toPlayer.normalized);
     }

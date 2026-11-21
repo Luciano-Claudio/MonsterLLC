@@ -264,14 +264,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // inexistente (GDD Seção 16/17 — Ranger, e futuramente Druid/Assassin, reaproveitam).
     public static bool IsPlayerUntargetable;
 
-    // GDD Deadline 8.1, Seção 4 — "target é global e independente de hit": qualquer gatilho
-    // (proximidade, hit, retry já nascendo agressivo) liga isto, e todo o resto do mundo passa
-    // a perseguir ao mesmo tempo (ver EnemyController.UpdatePatrol). Resetado em
-    // DayTimer.ResetForNewDay() (todo dia novo, retry incluso, começa sem target global) — um
-    // RETRY específico volta a ligar quase na hora porque WorldPopulationManager.SpawnOne()
-    // força ForceImmediateAggro() no spawn durante retry (ver lá), não porque este flag nunca
-    // resetou. Setter customizado: a transição false->true é o próprio "1º gatilho de target
-    // do dia" que a Seção 4 pede pra destravar o relógio (DayTimer.StartDayClock()).
+    // GDD Deadline 8.1, Seção 4 — "target é global e independente de hit": com isto ligado,
+    // todo o mundo persegue o herói (ver EnemyController.UpdatePatrol). D9.4 (decisão do
+    // usuário, 2026-11-20): DayTimer.ResetForNewDay() já liga isto no início de todo dia (retry
+    // incluso) — a horda começa o dia perseguindo, e todo monstro comum nasce com alvo
+    // (WorldPopulationManager.SpawnOne). O setter ainda garante o relógio ligado
+    // (DayTimer.StartDayClock), por segurança.
     private static bool globalAggroActive;
     public static bool GlobalAggroActive
     {
@@ -432,6 +430,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // collider do GameObject é trigger, mesmo o sólido do corpo — compartilhar o objeto faria o
     // corpo (bem maior) coletar loot sozinho, ignorando o raio configurado.
     private HeroPickupRadius pickupRadius;
+    private HeroCrowdPush crowdPush; // D9.4
 
     // [Sprint P3] Movimento deliberado passou de transform.Translate pra rb.linearVelocity —
     // Translate ignora Collider2D sólido (o herói atravessava props sólidos, ex.: pedra/
@@ -496,6 +495,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         pickupRadiusObj.transform.SetParent(transform, false);
         pickupRadius = pickupRadiusObj.AddComponent<HeroPickupRadius>();
         pickupRadius.SetRadius(PickupRadius);
+
+        crowdPush = gameObject.AddComponent<HeroCrowdPush>(); // D9.4 — o herói empurra a horda
 
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
@@ -720,6 +721,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         bool canMove = AttackWalkSwap.CanMove(wantsToMove, AnimatorStateCheck.IsInState(animator, "Walk"), attackMoveAllowed, isTrapped);
         IsAttackWalking = canMove && attackMoveAllowed;
         float moveSpeed = attackMoveAllowed ? EffectiveMoveSpeed * moveSpeedMultiplierDuringPrimaryAttack : EffectiveMoveSpeed;
+        // D9.4 — andando contra a horda, empurra os monstros da frente e anda mais devagar.
+        if (canMove && crowdPush != null) moveSpeed *= crowdPush.EvaluateAndPush(moveInput);
         if (rb != null)
         {
             // rb.linearVelocity (não Translate) — resolvido pelo motor de física de verdade,

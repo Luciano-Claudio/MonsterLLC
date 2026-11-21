@@ -12,31 +12,45 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Todo EnemyDefinitionSO disponível pro mundo aberto, qualquer tier (1-10). Tier sem nenhuma entrada aqui simplesmente nunca spawna, mesmo com peso > 0 na tabela de dia (ver WorldPopulationManager.SpawnOne).")]
     public List<EnemyDefinitionSO> roster = new();
 
-    // 3 campos soltos, não a classe PopulationConfig (FloorPopulationManager) — esse script
-    // vive no assembly "Core" (Assets/Scripts/Core/Core.asmdef), que não referencia o
-    // assembly padrão onde PopulationConfig mora; duplicar 3 ints é mais simples que mover
-    // arquivo/assembly só por causa disso.
-    [Header("População global (substitui FloorPopulationManager por-Floor)")]
-    public int populationMinimum = 3;
-    public int populationTarget = 8;
-    public int populationMaximum = 12;
+    [Header("Horda (D9.4 — docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md)")]
+    [Tooltip("Meta de monstros comuns vivos por (dia da run, tempo REAL do dia): começo e teto por dia, forma da subida, picos e limite absoluto. O tempo real não pausa com boss vivo — quem demora pra matar boss enfrenta mais monstros.")]
+    public HordeCurveSettings horde = new HordeCurveSettings();
 
-    [Tooltip("Cooldown do repovoamento normal (1 por vez) — igual FloorPopulationManager, ignorado nos preenchimentos instantâneos (entrada/crise).")]
-    public float respawnInterval = 3f;
+    [Tooltip("Quantos monstros podem nascer por segundo enquanto os vivos estão abaixo da meta (fluxo contínuo, espalhado pelos frames — nunca em rajada). Acima da velocidade de kill, o jogador forte nunca espera.")]
+    public float spawnsPerSecond = 10f; // 🔢
 
-    [Tooltip("Bug real reportado pelo usuário (profiler, hitch forte logo após a Ultimate do Barbarian com todos os perks zerar o enxame inteiro): sem este teto, HandleCrisis() tentava instanciar de uma vez só TODA a diferença até o alvo de população (até ~150 à noite) no mesmo frame — cada Instantiate() carrega Awake/OnEnable/consulta no grafo A*, então isso virava um pico de dezenas de ms. Agora o repovoamento de crise também é espalhado, alguns por frame, até a população normalizar (continua MUITO mais rápido que o respawnInterval normal, só não é mais tudo instantâneo).")]
-    public int maxCrisisSpawnsPerFrame = 8;
+    [Tooltip("Só no Dia 1: segundos de tempo real em que monstros que atiram de longe (EnemyDefinitionSO.isRanged) não nascem.")]
+    public float rangedUnlockSeconds = 30f; // 🔢
 
     [Header("Distância (doc de design, Seção 2.1.3 / 11)")]
     [Tooltip("Somado a WorldGenerationSettings.safeZoneRadius pra decidir a distância mínima de spawn: MinimumSpawnDistanceFromCenter = safeZoneRadius + spawnSafetyPadding.")]
     public float spawnSafetyPadding = 0f;
 
-    [Tooltip("Monstro comum mais longe que isso do jogador é removido sem loot/kill/energia (Distance Despawn, nunca morte de verdade) e substituído por 1 novo dentro do anel abaixo.")]
-    public float enemyDespawnDistance = 40f;
+    [Tooltip("Monstro comum mais longe que isso do herói é reposicionado no anel de spawn, na frente (D9.4) — nunca morte de verdade.")]
+    public float enemyDespawnDistance = 30f;
 
-    [Tooltip("Anel de spawn/replacement ao redor do jogador — Spawn Annulus (doc, Seção 11.5/14).")]
-    public float replacementSpawnMinDistance = 15f;
-    public float replacementSpawnMaxDistance = 30f;
+    [Header("Cerco (D9.4) — nasce fora da tela, numa elipse com a proporção da tela, por setores")]
+    [Tooltip("Em quantos setores o anel é dividido. Cada monstro novo vai pro setor com menos monstros vivos.")]
+    public int sectorCount = 12; // 🔢
+    [Tooltip("Distância extra (unidades) da elipse além dos cantos da tela.")]
+    public float offscreenMargin = 2f; // 🔢
+    [Tooltip("Variação extra (unidades) pra fora da elipse, pra não nascer todo mundo na mesma linha.")]
+    public float ringJitter = 1f; // 🔢
+
+    [Header("Anti-kite (D9.4) — sempre ligado, com limite")]
+    [Tooltip("Janela (s) da média de velocidade do herói usada pra saber pra onde ele foge.")]
+    public float kiteWindowSeconds = 3f; // 🔢
+    [Tooltip("Velocidade média mínima (u/s) pra contar como fuga consistente.")]
+    public float kiteMinSpeed = 1.5f; // 🔢
+    [Tooltip("Arco (graus) à frente da fuga cujos setores ganham peso.")]
+    public float kiteArcDegrees = 90f; // 🔢
+    [Tooltip("Peso dos setores da frente, contado como 'monstros a menos' na escolha do setor.")]
+    public float kiteBias = 3f; // 🔢
+    [Range(0f, 1f)]
+    [Tooltip("Limite: fração máxima dos últimos spawns que pode ir pra frente da fuga. Passou disso, a escolha volta a ser só por contagem.")]
+    public float kiteMaxFrontShare = 0.4f; // 🔢
+    [Tooltip("Quantos spawns recentes entram na conta do limite acima.")]
+    public int kiteShareWindowSpawns = 20; // 🔢
 
     [Tooltip("Tentativas de amostragem de posição válida (fora da Safe Zone + nó caminhável do GridGraph) antes de desistir por este ciclo — nunca trava em loop infinito (doc, Seção 11.6).")]
     public int maxSpawnPositionAttempts = 12;
@@ -47,9 +61,4 @@ public class MonsterSpawnSettings : ScriptableObject
 
     [Tooltip("Layer(s) considerada(s) obstáculo pra checagem acima — mesma layer usada no Obstacle Layer Mask do GridGraph OpenWorld (ex.: \"Collision\").")]
     public LayerMask obstacleLayerMask;
-
-    [Header("Visão da câmera (doc de design, Seção 23/P9)")]
-    [Range(0f, 1f)]
-    [Tooltip("% dos spawns (rolado individualmente por monstro, não por EnemyDefinitionSO) que PREFEREM nascer fora da visão atual da câmera — o resto pode nascer perto/à vista do jogador de propósito (decisão do usuário: dar um ar de perigo). Nunca sobrepõe a Safe Zone (ver WorldSpawnUtility.TryGetSpawnPosition) — é só uma preferência de posição dentro do Spawn Annulus.")]
-    public float outsideCameraViewChance = 0.6f;
 }

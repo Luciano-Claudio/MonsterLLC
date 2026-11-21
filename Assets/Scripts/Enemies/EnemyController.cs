@@ -499,6 +499,41 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         cachedPlayerFor = player;
         cachedPlayerCollider = player != null ? player.GetComponent<Collider2D>() : null;
         cachedPlayerHero = player != null ? player.GetComponent<HeroController>() : null;
+        IgnoreHeroBodyCollision();
+    }
+
+    // D9.4 — o herói empurra a horda (HeroCrowdPush): o corpo físico do herói deixa de colidir
+    // com o corpo físico do monstro comum (os monstros são Rigidbody2D cinemáticos — o herói
+    // batia e parava, ficando preso no meio da horda). Só o PAR de corpos sólidos é ignorado:
+    // triggers (hitboxes de ataque, contato, coleta, projéteis) continuam funcionando. Por isso
+    // não é IgnoreLayerCollision (que desligaria os triggers também — esse é o recurso da Coruja
+    // do Druid/Cambalhota do Rogue, de propósito). Boss continua colidindo (imune a empurrão).
+    private void IgnoreHeroBodyCollision()
+    {
+        if (isBoss || player == null) return;
+        var heroBody = player.GetComponent<CapsuleCollider2D>();
+        if (heroBody == null) return;
+        foreach (var own in GetComponents<Collider2D>())
+        {
+            if (own != null && !own.isTrigger) Physics2D.IgnoreCollision(heroBody, own, true);
+        }
+    }
+
+    // D9.4 — só os corpos sólidos dos monstros (sem triggers), usado pelo empurrão do herói.
+    private static ContactFilter2D enemyBodiesFilter;
+    private static bool enemyBodiesFilterReady;
+    public static ContactFilter2D EnemyBodiesFilter
+    {
+        get
+        {
+            if (!enemyBodiesFilterReady)
+            {
+                enemyBodiesFilter = EnemyOnlyFilter;
+                enemyBodiesFilter.useTriggers = false;
+                enemyBodiesFilterReady = true;
+            }
+            return enemyBodiesFilter;
+        }
     }
 
     protected Collider2D PlayerCollider
@@ -618,6 +653,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
         if (player == null) TryFindPlayer();
         if (player == null) return;
+        RefreshPlayerCache(); // D9.4 — barato (comparação de referência); garante a colisão do corpo ignorada pra todo tipo de monstro, não só quem lê PlayerCollider
 
         // Simulation Rings — perto do jogador, simula em full (todo frame, igual sempre foi).
         // Mais longe, desliga o RVOController (barato de checar todo frame, mesmo sem
@@ -1049,6 +1085,22 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (attackAnimState == AttackAnimState.Attacking) EndAttackAnimation();
     }
 
+    // D9.4 — reposicionamento por distância (WorldPopulationManager): o monstro que ficou longe
+    // reaparece no anel fora da tela, na frente. Mantém vida, status e aggro; cancela o golpe em
+    // andamento e zera o que dependia da posição antiga (path, stuck-check, empurrão).
+    public void TeleportTo(Vector3 position)
+    {
+        CancelAttackForTeleport();
+        if (ai != null) ai.Teleport(position, true);
+        else transform.position = position;
+        knockbackVelocity = Vector2.zero;
+        crowdPushVelocity = Vector2.zero;
+        stuckCheckPosition = position;
+        stuckCheckTimer = 0f;
+        stuckStreak = 0;
+        nextRepathTime = 0f;
+    }
+
     // Cada hit recebido durante o próprio golpe acelera a animação em vez de só piscar —
     // GDD/Bestiário (Sprint 16, revisão): "dano não interrompe o ataque" continua valendo,
     // mas precisa de feedback visual real, não silêncio. Passado o teto, resolve na hora.
@@ -1286,6 +1338,18 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         knockbackVelocity = direction.normalized * force;
     }
 
+    // D9.4 — empurrão do herói andando contra a horda (HeroCrowdPush). Velocidade SEPARADA do
+    // knockback (revisão final, achado 3): não sobrescreve um knockback forte em andamento (ex.:
+    // Ground Crack) e não conta como IsBeingKnockedBack (que alimenta o Eco do Impacto do
+    // Barbarian, entre outros). Boss nunca é empurrado.
+    private Vector2 crowdPushVelocity;
+
+    public void ApplyCrowdPush(Vector2 direction, float force)
+    {
+        if (isBoss) return;
+        crowdPushVelocity = direction.normalized * force;
+    }
+
     // Exposto pra perks que reagem ao FIM do empurrão (ex.: Esquerda #30 do Barbarian, "Eco do
     // Impacto" — 2º Ground Crack quando o inimigo empurrado termina de parar). Mesmo limiar
     // (0.01) já usado internamente pra decidir quando o Lerp "chegou" em zero.
@@ -1332,6 +1396,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     private void UpdateKnockback()
     {
+        if (crowdPushVelocity.sqrMagnitude > 0.01f)
+        {
+            transform.Translate(crowdPushVelocity * Time.deltaTime);
+            crowdPushVelocity = Vector2.Lerp(crowdPushVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);
+        }
         if (knockbackVelocity.sqrMagnitude <= 0.01f) return;
         transform.Translate(knockbackVelocity * Time.deltaTime);
         knockbackVelocity = Vector2.Lerp(knockbackVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);

@@ -206,7 +206,7 @@ MonoBehaviour:
   stats:
     health: 26
     maxHealth: 26
-    damage: 1.6
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -234,7 +234,7 @@ MonoBehaviour:
   projectileSpeed: 10
   projectileMaxDistance: 12
   damageReserveMultiplier: 1
-  projectileCount: 3
+  projectileCount: 1
   maxActionDuration: 3
   shockwavePrefab: {fileID: 7500000000000005, guid: de66b4ab81d74d3eb7bb75ee567eec04, type: 3}
   shockwaveDamageMultiplier: 5

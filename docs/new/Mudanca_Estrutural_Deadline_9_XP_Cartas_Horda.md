@@ -90,6 +90,10 @@ da animação, o alvo volta pro Assassin.
 - **Mantém o aggro global atual:** a horda vai atrás do player. (Chegou a ser proposto voltar ao
   target antigo com alerta de 1 salto, mas foi **revertido** pelo feedback dos amigos: sem aggro
   global o jogo fica lento e o jogador só desvia das hordas difíceis.)
+- **O dia conta desde o começo e a horda já nasce perseguindo** (decisão de 2026-11-20, D9.4).
+  Sai a regra da D8.1 de "o cronômetro só começa no primeiro aggro". Todo monstro comum nasce com o
+  herói como alvo. **Nada conta durante o loading**: o cronômetro e a horda só correm quando o jogo
+  fica jogável.
 
 ### 2.2 Densidade
 
@@ -99,6 +103,12 @@ da animação, o alvo volta pro Assassin.
   frente em vez de destruídos e recriados.
 - **Spawn gradual:** começa com poucos (por volta de 10), vai subindo ao longo do dia, com
   **picos** em certos momentos em que o mundo enche de verdade.
+  - **Decidido em 2026-11-20 (D9.4):** a horda segue o **tempo real do dia** (não pausa com boss
+    vivo, de propósito: quem demora pra matar boss enfrenta mais monstros). Cada dia tem **começo e
+    teto próprios** (dia 1: 10 → 150; dia 3: 25 → 210; dias 6 a 10: 50 → 300), a mesma forma de
+    subida (dia 1: 10/15/30/60/100/150 em 0/0:30/1:00/2:00/3:00/4:00) e picos de +50% por 15 s a
+    cada minuto. Teto absoluto 300. Tudo ajustável no `MonsterSpawnSettings`. Detalhes:
+    `docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md`.
 - **No final, muitos monstros.** O jogador forte nunca pode ficar esperando reposição. (Problema
   real do playtest: um amigo muito forte matava rápido e ficava esperando os monstros nascerem.
   Aumentar o crisis spawn pra 20 fez eles nascerem em rajada e pareceu estranho.)
@@ -115,8 +125,9 @@ da animação, o alvo volta pro Assassin.
     cantos fica muito mais longe das bordas de cima e de baixo do que das laterais, e os monstros
     de cima e de baixo demorariam bem mais pra aparecer. Recomendação: uma **elipse** com a mesma
     proporção da tela, passando um pouco fora dos cantos. Assim os monstros entram na tela em tempos
-    parecidos de qualquer lado. **⏳ PENDENTE** confirmar elipse ou círculo, e a margem fora da
-    tela.
+    parecidos de qualquer lado. **Decidido (2026-11-20): elipse**, semi-eixos = meia-largura e
+    meia-altura visíveis × √2 + margem (~2 unidades, ajustável). Sem lugar fora da tela, não nasce
+    e tenta no frame seguinte.
   - Sugestão (a confirmar): o teleporte do boss quando o jogador foge (Seção 8) segue a mesma
     regra. O boss aparece fora da tela e entra andando.
 - **Spawn espalhado por igual ao redor do player (cerco).** Hoje cada spawn sorteia um ângulo
@@ -125,7 +136,7 @@ da animação, o alvo volta pro Assassin.
   - Como: o anel é dividido em **setores** (ex.: 12). Cada spawn vai pro setor que tem **menos
     monstros vivos** naquele momento (contados pelo ângulo de cada monstro em relação ao player).
     Assim a horda sempre fecha um cerco, sem buracos.
-  - **⏳ PENDENTE** o número de setores.
+  - **Decidido (2026-11-20): 12 setores** (ajustável).
 - **Anti-kite: mais spawn na direção da fuga.** O jogo acompanha a direção média em que o player
   andou nos últimos segundos. Se ele estiver fugindo sempre pro mesmo lado, os setores **na frente
   dele** ganham peso extra no spawn. O monstro continua nascendo fora da tela, só que mais do lado
@@ -137,22 +148,34 @@ da animação, o alvo volta pro Assassin.
     jogo está trapaceando, e o kite deixa de ser uma tática válida. A ideia é dificultar o kite,
     não proibir.
   - Cuidado 2: ir até um baú ou até o Vendor também é "andar sempre pro mesmo lado". O anti-kite
-    não pode transformar a exploração em castigo. **⏳ PENDENTE** se ele só liga quando o player
-    está atacando enquanto foge.
+    não pode transformar a exploração em castigo. **Decidido pelo usuário (2026-11-20): sempre
+    ligado**, inclusive andando até baú/Vendor, com limite (no máximo ~40% dos spawns recentes na
+    frente).
   - Força do peso, janela de tempo e teto: settings ajustáveis. A telemetria (posição a cada 1s) dá
     pra medir o quanto os amigos fazem kite no próximo teste.
-- Regra mantida do sistema atual: se a população mínima for atingida 3 vezes, o target passa a ser
-  o máximo (pra acompanhar o jogador forte). **⏳ PENDENTE** rever se essa regra ainda é necessária
-  depois que o fluxo contínuo existir, porque ele pode já resolver o mesmo problema.
+- ~~Regra do "mínimo 3 vezes vira máximo"~~: já tinha virado rampa na D8.1 e **saiu de vez** no
+  D9.4, junto com a crise e o "1 a cada 3 s". A reposição é um fluxo contínuo (~10 por segundo,
+  espalhados pelos frames) até a meta da curva.
+- **O herói empurra a horda** (decisão de 2026-11-20, D9.4): andando contra os monstros, avança a
+  ~50% da velocidade e empurra os da frente pros lados. Parado, continua cercado. Boss não é
+  empurrado.
 - Números de população (mínimo, target, máximo, picos): **🧪 DEFINIDO PELO TESTE**.
 
 ### 2.3 Monstros ranged
 
 - **Ficam fora do começo do dia.** Não são ruins, mas atrapalham muito quando o jogador ainda é
   fraco (ex.: Goblin Raider). Entram na lista de spawn só depois de um tempo de dia.
-  **⏳ PENDENTE** quanto tempo.
+  **Decidido (2026-11-20): 30 s de tempo real, só no dia 1.** "Ranged" é quem atira de longe
+  (`RangedEnemyController`); o Goblin Sapper não conta. **Exceção (2026-11-21):** o Burning Skull
+  também fica fora dos primeiros 30 s (marcado como `isRanged` no `EnemyDefinitionSO`).
 
 ### 2.4 Números dos monstros (vida e dano)
+
+- **PENDENTE — velocidade de movimento dos monstros** (pedido do usuário, 2026-11-21): aumentar
+  um pouco a velocidade de movimento dos monstros, subindo gradativamente por tier (T1 mais
+  lentos, tiers altos mais rápidos). Entra junto com o rebalanceamento dos números dos monstros
+  (D9.6). Cuidado: a predição de movimento e o reposicionamento por distância usam a velocidade;
+  conferir que o `AiDestinationLookahead` (4 unidades) continua maior que velocidade × 0,3 s.
 
 - Hoje a vida e o dano dos monstros chegam a trilhões e quatrilhões, porque foram calibrados pros
   perks. Os perks saem, então **os monstros vão ser rebalanceados**.
@@ -432,8 +455,9 @@ resposta do usuário: atacar andando e **muita coisa acontecendo na tela ao mesm
   4. só existe **um boss vivo por vez**;
   5. quando morre o último boss do dia, o dia acaba **poucos segundos depois** (referência do
      usuário: uns 10 segundos).
-- Como o cronômetro fica parado com boss vivo, tudo o que depende do tempo de dia (spawn gradual,
-  picos da horda, liberação dos ranged, troca Dia/Noite) continua sendo controlado por ele.
+- O cronômetro fica parado com boss vivo e continua controlando a troca Dia/Noite. **A horda não**
+  (decisão de 2026-11-20, D9.4): curva, picos e liberação dos ranged seguem o **tempo real** do dia,
+  que não pausa com boss — quem demora pra matar boss enfrenta mais monstros.
 - **Ordem fixa:** os bosses deixam de ser sorteados e passam a ter uma ordem definida.
 - **Teleporte:** se o jogador se afastar demais, o boss é teleportado pra perto dele (não é mais
   removido e trocado). O enrage continua valendo depois do teleporte, então fugir não serve pra

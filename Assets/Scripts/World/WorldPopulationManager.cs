@@ -14,12 +14,10 @@ using UnityEngine;
 // simula em full — aceitável porque a população é pequena, Min/Target/Max, e o despawn por
 // distância já limita o total de monstros vivos ao mesmo tempo).
 //
-// População gradativa (GDD Deadline 8.1, Seção 2.1): Min/Target/Max deixam de ser um degrau
-// permanente disparado por crisisStreak e passam a ser uma RAMPA linear amarrada a
-// DayTimer.ElapsedFraction01 — Minimum/Target do Inspector valem no início do dia (fração 0),
-// Target/Maximum valem a partir do instante em que vira noite (fração 0.5) e ficam platôs o
-// resto da noite inteira (fração 1 nunca passa de Maximum). "A população máxima é sempre à
-// noite, todo dia" deixa de ser uma emergência rara e vira o ritmo normal de qualquer dia.
+// D9.4 (docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md): a população segue a
+// curva da horda — meta por dia da run e TEMPO REAL do dia (não pausa com boss vivo), com picos
+// e teto — e é reposta em fluxo contínuo (spawnsPerSecond). Substitui a rampa Min/Target/Max da
+// D8.1 e a crise.
 public class WorldPopulationManager : MonoBehaviour
 {
     public static WorldPopulationManager Instance { get; private set; }
@@ -40,7 +38,7 @@ public class WorldPopulationManager : MonoBehaviour
     public int testTierOverride = 1;
 
     private Transform player;
-    private readonly List<GameObject> aliveEnemies = new();
+    private readonly List<EnemyController> aliveEnemies = new(); // D9.4 — EnemyController (não GameObject): contagem por setor/reposicionamento
 
     // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
     // read-only, nenhuma mudança de comportamento.
@@ -48,17 +46,16 @@ public class WorldPopulationManager : MonoBehaviour
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 
-    private float respawnTimer;
+    // D9.4 — fluxo contínuo: acumulador fracionário de spawnsPerSecond (no máximo 3 guardados,
+    // pra nunca sair rajada depois de um período sem lugar válido).
+    private float spawnAccumulator;
 
-    // 0 no início do dia -> 1 no instante exato que vira noite (metade do dia) -> continua 1
-    // (platô) pelo resto da noite. Mesma curva pros 2 pares Min->Target e Target->Max, então a
-    // "escalada" de antes (minimum := target, target := maximum) acontece sozinha, suave, em vez
-    // de precisar de crisisStreak contando crises.
-    private float PopulationCurve01() =>
-        DayTimer.Instance != null ? Mathf.Clamp01(DayTimer.Instance.ElapsedFraction01 / 0.5f) : 0f;
+    // Revisão final do D9.4 (achado 2): no máximo 16 reposicionamentos por frame; para no 1º sem lugar.
+    private RepositionBudget repositionBudget = new RepositionBudget(16);
+    private const float MaxSpawnAccumulator = 3f;
 
-    private int ActiveMinimum => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationMinimum, spawnSettings.populationTarget, PopulationCurve01()));
-    private int ActiveTarget => Mathf.RoundToInt(Mathf.Lerp(spawnSettings.populationTarget, spawnSettings.populationMaximum, PopulationCurve01()));
+    // D9.4 — meta atual de monstros comuns vivos (curva por dia + tempo real do dia + picos).
+    public int CurrentTarget { get; private set; }
 
     private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
 
@@ -109,25 +106,38 @@ public class WorldPopulationManager : MonoBehaviour
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
+        GameEvents.OnDayStart += HandleDayStart;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
+        GameEvents.OnDayStart -= HandleDayStart;
     }
+
+    // D9.4 — relógio da horda: tempo REAL do dia (não pausa com boss vivo, ao contrário do
+    // cronômetro). Zera em todo início de dia, retry incluso. Só anda com o jogo ativo (nunca
+    // no loading, na pausa ou na animação de morte) — ver Update().
+    private readonly HordeClock hordeClock = new HordeClock();
+    public float HordeElapsed => hordeClock.Elapsed;
+
+    [Header("Debug / Teste — Horda (D9.4)")]
+    [Tooltip("Se > 0, todo dia começa com o relógio da horda já nesse tempo (segundos) — pra testar o fim da curva sem esperar. 0 = desligado.")]
+    public float debugHordeStartSeconds = 0f;
+
+    private void HandleDayStart() => hordeClock.Reset(debugHordeStartSeconds);
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
     // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill/energia,
-    // mesmo critério do Distance Despawn). A população volta a 0, que já é <= ActiveMinimum,
-    // então a crise de repovoamento dispara sozinha no próximo Update() (mesmo mecanismo que já
-    // cobre o preenchimento inicial do jogo, ver HandleCrisis).
+    // mesmo critério do Distance Despawn). A população volta a 0, abaixo da meta, e o fluxo
+    // contínuo do Update() repõe sozinho no ritmo de spawnsPerSecond.
     private void HandleClearAllEnemies()
     {
         foreach (var enemy in aliveEnemies)
         {
-            if (enemy != null) Destroy(enemy);
+            if (enemy != null) Destroy(enemy.gameObject);
         }
         aliveEnemies.Clear();
     }
@@ -139,60 +149,61 @@ public class WorldPopulationManager : MonoBehaviour
         // GameState só muda pra Results no fim dela, GameplayGate continua achando que é
         // Gameplay normal) — achado real do usuário, monstro reabastecido ficava vivo até
         // dentro da Loja.
+        hordeClock.Tick(Time.deltaTime, GameplayGate.IsActive && !HeroController.IsDying);
         if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || spawnSettings == null) return;
 
         aliveEnemies.RemoveAll(e => e == null);
 
-        // Distance Despawn + replacement imediato (doc, Seção 11.1-11.3). Despawn NUNCA é
-        // morte: Destroy() direto aqui nunca passa por EnemyController.Die()/TakeDamage(),
-        // então não dispara GameEvents.EnemyKilled nem loot — já correto só por não chamar
-        // nenhum método de morte do monstro.
-        for (int i = aliveEnemies.Count - 1; i >= 0; i--)
-        {
-            float distance = Vector2.Distance(aliveEnemies[i].transform.position, player.position);
-            if (distance <= spawnSettings.enemyDespawnDistance) continue;
+        // D9.4 — anti-kite: média de pra onde o herói anda; setores recontados no 1º spawn do frame.
+        Kite.AddVelocity(HeroController.Velocity, Time.deltaTime);
+        sectorsPreparedThisFrame = false;
 
-            Destroy(aliveEnemies[i]);
-            aliveEnemies.RemoveAt(i);
-            SpawnOne(); // 1 despawn = 1 replacement imediato, sem resetar o cooldown normal abaixo
+        // D9.4 — reposicionamento por distância (no lugar de Destroy + spawn novo): o monstro
+        // comum que ficou longe reaparece no anel fora da tela, pela mesma regra de setor e
+        // anti-kite — quem foge encontra a horda de volta na frente. Mesmo monstro, mesma vida e
+        // status. Sem ponto válido: fica onde está e tenta no próximo frame. Nunca é morte (sem
+        // EnemyKilled, sem loot).
+        // Limite nunca menor que o anel de spawn (revisão final, achado 1 — ver SpawnRing.RepositionThreshold).
+        WorldSpawnUtility.GetViewExtents(out _, out float viewHalfWidth, out float viewHalfHeight);
+        float despawnDistance = SpawnRing.RepositionThreshold(viewHalfWidth, viewHalfHeight, spawnSettings.offscreenMargin,
+            spawnSettings.ringJitter, WorldSpawnUtility.SnapTolerance, spawnSettings.enemyDespawnDistance);
+        float despawnSqr = despawnDistance * despawnDistance;
+        Vector2 heroPos = player.position;
+        repositionBudget.BeginFrame();
+        for (int i = 0; i < aliveEnemies.Count; i++)
+        {
+            var enemy = aliveEnemies[i];
+            if (enemy.IsDead || enemy.IsBoss) continue;
+            if (((Vector2)enemy.transform.position - heroPos).sqrMagnitude <= despawnSqr) continue;
+            if (!repositionBudget.TryConsume()) break; // orçamento do frame acabou (ou o anel está bloqueado) — o resto fica pro próximo frame
+            if (TryPickRingPosition(out var newPosition, out bool inFront))
+            {
+                enemy.TeleportTo(newPosition);
+                Kite.RecordSpawn(inFront);
+            }
+            else repositionBudget.MarkBlocked();
         }
 
-        if (aliveEnemies.Count <= ActiveMinimum)
+        // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
+        // no lugar do "1 a cada respawnInterval" e das rajadas da crise.
+        CurrentTarget = spawnSettings.horde.TargetAlive(HordeElapsed, ActualDay);
+        if (aliveEnemies.Count >= CurrentTarget)
         {
-            HandleCrisis();
+            spawnAccumulator = 0f;
             return;
         }
 
-        if (aliveEnemies.Count >= ActiveTarget) return;
-
-        respawnTimer += Time.deltaTime;
-        if (respawnTimer < spawnSettings.respawnInterval) return;
-        respawnTimer = 0f;
-
-        SpawnOne();
+        spawnAccumulator = Mathf.Min(MaxSpawnAccumulator, spawnAccumulator + spawnSettings.spawnsPerSecond * Time.deltaTime);
+        while (spawnAccumulator >= 1f && aliveEnemies.Count < CurrentTarget)
+        {
+            if (!SpawnOne()) break; // sem ponto válido fora da tela agora — tenta no próximo frame (acumulador guardado, limitado)
+            spawnAccumulator -= 1f;
+        }
     }
 
-    // Mesmo modelo do FloorPopulationManager: crise = caiu até o mínimo (ou abaixo), reabastece
-    // na hora (sem cooldown) direto até o ActiveTarget do instante — que já reflete a curva de
-    // população (Seção 2.1), então reabastecer "até o alvo" de dia é bem menos monstro do que à
-    // noite, sem precisar de nenhum contador de crise. Também cobre o preenchimento inicial: a
-    // população começa em 0, que já é <= ActiveMinimum, então a primeira crise acontece sozinha
-    // no primeiro Update() depois do herói nascer, sem precisar de um gatilho de "entrada"
-    // separado (diferente do FloorPopulationManager, que precisava detectar a borda de "Floor
-    // ativou agora").
-    private void HandleCrisis()
+    private bool SpawnOne()
     {
-        int missing = ActiveTarget - aliveEnemies.Count;
-        int spawnsThisFrame = Mathf.Min(missing, spawnSettings.maxCrisisSpawnsPerFrame);
-        for (int i = 0; i < spawnsThisFrame; i++) SpawnOne();
-        // O resto (missing - spawnsThisFrame) continua em déficit — Update() chama HandleCrisis()
-        // de novo no PRÓXIMO frame (mesma condição aliveEnemies.Count <= ActiveMinimum ainda vale
-        // enquanto a crise não acabar), fechando mais um lote por vez até normalizar.
-    }
-
-    private void SpawnOne()
-    {
-        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return;
+        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return false;
 
         // Safe Zone/EffectiveSpawnDay são centrados na origem do mundo (0,0) — mesma origem
         // que a centralização de chunk (ChunkCoord.ToWorldOrigin) já usa como centro real.
@@ -207,43 +218,100 @@ public class WorldPopulationManager : MonoBehaviour
         WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
-        if (tierIndex < 0) return; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
+        if (tierIndex < 0) return false; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
 
         // Com isolamento ligado, nunca cai pro Tier de fallback (ver TryPickEnemyDefinition) —
         // se o Tier isolado não tiver bestiário nenhum cadastrado ainda, o certo é não nascer
         // NADA (silêncio), não vazar pra Tier1/outro Tier por baixo dos panos: o ponto inteiro
         // do isolamento é testar só aquele Tier, nunca ver outro aparecendo "disfarçado".
         bool allowFallbackTier = !useTierIsolationOverride;
-        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, allowFallbackTier, out var definition)) return; // roster vazio pra esse Tier (ou, sem isolamento, nem o Tier de fallback cadastrado)
+        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, allowFallbackTier, out var definition)) return false; // roster vazio pra esse Tier (ou, sem isolamento, nem o Tier de fallback cadastrado)
 
-        float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
-        // Rolado por spawn individual (não por EnemyDefinitionSO) — decisão do usuário: uma %
-        // fixa dos monstros nasce perto/à vista do jogador de propósito, dá um ar de perigo.
-        bool preferOutsideView = Random.value < spawnSettings.outsideCameraViewChance;
-        if (!WorldSpawnUtility.TryGetSpawnPosition(
-                player.position, spawnSettings.replacementSpawnMinDistance, spawnSettings.replacementSpawnMaxDistance,
-                minDistanceFromOrigin, spawnSettings.maxSpawnPositionAttempts, out var spawnPosition,
-                spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask, preferOutsideView))
-        {
-            return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
-        }
+        // D9.4 — sempre fora da tela, no setor do anel com menos monstros (cerco), com peso
+        // extra pra frente da fuga (anti-kite). Sem lugar válido: não nasce neste frame.
+        if (!TryPickRingPosition(out var spawnPosition, out bool spawnedInFront)) return false;
+        Kite.RecordSpawn(spawnedInFront);
 
         var enemyObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity, EnemyController.EnemysContainer);
         // ownerFloor fica null (default) — EnemyController/FloorActivationCheck já tratam
         // null como "sempre ativo", sem precisar de nenhuma mudança nesses scripts.
         WorldSpawnUtility.RestrictToOpenWorldGraph(enemyObj);
 
-        // GDD Deadline 8.1, Seção 4 — "Respawn (retry do dia após morte) já nasce com target
-        // ativo, não tem detecção de novo". Só no RETRY (não num dia novo de verdade, nem no
-        // Dia 1) — confirmado com o usuário. Boss já faz isto sempre, independente de retry
-        // (SpawnOneBoss, decisão separada/anterior) — não mexe nisso aqui.
-        if (!DayResolver.PlayerSurvivedLastDay)
+        // D9.4 (decisão do usuário, 2026-11-20): todo monstro comum nasce com o herói como alvo,
+        // em qualquer dia (antes, só no retry). Estilo Vampire Survivors: a horda nasce fora da
+        // tela e já vem na direção do herói.
+        var enemyController = enemyObj.GetComponent<EnemyController>();
+        if (enemyController != null) enemyController.ForceImmediateAggro();
+
+        if (enemyController != null) aliveEnemies.Add(enemyController);
+        else Destroy(enemyObj); // prefab sem EnemyController não é monstro comum — defesa, não deveria acontecer
+        return true;
+    }
+
+    // ---------------- D9.4 — cerco por setores + anti-kite ----------------
+
+    private int[] sectorCounts = System.Array.Empty<int>();
+    private float[] sectorBias = System.Array.Empty<float>();
+    private int[] sectorOrder = System.Array.Empty<int>();
+    private bool sectorsPreparedThisFrame;
+    private KiteTracker kite;
+
+    private KiteTracker Kite => kite ??= new KiteTracker(spawnSettings.kiteWindowSeconds, spawnSettings.kiteMinSpeed, spawnSettings.kiteShareWindowSpawns);
+
+    // Conta os monstros comuns vivos por setor (ângulo em relação ao herói, qualquer distância)
+    // e o peso do anti-kite. 1x por frame; cada spawn incrementa o setor que usou, então o
+    // próximo spawn do mesmo frame já vai pra outro lado.
+    private void PrepareSectors()
+    {
+        int n = Mathf.Max(1, spawnSettings.sectorCount);
+        if (sectorCounts.Length != n)
         {
-            var enemyController = enemyObj.GetComponent<EnemyController>();
-            if (enemyController != null) enemyController.ForceImmediateAggro();
+            sectorCounts = new int[n];
+            sectorBias = new float[n];
+            sectorOrder = new int[n];
+        }
+        System.Array.Clear(sectorCounts, 0, n);
+
+        Vector2 heroPos = player.position;
+        for (int i = 0; i < aliveEnemies.Count; i++)
+        {
+            var enemy = aliveEnemies[i];
+            if (enemy == null) continue;
+            sectorCounts[SpawnRing.SectorOf((Vector2)enemy.transform.position - heroPos, n)]++;
         }
 
-        aliveEnemies.Add(enemyObj);
+        bool hasFlee = Kite.TryGetFleeDirection(out Vector2 flee) && Kite.FrontShare < spawnSettings.kiteMaxFrontShare;
+        for (int i = 0; i < n; i++)
+            sectorBias[i] = hasFlee && SpawnRing.IsFrontSector(i, n, flee, spawnSettings.kiteArcDegrees) ? spawnSettings.kiteBias : 0f;
+
+        sectorsPreparedThisFrame = true;
+    }
+
+    // Tenta os setores do menos cheio pro mais cheio até achar um ponto válido fora da tela.
+    private bool TryPickRingPosition(out Vector3 position, out bool inFront)
+    {
+        position = default;
+        inFront = false;
+        if (!sectorsPreparedThisFrame) PrepareSectors();
+
+        int n = sectorCounts.Length;
+        SpawnSectorPicker.FillOrder(sectorCounts, sectorBias, n, Random.Range(0, n), sectorOrder);
+
+        float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
+        int attemptsPerSector = Mathf.Max(1, spawnSettings.maxSpawnPositionAttempts / 4);
+        Vector2 heroPos = player.position;
+        for (int k = 0; k < n; k++)
+        {
+            int sector = sectorOrder[k];
+            if (!WorldSpawnUtility.TryGetSpawnPositionInSector(heroPos, sector, n, spawnSettings.offscreenMargin, spawnSettings.ringJitter,
+                    minDistanceFromOrigin, attemptsPerSector, spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask, out position))
+                continue;
+
+            sectorCounts[sector]++;
+            inFront = sectorBias[sector] > 0f;
+            return true;
+        }
+        return false;
     }
 
     // "Roll Monster Inside Tier" (doc, Seção 16) — roleta ponderada por
@@ -260,11 +328,13 @@ public class WorldPopulationManager : MonoBehaviour
     {
         chosen = null;
         candidateScratch.Clear();
+        bool rangedBlocked = RangedGate.Blocks(ActualDay, HordeElapsed, spawnSettings.rangedUnlockSeconds);
         float totalWeight = 0f;
 
         foreach (var def in spawnSettings.roster)
         {
             if (def == null || def.prefab == null || def.tier != tierNumber1Based) continue;
+            if (rangedBlocked && def.isRanged) continue; // D9.4 — Dia 1: sem quem atira de longe nos primeiros segundos
             candidateScratch.Add(def);
             totalWeight += Mathf.Max(0f, def.weight);
         }

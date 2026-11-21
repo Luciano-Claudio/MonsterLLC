@@ -618,9 +618,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cleric
   stats:
-    health: 320
-    maxHealth: 320
-    damage: 30
+    health: 32
+    maxHealth: 32
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 1
@@ -646,13 +646,13 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  projectileCount: 20
+  projectileCount: 1
   projectileSpeed: 7
   projectileMaxDistance: 12
   projectileKnockbackForce: 2
   maxActionDuration: 3
   prayerRadius: 13
-  prayerDuration: 10
+  prayerDuration: 3
   prayerTickDamageMultiplier: 0.5
   showAttackRadiusGizmo: 0
   attackRadiusGizmoOffsetY: 0
