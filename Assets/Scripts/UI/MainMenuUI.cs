@@ -98,7 +98,15 @@ public class MainMenuUI : MonoBehaviour
     {
         if (LoadingScreenUI.Instance != null)
         {
-            LoadingScreenUI.Instance.LoadScene(GameplaySceneName, setup);
+            // D9.5 (decisão do usuário): menu -> loading = só a metade do Fade que ESCURECE. No
+            // preto, a tela de loading aparece direto e o preto sai (o clarear fica pro loading
+            // -> jogo, ver GameplayBootstrap).
+            var fade = TransitionsConfig.Load() != null ? TransitionsConfig.Load().fade : null;
+            ScreenFader.FadeToBlack(fade, () =>
+            {
+                LoadingScreenUI.Instance.LoadScene(GameplaySceneName, setup);
+                ScreenFader.ClearInstant();
+            });
         }
         else
         {

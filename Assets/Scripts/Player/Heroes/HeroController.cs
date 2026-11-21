@@ -1225,7 +1225,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // 4. Reseta o mundo (monstro/projétil/loot somem na hora) — de propósito IMEDIATO, não
         // espera a animação de morte terminar (pedido do usuário: monstro/projétil continuando
         // em cena enquanto o "Die" toca ficava estranho). NÃO abre a Loja ainda — isso é
-        // DayResolver.OpenResultsAfterDeath(), chamado só depois que a animação termina de
+        // DayResolver.EndRunAfterDeath(), chamado só depois que a animação termina de
         // verdade (AnimationDieEndEvent) — o jogador precisa VER o "Die" primeiro.
         DayResolver.ResolvePlayerDeath();
     }
@@ -1240,14 +1240,14 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // a mesma reaproveitada — evita valores só aplicados no Instantiate/Start (ex.: size)
     // ficarem presos no estado antigo até um New Game do zero.
     // 2ª revisão: o reset do MUNDO (DayResolver.ResolvePlayerDeath()) é imediato, em OnDeath()
-    // (passo 4) — só a troca de GameState pra abrir a Loja (OpenResultsAfterDeath) mora aqui,
+    // (passo 4) — só a troca de GameState pra abrir a Loja (EndRunAfterDeath) mora aqui,
     // depois que a animação termina de verdade (evento real ou timeout de segurança, tanto faz).
     public virtual void AnimationDieEndEvent()
     {
         if (dieHandled) return; // proteção — evento + timeout de segurança não chamam Destroy() duas vezes
         dieHandled = true;
 
-        DayResolver.OpenResultsAfterDeath();
+        DayResolver.EndRunAfterDeath(); // D9.5 — a morte encerra a run (resumo total -> menu)
         Destroy(gameObject);
     }
 
