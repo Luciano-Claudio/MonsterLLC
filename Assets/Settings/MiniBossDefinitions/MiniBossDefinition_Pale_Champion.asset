@@ -9,8 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc59ad5258091f5d7d78e1fb0cc54f32, type: 3}
-  m_Name: BossDefinition_Pale_Champion
-  m_EditorClassIdentifier: Core::BossDefinitionSO
+  m_Script: {fileID: 11500000, guid: aa73c7ca8b985d9ca7a174b5fa2697b3, type: 3}
+  m_Name: MiniBossDefinition_Pale_Champion
+  m_EditorClassIdentifier: Core::EnemyDefinitionSO
   tier: 3
   prefab: {fileID: 7478833832784280521, guid: 1af11e50482543018d59e271fc752c90, type: 3}
+  weight: 1
+  isRanged: 0
