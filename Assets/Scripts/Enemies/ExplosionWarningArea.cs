@@ -1,47 +1,55 @@
 using UnityEngine;
 
-// D9.4 (spec D9, Seção 2.5 — "o jogador nunca pode morrer sem entender do quê"): área no chão
-// mostrando o raio REAL de uma explosão, piscando cada vez mais rápido conforme ela chega perto.
-// Usado pela bomba do Goblin Sapper. Mesma sprite neutra (círculo branco, 2 unidades de diâmetro
-// = escala igual ao raio) da área de explosão do Burning Skull, cor aplicada em runtime.
+// D9.4 (spec D9, Seção 2.5 — "o jogador nunca pode morrer sem entender do quê"; formato pedido
+// pelo usuário em 2026-11-21): aviso de explosão em 2 círculos no chão.
+// - Externo: a área COMPLETA da explosão, vermelho bem transparente, desde o começo.
+// - Interno: um pouco mais forte, cresce do centro (SetProgress 0 -> 1) e preenche a área toda no
+//   instante da explosão.
+// Mesma sprite neutra (círculo branco de 2 unidades de diâmetro: escala = raio) da área do
+// Burning Skull, cor aplicada em runtime. Usado pela bomba do Goblin Sapper.
 public class ExplosionWarningArea : MonoBehaviour
 {
-    [SerializeField] private float minBlinkHz = 2f; // 🔢 piscada no começo
-    [SerializeField] private float maxBlinkHz = 8f; // 🔢 piscada perto da explosão
-    [SerializeField] private float minAlphaFactor = 0.35f; // 🔢 quanto a cor apaga no "vale" da piscada
+    private Transform inner;
 
-    private SpriteRenderer spriteRenderer;
-    private Color baseColor;
-    private float urgency;
-    private float phase;
-
-    public static ExplosionWarningArea Create(Transform parent, Sprite sprite, int sortingLayerId, int sortingOrder, Color color)
+    public static ExplosionWarningArea Create(Transform parent, Sprite sprite, int sortingLayerId, int sortingOrder, Color outerColor, Color innerColor)
     {
         var go = new GameObject("ExplosionWarningArea");
         go.transform.SetParent(parent, false);
+        go.transform.localScale = Vector3.zero;
+        AddCircle(go, sprite, sortingLayerId, sortingOrder, outerColor);
+
+        var innerGo = new GameObject("Fill");
+        innerGo.transform.SetParent(go.transform, false);
+        innerGo.transform.localScale = Vector3.zero;
+        AddCircle(innerGo, sprite, sortingLayerId, sortingOrder + 1, innerColor);
+
+        var area = go.AddComponent<ExplosionWarningArea>();
+        area.inner = innerGo.transform;
+        return area;
+    }
+
+    private static void AddCircle(GameObject go, Sprite sprite, int sortingLayerId, int sortingOrder, Color color)
+    {
         var sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = sprite;
         sr.sortingLayerID = sortingLayerId;
         sr.sortingOrder = sortingOrder;
-        var area = go.AddComponent<ExplosionWarningArea>();
-        area.spriteRenderer = sr;
-        area.baseColor = color;
         sr.color = color;
-        go.transform.localScale = Vector3.zero;
-        return area;
     }
 
-    public void Show(float radius) => transform.localScale = new Vector3(radius, radius, 1f);
-
-    public void SetUrgency(float t01) => urgency = Mathf.Clamp01(t01);
-
-    private void Update()
+    // Raio real da explosão (o círculo externo).
+    public void Show(float radius)
     {
-        if (spriteRenderer == null || !GameplayGate.IsActive) return; // pausado: congela a piscada junto com o resto
-        phase += Time.deltaTime * Mathf.Lerp(minBlinkHz, maxBlinkHz, urgency) * Mathf.PI * 2f;
-        float wave = 0.5f + 0.5f * Mathf.Sin(phase);
-        var c = baseColor;
-        c.a = baseColor.a * Mathf.Lerp(minAlphaFactor, 1f, wave);
-        spriteRenderer.color = c;
+        gameObject.SetActive(true);
+        transform.localScale = new Vector3(radius, radius, 1f);
     }
+
+    // 0 = círculo interno acabou de nascer; 1 = preencheu a área (explode agora).
+    public void SetProgress(float t01)
+    {
+        float t = Mathf.Clamp01(t01);
+        inner.localScale = new Vector3(t, t, 1f);
+    }
+
+    public void Hide() => gameObject.SetActive(false);
 }

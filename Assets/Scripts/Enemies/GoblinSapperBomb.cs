@@ -10,23 +10,39 @@ public class GoblinSapperBomb : MonoBehaviour
     private float damage;
     private Animator animator;
 
-    // D9.4 (spec D9, Seção 2.5) — área no chão com o raio real, do plantio até a explosão,
-    // piscando mais rápido perto do estouro. Sprite/sorting iguais à área do Burning Skull.
+    // D9.4 (spec D9, Seção 2.5; formato pedido pelo usuário em 2026-11-21) — aviso em 2 círculos:
+    // a área completa (raio real) desde o plantio, e um preenchimento que cresce do centro e
+    // completa no frame exato do AnimationExplodeEvent (tempo lido do próprio clipe). Some na
+    // explosão. Sprite/sorting iguais à área do Burning Skull.
     [Header("Aviso de área (D9.4)")]
     [SerializeField] private Sprite warningSprite;
     [SerializeField] private int warningSortingLayerId;
     [SerializeField] private int warningSortingOrder = 0;
-    [SerializeField] private Color warningColor = new Color(1f, 0.15f, 0.1f, 0.45f); // 🔢
+    [SerializeField] private Color warningColor = new Color(1f, 0.15f, 0.1f, 0.22f);    // 🔢 área completa, bem transparente
+    [SerializeField] private Color warningFillColor = new Color(1f, 0.15f, 0.1f, 0.5f); // 🔢 preenchimento, um pouco mais forte
     private ExplosionWarningArea warning;
+    private float explodeAtSeconds; // tempo do AnimationExplodeEvent no clipe (0 = não achou: aviso já cheio)
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        explodeAtSeconds = FindExplodeEventTime();
         if (warningSprite != null)
         {
-            warning = ExplosionWarningArea.Create(transform, warningSprite, warningSortingLayerId, warningSortingOrder, warningColor);
+            warning = ExplosionWarningArea.Create(transform, warningSprite, warningSortingLayerId, warningSortingOrder, warningColor, warningFillColor);
             warning.Show(explosionRadius);
+            warning.SetProgress(0f);
         }
+    }
+
+    // 1x por bomba (Awake) — procura nos clipes do controller o evento de explosão.
+    private float FindExplodeEventTime()
+    {
+        if (animator == null || animator.runtimeAnimatorController == null) return 0f;
+        foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            foreach (var ev in clip.events)
+                if (ev.functionName == nameof(AnimationExplodeEvent)) return ev.time;
+        return 0f;
     }
 
     public void Initialize(float bombDamage)
@@ -45,7 +61,11 @@ public class GoblinSapperBomb : MonoBehaviour
     {
         if (animator == null) return;
         animator.speed = GameplayGate.IsActive ? 1f : 0f;
-        if (warning != null) warning.SetUrgency(animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+        if (warning != null && warning.gameObject.activeSelf)
+        {
+            var state = animator.GetCurrentAnimatorStateInfo(0);
+            warning.SetProgress(TelegraphRules.Progress(state.normalizedTime * state.length, explodeAtSeconds));
+        }
     }
 
     // Animation Event, no frame exato da explosão — só aplica o dano. A destruição real
@@ -58,6 +78,7 @@ public class GoblinSapperBomb : MonoBehaviour
     // jogo, não precisa de consulta de física nenhuma pra saber se ele está no raio.
     public void AnimationExplodeEvent()
     {
+        if (warning != null) warning.Hide(); // D9.4 — explodiu: o aviso some
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj == null) return;
         if (Vector2.Distance(transform.position, playerObj.transform.position) > explosionRadius) return;

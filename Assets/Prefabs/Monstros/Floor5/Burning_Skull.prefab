@@ -43,7 +43,7 @@ Transform:
   - {fileID: 3066866534732875866}
   - {fileID: -4345039364994221918}
   - {fileID: 9093959547005782132}
-  - {fileID: 5680532929264982255}
+  - {fileID: 4939754448504837270}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2374430261622854006
@@ -174,6 +174,7 @@ MonoBehaviour:
     attackRadius: 1
     attackDamage: 2400
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -227,11 +228,21 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   contactHitbox: {fileID: 7076482481472972003}
   explosionArea: {fileID: 7407413261765644185}
+  warningDistance: 6
 --- !u!70 &499449935069489545
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -740,7 +751,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BurningSkullExplosionArea
   finalRadius: 2
-  growDuration: 0.6
+  growDuration: 1.25
   growDelay: 0
   growCurve:
     serializedVersion: 2
@@ -767,7 +778,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   spriteRenderer: {fileID: -3165986878910576000}
-  areaColor: {r: 1, g: 0.15, b: 0.1, a: 0.75}
+  outerColor: {r: 1, g: 0.15, b: 0.1, a: 0.22}
+  innerColor: {r: 1, g: 0.15, b: 0.1, a: 0.5}
   showDamageRadiusGizmo: 1
   gizmoColor: {r: 1, g: 0.2, b: 0.1, a: 1}
 --- !u!1 &7971060752456843340
@@ -891,7 +903,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &5680532929264982255 stripped
+--- !u!224 &4939754448504837270 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 3554680503391085328}
