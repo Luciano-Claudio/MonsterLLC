@@ -18,6 +18,6 @@ public class EnemyDefinitionSO : ScriptableObject
     [Tooltip("Peso relativo DENTRO do próprio tier (\"Roll Monster Inside Tier\", doc de design Seção 16) — todos iguais (1) por padrão, sem precisar normalizar manualmente.")]
     public float weight = 1f;
 
-    [Tooltip("D9.4 — monstro que ATIRA DE LONGE (prefab com RangedEnemyController ou subclasse). No Dia 1, fica fora dos primeiros MonsterSpawnSettings.rangedUnlockSeconds de tempo real. Goblin Sapper (bomba) NÃO conta.")]
+    [Tooltip("D9.4 — fica fora dos primeiros MonsterSpawnSettings.rangedUnlockSeconds de tempo real do Dia 1. Marcado em quem atira de longe (RangedEnemyController ou subclasse) e, por decisão do usuário (2026-11-21), no Burning Skull. Goblin Sapper (bomba) NÃO conta.")]
     public bool isRanged;
 }

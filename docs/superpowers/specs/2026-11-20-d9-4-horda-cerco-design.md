@@ -98,6 +98,7 @@ A meta é a quantidade de **monstros comuns vivos ao redor do herói**, sem cont
 
 ### 4.4 Ranged só depois de 30 s (só no dia 1)
 
+- **Atualização 2026-11-21 (usuário):** o Burning Skull também fica fora dos primeiros 30 s (`isRanged` marcado à mão no asset dele).
 - O `EnemyDefinitionSO` ganha `isRanged` (bool). "Ranged" é **só quem atira de longe**, ou seja, o prefab tem `RangedEnemyController` ou uma subclasse dele. O valor inicial dos assets existentes é preenchido por esse critério. O Goblin Sapper e outros que não herdam dele ficam `false`.
 - **Só no dia 1:** antes de `rangedUnlockSeconds` (🔢 30) de tempo real, a escolha de monstro ignora quem tem `isRanged`. Do dia 2 em diante não há bloqueio.
 - Se um tier sorteado só tiver ranged durante o bloqueio, cai na regra de tier vazio que já existe (tier de fallback).

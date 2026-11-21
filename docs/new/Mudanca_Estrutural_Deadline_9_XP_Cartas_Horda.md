@@ -165,10 +165,17 @@ da animação, o alvo volta pro Assassin.
 
 - **Ficam fora do começo do dia.** Não são ruins, mas atrapalham muito quando o jogador ainda é
   fraco (ex.: Goblin Raider). Entram na lista de spawn só depois de um tempo de dia.
-  **Decidido (2026-11-20): 30 s de tempo real, só no dia 1.** "Ranged" é só quem atira de longe
-  (`RangedEnemyController`); o Goblin Sapper não conta.
+  **Decidido (2026-11-20): 30 s de tempo real, só no dia 1.** "Ranged" é quem atira de longe
+  (`RangedEnemyController`); o Goblin Sapper não conta. **Exceção (2026-11-21):** o Burning Skull
+  também fica fora dos primeiros 30 s (marcado como `isRanged` no `EnemyDefinitionSO`).
 
 ### 2.4 Números dos monstros (vida e dano)
+
+- **PENDENTE — velocidade de movimento dos monstros** (pedido do usuário, 2026-11-21): aumentar
+  um pouco a velocidade de movimento dos monstros, subindo gradativamente por tier (T1 mais
+  lentos, tiers altos mais rápidos). Entra junto com o rebalanceamento dos números dos monstros
+  (D9.6). Cuidado: a predição de movimento e o reposicionamento por distância usam a velocidade;
+  conferir que o `AiDestinationLookahead` (4 unidades) continua maior que velocidade × 0,3 s.
 
 - Hoje a vida e o dano dos monstros chegam a trilhões e quatrilhões, porque foram calibrados pros
   perks. Os perks saem, então **os monstros vão ser rebalanceados**.
