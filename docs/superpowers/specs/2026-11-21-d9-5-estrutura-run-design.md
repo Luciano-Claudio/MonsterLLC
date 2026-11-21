@@ -4,7 +4,11 @@
 
 ## Decisões do usuário
 
-1. **A morte encerra a run.** Sem tela nenhuma: depois da animação de morte, toca uma transição e volta pro menu. Sai o retry do mesmo dia.
+1. **A morte encerra a run.** Sai o retry do mesmo dia. Atualizado pelo usuário em 2026-11-21:
+   - depois da animação de morte, o **CircleWipe fecha**;
+   - com a tela coberta, aparece a tela **"Resumo total"**, com "Sobreviveu X dias" e o **gold permanente coletado** (a linha vale **0** até o D9.9 existir);
+   - o CircleWipe abre mostrando essa tela;
+   - um botão **"Continuar"** leva pro menu **sem transição**.
 2. **As transições do Easy Transitions voltam:**
    - **Morte → menu:** **CircleWipe** completo, que fecha e abre já no menu.
    - **Menu → loading:** a **primeira metade do Fade**: o menu escurece até o preto, e aí aparece a tela de loading.
@@ -35,8 +39,13 @@
 - **Morte** (`HeroController.AnimationDieEndEvent` → `DayResolver.EndRunAfterDeath()`, no lugar de `OpenResultsAfterDeath`):
   - `SaveManager.Delete()`, porque a run acabou e o "Continue" não pode trazê-la de volta;
   - `PlayerSurvivedLastDay` volta a `true`, o estado certo pra uma run nova;
-  - `TransitionManager.Instance().Transition("Main_Menu", death, 0)`;
-  - sem `TransitionManager` na cena, vai pro menu sem transição.
+  - o CircleWipe toca **sem troca de cena** (`TransitionHelper.PlayTransition(death, onCut)`, o helper que já existe);
+  - no corte (tela coberta), aparece o `RunSummaryUI`; o pacote toca a metade OUT sozinho e revela a tela;
+  - sem `TransitionManager` na cena, o resumo aparece direto.
+- **`RunSummaryUI`** (`Assets/Scripts/UI/RunSummaryUI.cs`):
+  - montado por código (Canvas overlay abaixo do canvas da transição, fundo escuro, título "Resumo total", "Sobreviveu X dias", "Gold permanente: 0" e botão "Continuar"), pra não editar cena; é um placeholder visual que o usuário vai reformular;
+  - o botão faz `SceneManager.LoadScene("Main_Menu")` direto, sem transição;
+  - **X = dias completos** = dia da morte − 1 (mínimo 0), pela regra pura `RunSummaryRules.DaysSurvived(int dayOfDeath)` no Core, com teste.
 - **Teste:** EditMode pro `SaveManager.Delete`. O resto é checado no jogo: as transições são visuais.
 
 ## Fora do escopo
@@ -45,6 +54,8 @@ Reformular o painel de resumo, tirar a Loja (D9.6), gold permanente (D9.9), vit�
 
 ## Decisões minhas (o usuário confere)
 
+- "Sobreviveu X dias" conta só os dias completos (morreu no dia 3 → 2 dias; no dia 1 → 0).
+- A tela de resumo é montada por código, como placeholder visual.
 - A tela de loading aparece direto quando o menu fica preto, sem fade próprio.
 - No Continue, a Loja também aparece clareando a partir do preto.
 - A configuração dos efeitos fica num asset em `Resources`, pra não mexer em cena.

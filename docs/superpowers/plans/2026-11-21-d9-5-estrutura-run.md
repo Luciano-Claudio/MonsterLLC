@@ -65,3 +65,15 @@
 ### Task 4: Docs e fechamento
 
 - [ ] Spec D9, Seção 1: a morte encerra a run (feito) e as transições. Memória do projeto. Revisão final e merge/push com confirmação.
+
+### Task 3b (atualização do usuário, 2026-11-21): tela "Resumo total" na morte
+
+**Files:** Create `Assets/Scripts/Core/RunSummaryRules.cs` (teste `Assets/Tests/EditMode/RunSummaryRulesTests.cs`) e `Assets/Scripts/UI/RunSummaryUI.cs`.
+
+- [ ] **Step 1: Testes da regra pura** `RunSummaryRules.DaysSurvived`: dia 3 → 2, dia 1 → 0, dia 0 → 0. Confirmar o RED, implementar e ver o GREEN.
+- [ ] **Step 2: `RunSummaryUI.Show(int daysSurvived, long permanentGold)`**, montada por código:
+  - Canvas overlay com `sortingOrder` abaixo do da transição;
+  - "Resumo total", "Sobreviveu X dias" e "Gold permanente: 0";
+  - botão "Continuar", que faz `SceneManager.LoadScene("Main_Menu")`.
+- [ ] **Step 3: `EndRunAfterDeath`**: `TransitionHelper.PlayTransition(death, () => RunSummaryUI.Show(...))` no lugar da troca de cena. Sem `TransitionManager` na cena, chama `Show` direto.
+- [ ] **Step 4:** Rodar a suíte e fazer o commit.
