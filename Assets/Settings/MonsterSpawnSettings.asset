@@ -180,11 +180,25 @@ MonoBehaviour:
   rangedUnlockSeconds: 30
   spawnSafetyPadding: 0
   enemyDespawnDistance: 30
-  replacementSpawnMinDistance: 10
-  replacementSpawnMaxDistance: 18
+  miniBossRoster:
+  - {fileID: 11400000, guid: 5c8eccf0bf681524ca72278285276ef2, type: 2}
+  - {fileID: 11400000, guid: 6ba2959e4c98c3b4e9fd07f56345989d, type: 2}
+  - {fileID: 11400000, guid: ba5074d99e270a842b1a2af96360972d, type: 2}
+  - {fileID: 11400000, guid: a9952740ab4058d4c99ddaf34b8a911b, type: 2}
+  - {fileID: 11400000, guid: e5b3903356945d94fbbc88cef7b338d6, type: 2}
+  miniBossIntervalMin: 30
+  miniBossIntervalMax: 40
+  sectorCount: 12
+  offscreenMargin: 2
+  ringJitter: 1
+  kiteWindowSeconds: 3
+  kiteMinSpeed: 1.5
+  kiteArcDegrees: 90
+  kiteBias: 3
+  kiteMaxFrontShare: 0.4
+  kiteShareWindowSpawns: 20
   maxSpawnPositionAttempts: 20
   spawnObstacleClearanceRadius: 0.6
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  outsideCameraViewChance: 0.6
