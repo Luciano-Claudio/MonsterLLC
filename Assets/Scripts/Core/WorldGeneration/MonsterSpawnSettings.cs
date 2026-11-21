@@ -26,12 +26,31 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Somado a WorldGenerationSettings.safeZoneRadius pra decidir a distância mínima de spawn: MinimumSpawnDistanceFromCenter = safeZoneRadius + spawnSafetyPadding.")]
     public float spawnSafetyPadding = 0f;
 
-    [Tooltip("Monstro comum mais longe que isso do jogador é removido sem loot/kill/energia (Distance Despawn, nunca morte de verdade) e substituído por 1 novo dentro do anel abaixo.")]
+    [Tooltip("Monstro comum mais longe que isso do herói é reposicionado no anel de spawn, na frente (D9.4) — nunca morte de verdade.")]
     public float enemyDespawnDistance = 30f;
 
-    [Tooltip("Anel de spawn/replacement ao redor do jogador — Spawn Annulus (doc, Seção 11.5/14).")]
-    public float replacementSpawnMinDistance = 15f;
-    public float replacementSpawnMaxDistance = 30f;
+    [Header("Cerco (D9.4) — nasce fora da tela, numa elipse com a proporção da tela, por setores")]
+    [Tooltip("Em quantos setores o anel é dividido. Cada monstro novo vai pro setor com menos monstros vivos.")]
+    public int sectorCount = 12; // 🔢
+    [Tooltip("Distância extra (unidades) da elipse além dos cantos da tela.")]
+    public float offscreenMargin = 2f; // 🔢
+    [Tooltip("Variação extra (unidades) pra fora da elipse, pra não nascer todo mundo na mesma linha.")]
+    public float ringJitter = 1f; // 🔢
+
+    [Header("Anti-kite (D9.4) — sempre ligado, com limite")]
+    [Tooltip("Janela (s) da média de velocidade do herói usada pra saber pra onde ele foge.")]
+    public float kiteWindowSeconds = 3f; // 🔢
+    [Tooltip("Velocidade média mínima (u/s) pra contar como fuga consistente.")]
+    public float kiteMinSpeed = 1.5f; // 🔢
+    [Tooltip("Arco (graus) à frente da fuga cujos setores ganham peso.")]
+    public float kiteArcDegrees = 90f; // 🔢
+    [Tooltip("Peso dos setores da frente, contado como 'monstros a menos' na escolha do setor.")]
+    public float kiteBias = 3f; // 🔢
+    [Range(0f, 1f)]
+    [Tooltip("Limite: fração máxima dos últimos spawns que pode ir pra frente da fuga. Passou disso, a escolha volta a ser só por contagem.")]
+    public float kiteMaxFrontShare = 0.4f; // 🔢
+    [Tooltip("Quantos spawns recentes entram na conta do limite acima.")]
+    public int kiteShareWindowSpawns = 20; // 🔢
 
     [Tooltip("Tentativas de amostragem de posição válida (fora da Safe Zone + nó caminhável do GridGraph) antes de desistir por este ciclo — nunca trava em loop infinito (doc, Seção 11.6).")]
     public int maxSpawnPositionAttempts = 12;
@@ -42,9 +61,4 @@ public class MonsterSpawnSettings : ScriptableObject
 
     [Tooltip("Layer(s) considerada(s) obstáculo pra checagem acima — mesma layer usada no Obstacle Layer Mask do GridGraph OpenWorld (ex.: \"Collision\").")]
     public LayerMask obstacleLayerMask;
-
-    [Header("Visão da câmera (doc de design, Seção 23/P9)")]
-    [Range(0f, 1f)]
-    [Tooltip("% dos spawns (rolado individualmente por monstro, não por EnemyDefinitionSO) que PREFEREM nascer fora da visão atual da câmera — o resto pode nascer perto/à vista do jogador de propósito (decisão do usuário: dar um ar de perigo). Nunca sobrepõe a Safe Zone (ver WorldSpawnUtility.TryGetSpawnPosition) — é só uma preferência de posição dentro do Spawn Annulus.")]
-    public float outsideCameraViewChance = 0.6f;
 }

@@ -133,6 +133,74 @@ public static class WorldSpawnUtility
     // que tentar calcular o enquadramento manualmente a partir da CinemachineCamera. Sem
     // câmera ativa (raro, só em teste isolado) trata como "fora de visão" — preferência de
     // apresentação nunca deveria travar o spawn por um detalhe de setup de cena.
+    // D9.4 (docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md, 4.5) — spawn do monstro
+    // comum: ponto na borda de uma elipse com a proporção da tela que passa fora dos cantos
+    // (semi-eixos = meia-largura/meia-altura visíveis × √2 + margem), dentro do setor pedido.
+    // Mesmas validações do TryGetSpawnPosition (safe zone, nó caminhável, mesma ilha do grafo,
+    // obstáculo) e o ponto final TEM que estar fora da tela: sem plano B visível — devolve false
+    // e quem chama tenta outro setor ou o próximo frame.
+    public static bool TryGetSpawnPositionInSector(
+        Vector2 hero, int sector, int sectorCount, float margin, float jitter,
+        float minDistanceFromOrigin, int attempts, float obstacleClearanceRadius, LayerMask obstacleLayerMask,
+        out Vector3 position)
+    {
+        position = default;
+        var graph = ChunkTerrainGenerator.OpenWorldGraph;
+        if (graph == null || AstarPath.active == null) return false;
+
+        GetViewExtents(out Vector2 viewCenter, out float halfWidth, out float halfHeight);
+        float ellipseHalfWidth = halfWidth * Sqrt2 + margin;
+        float ellipseHalfHeight = halfHeight * Sqrt2 + margin;
+
+        var constraint = NearestNodeConstraint.Walkable;
+        constraint.graphMask = GraphMask.FromGraph(graph);
+        var heroInfo = AstarPath.active.GetNearest(hero, constraint);
+        bool hasHeroArea = heroInfo.node != null;
+        uint heroArea = hasHeroArea ? heroInfo.node.Area : 0;
+
+        float sectorWidth = Mathf.PI * 2f / sectorCount;
+        float minDistanceFromOriginSqr = minDistanceFromOrigin * minDistanceFromOrigin;
+
+        for (int attempt = 0; attempt < attempts; attempt++)
+        {
+            float angle = (sector + Random.value) * sectorWidth;
+            float extra = Random.Range(0f, jitter);
+            Vector2 candidate = hero + SpawnRing.PointOnEllipse(angle, ellipseHalfWidth + extra, ellipseHalfHeight + extra);
+            if (candidate.sqrMagnitude < minDistanceFromOriginSqr) continue; // dentro da Safe Zone
+
+            var info = AstarPath.active.GetNearest(candidate, constraint);
+            if (info.node == null) continue;
+            if (hasHeroArea && info.node.Area != heroArea) continue; // ilha isolada — sem caminho até o herói
+
+            Vector2 snapped = info.position;
+            if ((snapped - candidate).sqrMagnitude > SnapTolerance * SnapTolerance) continue; // o nó caminhável mais perto puxaria pra longe do anel
+            if (snapped.sqrMagnitude < minDistanceFromOriginSqr) continue;
+            if (!SpawnRing.IsOutsideView(snapped - viewCenter, halfWidth, halfHeight)) continue; // nunca nasce visível
+            if (obstacleClearanceRadius > 0f && Physics2D.OverlapCircle(snapped, obstacleClearanceRadius, obstacleLayerMask) != null) continue;
+
+            position = snapped;
+            return true;
+        }
+        return false;
+    }
+
+    private static readonly float Sqrt2 = Mathf.Sqrt(2f);
+
+    // Área visível atual da câmera principal (ortográfica). Sem câmera: a de referência do jogo
+    // (tamanho 10, 16:9), centrada no herói — só pra não travar o spawn em cena de teste.
+    private static void GetViewExtents(out Vector2 center, out float halfWidth, out float halfHeight)
+    {
+        var cam = Camera.main;
+        if (cam == null)
+        {
+            center = Vector2.zero; halfHeight = 10f; halfWidth = 10f * 16f / 9f;
+            return;
+        }
+        center = cam.transform.position;
+        halfHeight = cam.orthographicSize;
+        halfWidth = halfHeight * cam.aspect;
+    }
+
     private static bool IsOutsideCameraView(Vector2 worldPos)
     {
         var cam = Camera.main;

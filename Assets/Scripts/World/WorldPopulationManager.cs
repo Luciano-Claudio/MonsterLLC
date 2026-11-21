@@ -38,7 +38,7 @@ public class WorldPopulationManager : MonoBehaviour
     public int testTierOverride = 1;
 
     private Transform player;
-    private readonly List<GameObject> aliveEnemies = new();
+    private readonly List<EnemyController> aliveEnemies = new(); // D9.4 — EnemyController (não GameObject): contagem por setor/reposicionamento
 
     // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
     // read-only, nenhuma mudança de comportamento.
@@ -134,7 +134,7 @@ public class WorldPopulationManager : MonoBehaviour
     {
         foreach (var enemy in aliveEnemies)
         {
-            if (enemy != null) Destroy(enemy);
+            if (enemy != null) Destroy(enemy.gameObject);
         }
         aliveEnemies.Clear();
     }
@@ -151,6 +151,10 @@ public class WorldPopulationManager : MonoBehaviour
 
         aliveEnemies.RemoveAll(e => e == null);
 
+        // D9.4 — anti-kite: média de pra onde o herói anda; setores recontados no 1º spawn do frame.
+        Kite.AddVelocity(HeroController.Velocity, Time.deltaTime);
+        sectorsPreparedThisFrame = false;
+
         // Distance Despawn + replacement imediato (doc, Seção 11.1-11.3). Despawn NUNCA é
         // morte: Destroy() direto aqui nunca passa por EnemyController.Die()/TakeDamage(),
         // então não dispara GameEvents.EnemyKilled nem loot — já correto só por não chamar
@@ -160,7 +164,7 @@ public class WorldPopulationManager : MonoBehaviour
             float distance = Vector2.Distance(aliveEnemies[i].transform.position, player.position);
             if (distance <= spawnSettings.enemyDespawnDistance) continue;
 
-            Destroy(aliveEnemies[i]);
+            Destroy(aliveEnemies[i].gameObject);
             aliveEnemies.RemoveAt(i);
             SpawnOne(); // 1 despawn = 1 replacement imediato, sem resetar o cooldown normal abaixo
         }
@@ -177,14 +181,14 @@ public class WorldPopulationManager : MonoBehaviour
         spawnAccumulator = Mathf.Min(MaxSpawnAccumulator, spawnAccumulator + spawnSettings.spawnsPerSecond * Time.deltaTime);
         while (spawnAccumulator >= 1f && aliveEnemies.Count < CurrentTarget)
         {
+            if (!SpawnOne()) break; // sem ponto válido fora da tela agora — tenta no próximo frame (acumulador guardado, limitado)
             spawnAccumulator -= 1f;
-            SpawnOne();
         }
     }
 
-    private void SpawnOne()
+    private bool SpawnOne()
     {
-        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return;
+        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return false;
 
         // Safe Zone/EffectiveSpawnDay são centrados na origem do mundo (0,0) — mesma origem
         // que a centralização de chunk (ChunkCoord.ToWorldOrigin) já usa como centro real.
@@ -199,26 +203,19 @@ public class WorldPopulationManager : MonoBehaviour
         WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
-        if (tierIndex < 0) return; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
+        if (tierIndex < 0) return false; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
 
         // Com isolamento ligado, nunca cai pro Tier de fallback (ver TryPickEnemyDefinition) —
         // se o Tier isolado não tiver bestiário nenhum cadastrado ainda, o certo é não nascer
         // NADA (silêncio), não vazar pra Tier1/outro Tier por baixo dos panos: o ponto inteiro
         // do isolamento é testar só aquele Tier, nunca ver outro aparecendo "disfarçado".
         bool allowFallbackTier = !useTierIsolationOverride;
-        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, allowFallbackTier, out var definition)) return; // roster vazio pra esse Tier (ou, sem isolamento, nem o Tier de fallback cadastrado)
+        if (!TryPickEnemyDefinition(tierIndex + 1, suppressedTierCount, allowFallbackTier, out var definition)) return false; // roster vazio pra esse Tier (ou, sem isolamento, nem o Tier de fallback cadastrado)
 
-        float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
-        // Rolado por spawn individual (não por EnemyDefinitionSO) — decisão do usuário: uma %
-        // fixa dos monstros nasce perto/à vista do jogador de propósito, dá um ar de perigo.
-        bool preferOutsideView = Random.value < spawnSettings.outsideCameraViewChance;
-        if (!WorldSpawnUtility.TryGetSpawnPosition(
-                player.position, spawnSettings.replacementSpawnMinDistance, spawnSettings.replacementSpawnMaxDistance,
-                minDistanceFromOrigin, spawnSettings.maxSpawnPositionAttempts, out var spawnPosition,
-                spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask, preferOutsideView))
-        {
-            return; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
-        }
+        // D9.4 — sempre fora da tela, no setor do anel com menos monstros (cerco), com peso
+        // extra pra frente da fuga (anti-kite). Sem lugar válido: não nasce neste frame.
+        if (!TryPickRingPosition(out var spawnPosition, out bool spawnedInFront)) return false;
+        Kite.RecordSpawn(spawnedInFront);
 
         var enemyObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity, EnemyController.EnemysContainer);
         // ownerFloor fica null (default) — EnemyController/FloorActivationCheck já tratam
@@ -231,7 +228,75 @@ public class WorldPopulationManager : MonoBehaviour
         var enemyController = enemyObj.GetComponent<EnemyController>();
         if (enemyController != null) enemyController.ForceImmediateAggro();
 
-        aliveEnemies.Add(enemyObj);
+        if (enemyController != null) aliveEnemies.Add(enemyController);
+        else Destroy(enemyObj); // prefab sem EnemyController não é monstro comum — defesa, não deveria acontecer
+        return true;
+    }
+
+    // ---------------- D9.4 — cerco por setores + anti-kite ----------------
+
+    private int[] sectorCounts = System.Array.Empty<int>();
+    private float[] sectorBias = System.Array.Empty<float>();
+    private int[] sectorOrder = System.Array.Empty<int>();
+    private bool sectorsPreparedThisFrame;
+    private KiteTracker kite;
+
+    private KiteTracker Kite => kite ??= new KiteTracker(spawnSettings.kiteWindowSeconds, spawnSettings.kiteMinSpeed, spawnSettings.kiteShareWindowSpawns);
+
+    // Conta os monstros comuns vivos por setor (ângulo em relação ao herói, qualquer distância)
+    // e o peso do anti-kite. 1x por frame; cada spawn incrementa o setor que usou, então o
+    // próximo spawn do mesmo frame já vai pra outro lado.
+    private void PrepareSectors()
+    {
+        int n = Mathf.Max(1, spawnSettings.sectorCount);
+        if (sectorCounts.Length != n)
+        {
+            sectorCounts = new int[n];
+            sectorBias = new float[n];
+            sectorOrder = new int[n];
+        }
+        System.Array.Clear(sectorCounts, 0, n);
+
+        Vector2 heroPos = player.position;
+        for (int i = 0; i < aliveEnemies.Count; i++)
+        {
+            var enemy = aliveEnemies[i];
+            if (enemy == null) continue;
+            sectorCounts[SpawnRing.SectorOf((Vector2)enemy.transform.position - heroPos, n)]++;
+        }
+
+        bool hasFlee = Kite.TryGetFleeDirection(out Vector2 flee) && Kite.FrontShare < spawnSettings.kiteMaxFrontShare;
+        for (int i = 0; i < n; i++)
+            sectorBias[i] = hasFlee && SpawnRing.IsFrontSector(i, n, flee, spawnSettings.kiteArcDegrees) ? spawnSettings.kiteBias : 0f;
+
+        sectorsPreparedThisFrame = true;
+    }
+
+    // Tenta os setores do menos cheio pro mais cheio até achar um ponto válido fora da tela.
+    private bool TryPickRingPosition(out Vector3 position, out bool inFront)
+    {
+        position = default;
+        inFront = false;
+        if (!sectorsPreparedThisFrame) PrepareSectors();
+
+        int n = sectorCounts.Length;
+        SpawnSectorPicker.FillOrder(sectorCounts, sectorBias, n, Random.Range(0, n), sectorOrder);
+
+        float minDistanceFromOrigin = worldSettings.safeZoneRadius + spawnSettings.spawnSafetyPadding;
+        int attemptsPerSector = Mathf.Max(1, spawnSettings.maxSpawnPositionAttempts / 4);
+        Vector2 heroPos = player.position;
+        for (int k = 0; k < n; k++)
+        {
+            int sector = sectorOrder[k];
+            if (!WorldSpawnUtility.TryGetSpawnPositionInSector(heroPos, sector, n, spawnSettings.offscreenMargin, spawnSettings.ringJitter,
+                    minDistanceFromOrigin, attemptsPerSector, spawnSettings.spawnObstacleClearanceRadius, spawnSettings.obstacleLayerMask, out position))
+                continue;
+
+            sectorCounts[sector]++;
+            inFront = sectorBias[sector] > 0f;
+            return true;
+        }
+        return false;
     }
 
     // "Roll Monster Inside Tier" (doc, Seção 16) — roleta ponderada por
