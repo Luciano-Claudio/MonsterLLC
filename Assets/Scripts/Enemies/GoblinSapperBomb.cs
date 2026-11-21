@@ -13,13 +13,14 @@ public class GoblinSapperBomb : MonoBehaviour
     // D9.4 (spec D9, Seção 2.5; formato pedido pelo usuário em 2026-11-21) — aviso em 2 círculos:
     // a área completa (raio real) desde o plantio, e um preenchimento que cresce do centro e
     // completa no frame exato do AnimationExplodeEvent (tempo lido do próprio clipe). Some na
-    // explosão. Sprite/sorting iguais à área do Burning Skull.
+    // explosão. Sprite/sorting iguais à área do Burning Skull (AreaIndicatorCircle, sólida).
     [Header("Aviso de área (D9.4)")]
     [SerializeField] private Sprite warningSprite;
     [SerializeField] private int warningSortingLayerId;
     [SerializeField] private int warningSortingOrder = 0;
-    [SerializeField] private Color warningColor = new Color(1f, 0.15f, 0.1f, 0.22f);    // 🔢 área completa, bem transparente
-    [SerializeField] private Color warningFillColor = new Color(1f, 0.15f, 0.1f, 0.5f); // 🔢 preenchimento, um pouco mais forte
+    [Tooltip("Círculo SÓLIDO com borda marcada (AreaIndicatorCircle). Sprite em gradiente some na borda e o aviso fica invisível.")]
+    [SerializeField] private Color warningColor = new Color(1f, 0.15f, 0.1f, 0.6f);   // 🔢 área completa: miolo ~22%, borda ~55%
+    [SerializeField] private Color warningFillColor = new Color(1f, 0.15f, 0.1f, 1f); // 🔢 preenchimento: miolo ~37%, borda ~92%
     private ExplosionWarningArea warning;
     private float explodeAtSeconds; // tempo do AnimationExplodeEvent no clipe (0 = não achou: aviso já cheio)
 

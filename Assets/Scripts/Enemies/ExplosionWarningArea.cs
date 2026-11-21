@@ -5,8 +5,9 @@ using UnityEngine;
 // - Externo: a área COMPLETA da explosão, vermelho bem transparente, desde o começo.
 // - Interno: um pouco mais forte, cresce do centro (SetProgress 0 -> 1) e preenche a área toda no
 //   instante da explosão.
-// Mesma sprite neutra (círculo branco de 2 unidades de diâmetro: escala = raio) da área do
-// Burning Skull, cor aplicada em runtime. Usado pela bomba do Goblin Sapper.
+// Mesma sprite da área do Burning Skull: AreaIndicatorCircle, círculo SÓLIDO com borda marcada,
+// 2 unidades de diâmetro (escala = raio), cor aplicada em runtime. Sprite em gradiente não
+// serve (a borda some e o aviso fica invisível). Usado pela bomba do Goblin Sapper.
 public class ExplosionWarningArea : MonoBehaviour
 {
     private Transform inner;

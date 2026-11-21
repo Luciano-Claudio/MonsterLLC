@@ -7,9 +7,11 @@ using UnityEngine;
 // Puramente visual/telegraph — quem decide o dano de verdade é
 // BurningSkullController.AnimationExplosionHitEvent(), que lê `FinalRadius` daqui (fonte
 // única do raio real, pra nunca o visual e o dano ficarem dessincronizados).
-// Sprite neutra (gradiente branco->transparente, sem outline, Explosion_Area.png em
-// Sprites/Monsters/Floor5/Burning_Skull — mesmo PPU/filtro de AreaIndicatorCircle.png,
-// Sprites/Effects), Sorting Layer Background; a cor vermelha vem de outerColor/innerColor,
+// Sprite: AreaIndicatorCircle.png (Sprites/Effects) — círculo SÓLIDO com miolo uniforme (~37%)
+// e borda marcada (~92%). Achado real do usuário (2026-11-21, "não tem avisos de explosão"): a
+// sprite antiga (Explosion_Area.png) era um gradiente que some até 0% na borda — com as cores
+// transparentes do aviso em 2 círculos, a área ficava invisível e o centro ficava embaixo do
+// herói. Sorting Layer Background; a cor vermelha vem de outerColor/innerColor,
 // aplicada em runtime, não está "queimada" nos pixels. Decisão do usuário (mesmo critério já
 // usado no indicador de área do Totem do Orc Shaman): nada aqui é calculado/auto-ajustado por
 // código além do crescimento em si — os valores abaixo são pra calibrar à mão no Inspector.
@@ -24,8 +26,8 @@ public class BurningSkullExplosionArea : MonoBehaviour
     [Header("Visual — 2 círculos (D9.4, formato pedido pelo usuário): área completa fraca + preenchimento que cresce")]
     [Tooltip("Círculo externo: a área completa (este SpriteRenderer, sprite neutra branca+alpha).")]
     [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private Color outerColor = new Color(1f, 0.15f, 0.1f, 0.22f); // 🔢 vermelho bem transparente
-    [SerializeField] private Color innerColor = new Color(1f, 0.15f, 0.1f, 0.5f);  // 🔢 um pouco mais forte, ainda transparente
+    [SerializeField] private Color outerColor = new Color(1f, 0.15f, 0.1f, 0.6f); // 🔢 área completa: miolo ~22%, borda ~55% (com a AreaIndicatorCircle)
+    [SerializeField] private Color innerColor = new Color(1f, 0.15f, 0.1f, 1f);   // 🔢 preenchimento: miolo ~37%, borda ~92%
 
     [Header("Gizmo — mostra o raio REAL de dano, independente do estado atual da escala")]
     [SerializeField] private bool showDamageRadiusGizmo = true;
