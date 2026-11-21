@@ -1049,6 +1049,21 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (attackAnimState == AttackAnimState.Attacking) EndAttackAnimation();
     }
 
+    // D9.4 — reposicionamento por distância (WorldPopulationManager): o monstro que ficou longe
+    // reaparece no anel fora da tela, na frente. Mantém vida, status e aggro; cancela o golpe em
+    // andamento e zera o que dependia da posição antiga (path, stuck-check, empurrão).
+    public void TeleportTo(Vector3 position)
+    {
+        CancelAttackForTeleport();
+        if (ai != null) ai.Teleport(position, true);
+        else transform.position = position;
+        knockbackVelocity = Vector2.zero;
+        stuckCheckPosition = position;
+        stuckCheckTimer = 0f;
+        stuckStreak = 0;
+        nextRepathTime = 0f;
+    }
+
     // Cada hit recebido durante o próprio golpe acelera a animação em vez de só piscar —
     // GDD/Bestiário (Sprint 16, revisão): "dano não interrompe o ataque" continua valendo,
     // mas precisa de feedback visual real, não silêncio. Passado o teto, resolve na hora.

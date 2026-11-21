@@ -155,18 +155,23 @@ public class WorldPopulationManager : MonoBehaviour
         Kite.AddVelocity(HeroController.Velocity, Time.deltaTime);
         sectorsPreparedThisFrame = false;
 
-        // Distance Despawn + replacement imediato (doc, Seção 11.1-11.3). Despawn NUNCA é
-        // morte: Destroy() direto aqui nunca passa por EnemyController.Die()/TakeDamage(),
-        // então não dispara GameEvents.EnemyKilled nem loot — já correto só por não chamar
-        // nenhum método de morte do monstro.
-        for (int i = aliveEnemies.Count - 1; i >= 0; i--)
+        // D9.4 — reposicionamento por distância (no lugar de Destroy + spawn novo): o monstro
+        // comum que ficou longe reaparece no anel fora da tela, pela mesma regra de setor e
+        // anti-kite — quem foge encontra a horda de volta na frente. Mesmo monstro, mesma vida e
+        // status. Sem ponto válido: fica onde está e tenta no próximo frame. Nunca é morte (sem
+        // EnemyKilled, sem loot).
+        float despawnSqr = spawnSettings.enemyDespawnDistance * spawnSettings.enemyDespawnDistance;
+        Vector2 heroPos = player.position;
+        for (int i = 0; i < aliveEnemies.Count; i++)
         {
-            float distance = Vector2.Distance(aliveEnemies[i].transform.position, player.position);
-            if (distance <= spawnSettings.enemyDespawnDistance) continue;
-
-            Destroy(aliveEnemies[i].gameObject);
-            aliveEnemies.RemoveAt(i);
-            SpawnOne(); // 1 despawn = 1 replacement imediato, sem resetar o cooldown normal abaixo
+            var enemy = aliveEnemies[i];
+            if (enemy.IsDead || enemy.IsBoss) continue;
+            if (((Vector2)enemy.transform.position - heroPos).sqrMagnitude <= despawnSqr) continue;
+            if (TryPickRingPosition(out var newPosition, out bool inFront))
+            {
+                enemy.TeleportTo(newPosition);
+                Kite.RecordSpawn(inFront);
+            }
         }
 
         // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
