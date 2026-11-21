@@ -469,6 +469,19 @@ resposta do usuário: atacar andando e **muita coisa acontecendo na tela ao mesm
 - **Nesta Deadline os bosses atuais são usados como estão** (só a sequência, o enrage e a visão de
   invisível entram agora). O rework de mecânicas dos bosses fica pra depois, fora desta Deadline:
   remoção de alguns, alguns viram monstros comuns e outros ganham mecânicas novas exclusivas.
+- **Mini bosses (decisão do usuário, 2026-11-21):** Werewolf (T2), Pale Champion (T3), Mummy King,
+  Undead Knight e Headless Horseman (T5) deixaram de ser bosses e viraram **mini bosses**:
+  - são monstros comuns, sem mudança nenhuma neles (não pausam o jogo nem mexem na câmera);
+  - nasce 1 sozinho a cada 30–40 s de tempo real do dia, sem aviso, só os do tier que o dia já
+    tem, sem repetir o último, mesmo com outro ainda vivo.
+
+  Prefabs em `Assets/Prefabs/MiniBosses/tier_N`. Design:
+  `docs/superpowers/specs/2026-11-21-mini-bosses-design.md`. Com isso, cada tier tem **de 1 a 3
+  bosses** (T1–T6 e T9: 3; T7: 2; T8 e T10: 1), que é o limite de bosses por dia.
+- **Ordem decidida em 2026-11-21:** o rework dos bosses (mecânicas que forçam desvio e atenção) e a
+  sequência/enrage/teleporte ficam **por último** na Deadline, depois de cartas, itens, talentos e
+  progressão, porque precisam do herói com a força final pra serem calibrados. O D9.5 entra agora
+  só com a estrutura da run (morte encerra a run, fim do dia, tela de resumo).
 - **⏳ PENDENTE** quantos bosses por dia, a ordem deles, o intervalo entre eles, o tempo até o fim
   do dia depois do último boss e os tempos do enrage.
 
