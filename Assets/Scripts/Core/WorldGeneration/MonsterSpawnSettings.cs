@@ -29,6 +29,12 @@ public class MonsterSpawnSettings : ScriptableObject
     [Tooltip("Monstro comum mais longe que isso do herói é reposicionado no anel de spawn, na frente (D9.4) — nunca morte de verdade.")]
     public float enemyDespawnDistance = 30f;
 
+    [Header("Mini bosses (2026-11-21 — docs/superpowers/specs/2026-11-21-mini-bosses-design.md)")]
+    [Tooltip("Ex-bosses que viraram monstros comuns mais fortes. Nasce 1 sozinho a cada miniBossIntervalMin-Max segundos de tempo real do dia, sem aviso, sorteado entre os do tier que o dia já tem (sem repetir o último). Não entram na meta da horda.")]
+    public List<EnemyDefinitionSO> miniBossRoster = new();
+    public float miniBossIntervalMin = 30f; // 🔢
+    public float miniBossIntervalMax = 40f; // 🔢
+
     [Header("Cerco (D9.4) — nasce fora da tela, numa elipse com a proporção da tela, por setores")]
     [Tooltip("Em quantos setores o anel é dividido. Cada monstro novo vai pro setor com menos monstros vivos.")]
     public int sectorCount = 12; // 🔢

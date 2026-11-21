@@ -42,7 +42,15 @@ public class WorldPopulationManager : MonoBehaviour
 
     // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
     // read-only, nenhuma mudança de comportamento.
-    public int AliveCount => aliveEnemies.Count;
+    public int AliveCount => aliveEnemies.Count + aliveMiniBosses.Count; // telemetria: comuns + mini bosses
+
+    // Mini bosses (2026-11-21): lista própria — fora da meta da horda, mas entram no
+    // reposicionamento, na contagem de setores e no "limpar todos".
+    private readonly List<EnemyController> aliveMiniBosses = new();
+    public int MiniBossAliveCount => aliveMiniBosses.Count;
+    private bool[] miniBossEligible = System.Array.Empty<bool>();
+    private int lastMiniBossIndex = -1;
+    private float nextMiniBossAt;
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
     private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 
@@ -126,7 +134,18 @@ public class WorldPopulationManager : MonoBehaviour
     [Tooltip("Se > 0, todo dia começa com o relógio da horda já nesse tempo (segundos) — pra testar o fim da curva sem esperar. 0 = desligado.")]
     public float debugHordeStartSeconds = 0f;
 
-    private void HandleDayStart() => hordeClock.Reset(debugHordeStartSeconds);
+    private void HandleDayStart()
+    {
+        hordeClock.Reset(debugHordeStartSeconds);
+        lastMiniBossIndex = -1;
+        ScheduleNextMiniBoss();
+    }
+
+    private void ScheduleNextMiniBoss()
+    {
+        if (spawnSettings == null) return;
+        nextMiniBossAt = HordeElapsed + MiniBossRules.NextInterval(spawnSettings.miniBossIntervalMin, spawnSettings.miniBossIntervalMax, Random.value);
+    }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
@@ -140,6 +159,11 @@ public class WorldPopulationManager : MonoBehaviour
             if (enemy != null) Destroy(enemy.gameObject);
         }
         aliveEnemies.Clear();
+        foreach (var miniBoss in aliveMiniBosses)
+        {
+            if (miniBoss != null) Destroy(miniBoss.gameObject);
+        }
+        aliveMiniBosses.Clear();
     }
 
     private void Update()
@@ -153,6 +177,7 @@ public class WorldPopulationManager : MonoBehaviour
         if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || spawnSettings == null) return;
 
         aliveEnemies.RemoveAll(e => e == null);
+        aliveMiniBosses.RemoveAll(e => e == null);
 
         // D9.4 — anti-kite: média de pra onde o herói anda; setores recontados no 1º spawn do frame.
         Kite.AddVelocity(HeroController.Velocity, Time.deltaTime);
@@ -168,21 +193,11 @@ public class WorldPopulationManager : MonoBehaviour
         float despawnDistance = SpawnRing.RepositionThreshold(viewHalfWidth, viewHalfHeight, spawnSettings.offscreenMargin,
             spawnSettings.ringJitter, WorldSpawnUtility.SnapTolerance, spawnSettings.enemyDespawnDistance);
         float despawnSqr = despawnDistance * despawnDistance;
-        Vector2 heroPos = player.position;
         repositionBudget.BeginFrame();
-        for (int i = 0; i < aliveEnemies.Count; i++)
-        {
-            var enemy = aliveEnemies[i];
-            if (enemy.IsDead || enemy.IsBoss) continue;
-            if (((Vector2)enemy.transform.position - heroPos).sqrMagnitude <= despawnSqr) continue;
-            if (!repositionBudget.TryConsume()) break; // orçamento do frame acabou (ou o anel está bloqueado) — o resto fica pro próximo frame
-            if (TryPickRingPosition(out var newPosition, out bool inFront))
-            {
-                enemy.TeleportTo(newPosition);
-                Kite.RecordSpawn(inFront);
-            }
-            else repositionBudget.MarkBlocked();
-        }
+        RepositionFar(aliveMiniBosses, despawnSqr); // mini bosses primeiro — são poucos e mais importantes de manter por perto
+        RepositionFar(aliveEnemies, despawnSqr);
+
+        UpdateMiniBosses();
 
         // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
         // no lugar do "1 a cada respawnInterval" e das rajadas da crise.
@@ -201,10 +216,29 @@ public class WorldPopulationManager : MonoBehaviour
         }
     }
 
-    private bool SpawnOne()
+    // Reposicionamento por distância de uma lista (D9.4), dividindo o mesmo orçamento do frame.
+    private void RepositionFar(List<EnemyController> list, float despawnSqr)
     {
-        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return false;
+        Vector2 heroPos = player.position;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var enemy = list[i];
+            if (enemy.IsDead || enemy.IsBoss) continue;
+            if (((Vector2)enemy.transform.position - heroPos).sqrMagnitude <= despawnSqr) continue;
+            if (!repositionBudget.TryConsume()) return; // orçamento do frame acabou (ou o anel está bloqueado) — o resto fica pro próximo frame
+            if (TryPickRingPosition(out var newPosition, out bool inFront))
+            {
+                enemy.TeleportTo(newPosition);
+                Kite.RecordSpawn(inFront);
+            }
+            else repositionBudget.MarkBlocked();
+        }
+    }
 
+    // Percentuais de tier do momento (dia efetivo pela distância da origem, Dia/Noite, supressão,
+    // isolamento de debug) — mesma conta pro spawn comum e pra elegibilidade dos mini bosses.
+    private int ComputeTierPercentsForNow()
+    {
         // Safe Zone/EffectiveSpawnDay são centrados na origem do mundo (0,0) — mesma origem
         // que a centralização de chunk (ChunkCoord.ToWorldOrigin) já usa como centro real.
         float distanceFromOrigin = player.position.magnitude;
@@ -216,6 +250,57 @@ public class WorldPopulationManager : MonoBehaviour
         int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
         int forcedTierIndex = useTierIsolationOverride ? testTierOverride - 1 : -1;
         WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
+        return suppressedTierCount;
+    }
+
+    // Mini bosses (docs/superpowers/specs/2026-11-21-mini-bosses-design.md): 1 a cada 30-40 s de
+    // tempo real do dia, sozinho e sem aviso, sorteado entre os do tier que o dia já tem, sem
+    // repetir o último. Nasce mesmo com outro vivo (quem não mata, acumula). Sem lugar fora da
+    // tela: tenta no próximo frame, sem reagendar. Nunca é boss (sem câmera, sem pausa).
+    private void UpdateMiniBosses()
+    {
+        var roster = spawnSettings.miniBossRoster;
+        if (roster == null || roster.Count == 0 || HordeElapsed < nextMiniBossAt) return;
+
+        if (miniBossEligible.Length != roster.Count) miniBossEligible = new bool[roster.Count];
+        ComputeTierPercentsForNow();
+        for (int i = 0; i < roster.Count; i++)
+        {
+            var def = roster[i];
+            miniBossEligible[i] = def != null && def.prefab != null && def.tier >= 1 && def.tier <= tierPercentsBuffer.Length
+                && tierPercentsBuffer[def.tier - 1] > 0f;
+        }
+
+        int pick = MiniBossRules.Pick(miniBossEligible, roster.Count, lastMiniBossIndex, Random.value);
+        if (pick < 0)
+        {
+            ScheduleNextMiniBoss(); // nenhum elegível agora (ex.: Dia 1, só T1) — reavalia no próximo intervalo
+            return;
+        }
+
+        if (!TryPickRingPosition(out var spawnPosition, out bool spawnedInFront)) return; // sem lugar fora da tela — próximo frame
+        Kite.RecordSpawn(spawnedInFront);
+
+        var obj = Instantiate(roster[pick].prefab, spawnPosition, Quaternion.identity, EnemyController.EnemysContainer);
+        WorldSpawnUtility.RestrictToOpenWorldGraph(obj);
+        var controller = obj.GetComponent<EnemyController>();
+        if (controller == null)
+        {
+            Destroy(obj); // defesa: prefab sem EnemyController
+            ScheduleNextMiniBoss();
+            return;
+        }
+        controller.ForceImmediateAggro();
+        aliveMiniBosses.Add(controller);
+        lastMiniBossIndex = pick;
+        ScheduleNextMiniBoss();
+    }
+
+    private bool SpawnOne()
+    {
+        if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return false;
+
+        int suppressedTierCount = ComputeTierPercentsForNow();
 
         int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
         if (tierIndex < 0) return false; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
@@ -278,6 +363,12 @@ public class WorldPopulationManager : MonoBehaviour
             var enemy = aliveEnemies[i];
             if (enemy == null) continue;
             sectorCounts[SpawnRing.SectorOf((Vector2)enemy.transform.position - heroPos, n)]++;
+        }
+        for (int i = 0; i < aliveMiniBosses.Count; i++)
+        {
+            var miniBoss = aliveMiniBosses[i];
+            if (miniBoss == null) continue;
+            sectorCounts[SpawnRing.SectorOf((Vector2)miniBoss.transform.position - heroPos, n)]++;
         }
 
         bool hasFlee = Kite.TryGetFleeDirection(out Vector2 flee) && Kite.FrontShare < spawnSettings.kiteMaxFrontShare;
