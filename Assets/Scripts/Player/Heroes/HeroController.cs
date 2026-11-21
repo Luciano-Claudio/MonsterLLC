@@ -430,6 +430,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // collider do GameObject é trigger, mesmo o sólido do corpo — compartilhar o objeto faria o
     // corpo (bem maior) coletar loot sozinho, ignorando o raio configurado.
     private HeroPickupRadius pickupRadius;
+    private HeroCrowdPush crowdPush; // D9.4
 
     // [Sprint P3] Movimento deliberado passou de transform.Translate pra rb.linearVelocity —
     // Translate ignora Collider2D sólido (o herói atravessava props sólidos, ex.: pedra/
@@ -494,6 +495,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         pickupRadiusObj.transform.SetParent(transform, false);
         pickupRadius = pickupRadiusObj.AddComponent<HeroPickupRadius>();
         pickupRadius.SetRadius(PickupRadius);
+
+        crowdPush = gameObject.AddComponent<HeroCrowdPush>(); // D9.4 — o herói empurra a horda
 
         attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
         secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
@@ -718,6 +721,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         bool canMove = AttackWalkSwap.CanMove(wantsToMove, AnimatorStateCheck.IsInState(animator, "Walk"), attackMoveAllowed, isTrapped);
         IsAttackWalking = canMove && attackMoveAllowed;
         float moveSpeed = attackMoveAllowed ? EffectiveMoveSpeed * moveSpeedMultiplierDuringPrimaryAttack : EffectiveMoveSpeed;
+        // D9.4 — andando contra a horda, empurra os monstros da frente e anda mais devagar.
+        if (canMove && crowdPush != null) moveSpeed *= crowdPush.EvaluateAndPush(moveInput);
         if (rb != null)
         {
             // rb.linearVelocity (não Translate) — resolvido pelo motor de física de verdade,
