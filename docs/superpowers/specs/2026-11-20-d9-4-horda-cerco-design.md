@@ -104,7 +104,7 @@ A meta é a quantidade de **monstros comuns vivos ao redor do herói**, sem cont
 
 ### 4.5 Nascer fora da tela, em elipse, por setores
 
-- **Elipse:** semi-eixos = metade da largura e da altura da área visível da câmera, mais uma margem (🔢 `offscreenMargin`, ~2 unidades). Calculados a partir da câmera a cada spawn, porque a câmera pode mudar. O candidato fica na borda da elipse, com uma variação pequena pra fora (🔢 `ringJitter`).
+- **Elipse:** com a proporção da tela, passando fora dos cantos. Os semi-eixos são (meia-largura × √2 + margem, meia-altura × √2 + margem) da área visível da câmera (🔢 `offscreenMargin`, ~2 unidades). O √2 faz a elipse passar pelos cantos da tela; com metade da largura e da altura puras, ela cortaria por dentro dos cantos. Calculados a partir da câmera a cada spawn, porque a câmera pode mudar. O candidato fica na borda da elipse, com uma variação pequena pra fora (🔢 `ringJitter`).
 - **Setores:** a elipse é dividida em **12** (🔢). Pra cada spawn, conta os monstros comuns vivos em cada setor, pelo ângulo de cada um em relação ao herói (vale qualquer distância). Escolhe o setor com menos monstros (empate: sorteio) e sorteia um ângulo dentro dele.
 - **Validação do ponto:** a mesma de hoje (fora da safe zone, nó caminhável, mesma ilha do grafo do herói, sem obstáculo) **e** fora da tela.
   - Se o setor escolhido falhar nas tentativas, tenta o próximo menos cheio.
