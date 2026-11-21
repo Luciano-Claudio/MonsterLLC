@@ -290,10 +290,21 @@ public class WorldPopulationManager : MonoBehaviour
             ScheduleNextMiniBoss();
             return;
         }
-        controller.ForceImmediateAggro();
+        PrepareMiniBoss(controller);
         aliveMiniBosses.Add(controller);
         lastMiniBossIndex = pick;
         ScheduleNextMiniBoss();
+    }
+
+    // Revisão final (achado crítico): os 5 prefabs vieram de boss com `isBoss: 1` salvo no
+    // Inspector. Sem desligar aqui, o mini boss continuaria boss em tudo (sem reposicionamento,
+    // sem knockback/empurrão, ouro de boss, BossesDefeated). O prefab fica intacto (decisão do
+    // usuário: nenhuma mudança neles); o flag é corrigido no nascimento, como o
+    // WorldBossSpawnManager faz no sentido contrário.
+    public static void PrepareMiniBoss(EnemyController controller)
+    {
+        controller.SetIsBoss(false);
+        controller.ForceImmediateAggro();
     }
 
     private bool SpawnOne()
