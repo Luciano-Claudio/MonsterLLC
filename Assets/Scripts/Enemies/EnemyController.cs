@@ -1094,6 +1094,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (ai != null) ai.Teleport(position, true);
         else transform.position = position;
         knockbackVelocity = Vector2.zero;
+        crowdPushVelocity = Vector2.zero;
         stuckCheckPosition = position;
         stuckCheckTimer = 0f;
         stuckStreak = 0;
@@ -1337,6 +1338,18 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         knockbackVelocity = direction.normalized * force;
     }
 
+    // D9.4 — empurrão do herói andando contra a horda (HeroCrowdPush). Velocidade SEPARADA do
+    // knockback (revisão final, achado 3): não sobrescreve um knockback forte em andamento (ex.:
+    // Ground Crack) e não conta como IsBeingKnockedBack (que alimenta o Eco do Impacto do
+    // Barbarian, entre outros). Boss nunca é empurrado.
+    private Vector2 crowdPushVelocity;
+
+    public void ApplyCrowdPush(Vector2 direction, float force)
+    {
+        if (isBoss) return;
+        crowdPushVelocity = direction.normalized * force;
+    }
+
     // Exposto pra perks que reagem ao FIM do empurrão (ex.: Esquerda #30 do Barbarian, "Eco do
     // Impacto" — 2º Ground Crack quando o inimigo empurrado termina de parar). Mesmo limiar
     // (0.01) já usado internamente pra decidir quando o Lerp "chegou" em zero.
@@ -1383,6 +1396,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     private void UpdateKnockback()
     {
+        if (crowdPushVelocity.sqrMagnitude > 0.01f)
+        {
+            transform.Translate(crowdPushVelocity * Time.deltaTime);
+            crowdPushVelocity = Vector2.Lerp(crowdPushVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);
+        }
         if (knockbackVelocity.sqrMagnitude <= 0.01f) return;
         transform.Translate(knockbackVelocity * Time.deltaTime);
         knockbackVelocity = Vector2.Lerp(knockbackVelocity, Vector2.zero, KnockbackDecay * Time.deltaTime);

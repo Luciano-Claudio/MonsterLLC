@@ -49,6 +49,9 @@ public class WorldPopulationManager : MonoBehaviour
     // D9.4 — fluxo contínuo: acumulador fracionário de spawnsPerSecond (no máximo 3 guardados,
     // pra nunca sair rajada depois de um período sem lugar válido).
     private float spawnAccumulator;
+
+    // Revisão final do D9.4 (achado 2): no máximo 16 reposicionamentos por frame; para no 1º sem lugar.
+    private RepositionBudget repositionBudget = new RepositionBudget(16);
     private const float MaxSpawnAccumulator = 3f;
 
     // D9.4 — meta atual de monstros comuns vivos (curva por dia + tempo real do dia + picos).
@@ -160,18 +163,25 @@ public class WorldPopulationManager : MonoBehaviour
         // anti-kite — quem foge encontra a horda de volta na frente. Mesmo monstro, mesma vida e
         // status. Sem ponto válido: fica onde está e tenta no próximo frame. Nunca é morte (sem
         // EnemyKilled, sem loot).
-        float despawnSqr = spawnSettings.enemyDespawnDistance * spawnSettings.enemyDespawnDistance;
+        // Limite nunca menor que o anel de spawn (revisão final, achado 1 — ver SpawnRing.RepositionThreshold).
+        WorldSpawnUtility.GetViewExtents(out _, out float viewHalfWidth, out float viewHalfHeight);
+        float despawnDistance = SpawnRing.RepositionThreshold(viewHalfWidth, viewHalfHeight, spawnSettings.offscreenMargin,
+            spawnSettings.ringJitter, WorldSpawnUtility.SnapTolerance, spawnSettings.enemyDespawnDistance);
+        float despawnSqr = despawnDistance * despawnDistance;
         Vector2 heroPos = player.position;
+        repositionBudget.BeginFrame();
         for (int i = 0; i < aliveEnemies.Count; i++)
         {
             var enemy = aliveEnemies[i];
             if (enemy.IsDead || enemy.IsBoss) continue;
             if (((Vector2)enemy.transform.position - heroPos).sqrMagnitude <= despawnSqr) continue;
+            if (!repositionBudget.TryConsume()) break; // orçamento do frame acabou (ou o anel está bloqueado) — o resto fica pro próximo frame
             if (TryPickRingPosition(out var newPosition, out bool inFront))
             {
                 enemy.TeleportTo(newPosition);
                 Kite.RecordSpawn(inFront);
             }
+            else repositionBudget.MarkBlocked();
         }
 
         // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,

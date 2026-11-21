@@ -28,6 +28,57 @@ public class HordeSpawnRulesTests
         }
     }
 
+    // Revisão final (achado 1): o anel não pode passar do limite de reposicionamento, senão o
+    // monstro nasce "longe" e é reposicionado todo frame (lados do cerco vazios). Vale pra
+    // qualquer proporção/tamanho de câmera (16:9, 21:9, 4:3; tamanhos 9.64, 11.25, 22.5).
+    [Test]
+    public void RepositionThreshold_AlwaysBeyondRing()
+    {
+        const float margin = 2f, jitter = 1f, snap = 2f, configured = 30f;
+        var halfHeights = new[] { 9.64f, 11.25f, 22.5f };
+        var aspects = new[] { 16f / 9f, 21f / 9f, 4f / 3f };
+        foreach (float h in halfHeights)
+        foreach (float a in aspects)
+        {
+            float w = h * a;
+            float ringMax = Mathf.Max(w, h) * Mathf.Sqrt(2f) + margin + jitter + snap;
+            float threshold = SpawnRing.RepositionThreshold(w, h, margin, jitter, snap, configured);
+            Assert.Greater(threshold, ringMax, $"h={h} aspect={a}");
+            Assert.GreaterOrEqual(threshold, configured);
+        }
+    }
+
+    [Test]
+    public void RepositionThreshold_KeepsConfiguredWhenRingIsSmaller()
+    {
+        Assert.AreEqual(30f, SpawnRing.RepositionThreshold(5f, 3f, 2f, 1f, 2f, 30f), 1e-4f);
+    }
+
+    // Revisão final (achado 2): reposicionamento com orçamento por frame — anel bloqueado
+    // (herói na água/borda) para no primeiro fracasso, em vez de ~48 consultas A* por monstro.
+    [Test]
+    public void RepositionBudget_CapsPerFrame()
+    {
+        var b = new RepositionBudget(3);
+        b.BeginFrame();
+        Assert.IsTrue(b.TryConsume()); Assert.IsTrue(b.TryConsume()); Assert.IsTrue(b.TryConsume());
+        Assert.IsFalse(b.TryConsume());
+        b.BeginFrame();
+        Assert.IsTrue(b.TryConsume());
+    }
+
+    [Test]
+    public void RepositionBudget_StopsAfterFailureUntilNextFrame()
+    {
+        var b = new RepositionBudget(16);
+        b.BeginFrame();
+        Assert.IsTrue(b.TryConsume());
+        b.MarkBlocked();
+        Assert.IsFalse(b.TryConsume());
+        b.BeginFrame();
+        Assert.IsTrue(b.TryConsume());
+    }
+
     [Test]
     public void IsFrontSector_ArcAroundFlee()
     {

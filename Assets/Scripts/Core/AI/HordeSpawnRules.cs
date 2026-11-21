@@ -21,6 +21,19 @@ public static class SpawnRing
     public static bool IsOutsideView(Vector2 offsetFromHero, float viewHalfWidth, float viewHalfHeight) =>
         Mathf.Abs(offsetFromHero.x) > viewHalfWidth || Mathf.Abs(offsetFromHero.y) > viewHalfHeight;
 
+    // Revisão final do D9.4 (achado 1): distância a partir da qual um monstro comum é
+    // reposicionado. Nunca menor que o ponto mais longe do anel de spawn (semi-eixo maior × √2 +
+    // margem + jitter + tolerância do snap no grafo) mais uma folga — senão, em telas largas
+    // (ultrawide, 720p com zoom do Pixel Perfect), o monstro nasce "longe" e é reposicionado
+    // todo frame, deixando os lados do cerco vazios.
+    public const float RepositionBuffer = 3f;
+
+    public static float RepositionThreshold(float viewHalfWidth, float viewHalfHeight, float margin, float jitter, float snapTolerance, float configured)
+    {
+        float ringMax = Mathf.Max(viewHalfWidth, viewHalfHeight) * Mathf.Sqrt(2f) + margin + jitter + snapTolerance;
+        return Mathf.Max(configured, ringMax + RepositionBuffer);
+    }
+
     // O centro do setor fica a até arcDegrees/2 da direção de fuga.
     public static bool IsFrontSector(int sector, int sectorCount, Vector2 fleeDirection, float arcDegrees)
     {
@@ -105,6 +118,39 @@ public class KiteTracker
         averageVelocity = Vector2.zero;
         recentCount = recentHead = recentFrontCount = 0;
     }
+}
+
+// Revisão final do D9.4 (achado 2): orçamento do reposicionamento por frame. No máximo
+// maxPerFrame monstros por frame; se um não achou lugar no anel, os outros também não achariam
+// (o anel é o mesmo) — para até o próximo frame, em vez de milhares de consultas A* por frame
+// com o herói encostado na água/borda do mundo.
+public struct RepositionBudget
+{
+    private readonly int maxPerFrame;
+    private int used;
+    private bool blocked;
+
+    public RepositionBudget(int maxPerFrame)
+    {
+        this.maxPerFrame = maxPerFrame;
+        used = 0;
+        blocked = false;
+    }
+
+    public void BeginFrame()
+    {
+        used = 0;
+        blocked = false;
+    }
+
+    public bool TryConsume()
+    {
+        if (blocked || used >= maxPerFrame) return false;
+        used++;
+        return true;
+    }
+
+    public void MarkBlocked() => blocked = true;
 }
 
 // Empurrão do herói: o monstro à frente é deslocado pro lado em que já está (perpendicular ao

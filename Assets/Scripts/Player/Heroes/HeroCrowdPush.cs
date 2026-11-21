@@ -33,7 +33,7 @@ public class HeroCrowdPush : MonoBehaviour
         {
             var enemy = pushedBuffer[i];
             if (enemy.IsDead || enemy.IsBoss) continue;
-            enemy.ApplyKnockback(CrowdPushRules.LateralPush(dir, (Vector2)enemy.transform.position - heroPos), lateralForce);
+            enemy.ApplyCrowdPush(CrowdPushRules.LateralPush(dir, (Vector2)enemy.transform.position - heroPos), lateralForce);
             pushedAny = true;
         }
         return pushedAny ? pushSpeedMultiplier : 1f;

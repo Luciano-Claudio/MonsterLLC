@@ -19,7 +19,7 @@ public static class WorldSpawnUtility
     // próximo (normal, candidatos raramente caem exatamente num nó) — qualquer coisa além
     // disso é sinal de que o nó mais próximo ficou longe de verdade do candidato (ver bug
     // abaixo), não um simples ajuste fino.
-    private const float SnapTolerance = 2f;
+    public const float SnapTolerance = 2f;
 
     // Sorteia até `maxAttempts` pontos dentro do anel [minAnnulusDistance, maxAnnulusDistance]
     // ao redor de `center`, rejeitando qualquer ponto mais perto da ORIGEM do mundo (0,0) do
@@ -188,7 +188,7 @@ public static class WorldSpawnUtility
 
     // Área visível atual da câmera principal (ortográfica). Sem câmera: a de referência do jogo
     // (tamanho 10, 16:9), centrada no herói — só pra não travar o spawn em cena de teste.
-    private static void GetViewExtents(out Vector2 center, out float halfWidth, out float halfHeight)
+    public static void GetViewExtents(out Vector2 center, out float halfWidth, out float halfHeight)
     {
         var cam = Camera.main;
         if (cam == null)
