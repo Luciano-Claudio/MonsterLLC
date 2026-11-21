@@ -32,6 +32,7 @@ public class ScreenFader : MonoBehaviour
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
+            go.AddComponent<GraphicRaycaster>(); // com o CanvasGroup de cada metade, bloqueia clique durante o fade (ver Replace)
             instance = go.AddComponent<ScreenFader>();
             var panelGo = new GameObject("Panel", typeof(RectTransform));
             panelGo.transform.SetParent(go.transform, false);
@@ -79,6 +80,15 @@ public class ScreenFader : MonoBehaviour
         f.StartCoroutine(f.After(Duration(settings), () => { ClearInstant(); onClear?.Invoke(); }));
     }
 
+    // Revisão final (achado 3): sair pro menu (RunExit) cancela o fade em andamento — o callback
+    // do clarear (SetState(Gameplay)) não pode disparar já no menu.
+    public static void Cancel()
+    {
+        if (instance == null) return;
+        instance.StopAllCoroutines();
+        ClearInstant();
+    }
+
     public static void ClearInstant()
     {
         if (instance == null || instance.current == null) return;
@@ -92,6 +102,10 @@ public class ScreenFader : MonoBehaviour
         current = null;
         if (prefab == null) return;
         current = Instantiate(prefab, panel);
+        // Mesmo critério do pacote (Transition.cs): o blockRaycasts do TransitionSettings decide se
+        // a tela aceita clique durante o fade — sem isso, um 2º clique no menu reiniciava o fade.
+        if (!current.TryGetComponent(out CanvasGroup group)) group = current.AddComponent<CanvasGroup>(); // sem "??": objeto Unity tem nulo falso no Editor
+        group.blocksRaycasts = settings.blockRaycasts;
         foreach (var anim in current.GetComponentsInChildren<Animator>(true))
         {
             anim.updateMode = AnimatorUpdateMode.UnscaledTime;

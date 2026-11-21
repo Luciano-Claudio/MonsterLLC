@@ -10,7 +10,7 @@
    - o CircleWipe abre mostrando essa tela;
    - um botão **"Continuar"** leva pro menu **sem transição**.
 2. **As transições do Easy Transitions voltam:**
-   - **Morte → menu:** **CircleWipe** completo, que fecha e abre já no menu.
+   - **Morte:** **CircleWipe** completo **na mesma cena**: fecha, aparece o "Resumo total" e abre mostrando ele; o "Continuar" vai pro menu sem transição (ver decisão 1).
    - **Menu → loading:** a **primeira metade do Fade**: o menu escurece até o preto, e aí aparece a tela de loading.
    - **Loading → jogo:** a **segunda metade do Fade**: a tela fica preta e o jogo clareia a partir dela.
 3. O dia sobrevivido continua indo pra Resultados e depois pra Loja até o D9.6. Gold permanente (D9.9) e vitória no Divine God (bosses) ficam pra depois.
@@ -19,7 +19,7 @@
 
 | Abordagem | Decisão |
 |---|---|
-| **Morte com o `TransitionManager` da `_TestScene`** (`Transition("Main_Menu", CircleWipe)`, troca de cena nativa do pacote) **+ um `ScreenFader` próprio, que persiste entre cenas e toca as metades do Fade** (`FadeIN`/`FadeOUT` do pacote) separadas. | **Escolhida.** Cada transição faz exatamente a metade pedida, e a cena do menu não precisa mudar. |
+| **Morte com o `TransitionManager` da `_TestScene`** (CircleWipe sem troca de cena, via `TransitionHelper`) **+ um `ScreenFader` próprio, que persiste entre cenas e toca as metades do Fade** (`FadeIN`/`FadeOUT` do pacote) separadas. | **Escolhida.** Cada transição faz exatamente a metade pedida, e a cena do menu não precisa mudar. |
 | Um `TransitionManager` persistente pra tudo. | Descartada: o pacote sempre toca as duas metades juntas (cobre e, na troca de cena, revela). |
 | Um `TransitionManager` em cada cena. | Descartada: a transição menu → loading atravessa a troca de cena, e a peça que a disparou é destruída no meio. |
 
@@ -60,3 +60,9 @@ Reformular o painel de resumo, tirar a Loja (D9.6), gold permanente (D9.9), vit�
 - No Continue, a Loja também aparece clareando a partir do preto.
 - A configuração dos efeitos fica num asset em `Resources`, pra não mexer em cena.
 - O caminho de retry da Loja (`ShopHandler`, com `PlayerSurvivedLastDay` falso) fica sem uso; a limpeza dele fica pro D9.6, que reescreve a Loja.
+
+## Revisão final (2026-11-21)
+
+- **"Systems" único:** voltar pro menu (morte ou pausa) recarrega o `Main_Menu`, que criava um 2º objeto "Systems" (`DontDestroyOnLoad` sem trava). O `DayTimer` velho encerrava o Dia 1 da run seguinte antes da hora. Agora o `SystemsBootstrap` destrói a cópia antes dos componentes dela acordarem.
+- **Saída única pro menu (`RunExit.ToMainMenu`),** usada pelo "Continuar" do resumo e pelo "Menu" da pausa: despausa, estado `MainMenu`, cancela fade em andamento.
+- **O fader bloqueia clique durante o fade** (`blockRaycasts` do `TransitionSettings`, como no pacote).

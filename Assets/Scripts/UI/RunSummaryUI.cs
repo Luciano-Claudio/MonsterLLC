@@ -46,7 +46,7 @@ public class RunSummaryUI : MonoBehaviour
     }
 
     // Sem transição (decisão do usuário) — mesmo caminho do "voltar ao menu" do menu de pausa.
-    private static void GoToMenu() => SceneManager.LoadScene("Main_Menu");
+    private static void GoToMenu() => RunExit.ToMainMenu(); // despausa, estado MainMenu, cancela fade — ver RunExit
 
     private static RectTransform CreateChild(Transform parent, string name)
     {

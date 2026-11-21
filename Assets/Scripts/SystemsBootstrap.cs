@@ -1,7 +1,15 @@
 using UnityEngine;
 
+// D9.5 (revisão final, achado crítico): a morte agora SEMPRE recarrega o Main_Menu (e o "Menu" da
+// pausa já recarregava). Sem esta trava, cada volta pro menu criava um 2º "Systems" e o antigo
+// continuava vivo — 2 DayTimer (o velho, com o tempo restante da run morta, encerrava o Dia 1 da
+// run seguinte antes da hora), 2 ResultsHandler, 2 BagController. Roda antes de todo componente
+// do mesmo GameObject (DefaultExecutionOrder) e destrói a cópia nova antes de eles acordarem.
+[DefaultExecutionOrder(-10000)]
 public class SystemsBootstrap : MonoBehaviour
 {
+    private static SystemsBootstrap instance;
+
     [Tooltip("Gold fixo por kill (monstro comum/boss), por dia — GDD Deadline 8.1, Seção 3.1. Mesmo critério de toda outra tabela de dia do projeto (Inspector, nunca Resources.Load).")]
     [SerializeField] private DayGoldTableSO goldTable;
 
@@ -12,6 +20,13 @@ public class SystemsBootstrap : MonoBehaviour
 
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            DestroyImmediate(gameObject); // cópia da cena Main_Menu recarregada — o original (DontDestroyOnLoad) continua
+            return;
+        }
+        instance = this;
+
         // Este GameObject ("Systems") carrega junto GameStateManager/TimeManager/BagController/
         // DayTimer/ShopHandler/ResultsHandler — tudo que precisa existir desde o boot do jogo
         // (cena Main_Menu) e sobreviver a qualquer troca de cena depois (ex.: carregar a cena de
@@ -34,6 +49,6 @@ public class SystemsBootstrap : MonoBehaviour
         // agora aciona interações reais via InteractionManager (escadas, baús no futuro).
     }
 
-    private void OnEnable() => controls.Enable();
-    private void OnDisable() => controls.Disable();
+    private void OnEnable() => controls?.Enable();
+    private void OnDisable() => controls?.Disable();
 }
