@@ -205,7 +205,7 @@ MonoBehaviour:
   stats:
     health: 30
     maxHealth: 30
-    damage: 1.6
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -234,7 +234,7 @@ MonoBehaviour:
   hitscanMaxRange: 10
   impactVfxPrefab: {fileID: 7300000000000001, guid: 1e2dd23190894addbf461bc2d57419ea, type: 3}
   impactVfxDuration: 0.5
-  shotCount: 3
+  shotCount: 1
   shotMaxDeviationAngle: 10
   showShotLinesGizmo: 1
   maxActionDuration: 3

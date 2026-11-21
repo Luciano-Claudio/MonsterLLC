@@ -206,7 +206,7 @@ MonoBehaviour:
   stats:
     health: 36
     maxHealth: 36
-    damage: 5
+    damage: 3
     critChance: 0.1
     moveSpeed: 5
     attackSpeed: 0.5
@@ -228,7 +228,7 @@ MonoBehaviour:
   hpRegenTextInterval: 2
   showPickupRadiusGizmo: 0
   vinePrefab: {fileID: 3357894662126226428, guid: 426548f72525c1944bbd91558d85032d, type: 3}
-  vineCount: 5
+  vineCount: 1
   vineSearchRadius: 15
   enemyLayerMask:
     serializedVersion: 2
@@ -257,6 +257,7 @@ MonoBehaviour:
   elkHeadbuttMaxRange: 12
   elkHeadbuttDamageMultiplier: 2
   elkHeadbuttKnockbackForce: 8
+  headbuttStunDuration: 2
   roarDamageReductionPercent: 50
   roarDuration: 5
   groundCrackPrefab: {fileID: 7030278775826116329, guid: 93904857f64de094a989ed7ee028fabf, type: 3}
