@@ -10,9 +10,23 @@ public class GoblinSapperBomb : MonoBehaviour
     private float damage;
     private Animator animator;
 
+    // D9.4 (spec D9, Seção 2.5) — área no chão com o raio real, do plantio até a explosão,
+    // piscando mais rápido perto do estouro. Sprite/sorting iguais à área do Burning Skull.
+    [Header("Aviso de área (D9.4)")]
+    [SerializeField] private Sprite warningSprite;
+    [SerializeField] private int warningSortingLayerId;
+    [SerializeField] private int warningSortingOrder = 0;
+    [SerializeField] private Color warningColor = new Color(1f, 0.15f, 0.1f, 0.45f); // 🔢
+    private ExplosionWarningArea warning;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        if (warningSprite != null)
+        {
+            warning = ExplosionWarningArea.Create(transform, warningSprite, warningSortingLayerId, warningSortingOrder, warningColor);
+            warning.Show(explosionRadius);
+        }
     }
 
     public void Initialize(float bombDamage)
@@ -31,6 +45,7 @@ public class GoblinSapperBomb : MonoBehaviour
     {
         if (animator == null) return;
         animator.speed = GameplayGate.IsActive ? 1f : 0f;
+        if (warning != null) warning.SetUrgency(animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
     }
 
     // Animation Event, no frame exato da explosão — só aplica o dano. A destruição real

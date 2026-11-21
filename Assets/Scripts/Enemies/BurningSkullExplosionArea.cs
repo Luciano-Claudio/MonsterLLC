@@ -31,8 +31,30 @@ public class BurningSkullExplosionArea : MonoBehaviour
 
     public float FinalRadius => finalRadius;
 
+    // D9.4 (spec D9, Seção 2.5) — o aviso aparecia tarde demais (só no clipe Die). Agora: com o
+    // Burning Skull perto do herói, mostra o contorno do raio real, fraco (preview); na contagem
+    // final (crescimento), pisca.
+    [Header("Aviso (D9.4)")]
+    [SerializeField] private float previewAlpha = 0.3f; // 🔢
+    [SerializeField] private float growBlinkHz = 6f;    // 🔢
+    private bool previewVisible;
+    private float blinkPhase;
+
     private float elapsed;
     private bool growing;
+
+    public void SetPreview(bool visible)
+    {
+        if (growing || previewVisible == visible) return;
+        previewVisible = visible;
+        transform.localScale = visible ? new Vector3(finalRadius, finalRadius, 1f) : Vector3.zero;
+        if (spriteRenderer != null)
+        {
+            var c = areaColor;
+            c.a = previewAlpha;
+            spriteRenderer.color = c;
+        }
+    }
 
     private void Awake()
     {
@@ -43,6 +65,15 @@ public class BurningSkullExplosionArea : MonoBehaviour
     private void Update()
     {
         if (!growing) return;
+        if (!GameplayGate.IsActive) return; // pausado: congela crescimento e piscada
+
+        blinkPhase += Time.deltaTime * growBlinkHz * Mathf.PI * 2f;
+        if (spriteRenderer != null)
+        {
+            var c = areaColor;
+            c.a = areaColor.a * Mathf.Lerp(0.4f, 1f, 0.5f + 0.5f * Mathf.Sin(blinkPhase));
+            spriteRenderer.color = c;
+        }
 
         elapsed += Time.deltaTime;
         if (elapsed < growDelay) return;
@@ -57,6 +88,7 @@ public class BurningSkullExplosionArea : MonoBehaviour
     {
         elapsed = 0f;
         growing = true;
+        previewVisible = false;
     }
 
     private void OnDrawGizmos()
