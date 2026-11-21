@@ -109,13 +109,27 @@ public class WorldPopulationManager : MonoBehaviour
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
+        GameEvents.OnDayStart += HandleDayStart;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
+        GameEvents.OnDayStart -= HandleDayStart;
     }
+
+    // D9.4 — relógio da horda: tempo REAL do dia (não pausa com boss vivo, ao contrário do
+    // cronômetro). Zera em todo início de dia, retry incluso. Só anda com o jogo ativo (nunca
+    // no loading, na pausa ou na animação de morte) — ver Update().
+    private readonly HordeClock hordeClock = new HordeClock();
+    public float HordeElapsed => hordeClock.Elapsed;
+
+    [Header("Debug / Teste — Horda (D9.4)")]
+    [Tooltip("Se > 0, todo dia começa com o relógio da horda já nesse tempo (segundos) — pra testar o fim da curva sem esperar. 0 = desligado.")]
+    public float debugHordeStartSeconds = 0f;
+
+    private void HandleDayStart() => hordeClock.Reset(debugHordeStartSeconds);
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
@@ -139,6 +153,7 @@ public class WorldPopulationManager : MonoBehaviour
         // GameState só muda pra Results no fim dela, GameplayGate continua achando que é
         // Gameplay normal) — achado real do usuário, monstro reabastecido ficava vivo até
         // dentro da Loja.
+        hordeClock.Tick(Time.deltaTime, GameplayGate.IsActive && !HeroController.IsDying);
         if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || spawnSettings == null) return;
 
         aliveEnemies.RemoveAll(e => e == null);
@@ -233,15 +248,11 @@ public class WorldPopulationManager : MonoBehaviour
         // null como "sempre ativo", sem precisar de nenhuma mudança nesses scripts.
         WorldSpawnUtility.RestrictToOpenWorldGraph(enemyObj);
 
-        // GDD Deadline 8.1, Seção 4 — "Respawn (retry do dia após morte) já nasce com target
-        // ativo, não tem detecção de novo". Só no RETRY (não num dia novo de verdade, nem no
-        // Dia 1) — confirmado com o usuário. Boss já faz isto sempre, independente de retry
-        // (SpawnOneBoss, decisão separada/anterior) — não mexe nisso aqui.
-        if (!DayResolver.PlayerSurvivedLastDay)
-        {
-            var enemyController = enemyObj.GetComponent<EnemyController>();
-            if (enemyController != null) enemyController.ForceImmediateAggro();
-        }
+        // D9.4 (decisão do usuário, 2026-11-20): todo monstro comum nasce com o herói como alvo,
+        // em qualquer dia (antes, só no retry). Estilo Vampire Survivors: a horda nasce fora da
+        // tela e já vem na direção do herói.
+        var enemyController = enemyObj.GetComponent<EnemyController>();
+        if (enemyController != null) enemyController.ForceImmediateAggro();
 
         aliveEnemies.Add(enemyObj);
     }
