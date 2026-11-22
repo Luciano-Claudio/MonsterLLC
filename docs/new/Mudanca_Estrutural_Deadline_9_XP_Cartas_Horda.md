@@ -200,7 +200,14 @@ da animação, o alvo volta pro Assassin.
 
 ## 3. XP e nível
 
-- **1 XP por monstro morto.** XP não é loot, entra direto.
+- **Atualizado em 2026-11-22 (D9.6a/b), substitui a tabela e o "1 XP por kill" abaixo:**
+  - **XP por kill cresce forte por tier:** T1 1, T2 4, T3 15, T4 50, T5 160, T6 500, T7 1.500, T8 4.500, T9 13.000, T10 38.000. Mini boss ×3, boss ×10.
+  - **Nova curva de nível:** 40, 260, 520 … 3.570.000. Cada nível custa ~100 kills do tier do dia e 3 a 4× mais no tier anterior: subir de tier é arriscado, mas necessário.
+  - **Herói por nível:** +40% de dano e +30% de vida (piso +1/+5), também na cura e no escudo.
+  - **Cap do dia:** 2·dia + 1. No cap, a barra enche e o excedente vira gold, até 500 por dia.
+  - **Monstros:** tabela por tier do T3 ao T10, com o T1 e o T2 mantidos como o usuário ajustou. Ranged tem vida ×0,7 e dano ×1,4; mini boss tem vida ×4 e dano ×1,5. A velocidade sobe por tier. Os bosses ainda não foram rebalanceados (o rework deles é por último).
+  - Todos os números estão em `docs/superpowers/specs/2026-11-22-d9-6ab-monstros-xp-nivel-design.md` e são editáveis em `Resources/MonsterScalingSettings`.
+- *(Texto original, substituído pelo item acima:)* **1 XP por monstro morto.** XP não é loot, entra direto.
 - Tabela de XP em um **settings editável** (ScriptableObject):
 
 | Nível | XP pra subir | Nível | XP pra subir |
