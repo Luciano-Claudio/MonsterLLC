@@ -101,9 +101,14 @@ public static class MonsterScalingApplier
         return report.ToString();
     }
 
+    // Decisão do usuário (2026-11-22): T1 ("fácil") e T2 ("1º desafio") ficam como ele ajustou à
+    // mão — a escala vale do T3 em diante. O XP por kill (runtime) vale em todos os tiers.
+    public const int FirstScaledTier = 3;
+
     private static void Add(List<Entry> list, EnemyDefinitionSO def, bool mini)
     {
         if (def == null || def.prefab == null) return;
+        if (def.tier < FirstScaledTier) return;
         var enemy = def.prefab.GetComponent<EnemyController>();
         if (enemy == null) return;
         var kind = mini ? MonsterKind.MiniBoss : def.isRanged ? MonsterKind.Ranged : MonsterKind.Melee;
