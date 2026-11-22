@@ -139,6 +139,21 @@ O herói ganha **multiplicadores de nível** compostos ao lado dos `CentralDamag
 
 Registrar o nível e o XP por minuto, e os kills por dia (pra calibrar a premissa de ~200 kills por dia).
 
+## 5.5 Respostas à revisão do construtor (decisões minhas, salvo onde indicado)
+
+1. **Danos e curas fixos além do `attackDamage`** escalam pela **mesma razão** do `attackDamage` do monstro (novo ÷ antigo). Isso inclui `statusEffectDamagePerSecond`, `groundedDamagePerSecond`, `grownAttackDamage` e qualquer campo float de dano ou cura nos componentes do próprio prefab. Os prefabs **referenciados por um monstro do roster** (totens do Orc Shaman, filhos do Orc Rider, hazards) escalam pela razão do monstro que os cria. O botão mostra no relatório a lista de campos e prefabs tocados. Campo que não for reconhecido como dano ou cura fica de fora e aparece no relatório.
+2. **Quem dá XP:** flag própria, `grantsXp` (padrão verdadeiro). O `dropsLoot` não é reaproveitado.
+   - Summons de boss: `grantsXp = false`.
+   - O mimic dá XP do tier do dia e continua com a própria tabela de stats; o rework do baú é do D9.8.
+3. **Filhos de monstro** (ex.: o Warg e o orc do Orc Rider) herdam o tier do pai no spawn, pro XP. Os stats deles escalam pelo item 1.
+4. **Mini boss:** a proporção é medida contra a média dos **melee comuns** do tier dele. Assim cada um mantém a identidade, mesmo sendo o único do tier, e depois recebe vida ×4 e dano ×1,5. Os mini bosses são todos melee (`isRanged` falso).
+5. **XP no cap do dia:**
+   - a barra enche até o ponto de subir e para ali (o herói sobe assim que o próximo dia libera o cap);
+   - só o que passa disso vira gold, 1 por XP, até 500 por dia;
+   - depois do limite, o excedente se perde;
+   - o gold já convertido no dia fica salvo no `RunState`, pra o limite valer mesmo com save e load.
+6. **"Ranged mais dano, melee mais vida" vale só pros monstros.** A base dos heróis não muda (decisão 1 do usuário). O "T1 com um pouco mais de vida" já está na tabela: 12, contra 5–10 hoje.
+
 ## 6. Fora do escopo
 
 Cartas e a tela de cartas, a saída da Loja e dos perks (D9.6c); gold no chão e os números de gold (D9.7); gold permanente (D9.9); bosses; voltar o dia.
