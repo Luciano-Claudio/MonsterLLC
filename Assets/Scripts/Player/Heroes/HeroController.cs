@@ -451,9 +451,31 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // aplicar pra forma Alce.
     protected virtual bool AutoFlipBodyCollider => true;
 
+    // D9.6b — nível do herói (HeroLevel). stats.damage/stats.maxHealth passam a ser os valores DO
+    // NÍVEL, calculados da base guardada aqui (a base do prefab nunca se perde). Reescrever os
+    // stats (em vez de um multiplicador central) vale pros 10 heróis de uma vez: só Barbarian,
+    // Mage e Ranger usam o CentralDamageMultiplier; os outros leem stats.damage direto.
+    private float baseDamage;
+    private float baseMaxHealth;
+    public static float LevelHealthFactor = 1f; // vida do nível ÷ base (escudo do Paladin etc.)
+
+    public void ApplyLevel(int level)
+    {
+        float oldMax = EffectiveMaxHealth;
+        stats.damage = HeroLevelRules.DamageAt(baseDamage, level);
+        stats.maxHealth = HeroLevelRules.HealthAt(baseMaxHealth, level);
+        LevelHealthFactor = baseMaxHealth > 0f ? stats.maxHealth / baseMaxHealth : 1f;
+        float newMax = EffectiveMaxHealth;
+        if (oldMax > 0f) stats.health = Mathf.Min(newMax, stats.health * newMax / oldMax); // sobe na proporção, não cura tudo
+        GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
+    }
+
     protected virtual void Awake()
     {
         Instance = this;
+        baseDamage = stats.damage;
+        baseMaxHealth = stats.maxHealth;
+        LevelHealthFactor = 1f;
 
         // Achado real: StartRun/ContinueGame (MainMenuUI) chamam WorldPerkEffects.Recompute()
         // ANTES do herói nascer (Instance ainda nulo lá) — o multiplicador do perk Central

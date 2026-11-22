@@ -36,6 +36,11 @@ public class RunState
     // (perkId, rank), não Dictionary direto — JsonUtility não serializa Dictionary nativo (mesmo
     // motivo de knownLootItems ser List em vez de HashSet).
     public System.Collections.Generic.List<PerkRankEntry> perkRanks = new();
+
+    // D9.6b — nível do herói (HeroLevel). Zera numa run nova; a morte apaga o save.
+    public int level = 1;
+    public long xpIntoLevel;
+    public long goldFromXpToday; // gold vindo do XP acima do cap, no dia atual (limite diário)
 }
 
 [System.Serializable]
