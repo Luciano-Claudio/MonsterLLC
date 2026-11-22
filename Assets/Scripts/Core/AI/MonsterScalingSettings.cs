@@ -14,6 +14,9 @@ public class MonsterScalingSettings : ScriptableObject
     [Tooltip("XP por kill de um monstro comum, por tier (índice 0 = T1).")]
     public int[] tierXp = { 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
 
+    [Tooltip("Gravado pelo botão Aplicar: a tabela de dano usada na última aplicação. Os campos \"por segundo\" (venenos, poças) escalam só pela diferença entre a tabela atual e esta — rodar de novo com a mesma tabela não muda nada. Vazio = nunca aplicado (base = T1).")]
+    public float[] appliedTierDamage = new float[0];
+
     public static MonsterScalingSettings Load() => Resources.Load<MonsterScalingSettings>("MonsterScalingSettings");
 
     // Copia a tabela pro MonsterScaling (índice 0 do MonsterScaling é "sem uso").

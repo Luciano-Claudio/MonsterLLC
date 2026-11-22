@@ -5,6 +5,8 @@ using NUnit.Framework;
 // boss XP ×10; cada monstro mantém a proporção dele na média do tier.
 public class MonsterScalingTests
 {
+    [SetUp] public void ResetTables() => MonsterScaling.ResetTables();
+
     [Test]
     public void TargetHealth_ByKind()
     {

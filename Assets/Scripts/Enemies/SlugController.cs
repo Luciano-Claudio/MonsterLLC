@@ -142,5 +142,6 @@ public class SlugController : EnemyController
         proj.speed = projectileSpeed;
         Vector2 toPlayer = player.position - transform.position;
         proj.Launch(toPlayer.normalized, grownAttackDamage, toPlayer.magnitude, IsBoss);
+        proj.SpawnTier = Tier;
     }
 }

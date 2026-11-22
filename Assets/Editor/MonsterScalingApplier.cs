@@ -43,6 +43,17 @@ public static class MonsterScalingApplier
         foreach (var def in spawn.roster) Add(entries, def, false);
         foreach (var def in spawn.miniBossRoster) Add(entries, def, true);
 
+        // Monstros do roster (todos os tiers) têm a escala própria: quando outro monstro os
+        // referencia (Orc_Rider -> Warg/Orc_Blade), não escalam de novo pela razão de quem referencia.
+        var rosterPrefabs = new HashSet<GameObject>();
+        foreach (var def in spawn.roster) if (def != null && def.prefab != null) rosterPrefabs.Add(def.prefab);
+        foreach (var def in spawn.miniBossRoster) if (def != null && def.prefab != null) rosterPrefabs.Add(def.prefab);
+
+        // Campos "por segundo": base = tabela da última aplicação (ou T1 se nunca aplicado).
+        appliedDamage = settings != null && settings.appliedTierDamage != null && settings.appliedTierDamage.Length >= 10
+            ? settings.appliedTierDamage : null;
+        touched = new HashSet<Object>();
+
         // Médias atuais por (tier, tipo). Mini boss usa a média dos melee comuns.
         var sumHp = new Dictionary<(int, MonsterKind), float>();
         var sumDmg = new Dictionary<(int, MonsterKind), float>();
@@ -83,6 +94,7 @@ public static class MonsterScalingApplier
 
             if (apply)
             {
+                touched.Add(e.prefab);
                 var so = new SerializedObject(e.enemy);
                 so.FindProperty("stats.maxHealth").floatValue = newHp;
                 so.FindProperty("stats.health").floatValue = newHp;
@@ -93,17 +105,41 @@ public static class MonsterScalingApplier
             }
 
             ScaleExtraFields(e.prefab, e.enemy, dmgRatio, hpRatio, e.def.tier, apply, report, "    ");
-            ScaleReferencedPrefabs(e.prefab, dmgRatio, hpRatio, e.def.tier, apply, report, scaledRefs, conflicts);
+            ScaleReferencedPrefabs(e.prefab, dmgRatio, hpRatio, e.def.tier, apply, report, scaledRefs, conflicts, rosterPrefabs);
         }
 
         foreach (var c in conflicts) report.Append("  ! conflito: " + c + "\n");
-        if (apply) AssetDatabase.SaveAssets();
+        if (apply)
+        {
+            // Salva só o que este botão tocou (não o projeto inteiro).
+            foreach (var o in touched) AssetDatabase.SaveAssetIfDirty(o);
+            if (settings != null && settings.tierDamage != null)
+            {
+                settings.appliedTierDamage = (float[])settings.tierDamage.Clone();
+                EditorUtility.SetDirty(settings);
+                AssetDatabase.SaveAssetIfDirty(settings);
+            }
+        }
         return report.ToString();
     }
 
     // Decisão do usuário (2026-11-22): T1 ("fácil") e T2 ("1º desafio") ficam como ele ajustou à
     // mão — a escala vale do T3 em diante. O XP por kill (runtime) vale em todos os tiers.
     public const int FirstScaledTier = 3;
+
+    private static float[] appliedDamage; // índice 0 = T1; null = nunca aplicado
+    private static HashSet<Object> touched = new HashSet<Object>();
+
+    // Fator dos campos "por segundo": tabela atual ÷ base. Base = tabela da última aplicação
+    // (idempotente: mesma tabela -> 1, nada muda) ou, na 1ª vez, o T1 (o 2 fixo do sistema antigo).
+    private static float PerSecondFactor(int tier)
+    {
+        float now = MonsterScaling.TargetDamage(tier, MonsterKind.Melee, 1f);
+        float baseline = appliedDamage != null
+            ? appliedDamage[Mathf.Clamp(tier, 1, appliedDamage.Length) - 1]
+            : MonsterScaling.TargetDamage(1, MonsterKind.Melee, 1f);
+        return baseline > 0f ? now / baseline : 1f;
+    }
 
     private static void Add(List<Entry> list, EnemyDefinitionSO def, bool mini)
     {
@@ -115,7 +151,7 @@ public static class MonsterScalingApplier
         list.Add(new Entry { def = def, prefab = def.prefab, enemy = enemy, kind = kind });
     }
 
-    // 0 = não escala; 1 = pela razão do dano do monstro; 2 = pela razão da vida; 3 = pela tabela
+    // 0 = não escala; 1 = pela razão do dano do monstro; 2 = pela razão da vida; 3 = pela tabela (PerSecondFactor: tabela atual ÷ a da última aplicação, ou ÷ T1 na 1ª vez)
     // do tier (dano do tier ÷ T1). Os campos "por segundo/por tick" (venenos, poças, totens) eram
     // um valor fixo (2) em todos os tiers no sistema antigo — escalar pela razão do monstro os
     // zerava nos tiers altos; pela tabela, o 2 do T1 continua 2 e cresce com o tier.
@@ -138,7 +174,7 @@ public static class MonsterScalingApplier
     // Campos float de dano/cura dos componentes do prefab, fora o attackDamage dos stats (já feito).
     private static void ScaleExtraFields(GameObject prefab, Component skipStatsOf, float ratio, float hpRatio, int tier, bool apply, StringBuilder report, string indent)
     {
-        float tierFactor = MonsterScaling.TargetDamage(tier, MonsterKind.Melee, 1f) / MonsterScaling.TargetDamage(1, MonsterKind.Melee, 1f);
+        float tierFactor = PerSecondFactor(tier);
         foreach (var comp in prefab.GetComponentsInChildren<MonoBehaviour>(true))
         {
             if (comp == null) continue;
@@ -158,14 +194,14 @@ public static class MonsterScalingApplier
                 report.Append($"{indent}{comp.GetType().Name}.{it.propertyPath}: {old} → {nv}\n");
                 if (apply) { it.floatValue = nv; changed = true; }
             }
-            if (changed) { so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(comp); }
+            if (changed) { so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(comp); touched.Add(prefab); }
         }
     }
 
     // Prefabs referenciados pelo monstro (totens, filhos, hazards). Um prefab só é escalado uma
     // vez; se outro monstro o referencia com outra razão, vira conflito no relatório.
     private static void ScaleReferencedPrefabs(GameObject prefab, float dmgRatio, float hpRatio, int tier, bool apply,
-        StringBuilder report, Dictionary<GameObject, float> scaledRefs, List<string> conflicts)
+        StringBuilder report, Dictionary<GameObject, float> scaledRefs, List<string> conflicts, HashSet<GameObject> rosterPrefabs)
     {
         foreach (var comp in prefab.GetComponentsInChildren<MonoBehaviour>(true))
         {
@@ -177,6 +213,7 @@ public static class MonsterScalingApplier
                 var target = it.objectReferenceValue as GameObject;
                 if (target != null) target = target.transform.root.gameObject; // filho de prefab -> raiz (nunca escala o mesmo prefab 2x)
                 if (target == null || !EditorUtility.IsPersistent(target) || target == prefab) continue;
+                if (rosterPrefabs.Contains(target)) continue; // tem a própria escala (ou é T1/T2 intocado)
                 if (target.GetComponentInChildren<MonoBehaviour>(true) == null) continue;
                 if (scaledRefs.TryGetValue(target, out float used))
                 {
@@ -194,6 +231,7 @@ public static class MonsterScalingApplier
                     report.Append($"      {target.name} stats: vida {childEnemy.stats.maxHealth} → {hp} | dano {childEnemy.stats.attackDamage} → {dmg}\n");
                     if (apply)
                     {
+                        touched.Add(target);
                         var so = new SerializedObject(childEnemy);
                         so.FindProperty("stats.maxHealth").floatValue = hp;
                         so.FindProperty("stats.health").floatValue = hp;

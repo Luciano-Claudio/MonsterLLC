@@ -54,5 +54,6 @@ public class RangedEnemyController : EnemyController
         // player pode ter se afastado desde o InAttackRange() que autorizou este ataque.
         Vector2 toPlayer = player.position - transform.position;
         proj.Launch(toPlayer.normalized, stats.attackDamage, toPlayer.magnitude, IsBoss);
+        proj.SpawnTier = Tier;
     }
 }

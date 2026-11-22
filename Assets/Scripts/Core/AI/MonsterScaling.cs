@@ -14,11 +14,24 @@ public static class MonsterScaling
     public static float[] TierDamage { get; private set; } = { 0, 3, 6, 13, 29, 64, 126, 255, 480, 910, 2050 };
     public static int[] TierXp { get; private set; } = { 0, 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
 
+    private static readonly float[] DefaultHealth = { 0, 12, 27, 69, 180, 485, 1300, 3400, 9300, 26000, 75000 };
+    private static readonly float[] DefaultDamage = { 0, 3, 6, 13, 29, 64, 126, 255, 480, 910, 2050 };
+    private static readonly int[] DefaultXp = { 0, 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
+
+    // Só aceita tabelas com exatamente os 10 tiers (+ índice 0); fora disso avisa e mantém a atual.
     public static void SetTables(float[] health, float[] damage, int[] xp)
     {
-        if (health != null && health.Length >= 11) TierHealth = health;
-        if (damage != null && damage.Length >= 11) TierDamage = damage;
-        if (xp != null && xp.Length >= 11) TierXp = xp;
+        if (health != null && health.Length == 11) TierHealth = health; else if (health != null) Debug.LogWarning($"[MonsterScaling] tabela de vida com {health.Length - 1} tiers (esperado 10) — ignorada");
+        if (damage != null && damage.Length == 11) TierDamage = damage; else if (damage != null) Debug.LogWarning($"[MonsterScaling] tabela de dano com {damage.Length - 1} tiers (esperado 10) — ignorada");
+        if (xp != null && xp.Length == 11) TierXp = xp; else if (xp != null) Debug.LogWarning($"[MonsterScaling] tabela de XP com {xp.Length - 1} tiers (esperado 10) — ignorada");
+    }
+
+    // Volta aos padrões do código (os testes usam isto: sem domain reload, o asset do boot ficaria).
+    public static void ResetTables()
+    {
+        TierHealth = (float[])DefaultHealth.Clone();
+        TierDamage = (float[])DefaultDamage.Clone();
+        TierXp = (int[])DefaultXp.Clone();
     }
 
     public const float RangedHealthFactor = 0.7f;

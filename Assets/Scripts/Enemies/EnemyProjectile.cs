@@ -84,6 +84,8 @@ public class EnemyProjectile : MonoBehaviour
     // guard, o 2º evento (mesmo frame, outro collider do herói) processava o impacto de novo,
     // dano duplo.
     private bool hasImpacted;
+    // D9.6b — tier de quem atirou: o monstro que nasce do impacto herda (XP do tier certo, não T1).
+    [System.NonSerialized] public int SpawnTier;
     private bool firedByBoss; // setado em Launch() — decide o container de SpawnMonster() (EnemyController.ContainerFor)
 
     private void Awake()
@@ -213,7 +215,8 @@ public class EnemyProjectile : MonoBehaviour
     private void SpawnMonster()
     {
         if (monsterPrefab == null) return;
-        Instantiate(monsterPrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(firedByBoss));
+        var spawned = Instantiate(monsterPrefab, transform.position, Quaternion.identity, EnemyController.ContainerFor(firedByBoss));
+        if (SpawnTier > 0 && spawned.TryGetComponent(out EnemyController child)) child.SetSpawnInfo(SpawnTier, false);
     }
 
     // Burst instantâneo no ponto de impacto — dispara 1 vez só (via ReachedLimit/HitPlayer),
