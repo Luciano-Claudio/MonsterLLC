@@ -94,6 +94,8 @@ public class RunTelemetryRecorder : MonoBehaviour
             secondsSinceLastHitReceived = secondsSinceLastHitReceived,
             isNight = DayTimer.Instance.IsNight,
             isAttackWalking = hero != null && hero.IsAttackWalking,
+            heroLevel = MainMenuUI.CurrentRun?.level ?? 1,
+            heroXpIntoLevel = MainMenuUI.CurrentRun?.xpIntoLevel ?? 0,
         });
     }
 
@@ -525,4 +527,6 @@ public class SnapshotRecord
     public float secondsSinceLastHitReceived;
     public bool isNight;
     public bool isAttackWalking; // D9.1 — andando durante o ataque primário naquele segundo
+    public int heroLevel;         // D9.6b — nível naquele segundo (nível por minuto, calibragem da curva)
+    public long heroXpIntoLevel;  // D9.6b — XP dentro do nível
 }
