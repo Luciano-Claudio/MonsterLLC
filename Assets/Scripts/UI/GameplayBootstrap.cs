@@ -63,7 +63,18 @@ public class GameplayBootstrap : MonoBehaviour
                 break;
         }
 
+        // D9.5 — Continue (loading -> Loja): o mesmo clarear a partir do preto do New Game.
+        RevealFromLoading(null);
+    }
+
+    // D9.5 (decisão do usuário): loading -> jogo = só a metade do Fade que CLAREIA. A tela fica
+    // preta, o loading some por baixo e o jogo clareia; onRevealed roda no fim do clarear.
+    private static void RevealFromLoading(System.Action onRevealed)
+    {
+        var fade = TransitionsConfig.Load() != null ? TransitionsConfig.Load().fade : null;
+        ScreenFader.SnapToBlack(fade);
         LoadingScreenUI.Instance?.Hide();
+        ScreenFader.FadeFromBlack(fade, onRevealed);
     }
 
     // Achado real do usuário (New Game -> Herói -> Mundo): a câmera do Cinemachine começava
@@ -82,8 +93,9 @@ public class GameplayBootstrap : MonoBehaviour
         // Só AGORA libera GameplayGate.IsActive (travamento de ação real do HeroController,
         // DayTimer, etc.) — antes disso o jogador não deve conseguir fazer nada, mundo ainda
         // escondido atrás da tela de loading.
-        GameStateManager.Instance.SetState(GameState.Gameplay);
-        LoadingScreenUI.Instance?.Hide();
+        // D9.5: o jogo (e o cronômetro, a horda, o spawn) só começa no FIM do clarear — nada conta
+        // durante o fade, mesmo critério de "nada conta no loading".
+        RevealFromLoading(() => GameStateManager.Instance.SetState(GameState.Gameplay));
     }
 
     // Instancia o herói escolhido em (0,0,0) dentro do GameObject "//HEROS" e aponta a câmera do

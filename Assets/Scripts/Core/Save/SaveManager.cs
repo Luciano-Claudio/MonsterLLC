@@ -23,4 +23,11 @@ public static class SaveManager
     }
 
     public static bool HasSave() => File.Exists(SavePath);
+
+    // D9.5 — a morte encerra a run: o save dela é apagado (o "Continue" não pode trazer uma run
+    // morta de volta).
+    public static void Delete()
+    {
+        if (File.Exists(SavePath)) File.Delete(SavePath);
+    }
 }

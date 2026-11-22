@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac6f45d971dc6344a77c1a747b17719, type: 3}
+  m_Name: TransitionsConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TransitionsConfig
+  fade: {fileID: 11400000, guid: 013263c83b6a84c4d95beaa8bd163ac8, type: 2}
+  death: {fileID: 11400000, guid: 057babd6f13132c449650d99e3c4e99c, type: 2}

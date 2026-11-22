@@ -58,7 +58,7 @@ public static class DayResolver
     // dia): monstros, projétil/summon de monstro e loot no chão somem e renascem. Perde o loot
     // da Bag ainda não vendido (já feito em OnDeath(), antes de chamar isto) — mantém o gold já
     // ganho, que nunca passou pela Bag. NÃO mexe em GameState ainda — isso é
-    // OpenResultsAfterDeath(), separado de propósito (ver lá).
+    // EndRunAfterDeath(), separado de propósito (ver lá).
     public static void ResolvePlayerDeath()
     {
         PlayerSurvivedLastDay = false;
@@ -76,9 +76,24 @@ public static class DayResolver
     // ResolvePlayerDeath() de propósito: o reset do mundo é instantâneo (o jogador não deveria
     // ver monstro algum enquanto a animação de morte do próprio herói ainda está rolando), mas
     // abrir a Loja/trocar de tela só deve acontecer depois que o jogador viu a morte completa.
-    public static void OpenResultsAfterDeath()
+    // D9.5 (decisão do usuário, 2026-11-21): a morte ENCERRA a run — sai o retry do mesmo dia.
+    // Depois da animação de morte: apaga o save (o "Continue" não traz uma run morta de volta),
+    // o CircleWipe fecha, a tela "Resumo total" aparece por baixo e é revelada; o botão dela vai
+    // pro menu sem transição (RunSummaryUI).
+    public static void EndRunAfterDeath()
     {
-        Debug.Log("[DayResolver] Animação de morte terminou — repetindo o dia atual.");
-        GameStateManager.Instance.SetState(GameState.Results);
+        Debug.Log("[DayResolver] Animação de morte terminou — fim da run.");
+        int dayOfDeath = MainMenuUI.CurrentRun != null ? MainMenuUI.CurrentRun.day : 1;
+        int daysSurvived = RunSummaryRules.DaysSurvived(dayOfDeath);
+        const long permanentGold = 0; // D9.9 (gold permanente) ainda não existe — a linha aparece com 0
+
+        SaveManager.Delete();
+        PlayerSurvivedLastDay = true; // estado certo pra próxima run
+
+        var death = TransitionsConfig.Load() != null ? TransitionsConfig.Load().death : null;
+        if (death != null && Object.FindAnyObjectByType<EasyTransition.TransitionManager>() != null) // busca silenciosa — Instance() loga erro quando não existe
+            TransitionHelper.PlayTransition(death, () => RunSummaryUI.Show(daysSurvived, permanentGold));
+        else
+            RunSummaryUI.Show(daysSurvived, permanentGold); // cena sem TransitionManager: resumo direto
     }
 }

@@ -91,7 +91,7 @@ public class PauseMenuUI : MonoBehaviour
         settingsPanel.SetActive(true);
     }
 
-    private static void GoToMainMenu() => SceneManager.LoadScene("Main_Menu");
+    private static void GoToMainMenu() => RunExit.ToMainMenu(); // D9.5 — mesma saída limpa da morte (ver RunExit)
 
     private static void QuitGame() => Application.Quit();
 }

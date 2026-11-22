@@ -37,7 +37,12 @@ cartas, itens) e pra **fora da run** (progressão permanente no menu).
 
 - A run começa no Dia 1 e o jogador sobrevive dia após dia.
 - **Morte encerra a run.** Não existe mais retry do mesmo dia. (Isso elimina o risco de
-  travamento em que um dia impossível prendia o jogador pra sempre.)
+  travamento em que um dia impossível prendia o jogador pra sempre.) **Implementado no D9.5
+  (2026-11-21):** depois da animação de morte, o CircleWipe fecha e revela a tela "Resumo total"
+  ("Sobreviveu X dias", com os dias completos, e o gold permanente, que vale 0 até o D9.9). O botão
+  "Continuar" vai pro menu sem transição. O save da run é apagado.
+- **Transições (D9.5, decisão do usuário):** menu → loading escurece (primeira metade do Fade);
+  loading → jogo clareia (segunda metade do Fade). O jogo só começa quando termina de clarear.
 - Ao morrer, o jogador leva **100% do gold permanente** coletado na run (Seção 9).
 - **O dia termina poucos segundos depois que o último boss do dia morre** (Seção 8), não mais por
   tempo.
