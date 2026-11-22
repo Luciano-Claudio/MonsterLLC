@@ -146,7 +146,7 @@ Registrar o nível e o XP por minuto, e os kills por dia (pra calibrar a premiss
    - Summons de boss: `grantsXp = false`.
    - O mimic dá XP do tier do dia e continua com a própria tabela de stats; o rework do baú é do D9.8.
 3. **Filhos de monstro** (ex.: o Warg e o orc do Orc Rider) herdam o tier do pai no spawn, pro XP. Os stats deles escalam pelo item 1.
-4. **Mini boss:** a proporção é medida contra a média dos **melee comuns** do tier dele. Assim cada um mantém a identidade, mesmo sendo o único do tier, e depois recebe vida ×4 e dano ×1,5. Os mini bosses são todos melee (`isRanged` falso).
+4. **Mini boss** *(atualizado na implementação)*: a proporção é medida contra **os outros mini bosses do mesmo tier**. O único do tier fica com exatamente 4× a vida e 1,5× o dano do melee típico; os três do T5 mantêm a diferença entre si. Medidos contra os comuns, os ex-bosses de T5 manteriam o fator ~28× da escala antiga (~50 mil de vida). Todos são melee (`isRanged` falso).
 5. **XP no cap do dia:**
    - a barra enche até o ponto de subir e para ali (o herói sobe assim que o próximo dia libera o cap);
    - só o que passa disso vira gold, 1 por XP, até 500 por dia;

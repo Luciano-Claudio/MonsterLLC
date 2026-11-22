@@ -8,10 +8,18 @@ public enum MonsterKind { Melee, Ranged, MiniBoss }
 
 public static class MonsterScaling
 {
-    // Índice = tier (0 sem uso).
-    public static readonly float[] TierHealth = { 0, 12, 27, 69, 180, 485, 1300, 3400, 9300, 26000, 75000 };
-    public static readonly float[] TierDamage = { 0, 3, 6, 13, 29, 64, 126, 255, 480, 910, 2050 };
-    public static readonly int[] TierXp = { 0, 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
+    // Índice = tier (0 sem uso). Padrões = tabela aprovada; o MonsterScalingSettings (Resources)
+    // substitui em runtime/no Editor via SetTables (os testes usam os padrões).
+    public static float[] TierHealth { get; private set; } = { 0, 12, 27, 69, 180, 485, 1300, 3400, 9300, 26000, 75000 };
+    public static float[] TierDamage { get; private set; } = { 0, 3, 6, 13, 29, 64, 126, 255, 480, 910, 2050 };
+    public static int[] TierXp { get; private set; } = { 0, 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
+
+    public static void SetTables(float[] health, float[] damage, int[] xp)
+    {
+        if (health != null && health.Length >= 11) TierHealth = health;
+        if (damage != null && damage.Length >= 11) TierDamage = damage;
+        if (xp != null && xp.Length >= 11) TierXp = xp;
+    }
 
     public const float RangedHealthFactor = 0.7f;
     public const float RangedDamageFactor = 1.4f;

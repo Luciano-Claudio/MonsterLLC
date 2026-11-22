@@ -39,6 +39,8 @@ public class SystemsBootstrap : MonoBehaviour
         DayStatsTracker.Init(); // Resumo do Dia — contadores/gold/loot vendido, por dia
         gameObject.AddComponent<RunTelemetryRecorder>().Init(telemetryEnabled);
         gameObject.AddComponent<HeroLevel>(); // D9.6b — XP e nível do herói (estado no RunState)
+        var scaling = MonsterScalingSettings.Load(); // D9.6a — tabela por tier editável (XP por kill em runtime)
+        if (scaling != null) scaling.ApplyToRuntime();
         controls = new PlayerControls();
 
         // Inventory (TAB) deixou de ser placeholder de pausa na Sprint 10 —
