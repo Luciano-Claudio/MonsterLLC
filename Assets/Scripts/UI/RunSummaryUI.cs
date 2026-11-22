@@ -14,6 +14,15 @@ public class RunSummaryUI : MonoBehaviour
 
     public static RunSummaryUI Show(int daysSurvived, long permanentGold)
     {
+        // Tela do usuário (RunSummaryScreen na cena, desativada) tem prioridade. A montada por
+        // código abaixo é só a reserva, pra cena sem a tela dele.
+        var screen = Object.FindAnyObjectByType<RunSummaryScreen>(FindObjectsInactive.Include);
+        if (screen != null)
+        {
+            screen.Show(daysSurvived, permanentGold);
+            return null;
+        }
+
         var go = new GameObject("[RunSummaryUI]");
         var canvas = go.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
