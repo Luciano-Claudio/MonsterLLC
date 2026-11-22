@@ -350,7 +350,7 @@ Transform:
   - {fileID: 5559401221803920957}
   - {fileID: -6672608425087576215}
   - {fileID: 5537490939627575252}
-  - {fileID: 1440696179673649034}
+  - {fileID: 7678790793750027869}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &-1181465761812411685
@@ -474,13 +474,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormController
   stats:
-    health: 7e+11
-    maxHealth: 7e+11
-    moveSpeed: 3
+    health: 24074
+    maxHealth: 24074
+    moveSpeed: 3.83
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 3e+11
+    attackDamage: 1110
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -550,8 +551,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 674341272600971126}
   attackHitboxNW: {fileID: 1538590096940687354}
@@ -563,6 +573,7 @@ MonoBehaviour:
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
   dashDistance: 2
 --- !u!70 &-5354367024577296885
 CapsuleCollider2D:
@@ -991,7 +1002,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &1440696179673649034 stripped
+--- !u!224 &7678790793750027869 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 2254545160344578523}

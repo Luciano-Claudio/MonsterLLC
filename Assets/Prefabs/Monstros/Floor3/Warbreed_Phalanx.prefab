@@ -350,7 +350,7 @@ Transform:
   - {fileID: 6890295571046924557}
   - {fileID: 3481646000726447858}
   - {fileID: 5776274694336047073}
-  - {fileID: 1880496772441275600}
+  - {fileID: 8617393102540470095}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6308071783326774476
@@ -474,13 +474,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 160
-    maxHealth: 160
-    moveSpeed: 3
+    health: 86
+    maxHealth: 86
+    moveSpeed: 2.94
     observationRadius: 6
     attackRadius: 1.6
-    attackDamage: 25
+    attackDamage: 15
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -526,8 +527,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.45
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 3068794703060876729}
   attackHitboxNW: {fileID: 7604630539243704194}
@@ -539,6 +549,7 @@ MonoBehaviour:
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
 --- !u!70 &6043685359179070490
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -966,7 +977,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &1880496772441275600 stripped
+--- !u!224 &8617393102540470095 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 166187010057027785}

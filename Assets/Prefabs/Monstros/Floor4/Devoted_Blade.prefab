@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5474831446010220786
+--- !u!1 &1282567975947817291
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,37 +8,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8781538798197523112}
-  - component: {fileID: 3332427270382218269}
+  - component: {fileID: 8205890431641528334}
+  - component: {fileID: 1860003899734674484}
   m_Layer: 9
-  m_Name: AttackHitbox_SW
+  m_Name: AttackHitbox_SE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8781538798197523112
+--- !u!4 &8205890431641528334
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5474831446010220786}
+  m_GameObject: {fileID: 1282567975947817291}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2398469259790356249}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &3332427270382218269
+--- !u!58 &1860003899734674484
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5474831446010220786}
+  m_GameObject: {fileID: 1282567975947817291}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -136,74 +136,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.3
---- !u!1 &1282567975947817291
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8205890431641528334}
-  - component: {fileID: 1860003899734674484}
-  m_Layer: 9
-  m_Name: AttackHitbox_SE
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8205890431641528334
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282567975947817291}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.2, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2398469259790356249}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &1860003899734674484
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282567975947817291}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 1.3
 --- !u!1 &2389062241985291509
 GameObject:
   m_ObjectHideFlags: 0
@@ -243,6 +175,74 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2389062241985291509}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 1.3
+--- !u!1 &5474831446010220786
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8781538798197523112}
+  - component: {fileID: 3332427270382218269}
+  m_Layer: 9
+  m_Name: AttackHitbox_SW
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8781538798197523112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5474831446010220786}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.5, y: 0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2398469259790356249}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &3332427270382218269
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5474831446010220786}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -317,7 +317,7 @@ Transform:
   - {fileID: 8205890431641528334}
   - {fileID: 8781538798197523112}
   - {fileID: 7929088412335162603}
-  - {fileID: 4367848851866771561}
+  - {fileID: 722432025748817332}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7355099414819777372
@@ -441,13 +441,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 620
-    maxHealth: 620
-    moveSpeed: 3
+    health: 190
+    maxHealth: 190
+    moveSpeed: 2.92
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 95
+    attackDamage: 32
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -497,18 +498,29 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 1011966657609758790}
   attackHitboxNW: {fileID: 3702588781393679221}
   attackHitboxSE: {fileID: 1860003899734674484}
   attackHitboxSW: {fileID: 3332427270382218269}
+  orthogonalAttack: 0
   minFlankIdleDuration: 1
   maxFlankIdleDuration: 2.5
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
 --- !u!70 &6467074728340590813
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -965,7 +977,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &4367848851866771561 stripped
+--- !u!224 &722432025748817332 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 9214315856307647026}

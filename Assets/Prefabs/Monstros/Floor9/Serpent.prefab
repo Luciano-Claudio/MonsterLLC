@@ -416,7 +416,7 @@ Transform:
   - {fileID: -8744790823266351836}
   - {fileID: -308562048896172413}
   - {fileID: 462586925372330066}
-  - {fileID: 5132073422922390843}
+  - {fileID: 4806732152126362648}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &-1141302193044869553
@@ -540,13 +540,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SerpentController
   stats:
-    health: 7.7e+11
-    maxHealth: 7.7e+11
-    moveSpeed: 3
+    health: 26481
+    maxHealth: 26481
+    moveSpeed: 3.83
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 2.4e+11
+    attackDamage: 888
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -616,8 +617,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 3991851942804382934}
   attackHitboxNW: {fileID: -6822246590614931}
@@ -629,6 +639,7 @@ MonoBehaviour:
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
 --- !u!70 &6053647812922545991
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -986,7 +997,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &5132073422922390843 stripped
+--- !u!224 &4806732152126362648 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 3994052983566918558}

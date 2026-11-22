@@ -41,7 +41,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: -8958742174223159164}
-  - {fileID: 1032363238636491719}
+  - {fileID: 6835610207681576228}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8298777260836603640
@@ -165,13 +165,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedEnemyController
   stats:
-    health: 45000000000000
-    maxHealth: 45000000000000
-    moveSpeed: 3
+    health: 52500
+    maxHealth: 52500
+    moveSpeed: 4
     observationRadius: 6
     attackRadius: 6
-    attackDamage: 20000000000000
+    attackDamage: 2870
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -249,8 +250,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   projectileSpeed: 7
   projectilePrefab: {fileID: 7258247481004021426, guid: 9e622459d89c49da91351b57818e87ae, type: 3}
@@ -710,7 +720,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &1032363238636491719 stripped
+--- !u!224 &6835610207681576228 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 3100090825368685218}

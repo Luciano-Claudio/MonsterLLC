@@ -41,7 +41,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8725806434117468594}
-  - {fileID: 6577636905623463017}
+  - {fileID: 9035340658021609776}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3142278895426840364
@@ -120,7 +120,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -162,16 +162,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96a53e17326b44b1ad01bd0e1d35cdef, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedEnemyController
   stats:
-    health: 110
-    maxHealth: 110
-    moveSpeed: 2
+    health: 51
+    maxHealth: 51
+    moveSpeed: 1.96
     observationRadius: 6
     attackRadius: 5
-    attackDamage: 20
+    attackDamage: 21
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -202,7 +203,7 @@ MonoBehaviour:
     dropChancePercent: 0.7
     minQuantity: 1
     maxQuantity: 1
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 0
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -217,6 +218,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   projectileSpeed: 6
   projectilePrefab: {fileID: 1043548395736582657, guid: c7fd44e4fb2b43fe9beeed9b3c55418e, type: 3}
@@ -267,11 +279,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a52fd1931b87c104f9b996842d8a0118, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Core::StatusEffectController
   statusAnimator: {fileID: 9097282806381368853}
   tickInterval: 1
-  immunities:
+  immunities: 
 --- !u!58 &4557992777617922871
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -318,8 +330,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 373b52eb9bf8c40f785bb6947a1aee66, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   drawGizmos: 1
   detailedGizmos: 0
@@ -379,8 +391,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6eb1402c17e84a9282a7f0f62eb584f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   radius: 0.33
   height: 2
@@ -426,8 +438,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 560112f876f5746c780eca0d404e7139, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   version: 1073741824
   radiusBackingField: 0.5
   heightBackingField: 2
@@ -453,8 +465,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f217bbc7b6e9a6448bf1b69b1190898, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   physicalCollider: {fileID: 0}
 --- !u!1 &7874159198529522209
 GameObject:
@@ -566,7 +578,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
@@ -581,7 +593,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.2D.Runtime::UnityEngine.Rendering.Universal.Light2D
   m_ComponentVersion: 2
   m_LightType: 3
@@ -676,7 +688,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &6577636905623463017 stripped
+--- !u!224 &9035340658021609776 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 629009845217724086}

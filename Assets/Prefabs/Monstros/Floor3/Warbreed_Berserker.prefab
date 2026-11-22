@@ -484,7 +484,7 @@ Transform:
   - {fileID: 1852879297135480742}
   - {fileID: 917214473953977008}
   - {fileID: 8246409917152383118}
-  - {fileID: 4896853277606706690}
+  - {fileID: 8235903883754531976}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7013127118739242368
@@ -608,13 +608,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 150
-    maxHealth: 150
-    moveSpeed: 3
+    health: 81
+    maxHealth: 81
+    moveSpeed: 2.94
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 30
+    attackDamage: 18
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -660,18 +661,29 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.45
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 3331475591233929487}
   attackHitboxNW: {fileID: 943343267104777702}
   attackHitboxSE: {fileID: 3536461568529643883}
   attackHitboxSW: {fileID: 4271736061640058707}
+  orthogonalAttack: 0
   minFlankIdleDuration: 1
   maxFlankIdleDuration: 2.5
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
 --- !u!70 &7904237625144503530
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -961,7 +973,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &4896853277606706690 stripped
+--- !u!224 &8235903883754531976 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 545645394778544910}

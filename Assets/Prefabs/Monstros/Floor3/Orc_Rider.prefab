@@ -183,7 +183,7 @@ Transform:
   - {fileID: 4014746372870988954}
   - {fileID: 8041307728908549625}
   - {fileID: 8195284641891743790}
-  - {fileID: 5738730326834660909}
+  - {fileID: 6760242405376447164}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4250822487169500514
@@ -307,13 +307,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrcRiderController
   stats:
-    health: 130
-    maxHealth: 130
-    moveSpeed: 4
+    health: 70
+    maxHealth: 70
+    moveSpeed: 3.92
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 25
+    attackDamage: 15
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -359,18 +360,29 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.45
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 6877439317433955268}
   attackHitboxNW: {fileID: 2133558081173086517}
   attackHitboxSE: {fileID: 2540841464106306976}
   attackHitboxSW: {fileID: 1560651641155003045}
+  orthogonalAttack: 0
   minFlankIdleDuration: 1
   maxFlankIdleDuration: 2.5
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
   wargPrefab: {fileID: 4488071407256986003, guid: 8c00beabe3a64b8badfe4235ebe412ba, type: 3}
   orcBladePrefab: {fileID: 7255046654501971765, guid: a83fc672e6fc4e5987402240bc18e081, type: 3}
   wargSpawnPoint: {fileID: 8041307728908549625}
@@ -1029,7 +1041,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &5738730326834660909 stripped
+--- !u!224 &6760242405376447164 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 2884696076916778298}

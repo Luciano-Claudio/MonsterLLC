@@ -130,13 +130,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
   speed: 7
-  damage: 2.4e+11
+  damage: 1274
   lifetime: 4
   impactMode: 1
   appliesStatusEffect: 0
   statusEffectType: 0
   statusEffectDuration: 5
-  statusEffectDamagePerSecond: 2
+  statusEffectDamagePerSecond: 606.7
   explodesOnImpact: 1
   explosionRadius: 1.5
   spawnsMonsterOnImpact: 0
@@ -145,7 +145,8 @@ MonoBehaviour:
   groundedRadius: 1.2
   groundedDuration: 4
   groundedTickInterval: 1
-  groundedDamagePerSecond: 2
+  groundedDamagePerSecond: 606.7
+  showExplosionGizmo: 1
 --- !u!58 &5211425799160948571
 CircleCollider2D:
   m_ObjectHideFlags: 0

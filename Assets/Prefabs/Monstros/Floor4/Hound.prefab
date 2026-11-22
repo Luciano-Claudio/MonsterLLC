@@ -593,7 +593,7 @@ Transform:
   - {fileID: 4364869469466732622}
   - {fileID: -3641289295578333204}
   - {fileID: 8941793342984941188}
-  - {fileID: 1697020409643220036}
+  - {fileID: 4866102935429904539}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8080451346961636966
@@ -717,13 +717,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PossessableMeleeEnemyController
   stats:
-    health: 520
-    maxHealth: 520
-    moveSpeed: 4.5
+    health: 159
+    maxHealth: 159
+    moveSpeed: 4.38
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 80
+    attackDamage: 27
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -773,8 +774,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 2948419949836404917}
   attackHitboxNW: {fileID: 8857668734103254212}
@@ -786,8 +796,9 @@ MonoBehaviour:
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
-  possessedMaxHealth: 700
-  possessedAttackDamage: 120
+  approachSpreadRadius: 2
+  possessedMaxHealth: 214
+  possessedAttackDamage: 40.5
   attackHitboxPossessedNE: {fileID: 5667658234174486563}
   attackHitboxPossessedNW: {fileID: 833811320620718951}
   attackHitboxPossessedSE: {fileID: 5534052477306564717}
@@ -1248,7 +1259,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &1697020409643220036 stripped
+--- !u!224 &4866102935429904539 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 3917733363240161053}

@@ -106,22 +106,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
   speed: 6
-  damage: 240000000000
+  damage: 1274
   lifetime: 4
   impactMode: 0
   appliesStatusEffect: 0
   statusEffectType: 0
   statusEffectDuration: 5
-  statusEffectDamagePerSecond: 2
+  statusEffectDamagePerSecond: 606.7
   explodesOnImpact: 0
   explosionRadius: 1.5
-  circleCollider: {fileID: 0}
   spawnsMonsterOnImpact: 1
   monsterPrefab: {fileID: -6403448202698957433, guid: 6c94f802a13c4544ad4ebd58484973e5, type: 3}
+  circleCollider: {fileID: 0}
   groundedRadius: 1.2
   groundedDuration: 4
   groundedTickInterval: 1
-  groundedDamagePerSecond: 2
+  groundedDamagePerSecond: 606.7
+  showExplosionGizmo: 1
 --- !u!58 &5978512226009153040
 CircleCollider2D:
   m_ObjectHideFlags: 0
