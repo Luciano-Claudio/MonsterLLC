@@ -36,6 +36,7 @@ public class MotherSlimeController : SlimeEnemyController
             var childObj = Instantiate(childSlimePrefab, point.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
             var childController = childObj.GetComponent<EnemyController>();
             if (childController == null) continue;
+            childController.SetSpawnInfo(Tier, false); // D9.6b — filho herda o tier do pai (XP)
 
             // Decisão do usuário: os 3 Slimes nascem já com o jogador como alvo, igual ao
             // boss que acabou de morrer — sem fase de patrulha/idle esperando

@@ -98,6 +98,7 @@ public class LichController : RangedEnemyController
         var enemy = obj.GetComponent<EnemyController>();
         if (enemy == null) return;
 
+        enemy.GrantsXp = false; // D9.6b — summon de boss não dá XP
         enemy.dropsLoot = false; // Bestiário (Rat People Royalty, mesmo critério): summon não dropa loot
         // Pedido do usuário (2026-10-26): o reanimado já nasce sabendo do player, sem esperar
         // observationRadius — mesmo critério de todo summon "que nasce na cara do player" do

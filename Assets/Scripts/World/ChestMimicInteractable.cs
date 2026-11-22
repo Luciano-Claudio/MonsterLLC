@@ -13,6 +13,7 @@ public class ChestMimicInteractable : Interactable
     {
         InteractionManager.Instance.ClearAvailable(this);
         enabled = false;
+        mimic.SetSpawnInfo(MainMenuUI.CurrentRun != null ? MainMenuUI.CurrentRun.day : 1, false); // D9.6b — XP do tier do dia
         mimic.ForceImmediateAggro();
     }
 }

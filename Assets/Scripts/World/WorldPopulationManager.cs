@@ -290,7 +290,7 @@ public class WorldPopulationManager : MonoBehaviour
             ScheduleNextMiniBoss();
             return;
         }
-        PrepareMiniBoss(controller);
+        PrepareMiniBoss(controller, roster[pick].tier);
         aliveMiniBosses.Add(controller);
         lastMiniBossIndex = pick;
         ScheduleNextMiniBoss();
@@ -301,9 +301,10 @@ public class WorldPopulationManager : MonoBehaviour
     // sem knockback/empurrão, ouro de boss, BossesDefeated). O prefab fica intacto (decisão do
     // usuário: nenhuma mudança neles); o flag é corrigido no nascimento, como o
     // WorldBossSpawnManager faz no sentido contrário.
-    public static void PrepareMiniBoss(EnemyController controller)
+    public static void PrepareMiniBoss(EnemyController controller, int tier)
     {
         controller.SetIsBoss(false);
+        controller.SetSpawnInfo(tier, true); // D9.6b — XP de mini boss (×3 do tier)
         controller.ForceImmediateAggro();
     }
 
@@ -337,7 +338,11 @@ public class WorldPopulationManager : MonoBehaviour
         // em qualquer dia (antes, só no retry). Estilo Vampire Survivors: a horda nasce fora da
         // tela e já vem na direção do herói.
         var enemyController = enemyObj.GetComponent<EnemyController>();
-        if (enemyController != null) enemyController.ForceImmediateAggro();
+        if (enemyController != null)
+        {
+            enemyController.ForceImmediateAggro();
+            enemyController.SetSpawnInfo(definition.tier, false); // D9.6b — XP pelo tier
+        }
 
         if (enemyController != null) aliveEnemies.Add(enemyController);
         else Destroy(enemyObj); // prefab sem EnemyController não é monstro comum — defesa, não deveria acontecer

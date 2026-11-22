@@ -259,6 +259,7 @@ public class WorldBossSpawnManager : MonoBehaviour
         if (controller != null)
         {
             controller.SetIsBoss(true);
+            controller.SetSpawnInfo(definition.tier, false); // D9.6b — XP de boss (×10 do tier)
             controller.ForceImmediateAggro();
         }
 

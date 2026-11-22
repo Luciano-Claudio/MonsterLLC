@@ -87,6 +87,7 @@ public class RatPeopleThrowProjectile : MonoBehaviour
             var enemy = obj.GetComponent<EnemyController>();
             if (enemy != null)
             {
+                enemy.GrantsXp = false; // D9.6b — summon de boss não dá XP
                 enemy.dropsLoot = false; // Bestiário: "summons criados por este boss não geram loot"
                 enemy.ForceImmediateAggro(); // nasceu na cara do player, já sabe que ele existe
             }

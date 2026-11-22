@@ -31,6 +31,7 @@ public class OrcRiderController : MeleeEnemyController
         var childObj = Instantiate(prefab, point.position, Quaternion.identity, EnemyController.ContainerFor(IsBoss));
         var childController = childObj.GetComponent<EnemyController>();
         if (childController == null) return;
+        childController.SetSpawnInfo(Tier, false); // D9.6b — filho herda o tier do pai (XP)
 
         // Mesma decisão do usuário já aplicada ao Mother Slime — nasce já com o jogador
         // como alvo, sem fase de patrulha/idle esperando observationRadius detectar.

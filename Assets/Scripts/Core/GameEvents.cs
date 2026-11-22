@@ -11,6 +11,14 @@ public static class GameEvents
     public static event Action<int, bool> OnEnemyKilled;
     public static void EnemyKilled(int energyValue, bool isBoss) => OnEnemyKilled?.Invoke(energyValue, isBoss);
 
+    // D9.6b — XP do kill (tabela por tier, MonsterScaling.XpForKill). Escutado pelo HeroLevel.
+    public static event Action<int> OnEnemyKilledXp;
+    public static void EnemyKilledXp(int xp) => OnEnemyKilledXp?.Invoke(xp);
+
+    // D9.6b — o herói subiu de nível (o D9.6c abre a tela de cartas a partir daqui).
+    public static event Action<int> OnHeroLeveledUp;
+    public static void HeroLeveledUp(int level) => OnHeroLeveledUp?.Invoke(level);
+
     // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — versão
     // detalhada do kill, só primitivos/Vector3 (regra do asmdef Core), complementa o
     // OnEnemyKilled acima, nunca o substitui. directHits/dotTicks separados de propósito — ver

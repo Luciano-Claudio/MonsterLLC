@@ -47,6 +47,20 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // default true cobre 100% do resto do jogo sem precisar de mudança.
     public bool dropsLoot = true;
 
+    // D9.6b — XP do kill pela tabela por tier (MonsterScaling.XpForKill). Preenchidos no spawn
+    // (WorldPopulationManager/WorldBossSpawnManager; filhos herdam do pai; mimic = tier do dia).
+    // Tier 0 = desconhecido (vale como T1). Summons de boss não dão XP (GrantsXp = false), mesmo
+    // critério do "summon não gera loot".
+    public int Tier { get; private set; }
+    public bool IsMiniBoss { get; private set; }
+    [System.NonSerialized] public bool GrantsXp = true;
+
+    public void SetSpawnInfo(int tier, bool miniBoss)
+    {
+        Tier = tier;
+        IsMiniBoss = miniBoss;
+    }
+
     // Bosses são imunes a knockback (decisão do usuário, Sprint 18→19) — sem isso, ataques
     // com empurrão forte (ex.: golpe do Barbarian) tirariam o boss da própria arena/posição
     // de telegraph, além de trivializar mecânicas de boss pensadas em torno de posição fixa.
@@ -1468,6 +1482,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward, isBoss);
+        if (GrantsXp) GameEvents.EnemyKilledXp(MonsterScaling.XpForKill(Tier, isBoss, IsMiniBoss)); // D9.6b
         GameEvents.EnemyKilledDetailed(gameObject.name, isBoss, directHitsThisLife, dotTicksThisLife, stats.maxHealth, energyReward, transform.position);
     }
 
