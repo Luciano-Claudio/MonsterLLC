@@ -24,7 +24,9 @@ public static class ChestRewardSystem
 
         if (Random.value * 100f < settings.choicePopupChancePercent)
         {
-            ChestPopupUI.Instance?.Show(collectedObject);
+            // O Chest_Popup virou o Cards_Popup (tela de cartas). Etapa 3: o baú entrega 3 cartas
+            // de upgrade/atributo via HeroCards.EnqueueOffer. Até lá (baús desligados no RunSettings) só some.
+            if (collectedObject != null) Object.Destroy(collectedObject);
             return;
         }
 

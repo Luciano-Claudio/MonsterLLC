@@ -3,13 +3,18 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Etapas 1+2 — uma das 3 cartas da tela (CardScreenUI). Campos opcionais: o que estiver ligado é
-// preenchido. Nível mostrado = o que a carta VAI ter se escolhida.
+// Uma das 3 cartas do Cards_Popup (CardScreenUI). Formato montado pelo usuário: o próprio "Card"
+// (Image = fundo da carta + Button) com os filhos Title (tipo: Item/Upgrade/Stat, na cor do tipo),
+// Name, Description e Icon. Fundo, rótulo e cor vêm do estilo do tipo (CardScreenUI); o resto da carta.
 public class CardSlotUI : MonoBehaviour
 {
+    [SerializeField] private Image background;
     [SerializeField] private Image icon;
-    [SerializeField] private TMP_Text title;
+    [Tooltip("Rótulo do tipo (Item / Upgrade / Stat).")]
+    [SerializeField] private TMP_Text kindLabel;
+    [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text description;
+    [Tooltip("Opcional: nível que a carta vai ter se escolhida.")]
     [SerializeField] private TMP_Text level;
     [SerializeField] private Button button;
     [Tooltip("Formato do nível. {0} = nível depois de escolher, {1} = nível máximo.")]
@@ -18,19 +23,21 @@ public class CardSlotUI : MonoBehaviour
     private CardDefinition card;
     private Action<CardDefinition> onClick;
 
-    public void Bind(CardDefinition definition, int currentLevel, Action<CardDefinition> clicked)
+    public void Bind(CardDefinition definition, int currentLevel, CardScreenUI.KindStyle style, Action<CardDefinition> clicked)
     {
         card = definition;
         onClick = clicked;
         gameObject.SetActive(true);
+        if (background != null && style != null && style.background != null) background.sprite = style.background;
+        if (kindLabel != null && style != null) { kindLabel.text = style.label; kindLabel.color = style.labelColor; }
         if (icon != null) { icon.sprite = definition.icon; icon.enabled = definition.icon != null; }
-        if (title != null) title.text = definition.title;
+        if (nameText != null) nameText.text = definition.title;
         if (description != null) description.text = string.Format(definition.description ?? "", ValueText(definition));
         if (level != null) level.text = string.Format(levelFormat, currentLevel + 1, definition.maxLevel);
         if (button != null)
         {
-            button.onClick.RemoveListener(HandleClick);
-            button.onClick.AddListener(HandleClick);
+            button.onClick.RemoveListener(Click);
+            button.onClick.AddListener(Click);
         }
     }
 
@@ -41,8 +48,9 @@ public class CardSlotUI : MonoBehaviour
         return $"{percent:0.#}%";
     }
 
-    private void HandleClick()
+    // Clique ou tecla 1/2/3 (CardScreenUI).
+    public void Click()
     {
-        if (card != null) onClick?.Invoke(card);
+        if (card != null && gameObject.activeInHierarchy) onClick?.Invoke(card);
     }
 }

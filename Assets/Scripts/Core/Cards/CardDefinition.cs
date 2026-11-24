@@ -5,11 +5,15 @@ using UnityEngine;
 // nível dela até maxLevel. Dano multiplica por nível (valuePerLevel^nível); o resto soma.
 public enum CardStat { Damage, Area, Cooldown, AnimSpeed, MoveSpeed, Magnet, MaxHealth }
 public enum CardAbility { None, Primary, Shift, Ultimate }
+// Tipo da carta (muda fundo, rótulo e cor no Cards_Popup): Item = vendedor; Upgrade/Stat = baú;
+// subir de nível pode trazer os 3. Stat = os atributos (etapa 4).
+public enum CardKind { Item, Upgrade, Stat }
 
 [CreateAssetMenu(fileName = "Card", menuName = "MonsterLLC/Card")]
 public class CardDefinition : ScriptableObject
 {
     public string id;
+    public CardKind kind = CardKind.Upgrade;
     public string title;
     [Tooltip("Texto da carta. {0} = o valor do próximo nível (ex.: 25%).")]
     [TextArea] public string description;

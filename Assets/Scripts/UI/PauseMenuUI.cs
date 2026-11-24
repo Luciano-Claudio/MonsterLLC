@@ -20,6 +20,9 @@ public class PauseMenuUI : MonoBehaviour
     private MenuState state = MenuState.Closed;
     private PlayerControls controls;
 
+    // A tela de cartas ignora as teclas 1/2/3 com o menu de pausa aberto por cima.
+    public static bool IsOpen { get; private set; }
+
     private void Awake()
     {
         menuEscPanel = transform.Find("Menu_Esc").gameObject;
@@ -40,7 +43,7 @@ public class PauseMenuUI : MonoBehaviour
     }
 
     private void OnEnable() => controls?.Enable();
-    private void OnDisable() => controls?.Disable();
+    private void OnDisable() { controls?.Disable(); IsOpen = false; }
 
     private static void WireButton(Transform root, string path, UnityEngine.Events.UnityAction action) =>
         root.Find(path).GetComponent<Button>().onClick.AddListener(action);
@@ -65,6 +68,7 @@ public class PauseMenuUI : MonoBehaviour
     {
         bool wasClosed = state == MenuState.Closed;
         state = MenuState.Menu;
+        IsOpen = true;
         menuEscPanel.SetActive(true);
         settingsPanel.SetActive(false);
 
@@ -76,6 +80,7 @@ public class PauseMenuUI : MonoBehaviour
     private void CloseMenu()
     {
         state = MenuState.Closed;
+        IsOpen = false;
         menuEscPanel.SetActive(false);
         settingsPanel.SetActive(false);
 
