@@ -89,12 +89,7 @@ public static class WorldPerkEffects
 
         AutoSellOnPickup = PerkState.GetRank(WorldPerkIds.ImaVivo) > 0;
 
-        int negocianteNato = PerkState.GetRank(WorldPerkIds.NegocianteNato);
-        int mercadorAstuto = PerkState.GetRank(WorldPerkIds.MercadorAstuto);
-        int redeContatos = PerkState.GetRank(WorldPerkIds.RedeContatos);
-        int tesourariaReal = PerkState.GetRank(WorldPerkIds.TesourariaReal);
-        float sellBonusPercent = negocianteNato * 50f + mercadorAstuto * 75f + redeContatos * 100f + tesourariaReal * 150f; // era 10/15/20/30 (5x)
-        Vendor.SellBonusMultiplier = 1f + sellBonusPercent / 100f;
+        // Etapa 3: bônus de venda (Negociante Nato etc.) saiu junto com a venda do Vendor.
 
         ChestSpawnChanceBonusPercent = PerkState.GetRank(WorldPerkIds.BauExtra) * 5f + PerkState.GetRank(WorldPerkIds.ChamadoDoBau) * 10f;
 

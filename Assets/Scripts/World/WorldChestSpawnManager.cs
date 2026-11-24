@@ -8,6 +8,8 @@ using UnityEngine;
 //   (ChestSpawnSettings.min/maxChunksAway). Só 1 baú vivo por vez: se a hora do próximo chega com
 //   um ainda fechado, ela ESPERA (nunca some nem duplica).
 // - Abrir/matar o mímico -> ChestRewardSystem -> oferta de 3 cartas (HeroCards, fonte Chest).
+// - Vendedor (5.5): mesma ideia, com a agenda vendorMin/MaxCount e o prefab do RunSettings. Fica até
+//   ser usado; com nada possível pra oferecer (6 itens no máximo), não aparece mais na run.
 // Mesmo padrão dos outros spawners (Instance, OnHeroSpawned guarda o player, WorldSpawnUtility).
 public class WorldChestSpawnManager : MonoBehaviour
 {
@@ -26,11 +28,16 @@ public class WorldChestSpawnManager : MonoBehaviour
     private GameObject aliveChest;
     private float[] chestTimes = new float[0];
     private int nextChest;
+    private GameObject aliveVendor;
+    private float[] vendorTimes = new float[0];
+    private int nextVendor;
     private readonly System.Random rng = new();
 
     // Pra WorldTargetPointerUI (seta de borda de tela). Null quando não tem baú vivo.
     public Transform AliveChestTransform => aliveChest != null ? aliveChest.transform : null;
     public IReadOnlyList<float> ChestTimes => chestTimes;
+    public IReadOnlyList<float> VendorTimes => vendorTimes;
+    public Transform AliveVendorTransform => aliveVendor != null ? aliveVendor.transform : null;
 
     // Find-or-create "//CHESTS" — mesmo padrão de EnemyController.EnemysContainer/BossesContainer.
     private static Transform chestsContainer;
@@ -70,6 +77,8 @@ public class WorldChestSpawnManager : MonoBehaviour
     {
         if (aliveChest != null) Destroy(aliveChest);
         aliveChest = null;
+        if (aliveVendor != null) Destroy(aliveVendor);
+        aliveVendor = null;
     }
 
     // Início da run (DayTimer.StartRun dispara OnDayStart): agenda nova.
@@ -81,6 +90,10 @@ public class WorldChestSpawnManager : MonoBehaviour
             ? RewardSchedule.Build(s.chestMinCount, s.chestMaxCount, s.runSeconds, s.rewardQuietSeconds, rng)
             : new float[0];
         nextChest = 0;
+        vendorTimes = s.vendorEnabled && s.vendorPrefab != null
+            ? RewardSchedule.Build(s.vendorMinCount, s.vendorMaxCount, s.runSeconds, s.rewardQuietSeconds, rng)
+            : new float[0];
+        nextVendor = 0;
     }
 
     private void Update()
@@ -100,6 +113,13 @@ public class WorldChestSpawnManager : MonoBehaviour
         {
             if (SpawnOneChest()) nextChest++;
         }
+
+        if (nextVendor < vendorTimes.Length && now >= vendorTimes[nextVendor] && aliveVendor == null)
+        {
+            var cards = HeroCards.Instance;
+            if (cards != null && !cards.CanOffer(OfferSource.Vendor)) nextVendor = vendorTimes.Length; // nada a oferecer: acabou o vendedor
+            else if (SpawnVendor()) nextVendor++;
+        }
     }
 
     private bool SpawnOneChest()
@@ -114,6 +134,17 @@ public class WorldChestSpawnManager : MonoBehaviour
         var spawned = Instantiate(prefab, spawnPosition, Quaternion.identity, ChestsContainer);
         WorldSpawnUtility.RestrictToOpenWorldGraph(spawned); // no-op pro Chest normal (sem Seeker) — só importa pro Mimic
         aliveChest = spawned;
+        return true;
+    }
+
+    private bool SpawnVendor()
+    {
+        var prefab = RunSettings.Current.vendorPrefab;
+        if (prefab == null || chestSettings == null || worldSettings == null) return false;
+        if (!TryGetRingPosition(out var spawnPosition)) return false;
+        aliveVendor = Instantiate(prefab, spawnPosition, Quaternion.identity, ChestsContainer);
+        var vendor = aliveVendor.GetComponent<Vendor>();
+        if (vendor != null) vendor.MarkSpawned();
         return true;
     }
 

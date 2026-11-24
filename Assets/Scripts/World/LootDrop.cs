@@ -89,38 +89,7 @@ public class LootDrop : MonoBehaviour
     {
         if (beingDestroyed) return; // já sendo absorvido por outro loot neste mesmo frame
 
-        // Ímã Vivo (World Perk, Seção 8, item 7) — auto-vende no instante da coleta, nunca
-        // passa pela Bag. Mesmo valor de venda que o Vendor manual daria (TryComputeSaleValue
-        // é a fonte única dos 2 caminhos) — se o item não tem preço cadastrado, cai pro
-        // caminho normal (vai pra Bag mesmo).
-        if (WorldPerkEffects.AutoSellOnPickup && Vendor.Instance != null
-            && Vendor.Instance.TryComputeSaleValue(loot.itemName, loot.quantity, out long saleValue))
-        {
-            MainMenuUI.CurrentRun.gold += saleValue;
-            GameEvents.GoldChanged(MainMenuUI.CurrentRun.gold);
-            DayStatsTracker.RegisterItemSold(loot.itemName, loot.quantity, saleValue);
-
-            // Pedido do usuário: "o magnet vai ser literalmente o vendor ligado 100% do tempo" —
-            // mesmo arco visual (herói/chão -> carrinho) que Vendor.Interact() dispara numa
-            // venda manual, só que a partir de onde o loot estava no chão (não existe posição
-            // de Bag pra usar aqui, já que o Ímã Vivo nunca deixa o item passar por ela). O
-            // gold/stat já aconteceram ali em cima, instantâneo — isto é 100% cosmético, mesmo
-            // critério documentado em VendorCart (nunca atrasa nem bloqueia a economia real).
-            Vendor.Instance.cart?.AcceptSale(loot.itemName, loot.quantity, transform.position);
-
-            // Bug real: Collect() é chamado por HeroController.OnTriggerStay2D, que dispara a
-            // CADA passo de física enquanto o herói ficar em cima do loot — e Destroy() só
-            // "vale" no fim do frame (mesmo padrão de deferred-Destroy já corrigido em outros
-            // lugares deste projeto, ex. HeroProjectile/GroundCrack). Sem travar aqui, mais de
-            // 1 FixedUpdate no mesmo frame (comum em qualquer soluço de frame rate) processava
-            // o MESMO loot de novo antes dele sumir de verdade, vendendo (e creditando gold)
-            // 2x ou mais pelo mesmo item. Reaproveita o mesmo guard que a fusão de pilhas já usa
-            // (mesmo significado: "este objeto já está saindo, ignora qualquer novo encontro").
-            beingDestroyed = true;
-            Destroy(gameObject);
-            return;
-        }
-
+        // Etapa 3: a auto-venda do Ímã Vivo saiu junto com a venda do Vendor (não existe gold na run).
         long added = BagController.Instance.AddItem(loot.itemName, loot.quantity);
 
         if (added < loot.quantity)
