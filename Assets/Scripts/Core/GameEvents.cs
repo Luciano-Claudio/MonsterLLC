@@ -150,6 +150,10 @@ public static class GameEvents
     public static event Action<IReadOnlyList<Transform>> OnBossGroupSpawned;
     public static void BossGroupSpawned(IReadOnlyList<Transform> bosses) => OnBossGroupSpawned?.Invoke(bosses);
 
+    // Etapas 1+2 — o Divine God (último boss da run) morreu: vitória (DayResolver.EndRun).
+    public static event Action OnFinalBossKilled;
+    public static void FinalBossKilled() => OnFinalBossKilled?.Invoke();
+
     // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
     // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão
     // do usuário: nos dois casos a população precisa renascer do zero sob as regras atuais

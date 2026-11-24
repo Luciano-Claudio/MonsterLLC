@@ -626,6 +626,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
         if (!shouldSimulate) return;
 
+        AliveSeconds += Time.deltaTime;
         UpdateDamageFlash();
         UpdateKnockback();
         UpdateExternalSlow();
@@ -1372,6 +1373,25 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Sprint 24 (Boss Spawn System) — permite ao BossSpawnManager marcar o boss sem
     // depender do Inspector de cada prefab já vir configurado certo.
     public void SetIsBoss(bool value) => isBoss = value;
+
+    // Etapas 1+2 (spec 5.3/5.6) — multiplicadores da run: enrage do boss e buff noturno. Escreve em
+    // stats.moveSpeed/stats.attackDamage a partir da base guardada na 1ª chamada (18 scripts de
+    // inimigo leem stats.attackDamage direto; reescrever o valor é o que alcança todos eles).
+    private float runBaseMoveSpeed = -1f, runBaseAttackDamage = -1f;
+    public float RunSpeedMultiplier { get; private set; } = 1f;
+    public float RunDamageMultiplier { get; private set; } = 1f;
+    // Segundos vivo, contados só com o jogo ativo (base do enrage). Setter público só pra verificação no Editor.
+    public float AliveSeconds { get; set; }
+
+    public void SetRunMultipliers(float speed, float damage)
+    {
+        if (runBaseMoveSpeed < 0f) { runBaseMoveSpeed = stats.moveSpeed; runBaseAttackDamage = stats.attackDamage; }
+        if (Mathf.Approximately(speed, RunSpeedMultiplier) && Mathf.Approximately(damage, RunDamageMultiplier)) return;
+        RunSpeedMultiplier = speed;
+        RunDamageMultiplier = damage;
+        stats.moveSpeed = runBaseMoveSpeed * speed;
+        stats.attackDamage = runBaseAttackDamage * damage;
+    }
     public bool IsBoss => isBoss;
 
     // Regra do usuário: quem spawna decide o container — monstro comum manda pra ENEMYS,

@@ -1,221 +1,156 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Substitui o BossSpawnManager antigo (removido junto com o resto do sistema de Floor) —
-// Sprint P7. Segue o design de docs/new/Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_
-// ATUALIZADO_V2.md (Seção 17): Boss Timer decide QUANDO, a mesma distribuição de Tier usada
-// pelo monstro comum (WorldTierSelector) decide QUAL Tier priorizar — mas aqui é por ORDEM DE
-// PREDOMINÂNCIA (maior peso primeiro), nunca um roll.
-//
-// Identidade "bag sem repetição" (UsedBossIdsToday) — decisão do usuário (2026-10-21,
-// corrigindo o comportamento antigo): esgotar os BossDefinitionSO de UM Tier NÃO reseta mais
-// só aquele Tier sozinho — isso fazia o Tier dominante (maior %) nunca dar espaço pros outros,
-// porque ele se auto-resetava e continuava sendo escolhido pra sempre. Agora, esgotar um Tier
-// só avança pro PRÓXIMO Tier de maior peso ainda com boss disponível (TryPickFromRankedTiers);
-// o reset geral (volta tudo a valer) só acontece quando TODOS os Tiers elegíveis (peso > 0)
-// já esgotaram TODOS os seus BossDefinitionSO hoje. O reset diário (GameEvents.OnDayStart)
-// continua existindo por cima disso.
+// Etapas 1+2 (docs/superpowers/specs/2026-11-24-etapas-1-2-run-25min-cartas-design.md, 5.2/5.3/5.6) —
+// 1 boss por minuto, na ORDEM do RunSettings (escolhida pelo usuário), via DayTimer.Schedule.
+// - Vários bosses podem estar vivos; só o Divine God (último espaço) segura o relógio em 0.
+// - Enrage: com 1 min vivo ganha velocidade, com 2 min ganha dano (e o dano continua subindo).
+// - À noite, +velocidade (RunSettings.nightSpeedMultiplier), somado ao enrage.
+// - Boss longe demais do herói é teleportado pra perto (fora da câmera), como antes.
+// Saiu: Boss Timer por dia, escolha por peso de tier e a "bag sem repetição" (a ordem é fixa).
 public class WorldBossSpawnManager : MonoBehaviour
 {
     public static WorldBossSpawnManager Instance { get; private set; }
 
     public WorldGenerationSettings worldSettings;
-    public BossSpawnSettings bossSettings;
-
-    [Tooltip("Quantos bosses nascem juntos a cada Boss Timer periódico (🔢 ajustável). Revertido pra 1 (decisão do usuário, 2026-10-25) — chegou a ser 2 por um tempo, mas voltou ao padrão de 1 boss por ciclo. NÃO se aplica ao replacement por distância, que continua repondo 1 por vez.")]
-    public int bossesPerSpawnCycle = 1;
-
-    [Header("Debug / Teste")]
-    [Tooltip("Mesmo padrão de WorldPopulationManager/ChunkTerrainGenerator — ignora o Dia real da run e usa testDayOverride no lugar.")]
-    public bool useTestDayOverride;
-    [Range(1, 10)]
-    public int testDayOverride = 1;
-
-    [Header("Debug / Teste — Isolamento de Tier (só teste, não existe no jogo real)")]
-    [Tooltip("Se marcado, ignora toda a % normal/ordem de predominância e força 100% dos bosses vindo só do testTierOverride — de propósito quebra o sistema de % (não tem mais % de tier nenhum enquanto isto estiver ligado). Depois de marcar/mudar o Tier, usa o botão de contexto abaixo pra resetar os bosses vivos e já nascer todo mundo sob a regra nova.")]
-    public bool useTierIsolationOverride;
-    [Range(1, 10)]
-    public int testTierOverride = 1;
+    public BossSpawnSettings bossSettings; // distâncias de spawn/teleporte (o intervalo agora vem do RunSettings)
 
     private Transform player;
-    private readonly List<GameObject> aliveBosses = new();
-
-    // Telemetria de run (docs/superpowers/specs/2026-11-16-run-telemetry-design.md) — leitura
-    // read-only, nenhuma mudança de comportamento.
+    private readonly List<EnemyController> aliveBosses = new();
     public int AliveCount => aliveBosses.Count;
-    private readonly HashSet<BossDefinitionSO> usedBossIdsToday = new();
-    private readonly List<BossDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickUnusedBossForTier
-    private readonly List<Transform> spawnBatchScratch = new(); // reaproveitado em Update, pro Boss Timer periódico
-    private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
-    private readonly bool[] tierVisitedScratch = new bool[WorldTierSelector.MonsterTierCount]; // ordem de predominância em TryPickBossDefinition
 
-    // Tempo decorrido do dia (dayDuration - DayTimer.timeRemaining) no último Boss Timer
-    // periódico — substitui o antigo "bossTimer += Time.deltaTime" próprio. Os dois contadores
-    // incrementavam de forma independente (cada um no seu Update()), sem ordem de execução
-    // garantida entre scripts diferentes — na borda exata de noSpawnWindowBeforeDayEnd, dava pra
-    // ler um timeRemaining de 1 frame atrás e deixar passar um spawn por uma fração de segundo
-    // (bug real reportado pelo usuário). Lendo tudo direto de DayTimer.timeRemaining dentro do
-    // mesmo Update() elimina essa fresta — só existe 1 fonte de verdade agora.
-    private float lastSpawnElapsedTime;
-    private float replacementCooldownTimer; // proteção contra reroll por distância (doc, Seção 17) — andar de um lado pro outro na borda do bossDespawnDistance não gera replacement repetido
+    private int spawnedSlots;
+    private EnemyController finalBoss;
+    private bool finalBossKilledFired;
+    public int BossesKilled { get; private set; }
 
-    // Pro Time_Bar (UI) conseguir prever a posição exata dos Boss Signs desde o início do dia
-    // (decisão do usuário) — único lugar que lê o intervalo de verdade, então mudar
-    // bossSpawnInterval no BossSpawnSettings já atualiza a UI junto, sem duplicar o valor.
-    public float BossSpawnInterval => bossSettings != null ? bossSettings.bossSpawnInterval : 0f;
-    public float NoSpawnWindowBeforeDayEnd => bossSettings != null ? bossSettings.noSpawnWindowBeforeDayEnd : 0f;
-
-    private int ActualDay => useTestDayOverride ? testDayOverride : (MainMenuUI.CurrentRun?.day ?? 1);
+    private float replacementCooldownTimer; // proteção contra teleporte repetido na borda do bossDespawnDistance
 
     private void Awake() => Instance = this;
 
-    // Chamado pelo ChunkTerrainGenerator.RegenerateWorld() — bug real reportado: o botão
-    // "Regenerar Mundo" só repintava o bioma com o override do PRÓPRIO ChunkTerrainGenerator;
-    // WorldPopulationManager/WorldBossSpawnManager tinham seus próprios campos
-    // useTestDayOverride/testDayOverride, nunca sincronizados automaticamente — resultado: o
-    // bioma mudava de Tier mas monstro/boss continuavam nascendo no Dia antigo (cada um lia o
-    // próprio ActualDay, nunca atualizado). Sincroniza os 3 de uma vez só no clique do botão.
-    public void SyncDayOverride(bool enabled, int day)
-    {
-        useTestDayOverride = enabled;
-        testDayOverride = day;
-    }
-
-    // Chamado pelo DebugResetForTierIsolation do OUTRO manager (ver lá embaixo) — sem isso,
-    // bug real reportado pelo usuário: isolar o Tier só em WorldBossSpawnManager (ou só em
-    // WorldPopulationManager) deixava o outro lado inteiro de fora, nascendo bosses/monstros de
-    // Tiers passados enquanto o lado "isolado" já estava certinho.
-    public void SyncTierIsolation(bool enabled, int tier)
-    {
-        useTierIsolationOverride = enabled;
-        testTierOverride = tier;
-    }
-
-    // Botão de contexto (clique direito no componente no Inspector) — espelha o bool/Tier pro
-    // WorldPopulationManager ANTES de limpar, então 1 clique em QUALQUER um dos dois já isola
-    // monstro comum E boss juntos, sempre no mesmo Tier.
-    [ContextMenu("Debug: Resetar e isolar Tier")]
-    public void DebugResetForTierIsolation()
-    {
-        if (!Application.isPlaying)
-        {
-            Debug.LogWarning("[WorldBossSpawnManager] \"Resetar e isolar Tier\" só funciona em Play Mode.");
-            return;
-        }
-
-        WorldPopulationManager.Instance?.SyncTierIsolation(useTierIsolationOverride, testTierOverride);
-        GameEvents.ClearAllEnemies();
-        LootDrop.DestroyAllOnGround(); // só debug — poluição visual/FPS numa sessão de teste, nunca no fluxo normal
-        Debug.Log(useTierIsolationOverride
-            ? $"[WorldBossSpawnManager] Isolamento de Tier ativo — só nasce Tier {testTierOverride} agora (monstro comum e boss)."
-            : "[WorldBossSpawnManager] useTierIsolationOverride está desmarcado — resetou, mas a distribuição normal por % continua valendo.");
-    }
+    // Mantidos só por compatibilidade com os botões de debug antigos (dia/tier não existem mais na run).
+    public void SyncDayOverride(bool enabled, int day) { }
+    public void SyncTierIsolation(bool enabled, int tier) { }
 
     private void OnEnable()
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
-        GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnDayStart += HandleRunStart;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
+        GameEvents.OnEnemyKilled += HandleEnemyKilled;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
-        GameEvents.OnDayStart -= HandleDayStart;
+        GameEvents.OnDayStart -= HandleRunStart;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
+        GameEvents.OnEnemyKilled -= HandleEnemyKilled;
     }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
-    // Novo ActualDay -> UsedBossIdsToday.Clear() (doc, Seção 17.3) — mesmo gatilho que
-    // DayTimer.ResetForNewDay() já usa pra avisar o resto do jogo (ShopHandler/MainMenuUI).
-    // lastSpawnElapsedTime também reseta aqui agora (decisão do usuário) — o Boss Timer
-    // periódico passa a ser 100% previsível desde o segundo 0 de cada dia (sempre em interval,
-    // 2×interval, ...), o que a Time_Bar (UI) precisa pra desenhar os Boss Signs com a posição
-    // exata.
-    private void HandleDayStart()
+    private void HandleRunStart()
     {
-        usedBossIdsToday.Clear();
-        lastSpawnElapsedTime = 0f;
+        spawnedSlots = 0;
+        finalBoss = null;
+        finalBossKilledFired = false;
+        BossesKilled = 0;
     }
 
-    // "Regenerar Mundo" / compra de Tier Suppression — nunca é morte (sem loot/kill). Não mexe
-    // em usedBossIdsToday nem em lastSpawnElapsedTime de propósito — a identidade diária e o
-    // timer continuam contando normal, só os bosses vivos agora são removidos (o próximo Boss
-    // Timer já respeita Tier Suppression sozinho, via TryPickBossDefinition).
+    private void HandleEnemyKilled(int energy, bool isBoss)
+    {
+        if (isBoss) BossesKilled++;
+    }
+
     private void HandleClearAllEnemies()
     {
         foreach (var boss in aliveBosses)
         {
-            if (boss != null) Destroy(boss);
+            if (boss != null) Destroy(boss.gameObject);
         }
         aliveBosses.Clear();
     }
 
     private void Update()
     {
-        // HeroController.IsDying — mesmo motivo de WorldPopulationManager.Update() (ver lá).
-        if (!GameplayGate.IsActive || HeroController.IsDying || player == null || worldSettings == null || bossSettings == null) return;
-
-        aliveBosses.RemoveAll(b => b == null); // null = morreu (EnemyController.Die()) — sem replacement automático, só o Boss Timer normal repõe
-
-        // 1 leitura só de DayTimer.timeRemaining pro frame inteiro — tanto o gate de "últimos N
-        // segundos" quanto o Boss Timer periódico (abaixo) usam essa MESMA leitura, então nunca
-        // dessincronizam entre si dentro do mesmo Update().
-        float timeRemaining = DayTimer.Instance != null ? DayTimer.Instance.timeRemaining : 0f;
-        float dayDuration = DayTimer.Instance != null ? DayTimer.Instance.CurrentDayDuration : 0f;
-
-        // Últimos N segundos do dia (BossSpawnSettings.noSpawnWindowBeforeDayEnd) — nenhum boss
-        // novo nasce, nem replacement nem o Boss Timer periódico (decisão do usuário: evita um
-        // boss nascer bem na virada do dia, sem tempo de combate de verdade).
-        bool bossSpawningBlocked = DayTimer.Instance != null
-            && timeRemaining <= bossSettings.noSpawnWindowBeforeDayEnd;
-
-        if (replacementCooldownTimer > 0f)
-        {
-            replacementCooldownTimer -= Time.deltaTime;
-        }
-        else if (!bossSpawningBlocked)
-        {
-            for (int i = aliveBosses.Count - 1; i >= 0; i--)
-            {
-                float distance = Vector2.Distance(aliveBosses[i].transform.position, player.position);
-                if (distance <= bossSettings.bossDespawnDistance) continue;
-
-                // GDD Deadline 8.1, Seção 4.1 — teleporta em vez de Destroy+SpawnOneBoss: o
-                // MESMO boss (HP/estado preservados) salta pra perto do jogador em vez de
-                // sempre nascer "fresco" depois de se afastar. Reaproveita o mesmo cooldown de
-                // antes só pra não tentar reposicionar todo frame enquanto ele ainda estiver
-                // fora do alcance.
-                if (TeleportBossNearPlayer(aliveBosses[i])) replacementCooldownTimer = bossSettings.bossReplacementCooldown;
-                break; // só 1 por frame — mesmo critério de antes
-            }
-        }
-
-        float elapsed = dayDuration - timeRemaining;
-        if (bossSpawningBlocked || elapsed - lastSpawnElapsedTime < bossSettings.bossSpawnInterval) return;
-        lastSpawnElapsedTime = elapsed;
-
-        // Boss Timer periódico — spawna bossesPerSpawnCycle bosses juntos (hoje, 1 de novo) e
-        // dispara UM reveal só com o grupo inteiro (o reveal em si continua funcionando pra
-        // qualquer tamanho de grupo, não precisou mudar nada em BossEncounterCameraController).
-        spawnBatchScratch.Clear();
-        for (int i = 0; i < bossesPerSpawnCycle; i++)
-        {
-            var spawned = SpawnOneBoss();
-            if (spawned != null) spawnBatchScratch.Add(spawned.transform);
-        }
-        if (spawnBatchScratch.Count > 0) GameEvents.BossGroupSpawned(spawnBatchScratch.ToArray()); // snapshot — spawnBatchScratch é reaproveitado no próximo ciclo
+        if (!GameplayGate.IsActive || HeroController.IsDying) return;
+        Tick(Time.deltaTime);
     }
 
-    // GDD Deadline 8.1, Seção 4.1 — mesma busca de posição de SpawnOneBoss() (reaproveita
-    // bossReplacementSpawnMinDistance/MaxDistance, já pensados pra "onde um boss substituto
-    // nasce perto do jogador"), mas reposiciona o MESMO GameObject em vez de instanciar um
-    // novo. "Fora do campo de visão da câmera" é sempre true aqui (não probabilístico como no
-    // spawn normal/replacement) — doc explícita: teleporte nunca deve acontecer à vista do
-    // jogador. Retorna false se nenhuma posição válida foi achada (tenta de novo no próximo
-    // ciclo, nunca loop infinito).
-    private bool TeleportBossNearPlayer(GameObject boss)
+    private void Tick(float deltaTime)
+    {
+        var timer = DayTimer.Instance;
+        if (timer == null || timer.Schedule == null || player == null || worldSettings == null || bossSettings == null) return;
+
+        for (int i = aliveBosses.Count - 1; i >= 0; i--)
+            if (aliveBosses[i] == null || aliveBosses[i].IsDead) aliveBosses.RemoveAt(i);
+
+        UpdateFinalBoss(timer);
+        SpawnDueBosses(timer);
+        ApplyRunMultipliers(timer);
+        TeleportFarBoss(deltaTime);
+    }
+
+    private void UpdateFinalBoss(DayTimer timer)
+    {
+        if (finalBoss == null && !finalBossKilledFired) { timer.FinalBossAlive = false; return; }
+        if (finalBossKilledFired) return;
+        if (finalBoss.IsDead)
+        {
+            finalBossKilledFired = true;
+            timer.FinalBossAlive = false;
+            GameEvents.FinalBossKilled();
+        }
+    }
+
+    private void SpawnDueBosses(DayTimer timer)
+    {
+        var schedule = timer.Schedule;
+        var order = timer.Settings != null ? timer.Settings.bossOrder : null;
+        int due = schedule.SlotsDueBy(timer.RunElapsed);
+        while (spawnedSlots < due)
+        {
+            var definition = order != null && spawnedSlots < order.Count ? order[spawnedSlots] : null;
+            if (definition == null || definition.prefab == null) { spawnedSlots++; continue; } // espaço vazio: minuto sem boss
+
+            var spawned = SpawnBoss(definition);
+            if (spawned == null) return; // nenhuma posição válida agora — tenta de novo no próximo frame
+            spawnedSlots++;
+            if (definition.tier == 10)
+            {
+                finalBoss = spawned;
+                timer.FinalBossAlive = true;
+            }
+            GameEvents.BossGroupSpawned(new[] { spawned.transform });
+        }
+    }
+
+    private void ApplyRunMultipliers(DayTimer timer)
+    {
+        var schedule = timer.Schedule;
+        float night = timer.IsNight && timer.Settings != null ? timer.Settings.nightSpeedMultiplier : 1f;
+        for (int i = 0; i < aliveBosses.Count; i++)
+        {
+            var boss = aliveBosses[i];
+            boss.SetRunMultipliers(schedule.EnrageSpeedMultiplier(boss.AliveSeconds) * night,
+                schedule.EnrageDamageMultiplier(boss.AliveSeconds));
+        }
+    }
+
+    private void TeleportFarBoss(float deltaTime)
+    {
+        if (replacementCooldownTimer > 0f) { replacementCooldownTimer -= deltaTime; return; }
+        for (int i = aliveBosses.Count - 1; i >= 0; i--)
+        {
+            float distance = Vector2.Distance(aliveBosses[i].transform.position, player.position);
+            if (distance <= bossSettings.bossDespawnDistance) continue;
+            if (TeleportBossNearPlayer(aliveBosses[i])) replacementCooldownTimer = bossSettings.bossReplacementCooldown;
+            break; // só 1 por frame
+        }
+    }
+
+    private bool TeleportBossNearPlayer(EnemyController boss)
     {
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + bossSettings.spawnSafetyPadding;
         if (!WorldSpawnUtility.TryGetSpawnPosition(
@@ -226,131 +161,50 @@ public class WorldBossSpawnManager : MonoBehaviour
             return false;
         }
 
-        var controller = boss.GetComponent<EnemyController>();
-        if (controller != null) controller.CancelAttackForTeleport(); // cancela golpe telegrafado ANTES do salto — Animator não pode ficar preso numa ação numa posição que não existe mais
-
+        boss.CancelAttackForTeleport(); // cancela golpe telegrafado ANTES do salto
         boss.transform.position = newPosition;
         return true;
     }
 
-    private GameObject SpawnOneBoss()
+    private EnemyController SpawnBoss(BossDefinitionSO definition)
     {
-        if (bossSettings.roster == null || bossSettings.roster.Count == 0) return null;
-        if (!TryPickBossDefinition(player.position, out var definition)) return null; // pool do dia esgotada em todos os Tiers elegíveis — vaga fica pro próximo ciclo
-
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + bossSettings.spawnSafetyPadding;
-        // Rolado por spawn individual (não por BossDefinitionSO) — mesmo critério do monstro comum.
         bool preferOutsideView = Random.value < bossSettings.outsideCameraViewChance;
+        Vector3 spawnPosition;
+#if UNITY_EDITOR
+        if (debugFixedSpawn) spawnPosition = player.position + Vector3.right * 8f; else
+#endif
         if (!WorldSpawnUtility.TryGetSpawnPosition(
                 player.position, bossSettings.bossReplacementSpawnMinDistance, bossSettings.bossReplacementSpawnMaxDistance,
-                minDistanceFromOrigin, bossSettings.maxSpawnPositionAttempts, out var spawnPosition,
+                minDistanceFromOrigin, bossSettings.maxSpawnPositionAttempts, out spawnPosition,
                 bossSettings.spawnObstacleClearanceRadius, bossSettings.obstacleLayerMask, preferOutsideView))
         {
-            return null; // nenhuma posição válida nas tentativas — tenta de novo no próximo ciclo, nunca loop infinito (doc, Seção 11.6)
+            return null;
         }
 
         var bossObj = Instantiate(definition.prefab, spawnPosition, Quaternion.identity, EnemyController.BossesContainer);
         WorldSpawnUtility.RestrictToOpenWorldGraph(bossObj);
-
-        // Todo boss nasce já em combate, mesmo longe do jogador (doc, Seção 17.6: "Immediate
-        // Aggro") — sem fase de patrulha/idle esperando observationRadius, diferente do
-        // monstro comum.
         var controller = bossObj.GetComponent<EnemyController>();
-        if (controller != null)
-        {
-            controller.SetIsBoss(true);
-            controller.SetSpawnInfo(definition.tier, false); // D9.6b — XP de boss (×10 do tier)
-            controller.ForceImmediateAggro();
-        }
-
-        usedBossIdsToday.Add(definition); // só marca usado depois do spawn de fato acontecer — se a posição falhar acima, a entrada continua disponível
-        aliveBosses.Add(bossObj);
-
-        return bossObj;
+        if (controller == null) { Destroy(bossObj); return null; }
+        controller.SetIsBoss(true);
+        controller.SetSpawnInfo(definition.tier, false);
+        controller.ForceImmediateAggro();
+        aliveBosses.Add(controller);
+        return controller;
     }
 
-    // DominantTier = Tier de maior peso na distribuição atual (nunca um roll, diferente do
-    // monstro comum). Se a pool desse Tier já esgotou hoje (todo BossDefinitionSO em
-    // UsedBossIdsToday), avança pro próximo Tier por ordem de predominância (doc, Seção 17.4) —
-    // isso é o que "dá espaço" pros Tiers de peso menor nascerem (exemplo do usuário: 50%
-    // Tier1/25% Tier2/25% Tier3, Tier1 esgotado -> tenta Tier2, depois Tier3). Só se TODOS os
-    // Tiers elegíveis (peso > 0) esgotarem é que reseta geral (usedBossIdsToday.Clear()) e
-    // tenta a rodada inteira de novo, uma única vez.
-    private bool TryPickBossDefinition(Vector2 playerPosition, out BossDefinitionSO chosen)
+#if UNITY_EDITOR
+    // Só para verificação no Editor (eval): roda 1 passo ignorando pausa/estado do jogo.
+    // Fora do Play Mode não existe mundo pra achar posição de spawn: a eval usa uma posição fixa.
+    private bool debugFixedSpawn;
+
+    public void DebugTick(Transform hero)
     {
-        float distanceFromOrigin = playerPosition.magnitude;
-        int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
-            distanceFromOrigin, worldSettings.safeZoneRadius, worldSettings.distancePerSpawnDay, ActualDay);
-
-        var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
-        bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
-        int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
-        int forcedTierIndex = useTierIsolationOverride ? testTierOverride - 1 : -1;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
-
-        if (TryPickFromRankedTiers(out chosen)) return true;
-
-        usedBossIdsToday.Clear();
-        return TryPickFromRankedTiers(out chosen);
+        player = hero;
+        debugFixedSpawn = !Application.isPlaying;
+        Tick(0f);
     }
 
-    // Percorre os Tiers elegíveis (peso > 0) em ordem de predominância, maior peso primeiro,
-    // e usa o primeiro que ainda tiver algum BossDefinitionSO não usado hoje.
-    private bool TryPickFromRankedTiers(out BossDefinitionSO chosen)
-    {
-        chosen = null;
-        for (int t = 0; t < WorldTierSelector.MonsterTierCount; t++) tierVisitedScratch[t] = false;
-
-        for (int rank = 0; rank < WorldTierSelector.MonsterTierCount; rank++)
-        {
-            int tierIndex = PickNextStrongestTier();
-            if (tierIndex < 0) break; // nenhum Tier com peso > 0 restante — defesa, tabela de dia não deveria vir zerada
-
-            if (TryPickUnusedBossForTier(tierIndex + 1, out chosen)) return true;
-        }
-
-        return false;
-    }
-
-    // Acha o Tier de maior peso ainda não visitado nesta chamada de TryPickBossDefinition —
-    // chamado em sequência pra percorrer a ordem de predominância inteira (maior peso primeiro).
-    private int PickNextStrongestTier()
-    {
-        int bestIndex = -1;
-        float bestPercent = 0f;
-        for (int t = 0; t < WorldTierSelector.MonsterTierCount; t++)
-        {
-            if (tierVisitedScratch[t]) continue;
-            if (tierPercentsBuffer[t] <= bestPercent) continue;
-            bestPercent = tierPercentsBuffer[t];
-            bestIndex = t;
-        }
-
-        if (bestIndex >= 0) tierVisitedScratch[bestIndex] = true;
-        return bestIndex;
-    }
-
-    // "Bag sem repetição" dentro do Tier (doc, Seção 17.3) — sorteio uniforme entre os ainda
-    // não usados hoje (decisão do usuário: sem peso configurável por BossDefinitionSO). SEM
-    // auto-reset por Tier aqui (ver comentário de TryPickBossDefinition) — exaurir este Tier só
-    // retorna false, pra TryPickFromRankedTiers avançar pro próximo Tier da ordem de
-    // predominância. Vale tanto pra Tier sem nenhum BossDefinitionSO cadastrado (bestiário
-    // incompleto) quanto pra Tier com todos já usados hoje — os dois casos dão passagem igual.
-    private bool TryPickUnusedBossForTier(int tierNumber1Based, out BossDefinitionSO chosen)
-    {
-        chosen = null;
-        candidateScratch.Clear();
-
-        foreach (var def in bossSettings.roster)
-        {
-            if (def == null || def.prefab == null || def.tier != tierNumber1Based) continue;
-            if (usedBossIdsToday.Contains(def)) continue;
-            candidateScratch.Add(def);
-        }
-
-        if (candidateScratch.Count == 0) return false;
-
-        chosen = candidateScratch[Random.Range(0, candidateScratch.Count)];
-        return true;
-    }
+    public IReadOnlyList<EnemyController> DebugAliveBosses => aliveBosses;
+#endif
 }
