@@ -1,0 +1,177 @@
+# Etapa 4 — Especializações, tags de carta e oferta 60% upgrade
+
+Data: 2026-11-24. Etapa seguinte à 3 (baú/vendedor/itens) da simplificação da run de 25 min.
+
+## Por que
+
+O usuário vai criar ~60 cartas novas (30 itens + 30 atributos, mais upgrades por habilidade). Boa parte
+só faz sentido para certos estilos: carta de DOT para quem não aplica DOT, item de projétil para quem não
+solta projétil ou armadura de espinhos para um herói à distância seriam cartas mortas. Antes de criar as
+cartas, cada herói passa a ter **2 especializações** com estilos diferentes, e cada especialização declara
+**tags**. As cartas exigem tags, e o sorteio só oferece o que serve.
+
+Sucesso: o jogador escolhe a especialização no começo da run, o herói joga de forma visivelmente diferente
+em cada uma, e nenhuma oferta (level up, baú, vendedor) traz carta de uma tag que a especialização não tem.
+
+## Objetivos
+
+1. **Tela de escolha de especialização:** exclusiva, não é a tela das 3 cartas. Aparece logo no começo
+   da run, com o jogo pausado e 2 botões. O jogo só começa depois da escolha, que é a primeira de todas.
+   A escolha vale até o fim da run, sem troca.
+2. **Tags:** cada especialização tem uma lista de tags. Cada carta pode exigir tags; basta a
+   especialização ter **uma** delas. Carta sem tag aparece para todos. O filtro vale em **todas** as
+   ofertas: level up, baú e vendedor.
+3. **Oferta de level up comum, 60% upgrade:** cada uma das 3 cartas tem 60% de chance de ser Upgrade e
+   40% de ser Item. **No máximo 2 itens por oferta**: uma carta que sortearia o 3º item vira Upgrade.
+   Três upgrades podem sair. O level up múltiplo de 5 continua só com Stats. Baú e vendedor não mudam.
+4. **6 especializações dos 3 primeiros heróis:** Barbarian, Ranger e Mage, cada um com 2.
+
+## Não-objetivos (ficam para depois)
+
+- As 60 cartas novas da tabela do usuário. Entram em etapas seguintes, em lotes, começando pelas que
+  servem a essas 6 especializações.
+- Os upgrades que evoluem cada especialização, como as Fendas do Terremoto, o Ground Crack criado pela
+  Ultimate e os upgrades de nível máximo. A etapa só cria a tag "Terremoto" para essas cartas futuras.
+- As especializações dos outros 7 heróis: Druid, Rogue, Cleric, Paladin, Gunslinger, Assassin e
+  BloodMage.
+
+## Anti-objetivos
+
+- Uma carta de tag errada aparecer, por exemplo DOT para o Terremoto.
+- O jogo rodar, com inimigos ou com o tempo da run correndo, antes da escolha da especialização.
+- A escolha de uma run vazar para a próxima. Com o domain reload desligado, todo estado estático
+  precisa zerar no começo da run.
+- Quebrar os heróis sem especialização.
+
+## Tags
+
+**Tags:** DOT, Projétil, Hitscan, Pet, Tank, Escudo, Cura, Tamanho, Terremoto.
+
+Regras definidas na conversa:
+- Uma especialização só recebe a tag de um estilo quando ele é o centro do jogo dela. Se o estilo só
+  aparece na Ultimate, a tag fica de fora. Por isso Beast Master e Summoner não têm DOT, e o Druid
+  Florest também não terá.
+- Hitscan existe para o Gunslinger. Os tiros dele não são objetos voando, então as cartas de "objeto
+  voando" (perseguir, tamanho e velocidade do projétil) não servem para ele. As cartas de "acerto à
+  distância" (Ricochet Fate e Shattered Prism) vão exigir Projétil **ou** Hitscan.
+
+Tabela de referência, para as etapas seguintes. Nesta etapa só as 6 primeiras linhas são implementadas.
+
+| Herói | Especialização | Tags |
+|---|---|---|
+| Barbarian | Sangramento | DOT, Tank, Tamanho |
+| Barbarian | Terremoto | Tank, Tamanho, Terremoto |
+| Ranger | Olhos de Águia | DOT, Projétil |
+| Ranger | Beast Master | Pet, Projétil |
+| Mage | Ignite | DOT |
+| Mage | Summoner | Pet |
+| Druid | Florest | Cura (sem DOT: o DOT só vem da Ultimate) |
+| Druid | Feral | Tank, Tamanho |
+| Rogue | Bleeding | DOT |
+| Rogue | Bomberman | Projétil |
+| Cleric | Pain | DOT, Cura, Projétil |
+| Cleric | Healer | Cura, Projétil |
+| Paladin | Bubble | Tank, Escudo |
+| Paladin | Judgment | Tank |
+| Gunslinger | Tiro Certeiro | Hitscan |
+| Gunslinger | Infernal Shot | Hitscan, DOT |
+| Assassin | Sanguinary | DOT |
+| Assassin | Mortal | (nenhuma; o avanço até o alvo não é projétil) |
+| BloodMage | Sanguinary | DOT, Cura |
+| BloodMage | Summoner | Pet, Cura |
+
+## As 6 especializações (comportamento, como o usuário definiu)
+
+| Especialização | DOT | Pet | Outras mudanças |
+|---|---|---|---|
+| Barbarian Sangramento | Bleeding em **todos** os ataques (Primário, Shift, Ultimate) | — | **Sem** Ground Crack |
+| Barbarian Terremoto | Nenhum | — | Fica com o Ground Crack, como hoje |
+| Ranger Olhos de Águia | Bleeding em tudo: todas as flechas e a Ultimate | — | — |
+| Ranger Beast Master | Bleeding **só na Ultimate**; flechas do primário sem Bleeding | **Pet novo** (animal) | — |
+| Mage Ignite | Fire em **tudo** | **Sem** a Fênix | — |
+| Mage Summoner | Fire **só na Ultimate**; primário sem Fire | Fênix | — |
+
+O que já existe no código para isso:
+- **Barbarian:**
+  - O Bleeding no primário já existe via o perk antigo "Sangramento Perfurante" (`sangramentoPerfuranteDamagePerSecond` e `Duration`, `StatusEffectController`).
+  - O Ground Crack é criado no primário (`SpawnGroundCrackAtWithDamage`).
+- **Ranger:**
+  - As flechas têm chance de Bleeding (`arrowBleedChancePercent`, hoje vinda de perk).
+  - As facas da Ultimate já aplicam Bleeding (`knifeBleedDuration`).
+- **Mage:**
+  - A bola de fogo do primário e a da Ultimate aplicam o status Fire (`fireStatusDamageMultiplier`, `fireballFireStatusDuration`).
+  - A Fênix depende do `PetSummoner` (`HasPet`).
+- **Pet do Ranger:** é novo. Mesmo comportamento dos pets do Mage e do BloodMage: não morre e persegue o inimigo mais próximo do herói. Deve copiar a estrutura do `PetSummoner` e do pet do Mage, conforme a regra do projeto de procurar o precedente antes de criar. O animal (urso, águia ou lobo) ainda não foi decidido; o usuário já tem os sprites.
+
+## Abordagens consideradas
+
+1. **Asset de especialização** (escolhida pelo usuário). Um ScriptableObject por especialização com herói, nome, ícone, descrição e tags. O herói aponta para as suas 2. A carta ganha "tags exigidas".
+   - Vantagem: textos, ícones e tags editáveis no Inspector, e os próximos 7 heróis são só assets mais comportamento.
+   - Custo: um tipo de asset novo e uma tela nova.
+2. **Especializações no código de cada herói.**
+   - Vantagem: mais rápido agora.
+   - Custo: nomes, ícones e tags no C#, e 20 especializações ficam difíceis de manter.
+3. **Usar a árvore de perks antiga.**
+   - Descartada: é dividida por habilidade, não por especialização, e está saindo com a simplificação.
+
+## Decisões tomadas na conversa
+
+- A especialização é escolhida durante a run, logo no começo, numa tela própria, pausada, com 2 botões.
+- É a primeira escolha, e o jogo só começa depois dela.
+- Não pode trocar até o fim da run.
+- As especializações precisam mudar como o herói joga, não só as tags.
+- Foco nos 3 primeiros heróis.
+- A oferta de 60% upgrade é sorteada carta a carta, com no máximo 2 itens; 3 upgrades podem sair.
+
+## Decisões do Claude (o usuário pode corrigir)
+
+- A escolha fica guardada só durante a run e zera no começo de cada run.
+- Heróis sem especialização (os outros 7) entram na run sem a tela de escolha e sem tags, vendo só as
+  cartas sem tag.
+- O Bleeding do Barbarian Sangramento começa com os números do perk antigo "Sangramento Perfurante", e o
+  ajuste fica para o teste no Play.
+- No Ranger Olhos de Águia, "Bleeding em tudo" significa que toda flecha aplica Bleeding (100%), não uma
+  chance.
+- As cartas que já existem, de etapas anteriores, ficam sem tag e aparecem para todos.
+- O campo `heroId` das cartas continua existindo; as tags são um filtro a mais.
+- **Exceção para cartas que já existem:** `barbarian_primary_area` só aumenta o Ground Crack (`Barbarian.cs`), então
+  recebe a tag Terremoto. O construtor confere as outras cartas do Barbarian com o mesmo critério: nenhuma
+  carta pode ficar sem efeito numa especialização.
+- **Oferta sem upgrade possível:** se uma carta sorteada como Upgrade não tiver nenhum upgrade elegível, ela
+  vira Item, respeitando o limite de 2 itens. Se não houver item possível, vira Stat. Se nada for possível,
+  a oferta sai com menos cartas.
+- **"Em tudo" significa os ataques que dão dano:**
+  - **Barbarian Sangramento:** Bleeding no Primário, no Shift e na Ultimate, com os números do
+    "Sangramento Perfurante". No Shift e na Ultimate o código é novo.
+  - **Mage Ignite:** o teleporte não é ataque, então não aplica Fire.
+  - **Mage Summoner:** "primário sem Fire" vale para a bola de fogo e para as manchas de fogo no chão que
+    ela deixa.
+  - **Ranger:** o Shift é camuflagem e não aplica nada.
+- **Perks:** estão desligados desde as etapas 1+2. A especialização manda no comportamento e ignora o
+  `PerkState`: chance de Bleeding das flechas, `HasPet` da Fênix e o Sangramento Perfurante.
+- **Quando a escolha acontece:** uma vez por run, antes de `DayTimer.StartRun()`. Morrer encerra a run, e
+  não há mais dias. A especialização é aplicada à instância do herói que nasce. Se o herói for recriado,
+  ela é reaplicada.
+
+## Em aberto: o usuário decide na próxima sessão
+
+1. **Upgrades do Ranger e do Mage.** Hoje só o Barbarian tem cartas de upgrade (9). Sem upgrades, o level
+   up desses dois vira quase só item. A proposta do Claude é criar nesta etapa um conjunto igual ao do
+   Barbarian (dano, área, cooldown e velocidade de animação de cada habilidade) para o Ranger e para o
+   Mage. A outra opção é o usuário desenhar esses upgrades antes.
+2. **Pet do Ranger.** O usuário vai escolher o animal e montar o pet na Unity, do mesmo jeito dos pets que
+   já existem. Ainda falta saber:
+   - se o Ranger terá uma animação de invocar, como o Mage, ou se o pet simplesmente aparece.
+3. **Tela de especialização.** O usuário vai criar na Unity os botões das especializações que aparecem no
+   começo do jogo. O código liga nesse layout.
+
+O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-itens-atributos.md`.
+
+## Fica para o construtor
+
+- Como guardar as tags no código (enum de flags ou lista).
+- Onde guardar a especialização escolhida: estado estático da run, `HeroCards` ou outro lugar.
+- Como pausar e começar a run depois da escolha. Hoje o começo é `GameplayBootstrap` chamando
+  `DayTimer.StartRun()`.
+- O visual da tela de escolha, seguindo o padrão da tela das cartas (Canvas, `CardScreenUI`).
+- Os testes (EditMode mais evals no Editor, limpando tudo).
