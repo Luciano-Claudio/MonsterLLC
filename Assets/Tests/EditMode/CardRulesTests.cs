@@ -96,4 +96,53 @@ public class CardRulesTests
         bonuses.Recompute(pool, new Dictionary<string, int> { { "cd", 10 } });
         Assert.AreEqual(0.2f, bonuses.Get(CardAbility.Shift, CardStat.Cooldown), 1e-4f);
     }
+
+    // ---- Etapa 3, Task 1: bônus gerais, vida por nível, valor base ----
+
+    private CardBonuses Bonuses(List<CardDefinition> pool, Dictionary<string, int> owned)
+    {
+        var b = new CardBonuses();
+        b.Recompute(pool, owned);
+        return b;
+    }
+
+    [Test]
+    public void General_damage_multiplies_ability_damage()
+    {
+        var pool = new List<CardDefinition> { Card("p", CardAbility.Primary, CardStat.Damage, 1.25f), Card("g", CardAbility.None, CardStat.Damage, 1.10f) };
+        var b = Bonuses(pool, new Dictionary<string, int> { { "p", 1 }, { "g", 1 } });
+        Assert.AreEqual(1.375f, b.Get(CardAbility.Primary, CardStat.Damage), 1e-4f);
+        Assert.AreEqual(1.10f, b.Get(CardAbility.None, CardStat.Damage), 1e-4f);
+    }
+
+    [Test]
+    public void General_cooldown_combines_with_floor()
+    {
+        var pool = new List<CardDefinition> { Card("s", CardAbility.Shift, CardStat.Cooldown, 0.10f), Card("g", CardAbility.None, CardStat.Cooldown, 0.15f) };
+        var b = Bonuses(pool, new Dictionary<string, int> { { "s", 2 }, { "g", 1 } });
+        Assert.AreEqual(0.8f * 0.85f, b.Get(CardAbility.Shift, CardStat.Cooldown), 1e-4f);
+        b = Bonuses(pool, new Dictionary<string, int> { { "s", 5 }, { "g", 3 } });
+        Assert.GreaterOrEqual(b.Get(CardAbility.Shift, CardStat.Cooldown), 0.2f - 1e-5f);
+    }
+
+    [Test]
+    public void Item_health_adds_to_max_health()
+    {
+        var item = Card("i", CardAbility.None, CardStat.MoveSpeed, 0.08f);
+        item.kind = CardKind.Item; item.healthPerLevel = 0.10f;
+        var b = Bonuses(new List<CardDefinition> { item }, new Dictionary<string, int> { { "i", 3 } });
+        Assert.AreEqual(1.3f, b.Get(CardAbility.None, CardStat.MaxHealth), 1e-4f);
+        Assert.AreEqual(1.24f, b.Get(CardAbility.None, CardStat.MoveSpeed), 1e-4f);
+    }
+
+    [Test]
+    public void Base_value_counts_once()
+    {
+        var blast = Card("b", CardAbility.None, CardStat.BlastChance, 0.05f);
+        blast.baseValue = 0.05f;
+        var pool = new List<CardDefinition> { blast };
+        Assert.AreEqual(0.10f, Bonuses(pool, new Dictionary<string, int> { { "b", 1 } }).Sum(CardAbility.None, CardStat.BlastChance), 1e-4f);
+        Assert.AreEqual(0.30f, Bonuses(pool, new Dictionary<string, int> { { "b", 5 } }).Sum(CardAbility.None, CardStat.BlastChance), 1e-4f);
+        Assert.AreEqual(0f, Bonuses(pool, new Dictionary<string, int>()).Sum(CardAbility.None, CardStat.BlastChance), 1e-4f);
+    }
 }

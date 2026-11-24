@@ -33,15 +33,23 @@ public class CardBonuses
             if (level <= 0) continue;
             int a = (int)card.ability;
             if (card.Multiplicative) damageMultiplier[a] *= Mathf.Pow(card.valuePerLevel, level);
-            else additive[a * StatCount + (int)card.stat] += card.valuePerLevel * level;
+            else additive[a * StatCount + (int)card.stat] += card.baseValue + card.valuePerLevel * level;
+            if (card.healthPerLevel != 0f) additive[(int)CardAbility.None * StatCount + (int)CardStat.MaxHealth] += card.healthPerLevel * level;
         }
     }
 
+    // Etapa 3: o bônus geral (habilidade None — itens e Stats "de tudo") MULTIPLICA o da habilidade.
     public float Get(CardAbility ability, CardStat stat)
     {
-        int a = (int)ability;
-        if (stat == CardStat.Damage) return damageMultiplier[a];
-        float sum = additive[a * StatCount + (int)stat];
-        return stat == CardStat.Cooldown ? Mathf.Max(CooldownFloor, 1f - sum) : 1f + sum;
+        int a = (int)ability, n = (int)CardAbility.None;
+        bool withGeneral = ability != CardAbility.None;
+        if (stat == CardStat.Damage) return damageMultiplier[a] * (withGeneral ? damageMultiplier[n] : 1f);
+        float sum = Sum(ability, stat);
+        float general = withGeneral ? Sum(CardAbility.None, stat) : 0f;
+        if (stat == CardStat.Cooldown) return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general));
+        return (1f + sum) * (1f + general);
     }
+
+    // Soma crua dos aditivos (sem o 1+): redução de dano, regeneração, espinhos, chance de explosão.
+    public float Sum(CardAbility ability, CardStat stat) => additive[(int)ability * StatCount + (int)stat];
 }
