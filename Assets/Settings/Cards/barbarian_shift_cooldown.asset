@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_shift_cooldown
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_shift_cooldown
-  title: "F\xF4lego Curto"
-  description: "-{0} de recarga da F\xFAria (Shift)"
+  kind: 1
+  title: Second Wind
+  description: -{0} Fury Cooldown
   icon: {fileID: 0}
   ability: 2
   stat: 2

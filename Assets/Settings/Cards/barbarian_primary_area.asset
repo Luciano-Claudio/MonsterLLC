@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_primary_area
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_primary_area
-  title: Fenda Larga
-  description: "+{0} de \xE1rea do Ground Crack"
+  kind: 1
+  title: Wide Crack
+  description: +{0} Ground Crack Area
   icon: {fileID: 0}
   ability: 1
   stat: 1

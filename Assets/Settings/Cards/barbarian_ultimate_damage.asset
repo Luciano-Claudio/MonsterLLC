@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_ultimate_damage
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_ultimate_damage
-  title: Arremesso Brutal
-  description: +{0} de dano do machado arremessado (Ultimate)
+  kind: 1
+  title: Brutal Throw
+  description: +{0} Thrown Axe Damage
   icon: {fileID: 0}
   ability: 3
   stat: 0

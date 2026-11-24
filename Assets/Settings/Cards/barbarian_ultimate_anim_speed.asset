@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_ultimate_anim_speed
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_ultimate_anim_speed
-  title: "Arremesso R\xE1pido"
-  description: "+{0} de velocidade da anima\xE7\xE3o da Ultimate (arremesso)"
+  kind: 1
+  title: Quick Throw
+  description: +{0} Axe Throw Animation Speed
   icon: {fileID: 0}
   ability: 3
   stat: 3

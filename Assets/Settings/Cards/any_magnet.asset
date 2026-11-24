@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: any_magnet
   m_EditorClassIdentifier: Core::CardDefinition
   id: any_magnet
-  title: "\xCDm\xE3"
-  description: "+{0} de alcance do \xEDm\xE3 de XP"
+  kind: 1
+  title: Magnetic Pull
+  description: +{0} XP Magnet Range
   icon: {fileID: 0}
   ability: 0
   stat: 5

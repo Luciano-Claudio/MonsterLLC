@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_shift_damage
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_shift_damage
-  title: "F\xFAria Sangrenta"
-  description: "+{0} de dano durante a F\xFAria (Shift)"
+  kind: 1
+  title: Bloody Fury
+  description: +{0} Damage During Fury
   icon: {fileID: 0}
   ability: 2
   stat: 0

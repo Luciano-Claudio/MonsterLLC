@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: any_move_speed
   m_EditorClassIdentifier: Core::CardDefinition
   id: any_move_speed
-  title: Passos Largos
-  description: +{0} de velocidade de movimento
+  kind: 1
+  title: Long Strides
+  description: +{0} Movement Speed
   icon: {fileID: 0}
   ability: 0
   stat: 4

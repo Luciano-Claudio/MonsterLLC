@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_primary_damage
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_primary_damage
-  title: Machado Pesado
-  description: "+{0} de dano do ataque prim\xE1rio"
+  kind: 1
+  title: Heavy Axe
+  description: +{0} Primary Attack Damage
   icon: {fileID: 0}
   ability: 1
   stat: 0

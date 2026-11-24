@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: barbarian_ultimate_cooldown
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_ultimate_cooldown
-  title: Raiva Acumulada
-  description: -{0} de energia pra Ultimate
+  kind: 1
+  title: Pent-up Rage
+  description: -{0} Ultimate Energy Cost
   icon: {fileID: 0}
   ability: 3
   stat: 2
