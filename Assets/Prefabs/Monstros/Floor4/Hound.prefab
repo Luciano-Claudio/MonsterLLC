@@ -717,12 +717,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PossessableMeleeEnemyController
   stats:
-    health: 159
-    maxHealth: 159
+    health: 21
+    maxHealth: 21
     moveSpeed: 4.38
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 27
+    attackDamage: 7
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20
@@ -797,8 +797,8 @@ MonoBehaviour:
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
   approachSpreadRadius: 2
-  possessedMaxHealth: 214
-  possessedAttackDamage: 40.5
+  possessedMaxHealth: 28.3
+  possessedAttackDamage: 10.5
   attackHitboxPossessedNE: {fileID: 5667658234174486563}
   attackHitboxPossessedNW: {fileID: 833811320620718951}
   attackHitboxPossessedSE: {fileID: 5534052477306564717}

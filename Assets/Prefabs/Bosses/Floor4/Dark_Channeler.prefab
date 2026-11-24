@@ -164,13 +164,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DarkChannelerController
   stats:
-    health: 9000
-    maxHealth: 9000
+    health: 535
+    maxHealth: 535
     moveSpeed: 2.6
     observationRadius: 8
     attackRadius: 6
     attackDamage: 0
     attackAnimationCooldown: 8
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -220,14 +221,22 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.6
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   projectileSpeed: 6
   projectilePrefab: {fileID: 0}
   allySeekRadius: 10
   maxTransformTargets: 2
-  allySeekWeight: 1
 --- !u!70 &-3950580297394344949
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

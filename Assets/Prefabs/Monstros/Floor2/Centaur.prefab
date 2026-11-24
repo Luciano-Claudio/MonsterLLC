@@ -212,7 +212,7 @@ Transform:
   - {fileID: 1690555243551498743}
   - {fileID: 6067414558041552847}
   - {fileID: 1847536841640674408}
-  - {fileID: 4215816283981899785}
+  - {fileID: 2428064194382828305}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4834215456966185297
@@ -336,13 +336,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 35
-    maxHealth: 35
-    moveSpeed: 3
+    health: 10
+    maxHealth: 10
+    moveSpeed: 2.82
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 7
+    attackDamage: 2
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -369,7 +370,7 @@ MonoBehaviour:
     dropChancePercent: 0.8
     minQuantity: 1
     maxQuantity: 1
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 0
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -384,16 +385,29 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 2531669199442230307}
   attackHitboxNW: {fileID: 3724844292400662447}
   attackHitboxSE: {fileID: 4207522047093114874}
   attackHitboxSW: {fileID: 4131206656343734830}
+  orthogonalAttack: 0
   minFlankIdleDuration: 1
   maxFlankIdleDuration: 2.5
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
 --- !u!70 &546078048009630572
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -955,7 +969,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
---- !u!224 &4215816283981899785 stripped
+--- !u!224 &2428064194382828305 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8491901491733903238, guid: d58b6e33db28fee40a7b25a7b8be6d76, type: 3}
   m_PrefabInstance: {fileID: 6083093088109077655}

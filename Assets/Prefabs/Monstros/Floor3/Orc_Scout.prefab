@@ -332,12 +332,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedEnemyController
   stats:
-    health: 47
-    maxHealth: 47
+    health: 10
+    maxHealth: 10
     moveSpeed: 1.96
     observationRadius: 6
     attackRadius: 5
-    attackDamage: 19
+    attackDamage: 7
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20

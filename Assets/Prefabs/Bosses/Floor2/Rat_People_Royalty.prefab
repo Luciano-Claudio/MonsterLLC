@@ -680,13 +680,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RatPeopleRoyaltyController
   stats:
-    health: 60
-    maxHealth: 60
+    health: 219
+    maxHealth: 219
     moveSpeed: 2.2
     observationRadius: 7
     attackRadius: 5
-    attackDamage: 10
+    attackDamage: 7
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -728,8 +729,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.26
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 7100000000000012}
   attackHitboxNW: {fileID: 7100000000000014}

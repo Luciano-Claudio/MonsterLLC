@@ -307,12 +307,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrcRiderController
   stats:
-    health: 70
-    maxHealth: 70
+    health: 16
+    maxHealth: 16
     moveSpeed: 3.92
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 15
+    attackDamage: 6
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20

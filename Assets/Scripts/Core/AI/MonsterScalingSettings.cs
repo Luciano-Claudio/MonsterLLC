@@ -8,9 +8,9 @@ using UnityEngine;
 public class MonsterScalingSettings : ScriptableObject
 {
     [Tooltip("Vida do melee típico por tier (índice 0 = T1).")]
-    public float[] tierHealth = { 12, 27, 69, 180, 485, 1300, 3400, 9300, 26000, 75000 };
+    public float[] tierHealth = { 6.9f, 10.35f, 15.53f, 23.29f, 34.93f, 52.4f, 78.6f, 117.89f, 176.84f, 265.26f };
     [Tooltip("Dano do melee típico por tier (índice 0 = T1).")]
-    public float[] tierDamage = { 3, 6, 13, 29, 64, 126, 255, 480, 910, 2050 };
+    public float[] tierDamage = { 2.3f, 3.45f, 5.17f, 7.76f, 11.64f, 17.47f, 26.2f, 39.3f, 58.95f, 88.42f };
     [Tooltip("XP por kill de um monstro comum, por tier (índice 0 = T1).")]
     public int[] tierXp = { 1, 4, 15, 50, 160, 500, 1500, 4500, 13000, 38000 };
 

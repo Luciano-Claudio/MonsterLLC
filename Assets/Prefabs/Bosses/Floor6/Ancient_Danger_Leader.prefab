@@ -607,13 +607,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AncientDangerLeaderController
   stats:
-    health: 4000000
-    maxHealth: 4000000
+    health: 1209
+    maxHealth: 1209
     moveSpeed: 3
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 225000
+    attackDamage: 38
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -671,8 +672,17 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.4
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
   simulationNearRingRadius: 15
   midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
   attackHitboxNE: {fileID: 1416912156640532608}
   attackHitboxNW: {fileID: 4052384052484418180}
@@ -684,6 +694,7 @@ MonoBehaviour:
   minFlankWalkDuration: 1
   maxFlankWalkDuration: 2
   flankArcDegrees: 60
+  approachSpreadRadius: 2
   impactEffectPrefab: {fileID: -4419489592512748054, guid: 1b22aff178ba43fda01e1bb87649d1e1, type: 3}
 --- !u!70 &4156138628201301053
 CapsuleCollider2D:

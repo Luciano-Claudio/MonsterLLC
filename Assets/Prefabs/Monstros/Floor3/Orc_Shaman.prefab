@@ -165,12 +165,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrcShamanController
   stats:
-    health: 47
-    maxHealth: 47
+    health: 10
+    maxHealth: 10
     moveSpeed: 1.96
     observationRadius: 6
     attackRadius: 5
-    attackDamage: 15
+    attackDamage: 6
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20

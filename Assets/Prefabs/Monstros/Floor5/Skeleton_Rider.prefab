@@ -373,12 +373,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyController
   stats:
-    health: 530
-    maxHealth: 530
+    health: 38
+    maxHealth: 38
     moveSpeed: 4.5
     observationRadius: 6
     attackRadius: 1
-    attackDamage: 66
+    attackDamage: 12
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20

@@ -332,12 +332,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GroundCasterEnemyController
   stats:
-    health: 340
-    maxHealth: 340
+    health: 25
+    maxHealth: 25
     moveSpeed: 3
     observationRadius: 6
     attackRadius: 5
-    attackDamage: 76
+    attackDamage: 14
     attackAnimationCooldown: 2.5
     predictionSkill: 1
   energyReward: 20

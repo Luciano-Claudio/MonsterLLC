@@ -297,15 +297,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf1e050d90aba2c4788a90b0f2cd948a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MotherSlimeController
-  attackHitbox: {fileID: 130704671706238701}
   stats:
-    health: 40
-    maxHealth: 40
+    health: 127
+    maxHealth: 127
     moveSpeed: 2
     observationRadius: 6
     attackRadius: 1.3
-    attackDamage: 8
+    attackDamage: 4
     attackAnimationCooldown: 2.5
+    predictionSkill: 1
   energyReward: 20
   lootDrops:
   - itemName: Monster Essence
@@ -328,7 +328,7 @@ MonoBehaviour:
     dropChancePercent: 4
     minQuantity: 10
     maxQuantity: 10
-  ownerFloor: {fileID: 0}
+  dropsLoot: 1
   isBoss: 1
   minIdleDuration: 1.5
   maxIdleDuration: 3.5
@@ -343,7 +343,19 @@ MonoBehaviour:
   attackRadiusGizmoOffsetY: 0.35
   attackSpeedStepPerHit: 0.5
   maxAttackSpeedMultiplier: 3
+  leadTimeMax: 1.5
+  crowdCheckRadius: 2.5
+  frontCutterChance: 0.3
+  frontCutterMinDistance: 6
+  packCohesionRadius: 5
+  packCohesionStrength: 0.3
+  packCohesionInterval: 0.25
+  cullAnimatorOffscreen: 1
+  simulationNearRingRadius: 15
+  midRingUpdateInterval: 0.3
+  combatNearRingRadius: 20
   floatingTextHeightAdjust: -0.5
+  attackHitbox: {fileID: 130704671706238701}
   childSlimePrefab: {fileID: 733328830634963394, guid: 71367affec67bcd46981359733a3fb08, type: 3}
   childSpawnPoints:
   - {fileID: 5000000000000101}

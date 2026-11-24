@@ -10,15 +10,15 @@ public class MonsterScalingTests
     [Test]
     public void TargetHealth_ByKind()
     {
-        Assert.AreEqual(485f, MonsterScaling.TargetHealth(5, MonsterKind.Melee, 1f), 1e-3f);
-        Assert.AreEqual(485f * 0.7f, MonsterScaling.TargetHealth(5, MonsterKind.Ranged, 1f), 1e-3f);
-        Assert.AreEqual(485f * 4f, MonsterScaling.TargetHealth(5, MonsterKind.MiniBoss, 1f), 1e-3f);
-        Assert.AreEqual(727.5f, MonsterScaling.TargetHealth(5, MonsterKind.Melee, 1.5f), 1e-3f);
+        Assert.AreEqual(34.93f, MonsterScaling.TargetHealth(5, MonsterKind.Melee, 1f), 1e-3f);
+        Assert.AreEqual(34.93f * 0.7f, MonsterScaling.TargetHealth(5, MonsterKind.Ranged, 1f), 1e-3f);
+        Assert.AreEqual(34.93f * 4f, MonsterScaling.TargetHealth(5, MonsterKind.MiniBoss, 1f), 1e-3f);
+        Assert.AreEqual(52.395f, MonsterScaling.TargetHealth(5, MonsterKind.Melee, 1.5f), 1e-3f);
     }
 
     [Test]
     public void TargetDamage_T9Ranged() =>
-        Assert.AreEqual(910f * 1.4f, MonsterScaling.TargetDamage(9, MonsterKind.Ranged, 1f), 1e-3f);
+        Assert.AreEqual(58.95f * 1.4f, MonsterScaling.TargetDamage(9, MonsterKind.Ranged, 1f), 1e-3f);
 
     [Test]
     public void XpForKill()
@@ -37,5 +37,23 @@ public class MonsterScalingTests
         Assert.AreEqual(2.5f, MonsterScaling.TierSpeed(1), 1e-3f);
         Assert.AreEqual(4f, MonsterScaling.TierSpeed(10), 1e-3f);
         for (int t = 2; t <= 10; t++) Assert.Greater(MonsterScaling.TierSpeed(t), MonsterScaling.TierSpeed(t - 1));
+    }
+
+    // Etapas 1+2 — 1,5x por tier a partir da média real do T1 (spec 5.4; ruling da Task 2).
+    [Test]
+    public void Tables_grow_1_5x_per_tier()
+    {
+        Assert.AreEqual(10.35f, MonsterScaling.TierHealth[2], 0.01f);
+        Assert.AreEqual(265.26f, MonsterScaling.TierHealth[10], 0.01f);
+        Assert.AreEqual(58.95f, MonsterScaling.TierDamage[9], 0.01f);
+    }
+
+    // Boss = 20x vida / 2x dano do melee do tier; Divine God 30x vida (spec 5.4).
+    [Test]
+    public void Boss_targets_are_multiples_of_tier_melee()
+    {
+        Assert.AreEqual(138f, MonsterScaling.TargetBossHealth(1, false, 1f), 0.01f);
+        Assert.AreEqual(7957.8f, MonsterScaling.TargetBossHealth(10, true, 1f), 0.5f);
+        Assert.AreEqual(10.34f, MonsterScaling.TargetBossDamage(3, 1f), 0.01f);
     }
 }

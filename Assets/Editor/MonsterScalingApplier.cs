@@ -48,6 +48,9 @@ public static class MonsterScalingApplier
         var rosterPrefabs = new HashSet<GameObject>();
         foreach (var def in spawn.roster) if (def != null && def.prefab != null) rosterPrefabs.Add(def.prefab);
         foreach (var def in spawn.miniBossRoster) if (def != null && def.prefab != null) rosterPrefabs.Add(def.prefab);
+        var runSettings = RunSettings.Load();
+        if (runSettings != null)
+            foreach (var b in runSettings.bossOrder) if (b != null && b.prefab != null) rosterPrefabs.Add(b.prefab);
 
         // Campos "por segundo": base = tabela da última aplicação (ou T1 se nunca aplicado).
         appliedDamage = settings != null && settings.appliedTierDamage != null && settings.appliedTierDamage.Length >= 10
@@ -87,6 +90,7 @@ public static class MonsterScalingApplier
             float newHp = Mathf.Round(MonsterScaling.TargetHealth(e.def.tier, e.kind, avgHp > 0 ? oldHp / avgHp : 1f));
             float newDmg = Mathf.Max(1f, Mathf.Round(MonsterScaling.TargetDamage(e.def.tier, e.kind, avgDmg > 0 ? oldDmg / avgDmg : 1f)));
             float newSpeed = Mathf.Round(MonsterScaling.TierSpeed(e.def.tier) * (avgSpeed > 0 ? oldSpeed / avgSpeed : 1f) * 100f) / 100f;
+            newHp = Stable(oldHp, newHp); newDmg = Stable(oldDmg, newDmg);
             float dmgRatio = oldDmg > 0 ? newDmg / oldDmg : 1f;
             float hpRatio = oldHp > 0 ? newHp / oldHp : 1f;
 
@@ -108,6 +112,8 @@ public static class MonsterScalingApplier
             ScaleReferencedPrefabs(e.prefab, dmgRatio, hpRatio, e.def.tier, apply, report, scaledRefs, conflicts, rosterPrefabs);
         }
 
+        if (runSettings != null) ScaleBosses(runSettings, apply, report, scaledRefs, conflicts, rosterPrefabs);
+
         foreach (var c in conflicts) report.Append("  ! conflito: " + c + "\n");
         if (apply)
         {
@@ -123,9 +129,61 @@ public static class MonsterScalingApplier
         return report.ToString();
     }
 
-    // Decisão do usuário (2026-11-22): T1 ("fácil") e T2 ("1º desafio") ficam como ele ajustou à
-    // mão — a escala vale do T3 em diante. O XP por kill (runtime) vale em todos os tiers.
-    public const int FirstScaledTier = 3;
+    // Etapas 1+2 (spec 5.4): o T1 fica como está; do T2 em diante cada tier vale 1,5x o anterior.
+    // (Até 2026-11-22 a escala começava no T3; os campos "por segundo" do T2 estavam no nível do T1,
+    // por isso o appliedTierDamage do T2 no asset foi acertado uma vez para o valor do T1.)
+    public const int FirstScaledTier = 2;
+
+    // Bosses da ordem da run (RunSettings): alvo = múltiplo do melee do tier (MonsterScaling.TargetBoss*),
+    // cada um mantendo a proporção dele entre os bosses do mesmo tier. Velocidade não muda (o enrage
+    // cuida). Os campos extras e os prefabs referenciados (raios, poças, projéteis) seguem a razão do
+    // próprio boss — inclusive os "por segundo", que nos bosses eram valores próprios, não o 2 fixo.
+    private static void ScaleBosses(RunSettings run, bool apply, StringBuilder report,
+        Dictionary<GameObject, float> scaledRefs, List<string> conflicts, HashSet<GameObject> rosterPrefabs)
+    {
+        var sumHp = new Dictionary<int, float>(); var sumDmg = new Dictionary<int, float>(); var n = new Dictionary<int, int>(); var nDmg = new Dictionary<int, int>();
+        foreach (var b in run.bossOrder)
+        {
+            var enemy = b != null && b.prefab != null ? b.prefab.GetComponent<EnemyController>() : null;
+            if (enemy == null) continue;
+            sumHp[b.tier] = sumHp.GetValueOrDefault(b.tier) + enemy.stats.maxHealth;
+            n[b.tier] = n.GetValueOrDefault(b.tier) + 1;
+            if (enemy.stats.attackDamage <= 0f) continue; // boss sem dano próprio (ex.: Dark_Channeler) não entra na média de dano
+            sumDmg[b.tier] = sumDmg.GetValueOrDefault(b.tier) + enemy.stats.attackDamage;
+            nDmg[b.tier] = nDmg.GetValueOrDefault(b.tier) + 1;
+        }
+        foreach (var b in run.bossOrder)
+        {
+            var enemy = b != null && b.prefab != null ? b.prefab.GetComponent<EnemyController>() : null;
+            if (enemy == null) { report.Append($"  ! boss sem EnemyController: {(b != null ? b.name : "vazio")}\n"); continue; }
+            float avgHp = sumHp[b.tier] / n[b.tier], avgDmg = nDmg.GetValueOrDefault(b.tier) > 0 ? sumDmg[b.tier] / nDmg[b.tier] : 0f;
+            float oldHp = enemy.stats.maxHealth, oldDmg = enemy.stats.attackDamage;
+            bool final = b.tier == 10;
+            float newHp = Mathf.Max(1f, Mathf.Round(MonsterScaling.TargetBossHealth(b.tier, final, avgHp > 0 ? oldHp / avgHp : 1f)));
+            float newDmg = oldDmg <= 0f ? 0f : Mathf.Max(1f, Mathf.Round(MonsterScaling.TargetBossDamage(b.tier, avgDmg > 0 ? oldDmg / avgDmg : 1f)));
+            newHp = Stable(oldHp, newHp); newDmg = Stable(oldDmg, newDmg);
+            float dmgRatio = oldDmg > 0 ? newDmg / oldDmg : 1f, hpRatio = oldHp > 0 ? newHp / oldHp : 1f;
+            report.Append($"T{b.tier} Boss     {b.prefab.name,-26} vida {oldHp:N0} → {newHp:N0} | dano {oldDmg:N0} → {newDmg:N0}\n");
+            if (apply)
+            {
+                touched.Add(b.prefab);
+                var so = new SerializedObject(enemy);
+                so.FindProperty("stats.maxHealth").floatValue = newHp;
+                so.FindProperty("stats.health").floatValue = newHp;
+                so.FindProperty("stats.attackDamage").floatValue = newDmg;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(enemy);
+            }
+            ScaleExtraFields(b.prefab, enemy, dmgRatio, hpRatio, b.tier, apply, report, "    ", perSecondByRatio: true);
+            ScaleReferencedPrefabs(b.prefab, dmgRatio, hpRatio, b.tier, apply, report, scaledRefs, conflicts, rosterPrefabs, perSecondByRatio: true);
+        }
+    }
+
+    // Arredondar mexe um pouco na média do tier e a razão de cada monstro oscila ±1 a cada
+    // execução; diferença de até 1 ponto E abaixo de 5% conta como "igual" (rodar de novo com a
+    // mesma tabela não muda nada; uma mudança real na tabela passa disso).
+    private static float Stable(float oldValue, float newValue)
+        => Mathf.Abs(newValue - oldValue) <= 1f && Mathf.Abs(newValue - oldValue) < 0.05f * Mathf.Abs(oldValue) ? oldValue : newValue;
 
     private static float[] appliedDamage; // índice 0 = T1; null = nunca aplicado
     private static HashSet<Object> touched = new HashSet<Object>();
@@ -172,7 +230,7 @@ public static class MonsterScalingApplier
     }
 
     // Campos float de dano/cura dos componentes do prefab, fora o attackDamage dos stats (já feito).
-    private static void ScaleExtraFields(GameObject prefab, Component skipStatsOf, float ratio, float hpRatio, int tier, bool apply, StringBuilder report, string indent)
+    private static void ScaleExtraFields(GameObject prefab, Component skipStatsOf, float ratio, float hpRatio, int tier, bool apply, StringBuilder report, string indent, bool perSecondByRatio = false)
     {
         float tierFactor = PerSecondFactor(tier);
         foreach (var comp in prefab.GetComponentsInChildren<MonoBehaviour>(true))
@@ -187,7 +245,7 @@ public static class MonsterScalingApplier
                 if (comp == skipStatsOf && it.propertyPath.StartsWith("stats.")) continue;
                 int kind = FieldKind(it.name);
                 if (kind == 0) continue;
-                float r = kind == 2 ? hpRatio : kind == 3 ? tierFactor : ratio;
+                float r = kind == 2 ? hpRatio : kind == 3 && !perSecondByRatio ? tierFactor : ratio;
                 float old = it.floatValue;
                 if (old == 0f || Mathf.Approximately(r, 1f)) continue;
                 float nv = Mathf.Max(0.1f, Mathf.Round(old * r * 10f) / 10f);
@@ -201,7 +259,8 @@ public static class MonsterScalingApplier
     // Prefabs referenciados pelo monstro (totens, filhos, hazards). Um prefab só é escalado uma
     // vez; se outro monstro o referencia com outra razão, vira conflito no relatório.
     private static void ScaleReferencedPrefabs(GameObject prefab, float dmgRatio, float hpRatio, int tier, bool apply,
-        StringBuilder report, Dictionary<GameObject, float> scaledRefs, List<string> conflicts, HashSet<GameObject> rosterPrefabs)
+        StringBuilder report, Dictionary<GameObject, float> scaledRefs, List<string> conflicts, HashSet<GameObject> rosterPrefabs,
+        bool perSecondByRatio = false)
     {
         foreach (var comp in prefab.GetComponentsInChildren<MonoBehaviour>(true))
         {
@@ -226,7 +285,7 @@ public static class MonsterScalingApplier
                 var childEnemy = target.GetComponent<EnemyController>();
                 if (childEnemy != null)
                 {
-                    float hp = Mathf.Round(childEnemy.stats.maxHealth * hpRatio);
+                    float hp = Mathf.Max(1f, Mathf.Round(childEnemy.stats.maxHealth * hpRatio));
                     float dmg = Mathf.Max(1f, Mathf.Round(childEnemy.stats.attackDamage * dmgRatio));
                     report.Append($"      {target.name} stats: vida {childEnemy.stats.maxHealth} → {hp} | dano {childEnemy.stats.attackDamage} → {dmg}\n");
                     if (apply)
@@ -240,7 +299,7 @@ public static class MonsterScalingApplier
                         EditorUtility.SetDirty(childEnemy);
                     }
                 }
-                ScaleExtraFields(target, childEnemy, dmgRatio, hpRatio, tier, apply, report, "      ");
+                ScaleExtraFields(target, childEnemy, dmgRatio, hpRatio, tier, apply, report, "      ", perSecondByRatio);
             }
         }
     }
