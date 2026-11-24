@@ -25,6 +25,7 @@ public static class KillGoldReward
     private static void HandleEnemyKilled(int energyValue, bool isBoss)
     {
         if (table == null) return;
+        if (!RunSettings.Flag(s => s.runGoldEnabled)) return; // etapas 1+2: sem gold na run
 
         var dayDef = table.GetDay(MainMenuUI.CurrentRun?.day ?? 1);
         if (dayDef == null) return;

@@ -1595,6 +1595,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Essence de todo monstro comum é sempre 100% no Bestiário).
     private void DropLoot()
     {
+        if (!RunSettings.Flag(s => s.lootEnabled)) return; // etapas 1+2: sem loot na run
         if (lootDropPrefab == null) lootDropPrefab = Resources.Load<GameObject>("Loot/LootDrop");
         if (lootContainer == null)
         {

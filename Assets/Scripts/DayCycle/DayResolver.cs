@@ -83,17 +83,46 @@ public static class DayResolver
     public static void EndRunAfterDeath()
     {
         Debug.Log("[DayResolver] Animação de morte terminou — fim da run.");
-        int dayOfDeath = MainMenuUI.CurrentRun != null ? MainMenuUI.CurrentRun.day : 1;
-        int daysSurvived = RunSummaryRules.DaysSurvived(dayOfDeath);
-        const long permanentGold = 0; // D9.9 (gold permanente) ainda não existe — a linha aparece com 0
+        EndRun(false);
+    }
 
+    // Etapas 1+2 (spec 5.1) — fim da run de 25 min. Vitória = o Divine God morreu (GameEvents.
+    // OnFinalBossKilled, ligado no DayTimer); derrota = a animação de morte do herói terminou.
+    // Roda 1 vez por run (a 2ª chamada é ignorada); vitória com o herói já morrendo não conta —
+    // a morte chega logo depois e é derrota. Apaga o save (não existe Continue).
+    private static bool runEnded;
+
+    public static void ResetForNewRun() => runEnded = false;
+
+    public static void EndRun(bool victory, bool showSummary = true)
+    {
+        if (runEnded) return;
+        if (victory && HeroController.IsDying) return;
+        runEnded = true;
+
+        var timer = DayTimer.Instance;
+        if (timer != null) timer.StopClock();
+        float seconds = timer != null ? timer.RunElapsed : 0f;
+        int bosses = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.BossesKilled : 0;
+        int totalBosses = timer != null && timer.Schedule != null ? timer.Schedule.SlotCount : 25;
         SaveManager.Delete();
         PlayerSurvivedLastDay = true; // estado certo pra próxima run
+        Debug.Log($"[DayResolver] Fim da run: {RunSummaryRules.ResultText(victory)} em {RunSummaryRules.FormatTime(seconds)}, {bosses} bosses.");
+        GameEvents.RunEnded(victory);
+        if (!showSummary) return;
+
+        if (victory)
+        {
+            // Congela o mundo (GameplayGate) e mostra o resumo direto — o CircleWipe é a "morte".
+            if (GameStateManager.Instance != null) GameStateManager.Instance.SetState(GameState.Results);
+            RunSummaryUI.Show(true, seconds, bosses, totalBosses);
+            return;
+        }
 
         var death = TransitionsConfig.Load() != null ? TransitionsConfig.Load().death : null;
         if (death != null && Object.FindAnyObjectByType<EasyTransition.TransitionManager>() != null) // busca silenciosa — Instance() loga erro quando não existe
-            TransitionHelper.PlayTransition(death, () => RunSummaryUI.Show(daysSurvived, permanentGold));
+            TransitionHelper.PlayTransition(death, () => RunSummaryUI.Show(false, seconds, bosses, totalBosses));
         else
-            RunSummaryUI.Show(daysSurvived, permanentGold); // cena sem TransitionManager: resumo direto
+            RunSummaryUI.Show(false, seconds, bosses, totalBosses); // cena sem TransitionManager: resumo direto
     }
 }

@@ -33,6 +33,33 @@ public class RunSettings : ScriptableObject
     public float miniBossMinDelay = 15f; // 🔢 segundos depois do boss
     public float miniBossMaxDelay = 45f; // 🔢
 
+    [Header("Sistemas fora da run (etapa 3 religa baú/vendedor dando cartas)")]
+    [Tooltip("Gold por kill/sobrevivência dentro da run. Não existe mais gold na run (etapas 1+2).")]
+    public bool runGoldEnabled = false;
+    [Tooltip("Monstros dropando loot (materiais) pra Bag.")]
+    public bool lootEnabled = false;
+    [Tooltip("Baús e Chest Mimic nascendo no mundo.")]
+    public bool chestsEnabled = false;
+    [Tooltip("Vendedor no mundo.")]
+    public bool vendorEnabled = false;
+    [Tooltip("Fase 1: o mundo inteiro usa um único bioma (o do T1), sem trocar por distância/tier.")]
+    public bool singleBiome = true;
+
+    // Asset carregado uma vez (lido por kill/morte/célula de chunk — nunca Resources.Load por chamada).
+    // Sem asset (cena de teste antiga): os padrões do código (tudo desligado, bioma único).
+    private static RunSettings current;
+    public static RunSettings Current
+    {
+        get
+        {
+            if (current == null) current = Load();
+            if (current == null) current = CreateInstance<RunSettings>();
+            return current;
+        }
+    }
+
+    public static bool Flag(System.Func<RunSettings, bool> read) => read(Current);
+
     public static RunSettings Load() => Resources.Load<RunSettings>("RunSettings");
 
     // Tier de cada espaço (0 = espaço vazio).

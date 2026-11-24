@@ -14,13 +14,19 @@ public class RunSummaryScreen : MonoBehaviour
     [Tooltip("Gold permanente coletado (formato do usuário: \"XG\"). Vale 0 até o D9.9.")]
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private Button continueButton;
-    [Tooltip("Total de dias da run (mostrado depois da barra).")]
-    [SerializeField] private int totalDays = 10;
+    [Tooltip("Etapas 1+2 — opcional: Vitória ou Derrota.")]
+    [SerializeField] private TMP_Text resultText;
+    [Tooltip("Etapas 1+2 — opcional: tempo sobrevivido (mm:ss).")]
+    [SerializeField] private TMP_Text timeText;
 
-    public void Show(int daysSurvived, long permanentGold)
+    // Etapas 1+2: o texto que mostrava "dias / 10" (daysText) passa a mostrar "bosses / 25" — o
+    // usuário pode trocar o rótulo dele; o gold permanente continua 0 até a etapa 6.
+    public void Show(bool victory, float secondsSurvived, int bossesKilled, int totalBosses)
     {
-        if (daysText != null) daysText.text = $"{daysSurvived} / {totalDays}";
-        if (goldText != null) goldText.text = $"{permanentGold}G";
+        if (resultText != null) resultText.text = RunSummaryRules.ResultText(victory);
+        if (timeText != null) timeText.text = RunSummaryRules.FormatTime(secondsSurvived);
+        if (daysText != null) daysText.text = $"{bossesKilled} / {totalBosses}";
+        if (goldText != null) goldText.text = "0G";
         if (continueButton != null)
         {
             continueButton.onClick.RemoveListener(RunExit.ToMainMenu);

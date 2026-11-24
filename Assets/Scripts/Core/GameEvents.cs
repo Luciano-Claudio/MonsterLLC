@@ -154,6 +154,10 @@ public static class GameEvents
     public static event Action OnFinalBossKilled;
     public static void FinalBossKilled() => OnFinalBossKilled?.Invoke();
 
+    // Etapas 1+2 — a run terminou (true = vitória no Divine God, false = morte). Dispara 1 vez por run.
+    public static event Action<bool> OnRunEnded;
+    public static void RunEnded(bool victory) => OnRunEnded?.Invoke(victory);
+
     // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
     // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão
     // do usuário: nos dois casos a população precisa renascer do zero sob as regras atuais

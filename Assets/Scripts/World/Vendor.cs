@@ -28,6 +28,16 @@ public class Vendor : Interactable
         animator = GetComponent<Animator>();
     }
 
+    // Etapas 1+2: o vendedor sai da run (volta na etapa 3 dando cartas de item).
+    private void Start()
+    {
+        if (!RunSettings.Flag(s => s.vendorEnabled))
+        {
+            if (cart != null) cart.gameObject.SetActive(false);
+            gameObject.SetActive(false);
+        }
+    }
+
     // Sprint 32 — Shop_Opening toca no início do dia, transita por conta própria (Exit Time, no
     // próprio Animator Controller) pra Idle_Shop_Open; Shop_Closing toca no fim do dia e fica lá
     // até o próximo OpenTrigger. Os 2 triggers são AnyState, então interrompem qualquer estado

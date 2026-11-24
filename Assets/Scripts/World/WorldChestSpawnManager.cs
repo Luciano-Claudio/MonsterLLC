@@ -94,6 +94,7 @@ public class WorldChestSpawnManager : MonoBehaviour
 
     private void SpawnOneChest()
     {
+        if (!RunSettings.Flag(s => s.chestsEnabled)) return; // etapas 1+2: baú volta na etapa 3 (dando cartas)
         float minDistanceFromOrigin = worldSettings.safeZoneRadius + chestSettings.spawnSafetyPadding;
 
         // Decisão do usuário (2026-11-08, com desenho): baú só nasce a partir de

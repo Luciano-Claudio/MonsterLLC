@@ -5,4 +5,13 @@ using UnityEngine;
 public static class RunSummaryRules
 {
     public static int DaysSurvived(int dayOfDeath) => Mathf.Max(0, dayOfDeath - 1);
+
+    // Etapas 1+2 — tempo sobrevivido (mm:ss, segundos inteiros) e o resultado da run.
+    public static string FormatTime(float seconds)
+    {
+        int total = Mathf.Max(0, Mathf.FloorToInt(seconds));
+        return $"{total / 60:00}:{total % 60:00}";
+    }
+
+    public static string ResultText(bool victory) => victory ? "Vitória" : "Derrota";
 }

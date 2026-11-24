@@ -33,6 +33,9 @@ public class DayTimer : MonoBehaviour
     public float ElapsedFraction01 => currentDayDuration > 0f ? Mathf.Clamp01(RunElapsed / currentDayDuration) : 0f;
 
     private void Awake() => Instance = this;
+    private void OnEnable() => GameEvents.OnFinalBossKilled += HandleFinalBossKilled;
+    private void OnDisable() => GameEvents.OnFinalBossKilled -= HandleFinalBossKilled;
+    private static void HandleFinalBossKilled() => DayResolver.EndRun(true); // vitória
     private void Start() => GameEvents.TimeChanged(timeRemaining);
 
     private void Update()
@@ -60,6 +63,7 @@ public class DayTimer : MonoBehaviour
     // Início da run: relógio zerado e ligado, dia, horda já perseguindo o herói.
     public void StartRun()
     {
+        DayResolver.ResetForNewRun();
         Settings = RunSettings.Load();
         if (Settings == null) Settings = ScriptableObject.CreateInstance<RunSettings>(); // sem asset: padrões (sem bosses)
         Schedule = new RunSchedule(Settings.BossTiers(), Settings);

@@ -837,9 +837,21 @@ public class ChunkTerrainGenerator : MonoBehaviour
     // Qual grupo de tier (0..5) está ativo na célula global (cellX,cellY), pro Dia informado.
     // Reaproveitado tanto pela pintura de terreno quanto pelo spawn de props (cada um precisa
     // saber de qual tier puxar os assets certos naquela posição específica).
+    // Etapas 1+2 (spec 5.8) — fase 1: um único bioma (RunSettings.singleBiome), lido 1 vez.
+    private int singleBiomeState = -1;
+    private bool SingleBiomeRun
+    {
+        get
+        {
+            if (singleBiomeState < 0) singleBiomeState = RunSettings.Flag(s => s.singleBiome) ? 1 : 0;
+            return singleBiomeState == 1;
+        }
+    }
+
     private int ActiveTierGroupAt(int cellX, int cellY, int actualDay)
     {
         if (forcedTierGroupOverride >= 0) return forcedTierGroupOverride;
+        if (SingleBiomeRun) return 0; // etapas 1+2: fase 1 = bioma do T1 no mundo inteiro
 
         float distanceFromCenter = Mathf.Sqrt((float)cellX * cellX + (float)cellY * cellY);
         int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
@@ -868,6 +880,7 @@ public class ChunkTerrainGenerator : MonoBehaviour
     private int ActiveTierGroupAtCached(int cellX, int cellY, int actualDay)
     {
         if (forcedTierGroupOverride >= 0) return forcedTierGroupOverride;
+        if (SingleBiomeRun) return 0; // etapas 1+2: fase 1 = bioma do T1 no mundo inteiro
 
         float distanceFromCenter = Mathf.Sqrt((float)cellX * cellX + (float)cellY * cellY);
         int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(

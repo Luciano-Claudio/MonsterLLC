@@ -12,14 +12,14 @@ public class RunSummaryUI : MonoBehaviour
 {
     private const int CanvasSortingOrder = 30000; // abaixo do canvas da transição (32767), que a revela
 
-    public static RunSummaryUI Show(int daysSurvived, long permanentGold)
+    public static RunSummaryUI Show(bool victory, float secondsSurvived, int bossesKilled, int totalBosses)
     {
         // Tela do usuário (RunSummaryScreen na cena, desativada) tem prioridade. A montada por
         // código abaixo é só a reserva, pra cena sem a tela dele.
         var screen = Object.FindAnyObjectByType<RunSummaryScreen>(FindObjectsInactive.Include);
         if (screen != null)
         {
-            screen.Show(daysSurvived, permanentGold);
+            screen.Show(victory, secondsSurvived, bossesKilled, totalBosses);
             return null;
         }
 
@@ -36,9 +36,9 @@ public class RunSummaryUI : MonoBehaviour
         Stretch(background);
         background.gameObject.AddComponent<Image>().color = new Color(0.05f, 0.04f, 0.07f, 1f);
 
-        CreateText(go.transform, "Title", "Resumo total", 96, new Vector2(0f, 260f));
-        CreateText(go.transform, "Days", $"Sobreviveu {daysSurvived} {(daysSurvived == 1 ? "dia" : "dias")}", 64, new Vector2(0f, 80f));
-        CreateText(go.transform, "Gold", $"Gold permanente: {permanentGold}", 64, new Vector2(0f, -30f));
+        CreateText(go.transform, "Title", RunSummaryRules.ResultText(victory), 96, new Vector2(0f, 260f));
+        CreateText(go.transform, "Time", $"Tempo: {RunSummaryRules.FormatTime(secondsSurvived)}", 64, new Vector2(0f, 80f));
+        CreateText(go.transform, "Bosses", $"Bosses: {bossesKilled} / {totalBosses}", 64, new Vector2(0f, -30f));
 
         var buttonRect = CreateChild(go.transform, "ContinueButton");
         buttonRect.sizeDelta = new Vector2(480f, 120f);

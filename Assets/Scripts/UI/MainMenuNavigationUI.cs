@@ -38,7 +38,10 @@ public class MainMenuNavigationUI : MonoBehaviour
         herosPanel = transform.Find("Heros_Painel").gameObject;
         mapPanel = transform.Find("Map_Painel").gameObject;
 
-        WireButton(menuButtons.transform, "Continue", ContinueClicked);
+        // Etapas 1+2 (spec 5.1): a run é de uma vez só — sem Continue. O botão fica escondido
+        // (o usuário remove da cena quando quiser).
+        var continueButton = menuButtons.transform.Find("Continue");
+        if (continueButton != null) continueButton.gameObject.SetActive(false);
         WireButton(menuButtons.transform, "New_Game", OpenHeroSelect);
         WireButton(menuButtons.transform, "Settings", OpenSettings);
         WireButton(menuButtons.transform, "Credits", OpenCredits);
@@ -145,12 +148,6 @@ public class MainMenuNavigationUI : MonoBehaviour
     {
         if (MainMenuUI.Instance != null) MainMenuUI.Instance.StartRun(selectedHero);
         else Debug.LogWarning("[MainMenuNavigationUI] MainMenuUI não está nesta cena — New Game não inicia a run de verdade ainda.");
-    }
-
-    private void ContinueClicked()
-    {
-        if (MainMenuUI.Instance != null) MainMenuUI.Instance.ContinueGame();
-        else Debug.LogWarning("[MainMenuNavigationUI] MainMenuUI não está nesta cena — Continue não faz nada ainda.");
     }
 
     private void GoBack()
