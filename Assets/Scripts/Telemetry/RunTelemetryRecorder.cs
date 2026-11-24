@@ -58,6 +58,7 @@ public class RunTelemetryRecorder : MonoBehaviour
 
     // Só pra teste manual (Test 6) — nenhum código de produção lê isto.
     public int DebugSnapshotCount => currentDayAttempt?.snapshots.Count ?? 0;
+    public SnapshotRecord DebugLastSnapshot => currentDayAttempt != null && currentDayAttempt.snapshots.Count > 0 ? currentDayAttempt.snapshots[^1] : null;
     public void DebugTickSampler(float deltaTime) => TickSampler(deltaTime);
 
     // Timer manual (não Coroutine — GameplayGate nunca pausa Time.timeScale, padrão repetido
@@ -82,17 +83,20 @@ public class RunTelemetryRecorder : MonoBehaviour
     private void CaptureSnapshot()
     {
         var hero = HeroController.Instance;
+        float runSecond = DayTimer.Instance != null ? DayTimer.Instance.RunElapsed : 0f;
         currentDayAttempt.snapshots.Add(new SnapshotRecord
         {
-            secondOfDay = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining,
+            secondOfDay = runSecond,
+            runSecond = runSecond, // etapas 1+2 — segundo da run (mesmo valor; secondOfDay mantido pros relatórios antigos)
+            maxBossEnrageSeconds = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.MaxBossAliveSeconds : 0f,
+            gemsOnGround = XpGemPool.Instance != null ? XpGemPool.Instance.ActiveCount : 0,
             aliveMonsters = WorldPopulationManager.Instance != null ? WorldPopulationManager.Instance.AliveCount : 0,
             aliveBosses = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.AliveCount : 0,
             heroHpPercent = hero != null ? hero.stats.health / hero.EffectiveMaxHealth * 100f : 0f,
             heroPosition = hero != null ? new SerializableVector2(hero.transform.position) : new SerializableVector2(),
-            gold = MainMenuUI.CurrentRun?.gold ?? 0,
             secondsSinceLastHitDealt = secondsSinceLastHitDealt,
             secondsSinceLastHitReceived = secondsSinceLastHitReceived,
-            isNight = DayTimer.Instance.IsNight,
+            isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight,
             isAttackWalking = hero != null && hero.IsAttackWalking,
             heroLevel = MainMenuUI.CurrentRun?.level ?? 1,
             heroXpIntoLevel = MainMenuUI.CurrentRun?.xpIntoLevel ?? 0,
@@ -130,7 +134,8 @@ public class RunTelemetryRecorder : MonoBehaviour
         DebugIsSubscribed = true;
 
         GameEvents.OnDayStart += HandleDayStart;
-        GameEvents.OnDayEnd += HandleDayEnd;
+        GameEvents.OnRunEnded += HandleRunEnded;
+        GameEvents.OnCardGranted += HandleCardGranted;
         GameEvents.OnEnemyKilledDetailed += HandleEnemyKilled;
         GameEvents.OnDamageTaken += HandleDamageTaken;
         GameEvents.OnGameStateChanged += HandleGameStateChanged;
@@ -147,7 +152,8 @@ public class RunTelemetryRecorder : MonoBehaviour
         if (telemetryEnabled)
         {
             GameEvents.OnDayStart -= HandleDayStart;
-            GameEvents.OnDayEnd -= HandleDayEnd;
+            GameEvents.OnRunEnded -= HandleRunEnded;
+            GameEvents.OnCardGranted -= HandleCardGranted;
             GameEvents.OnEnemyKilledDetailed -= HandleEnemyKilled;
             GameEvents.OnDamageTaken -= HandleDamageTaken;
             GameEvents.OnGameStateChanged -= HandleGameStateChanged;
@@ -273,40 +279,35 @@ public class RunTelemetryRecorder : MonoBehaviour
         FlushToDisk(); // achado Importante #4 — sem isso, a visita à loja que acabou de fechar acima só existia em memória
     }
 
-    // Fecha a tentativa de dia em aberto (sobrevivência OU morte — OnDayEnd dispara nos 2
-    // casos, DayResolver.PlayerSurvivedLastDay diferencia) e abre a visita à loja que segue.
-    private void HandleDayEnd()
+    // Etapas 1+2 — fecha a tentativa (= a run inteira de 25 min): vitória no Divine God ou morte.
+    // Não existe mais Loja nem gold de run.
+    private void HandleRunEnded(bool victory)
     {
         if (currentDayAttempt == null) return; // segurança — não deveria disparar sem HandleDayStart antes
 
-        bool survived = DayResolver.PlayerSurvivedLastDay;
-        float elapsed = DayTimer.Instance.CurrentDayDuration - DayTimer.Instance.timeRemaining;
-        currentDayAttempt.outcome = survived ? "survived" : "died";
+        float elapsed = DayTimer.Instance != null ? DayTimer.Instance.RunElapsed : 0f;
+        currentDayAttempt.outcome = victory ? "victory" : "died";
         currentDayAttempt.elapsedSeconds = elapsed;
-        if (!survived) currentDayAttempt.deathAtSecond = elapsed;
-        currentDayAttempt.reachedNight = DayTimer.Instance.IsNight;
+        if (!victory) currentDayAttempt.deathAtSecond = elapsed;
+        currentDayAttempt.reachedNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
         currentDayAttempt.creaturesSlain = DayStatsTracker.CreaturesSlain;
-        currentDayAttempt.bossesDefeated = DayStatsTracker.BossesDefeated;
-        currentDayAttempt.goldFromMonsters = DayStatsTracker.GoldFromMonsters;
-        currentDayAttempt.goldFromBosses = DayStatsTracker.GoldFromBosses;
-        if (survived)
-        {
-            // Mesma conta de DayResolver.GrantSurvivalGoldBonus() (privado lá) — achado
-            // Importante #3: sem isso, "gold ganho no dia" no JSON ficava sempre pela metade
-            // do que o jogador realmente recebeu nos dias sobrevividos.
-            long earnedToday = DayStatsTracker.GoldFromMonsters + DayStatsTracker.GoldFromBosses + DayStatsTracker.GetSoldGoldToday();
-            currentDayAttempt.survivalGoldBonusGranted = (long)(earnedToday * (DayResolver.SurvivalGoldBonusMultiplier - 1f));
-        }
+        currentDayAttempt.bossesDefeated = WorldBossSpawnManager.Instance != null ? WorldBossSpawnManager.Instance.BossesKilled : DayStatsTracker.BossesDefeated;
+        currentDayAttempt.heroLevel = MainMenuUI.CurrentRun?.level ?? 1;
         data.dayAttempts.Add(currentDayAttempt);
         currentDayAttempt = null;
-
-        currentShopVisit = new ShopVisitRecord
-        {
-            goldAtOpen = MainMenuUI.CurrentRun.gold,
-        };
-        shopOpenRealtime = Time.realtimeSinceStartup;
-
         FlushToDisk();
+    }
+
+    private void HandleCardGranted(string cardId, int levelAfter)
+    {
+        if (!telemetryEnabled || currentDayAttempt == null) return;
+        currentDayAttempt.cardPicks.Add(new CardPickRecord
+        {
+            runSecond = DayTimer.Instance != null ? DayTimer.Instance.RunElapsed : 0f,
+            cardId = cardId,
+            levelAfter = levelAfter,
+            heroLevel = MainMenuUI.CurrentRun?.level ?? 1,
+        });
     }
 
     // Chamado por PerkState.TryBuy() — só grava se houver uma visita à loja em aberto (perks só
@@ -453,10 +454,9 @@ public class DayAttemptRecord
     public bool reachedNight;
     public int creaturesSlain;
     public int bossesDefeated;
-    public long goldFromMonsters;
-    public long goldFromBosses;
-    public long survivalGoldBonusGranted;
     public float deathAtSecond;
+    public int heroLevel; // etapas 1+2 — nível no fim da run
+    public List<CardPickRecord> cardPicks = new(); // etapas 1+2 — cartas escolhidas
     public List<KillRecord> kills = new();
     public List<DamageEventRecord> hitsTakenByPlayer = new();
     public List<DamageEventRecord> hitsDealtByPlayer = new();
@@ -529,4 +529,16 @@ public class SnapshotRecord
     public bool isAttackWalking; // D9.1 — andando durante o ataque primário naquele segundo
     public int heroLevel;         // D9.6b — nível naquele segundo (nível por minuto, calibragem da curva)
     public long heroXpIntoLevel;  // D9.6b — XP dentro do nível
+    public float runSecond;          // etapas 1+2 — segundo da run
+    public float maxBossEnrageSeconds; // etapas 1+2 — maior tempo vivo entre os bosses vivos (enrage)
+    public int gemsOnGround;         // etapas 1+2 — gemas de XP no chão
+}
+
+[Serializable]
+public class CardPickRecord
+{
+    public float runSecond;
+    public string cardId;
+    public int levelAfter;
+    public int heroLevel;
 }

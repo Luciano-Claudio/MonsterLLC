@@ -151,21 +151,6 @@ public class RunTelemetryTest : MonoBehaviour
         return result;
     }
 
-    [ContextMenu("Test 11: survivalGoldBonusGranted calculado ao sobreviver")]
-    public string TestSurvivalGoldBonusGranted()
-    {
-        DayStatsTracker.Init();
-        GameEvents.DayStarted();
-        DayStatsTracker.RegisterKillGold(1000, false);
-        DayResolver.ResolveEndOfDay();
-        var closed = RunTelemetryRecorder.Instance.DebugLastClosedDayAttempt;
-        long expected = (long)(1000 * (DayResolver.SurvivalGoldBonusMultiplier - 1f));
-        bool ok = closed != null && closed.survivalGoldBonusGranted == expected && expected > 0;
-        string result = $"[RunTelemetryTest] {(ok ? "PASS" : "FAIL")}: survivalGoldBonusGranted={closed?.survivalGoldBonusGranted}, expected={expected}";
-        Debug.Log(result);
-        return result;
-    }
-
     [ContextMenu("Test 12: OnApplicationQuit fecha dia e loja abertos")]
     public string TestApplicationQuitClosesOpenRecords()
     {

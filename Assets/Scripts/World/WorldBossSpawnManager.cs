@@ -24,6 +24,18 @@ public class WorldBossSpawnManager : MonoBehaviour
     private bool finalBossKilledFired;
     public int BossesKilled { get; private set; }
 
+    // Maior tempo vivo entre os bosses vivos (telemetria do enrage). Lido 1x por segundo.
+    public float MaxBossAliveSeconds
+    {
+        get
+        {
+            float max = 0f;
+            for (int i = 0; i < aliveBosses.Count; i++)
+                if (aliveBosses[i] != null && aliveBosses[i].AliveSeconds > max) max = aliveBosses[i].AliveSeconds;
+            return max;
+        }
+    }
+
     private float replacementCooldownTimer; // proteção contra teleporte repetido na borda do bossDespawnDistance
 
     private void Awake() => Instance = this;

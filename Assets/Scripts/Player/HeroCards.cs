@@ -145,6 +145,7 @@ public class HeroCards : MonoBehaviour
         HeroController.Cards.Recompute(Catalog != null ? Catalog.cards : null, owned);
         if (hero != null) hero.OnCardBonusesChanged(oldMaxHealth);
         Debug.Log($"[HeroCards] {card.title} -> nível {owned[card.id]}.");
+        GameEvents.CardGranted(card.id, owned[card.id]);
     }
 
     private void CloseOffer(bool resume)

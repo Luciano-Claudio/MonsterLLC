@@ -158,6 +158,10 @@ public static class GameEvents
     public static event Action<bool> OnRunEnded;
     public static void RunEnded(bool victory) => OnRunEnded?.Invoke(victory);
 
+    // Etapas 1+2 — uma carta foi pega (id, nível depois). Escutado pela telemetria.
+    public static event Action<string, int> OnCardGranted;
+    public static void CardGranted(string cardId, int levelAfter) => OnCardGranted?.Invoke(cardId, levelAfter);
+
     // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
     // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão
     // do usuário: nos dois casos a população precisa renascer do zero sob as regras atuais
