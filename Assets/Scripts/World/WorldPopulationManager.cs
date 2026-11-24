@@ -52,7 +52,6 @@ public class WorldPopulationManager : MonoBehaviour
     private int lastMiniBossIndex = -1;
     private float nextMiniBossAt;
     private readonly List<EnemyDefinitionSO> candidateScratch = new(); // reaproveitado em TryPickEnemyDefinition, nunca alocado por spawn
-    private readonly float[] tierPercentsBuffer = new float[WorldTierSelector.MonsterTierCount];
 
     // D9.4 — fluxo contínuo: acumulador fracionário de spawnsPerSecond (no máximo 3 guardados,
     // pra nunca sair rajada depois de um período sem lugar válido).
@@ -115,6 +114,7 @@ public class WorldPopulationManager : MonoBehaviour
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
         GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnDayNightPhaseChanged += HandleDayNightPhaseChanged;
     }
 
     private void OnDisable()
@@ -122,6 +122,7 @@ public class WorldPopulationManager : MonoBehaviour
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
         GameEvents.OnDayStart -= HandleDayStart;
+        GameEvents.OnDayNightPhaseChanged -= HandleDayNightPhaseChanged;
     }
 
     // D9.4 — relógio da horda: tempo REAL do dia (não pausa com boss vivo, ao contrário do
@@ -134,17 +135,44 @@ public class WorldPopulationManager : MonoBehaviour
     [Tooltip("Se > 0, todo dia começa com o relógio da horda já nesse tempo (segundos) — pra testar o fim da curva sem esperar. 0 = desligado.")]
     public float debugHordeStartSeconds = 0f;
 
-    private void HandleDayStart()
+    // Etapas 1+2 — o segundo da run vem do relógio da run (DayTimer.RunElapsed, fonte única); o
+    // HordeClock próprio só vale sem DayTimer (cena de teste sem relógio).
+    private float RunSeconds => DayTimer.Instance != null && DayTimer.Instance.Schedule != null ? DayTimer.Instance.RunElapsed : HordeElapsed;
+    private RunSchedule Schedule => DayTimer.Instance != null ? DayTimer.Instance.Schedule : null;
+    private bool IsNight => DayTimer.Instance != null && DayTimer.Instance.IsNight;
+    private float NightSpeed => IsNight && DayTimer.Instance.Settings != null ? DayTimer.Instance.Settings.nightSpeedMultiplier : 1f;
+
+    private int miniBossSlot; // espaço de boss cujo mini boss (1 por intervalo entre bosses) ainda não nasceu
+
+    private void HandleDayStart() // = início da run
     {
         hordeClock.Reset(debugHordeStartSeconds);
         lastMiniBossIndex = -1;
+        miniBossSlot = 0;
         ScheduleNextMiniBoss();
     }
 
+    // 1 mini boss por intervalo entre um boss e o seguinte (15-45 s depois do boss, RunSettings).
     private void ScheduleNextMiniBoss()
     {
-        if (spawnSettings == null) return;
-        nextMiniBossAt = HordeElapsed + MiniBossRules.NextInterval(spawnSettings.miniBossIntervalMin, spawnSettings.miniBossIntervalMax, Random.value);
+        var schedule = Schedule;
+        nextMiniBossAt = schedule != null && miniBossSlot < schedule.SlotCount - 1
+            ? schedule.MiniBossSecond(miniBossSlot, Random.value)
+            : float.MaxValue; // depois do último boss (Divine God) não nasce mais mini boss
+    }
+
+    private void AdvanceMiniBossSlot()
+    {
+        miniBossSlot++;
+        ScheduleNextMiniBoss();
+    }
+
+    // Buff noturno (+velocidade) nos comuns e mini bosses vivos — só na troca de fase, nunca por frame.
+    private void HandleDayNightPhaseChanged(bool isNight)
+    {
+        float speed = NightSpeed;
+        foreach (var e in aliveEnemies) if (e != null) e.SetRunMultipliers(speed, 1f);
+        foreach (var m in aliveMiniBosses) if (m != null) m.SetRunMultipliers(speed, 1f);
     }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
@@ -201,7 +229,7 @@ public class WorldPopulationManager : MonoBehaviour
 
         // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
         // no lugar do "1 a cada respawnInterval" e das rajadas da crise.
-        CurrentTarget = spawnSettings.horde.TargetAlive(HordeElapsed, ActualDay);
+        CurrentTarget = spawnSettings.horde.TargetAlive(RunSeconds, IsNight);
         if (aliveEnemies.Count >= CurrentTarget)
         {
             spawnAccumulator = 0f;
@@ -237,44 +265,35 @@ public class WorldPopulationManager : MonoBehaviour
 
     // Percentuais de tier do momento (dia efetivo pela distância da origem, Dia/Noite, supressão,
     // isolamento de debug) — mesma conta pro spawn comum e pra elegibilidade dos mini bosses.
-    private int ComputeTierPercentsForNow()
+    private int RollRunTier()
     {
-        // Safe Zone/EffectiveSpawnDay são centrados na origem do mundo (0,0) — mesma origem
-        // que a centralização de chunk (ChunkCoord.ToWorldOrigin) já usa como centro real.
-        float distanceFromOrigin = player.position.magnitude;
-        int effectiveDay = WorldTierSelector.ComputeEffectiveSpawnDay(
-            distanceFromOrigin, worldSettings.safeZoneRadius, worldSettings.distancePerSpawnDay, ActualDay);
-
-        var dayDef = worldSettings.daySpawnTable != null ? worldSettings.daySpawnTable.GetDay(effectiveDay) : null;
-        bool isNight = DayTimer.Instance != null && DayTimer.Instance.IsNight;
-        int suppressedTierCount = MainMenuUI.CurrentRun?.suppressedTierCount ?? 0;
-        int forcedTierIndex = useTierIsolationOverride ? testTierOverride - 1 : -1;
-        WorldTierSelector.ComputeTierPercentsNonAlloc(dayDef, tierPercentsBuffer, suppressedTierCount, isNight, forcedTierIndex);
-        return suppressedTierCount;
+        if (useTierIsolationOverride) return testTierOverride;
+        var schedule = Schedule;
+        if (schedule == null) return 1;
+        int n = schedule.TierShares(RunSeconds, out int tierA, out float shareA, out int tierB);
+        return n == 1 || Random.value < shareA ? tierA : tierB;
     }
 
-    // Mini bosses (docs/superpowers/specs/2026-11-21-mini-bosses-design.md): 1 a cada 30-40 s de
-    // tempo real do dia, sozinho e sem aviso, sorteado entre os do tier que o dia já tem, sem
-    // repetir o último. Nasce mesmo com outro vivo (quem não mata, acumula). Sem lugar fora da
+    // Mini bosses (etapas 1+2): 1 por intervalo entre bosses (RunSettings: 15-45 s depois do boss),
+    // sozinho e sem aviso, sorteado entre os do tier atual da run ou abaixo, sem repetir o último. Nasce mesmo com outro vivo (quem não mata, acumula). Sem lugar fora da
     // tela: tenta no próximo frame, sem reagendar. Nunca é boss (sem câmera, sem pausa).
     private void UpdateMiniBosses()
     {
         var roster = spawnSettings.miniBossRoster;
-        if (roster == null || roster.Count == 0 || HordeElapsed < nextMiniBossAt) return;
+        if (roster == null || roster.Count == 0 || RunSeconds < nextMiniBossAt) return;
 
         if (miniBossEligible.Length != roster.Count) miniBossEligible = new bool[roster.Count];
-        ComputeTierPercentsForNow();
+        int currentTier = Schedule != null ? Schedule.CurrentTier(RunSeconds) : 1;
         for (int i = 0; i < roster.Count; i++)
         {
             var def = roster[i];
-            miniBossEligible[i] = def != null && def.prefab != null && def.tier >= 1 && def.tier <= tierPercentsBuffer.Length
-                && tierPercentsBuffer[def.tier - 1] > 0f;
+            miniBossEligible[i] = def != null && def.prefab != null && def.tier >= 1 && def.tier <= currentTier;
         }
 
         int pick = MiniBossRules.Pick(miniBossEligible, roster.Count, lastMiniBossIndex, Random.value);
         if (pick < 0)
         {
-            ScheduleNextMiniBoss(); // nenhum elegível agora (ex.: Dia 1, só T1) — reavalia no próximo intervalo
+            AdvanceMiniBossSlot(); // nenhum elegível ainda (T1 não tem mini boss) — este intervalo fica sem
             return;
         }
 
@@ -287,13 +306,14 @@ public class WorldPopulationManager : MonoBehaviour
         if (controller == null)
         {
             Destroy(obj); // defesa: prefab sem EnemyController
-            ScheduleNextMiniBoss();
+            AdvanceMiniBossSlot();
             return;
         }
         PrepareMiniBoss(controller, roster[pick].tier);
+        controller.SetRunMultipliers(NightSpeed, 1f);
         aliveMiniBosses.Add(controller);
         lastMiniBossIndex = pick;
-        ScheduleNextMiniBoss();
+        AdvanceMiniBossSlot();
     }
 
     // Revisão final (achado crítico): os 5 prefabs vieram de boss com `isBoss: 1` salvo no
@@ -312,10 +332,10 @@ public class WorldPopulationManager : MonoBehaviour
     {
         if (spawnSettings.roster == null || spawnSettings.roster.Count == 0) return false;
 
-        int suppressedTierCount = ComputeTierPercentsForNow();
-
-        int tierIndex = WorldTierSelector.RollMonsterTier(Random.value, tierPercentsBuffer);
-        if (tierIndex < 0) return false; // tabela de dia sem nenhum peso > 0 — defesa, não deveria acontecer com a tabela real
+        // Etapas 1+2 — tier pela mistura da run (RunSchedule.TierShares: o tier seguinte entra aos
+        // poucos depois do último boss do tier atual). Isolamento de debug continua forçando 1 tier.
+        int suppressedTierCount = 0;
+        int tierIndex = RollRunTier() - 1;
 
         // Com isolamento ligado, nunca cai pro Tier de fallback (ver TryPickEnemyDefinition) —
         // se o Tier isolado não tiver bestiário nenhum cadastrado ainda, o certo é não nascer
@@ -342,6 +362,7 @@ public class WorldPopulationManager : MonoBehaviour
         {
             enemyController.ForceImmediateAggro();
             enemyController.SetSpawnInfo(definition.tier, false); // D9.6b — XP pelo tier
+            if (IsNight) enemyController.SetRunMultipliers(NightSpeed, 1f);
         }
 
         if (enemyController != null) aliveEnemies.Add(enemyController);
@@ -435,7 +456,7 @@ public class WorldPopulationManager : MonoBehaviour
     {
         chosen = null;
         candidateScratch.Clear();
-        bool rangedBlocked = RangedGate.Blocks(ActualDay, HordeElapsed, spawnSettings.rangedUnlockSeconds);
+        bool rangedBlocked = RangedGate.Blocks(1, RunSeconds, spawnSettings.rangedUnlockSeconds); // só no começo da run
         float totalWeight = 0f;
 
         foreach (var def in spawnSettings.roster)

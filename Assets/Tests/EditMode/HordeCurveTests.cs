@@ -1,77 +1,23 @@
 using NUnit.Framework;
 using UnityEngine;
 
-// D9.4 — curva da horda: meta de monstros vivos por (dia, tempo real do dia), com picos e teto.
-// Valores iniciais do design (docs/superpowers/specs/2026-11-20-d9-4-horda-cerco-design.md).
+// Etapas 1+2 — curva da horda de 25 min: meta de dia ~50 no minuto 1 e ~150 no minuto 3; à noite
+// o dobro, sem passar do limite de desempenho (300). Sem picos periódicos (a noite é o pico).
 public class HordeCurveTests
 {
-    private static HordeCurveSettings MakeSettings(float spikeMultiplier = 1.5f)
-    {
-        return new HordeCurveSettings
-        {
-            shape = new AnimationCurve(
-                new Keyframe(0f, 0f), new Keyframe(0.125f, 0.0357f), new Keyframe(0.25f, 0.1429f),
-                new Keyframe(0.5f, 0.3571f), new Keyframe(0.75f, 0.6429f), new Keyframe(1f, 1f)),
-            secondsToCeiling = 240f,
-            days = new[]
-            {
-                new DayPopulation { start = 10, ceiling = 150 },
-                new DayPopulation { start = 15, ceiling = 180 },
-                new DayPopulation { start = 25, ceiling = 210 },
-                new DayPopulation { start = 30, ceiling = 240 },
-                new DayPopulation { start = 40, ceiling = 270 },
-                new DayPopulation { start = 50, ceiling = 300 },
-                new DayPopulation { start = 50, ceiling = 300 },
-                new DayPopulation { start = 50, ceiling = 300 },
-                new DayPopulation { start = 50, ceiling = 300 },
-                new DayPopulation { start = 50, ceiling = 300 },
-            },
-            spikeInterval = 60f,
-            spikeDuration = 15f,
-            spikeMultiplier = spikeMultiplier,
-            hardCap = 300,
-        };
-    }
-
-    [Test] public void Curve_Day1_Start_Is10() => Assert.AreEqual(10, MakeSettings().TargetAlive(0f, 1));
-
-    // 240 s cai numa janela de pico (240 % 60 = 0) — o teto "puro" é medido sem pico.
-    [Test] public void Curve_Day1_At240_IsCeiling150() => Assert.AreEqual(150, MakeSettings(spikeMultiplier: 1f).TargetAlive(240f, 1));
-
-    [Test] public void Curve_AfterCeiling_StaysAtCeiling() => Assert.AreEqual(150, MakeSettings().TargetAlive(400f, 1)); // 400 % 60 = 40, fora do pico
-
-    [Test] public void Curve_Day1_At30_Is15() => Assert.AreEqual(15, MakeSettings().TargetAlive(30f, 1), 1);
-
-    [Test] public void Curve_Day3_Start_Is25() => Assert.AreEqual(25, MakeSettings().TargetAlive(0f, 3));
-
+    [Test] public void Run_starts_low() => Assert.AreEqual(10, new HordeCurveSettings().TargetAlive(0f, false));
+    [Test] public void Minute_one_is_50() => Assert.AreEqual(50, new HordeCurveSettings().TargetAlive(60f, false));
+    [Test] public void Minute_three_is_150() => Assert.AreEqual(150, new HordeCurveSettings().TargetAlive(180f, false));
+    [Test] public void Day_stays_near_150_later() => Assert.AreEqual(150, new HordeCurveSettings().TargetAlive(900f, false));
+    [Test] public void Night_doubles() => Assert.AreEqual(100, new HordeCurveSettings().TargetAlive(60f, true));
+    [Test] public void Night_at_minute_three_hits_cap() => Assert.AreEqual(300, new HordeCurveSettings().TargetAlive(180f, true));
     [Test]
-    public void Curve_SpikeWindow_Adds50Percent()
+    public void Night_never_exceeds_cap()
     {
-        var noSpike = MakeSettings(spikeMultiplier: 1f);
-        var s = MakeSettings();
-        Assert.AreEqual(Mathf.RoundToInt(noSpike.TargetAlive(65f, 1) * 1.5f), s.TargetAlive(65f, 1), 1);
-        Assert.AreEqual(noSpike.TargetAlive(80f, 1), s.TargetAlive(80f, 1));
+        var s = new HordeCurveSettings { dayTargetBySecond = HordeCurveSettings.LinearCurve(new Vector2(0f, 400f), new Vector2(1500f, 400f)) };
+        Assert.AreEqual(300, s.TargetAlive(900f, true));
+        Assert.AreEqual(300, s.TargetAlive(900f, false));
     }
-
-    [Test]
-    public void Curve_NoSpikeBeforeFirstInterval()
-    {
-        Assert.AreEqual(MakeSettings(spikeMultiplier: 1f).TargetAlive(10f, 1), MakeSettings().TargetAlive(10f, 1));
-    }
-
-    [Test] public void Curve_SpikeNeverExceedsHardCap() => Assert.AreEqual(300, MakeSettings().TargetAlive(245f, 10));
-
-    [Test]
-    public void Curve_DayOutOfRange_IsClamped()
-    {
-        var s = MakeSettings();
-        Assert.AreEqual(s.TargetAlive(0f, 1), s.TargetAlive(0f, 0));
-        Assert.AreEqual(s.TargetAlive(0f, 10), s.TargetAlive(0f, 15));
-    }
-
-    // Entre as chaves a subida é linear (sem "estacionar" em cada chave): 75 s = 1/4 do caminho
-    // entre 60 s (30 vivos) e 120 s (60 vivos) -> 37,5.
-    [Test] public void DefaultShape_IsLinearBetweenKeys() => Assert.AreEqual(38, new HordeCurveSettings().TargetAlive(75f, 1), 1);
 
     [Test]
     public void RangedGate_Day1_BlocksBefore30()
