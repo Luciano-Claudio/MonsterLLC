@@ -81,7 +81,8 @@ public class PauseMenuUI : MonoBehaviour
 
         // Despausa aqui, não só reagindo ao Esc — clicar em "Resume" com o mouse precisa
         // despausar igual, já que esse é o único jeito de fechar o menu a partir dele.
-        TimeManager.Instance.Resume();
+        // Etapas 1+2: com a tela de cartas aberta, o jogo continua pausado por baixo dela.
+        if (HeroCards.Instance == null || !HeroCards.Instance.OfferOpen) TimeManager.Instance.Resume();
     }
 
     private void OpenSettings()

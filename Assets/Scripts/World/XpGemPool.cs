@@ -30,6 +30,9 @@ public class XpGemPool : MonoBehaviour
 
     public int ActiveCount => active.Count;
 
+    // Raio do ímã: base do RunSettings × perks de coleta × carta de ímã.
+    public float MagnetRadius => Settings.gemMagnetRadius * HeroController.PickupRadiusMultiplier * HeroController.Cards.Get(CardAbility.None, CardStat.Magnet);
+
     public long ActiveXpSum
     {
         get
@@ -108,7 +111,7 @@ public class XpGemPool : MonoBehaviour
         if (hero == null || HeroController.IsDying) return;
 
         Vector2 heroPos = hero.transform.position;
-        float magnet = Settings.gemMagnetRadius * HeroController.PickupRadiusMultiplier;
+        float magnet = MagnetRadius;
         float magnetSqr = magnet * magnet;
         float step = Settings.gemFlySpeed * Time.deltaTime;
         const float collectSqr = CollectDistance * CollectDistance;

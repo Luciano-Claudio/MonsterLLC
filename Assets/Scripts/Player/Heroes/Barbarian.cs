@@ -372,7 +372,7 @@ public class Barbarian : HeroController
 
         float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
         float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
-            * HeroController.PrimaryDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier;
+            * HeroController.PrimaryDamageMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * HeroController.CentralDamageMultiplier * critMultiplier;
 
         // 128 (não 16) — bug real reportado pelo usuário (2026-10-26): com muito monstro
         // aglomerado perto do player (vários já "parados" no próprio slot de ataque, viram
@@ -447,7 +447,7 @@ public class Barbarian : HeroController
         var crack = crackObj.GetComponent<GroundCrack>();
         // "this" como dono — só o crack do golpe normal (não o do Eco do Impacto, ver
         // SpawnGroundCrackAt abaixo) acompanha Shift/HP perdido em tempo real.
-        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier, this);
+        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area), this);
 
         if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position, LeaveGraceRemaining = groundCrackDuration });
         else Destroy(crackObj, groundCrackDuration);
@@ -519,7 +519,7 @@ public class Barbarian : HeroController
 
         float critMultiplier = HeroController.RollCritMultiplier(HeroController.UltimateCritChance);
         float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
-            * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier;
+            * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage) * HeroController.CentralDamageMultiplier * critMultiplier;
 
         // #29 "Avatar da Destruição" — a cada 5 usos, o 5º vem com o dobro de dano e projéteis.
         bool isDoubledUse = ultimateEveryFifthUseDoubled && ultimateUseCount % 5 == 0;
@@ -551,7 +551,7 @@ public class Barbarian : HeroController
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
-            obj.transform.localScale = Vector3.one * sizeMultiplier;
+            obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapas 1+2 — carta de tamanho do machado
             var projectile = obj.GetComponent<HeroProjectile>();
             if (projectile == null) continue;
 
@@ -624,7 +624,7 @@ public class Barbarian : HeroController
     // mas nunca tinha sido lido em lugar nenhum — gap real encontrado agora, ao ligar os perks
     // de Direita #1-4 ("Dano do Shift"), que escrevem exatamente nele (ver RecomputePerkEffects).
     private float GetSecondaryAbilityDamageMultiplier() =>
-        secondaryAbilityRemaining > 0f ? secondaryAbilityDamageMultiplier * HeroController.ShiftDamageMultiplier : 1f;
+        secondaryAbilityRemaining > 0f ? secondaryAbilityDamageMultiplier * HeroController.Cards.Get(CardAbility.Shift, CardStat.Damage) * HeroController.ShiftDamageMultiplier : 1f;
 
     // Classifica AimDirection (congelada em isAttacking) num dos 4 quadrantes diagonais —
     // mesmo critério que o Blend Tree 2D do Animator usa pra escolher entre atk_ne/nw/se/sw.

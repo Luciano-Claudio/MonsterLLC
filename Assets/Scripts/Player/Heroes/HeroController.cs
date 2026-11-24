@@ -111,7 +111,22 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // de World Perk (Vigor/Fortitude/Pulso Vital/Vitalidade Suprema) é um multiplicador lido
     // em cima, igual PickupRadiusMultiplier/MoveSpeedMultiplier. Todo clamp/UI de vida usa ISTO,
     // nunca stats.maxHealth direto (ver TakeDamage/Heal/Start).
-    public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier * CentralHealthMultiplier
+    // Etapas 1+2 — bônus das cartas da run (HeroCards), lidos na hora do uso por cada herói. Static
+    // pelo mesmo motivo dos outros multiplicadores daqui (1 herói jogável por vez); zera na run nova.
+    public static readonly CardBonuses Cards = new CardBonuses();
+
+    // Chamado pelo HeroCards depois de uma carta: a vida máxima pode ter mudado (carta de vida) — a
+    // vida atual sobe na mesma proporção (não cura tudo); o raio de coleta é recalculado.
+    public void OnCardBonusesChanged(float oldEffectiveMaxHealth)
+    {
+        float newMax = EffectiveMaxHealth;
+        if (oldEffectiveMaxHealth > 0f && !Mathf.Approximately(newMax, oldEffectiveMaxHealth))
+            stats.health = Mathf.Min(newMax, stats.health * newMax / oldEffectiveMaxHealth);
+        GameEvents.HealthChanged(stats.health, newMax);
+        SetSecondaryCooldownMultiplier(1f); // heróis que não reaplicam o próprio multiplicador pegam o da carta
+    }
+
+    public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier * CentralHealthMultiplier * Cards.Get(CardAbility.None, CardStat.MaxHealth)
         * (1f + GetConditionalMaxHealthBonusPercent() / 100f);
 
     // Hook pra bônus de HP máximo CONDICIONAL (ex.: Direita #27 do Barbarian, "Vontade
@@ -124,7 +139,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // dano recebido -% enquanto o Shift estiver ativo). Default 0 — nunca interfere com
     // DamageReductionPercent (World Perks, incondicional), os dois se acumulam.
     protected virtual float GetConditionalDamageReductionPercent() => 0f;
-    private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier;
+    private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier * Cards.Get(CardAbility.None, CardStat.MoveSpeed);
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
     // com EnemyController (ver StatusEffectController.cs). Trapped continua à parte, é
@@ -243,7 +258,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // #21-22/Direita #13-16/#23/#26/#29 do Barbarian) — nenhum herói precisa saber que existe um
     // AttackCooldown por baixo, só que pode ajustar/reduzir/zerar o próprio cooldown.
     protected void SetPrimaryCooldownMultiplier(float multiplier) => attackCooldown.DurationMultiplier = multiplier;
-    protected void SetSecondaryCooldownMultiplier(float multiplier) => secondaryAbilityCooldown.DurationMultiplier = multiplier;
+    protected void SetSecondaryCooldownMultiplier(float multiplier)
+    {
+        if (secondaryAbilityCooldown == null) return;
+        secondaryAbilityCooldown.DurationMultiplier = multiplier * Cards.Get(CardAbility.Shift, CardStat.Cooldown); // etapas 1+2 — carta de recarga do Shift
+    }
     // Leitura (sem consumir nem alterar nada) — pra perks condicionados a "enquanto a
     // habilidade secundária estiver em cooldown" (ex.: Ranger #24 "Instinto Caçador").
     protected bool IsSecondaryAbilityCooldownReady => secondaryAbilityCooldown.IsReady;
@@ -896,7 +915,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // (ex.: Coruja do Druid, isAttacking de qualquer herói) ainda perdia a energia toda,
         // já que UseUltimate() é void e o "return" cedo dele é invisível pra quem chamou.
         if (!CanUseUltimate()) return;
-        if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy * UltimateChargeRequiredMultiplier)) return;
+        if (!EnergySystem.IsReady(stats.energy, stats.maxEnergy * UltimateChargeRequiredMultiplier * Cards.Get(CardAbility.Ultimate, CardStat.Cooldown))) return; // etapas 1+2 — carta de energia da Ultimate
         // Releitura forçada antes de congelar — o Input System processa este clique ANTES
         // do Update() deste frame, então sem isso a mira congelaria com o valor do frame
         // ANTERIOR (podendo estar bem perto do herói se o mouse só chegou na posição final
