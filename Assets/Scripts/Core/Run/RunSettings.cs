@@ -53,6 +53,18 @@ public class RunSettings : ScriptableObject
     [Tooltip("Chance (%) de cada carta do baú virar um Stat.")]
     public float chestStatChancePercent = 15f; // 🔢
 
+    [Header("Baú e vendedor no mundo (etapa 3)")]
+    [Tooltip("Aparições de baú por run (sorteado entre mín e máx, espalhado em faixas iguais).")]
+    public int chestMinCount = 4; // 🔢
+    public int chestMaxCount = 5; // 🔢
+    [Tooltip("Aparições do vendedor por run.")]
+    public int vendorMinCount = 6; // 🔢
+    public int vendorMaxCount = 8; // 🔢
+    [Tooltip("Segundos do começo da run sem baú nem vendedor.")]
+    public float rewardQuietSeconds = 60f; // 🔢
+    [Tooltip("Prefab do vendedor (criado no mundo em runtime).")]
+    public GameObject vendorPrefab;
+
     [Header("Efeitos de itens e Stats (etapa 3)")]
     [Tooltip("Teto da redução de dano somada (perks + Iron Plate + Iron Will), em %.")]
     public float damageReductionCapPercent = 75f; // 🔢
