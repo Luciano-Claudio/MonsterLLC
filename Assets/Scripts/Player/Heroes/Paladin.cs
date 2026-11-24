@@ -298,7 +298,7 @@ public class Paladin : HeroController
     private void ActivateShield()
     {
         shieldActive = true;
-        shieldCurrentHealth = shieldMaxHealth * HeroController.LevelHealthFactor; // D9.6b — escudo escala com o nível (mesmo fator da vida)
+        shieldCurrentHealth = shieldMaxHealth;
         if (shieldFrontAnimator != null) shieldFrontAnimator.Play("DomeStart");
         if (shieldBackAnimator != null) shieldBackAnimator.Play("DomeStart");
     }

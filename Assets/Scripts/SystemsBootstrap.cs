@@ -38,7 +38,8 @@ public class SystemsBootstrap : MonoBehaviour
         KillGoldReward.Init(goldTable); // GDD Deadline 8.1, Seção 3.1 — gold fixo por kill/boss, por dia
         DayStatsTracker.Init(); // Resumo do Dia — contadores/gold/loot vendido, por dia
         gameObject.AddComponent<RunTelemetryRecorder>().Init(telemetryEnabled);
-        gameObject.AddComponent<HeroLevel>(); // D9.6b — XP e nível do herói (estado no RunState)
+        gameObject.AddComponent<HeroLevel>(); // XP e nível do herói (estado no RunState)
+        gameObject.AddComponent<XpGemPool>(); // etapas 1+2 — gemas de XP no chão (pool sem física)
         var scaling = MonsterScalingSettings.Load(); // D9.6a — tabela por tier editável (XP por kill em runtime)
         if (scaling != null) scaling.ApplyToRuntime();
         controls = new PlayerControls();

@@ -1502,7 +1502,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         }
         AnimatorTrigger("DieTrigger");
         GameEvents.EnemyKilled(energyReward, isBoss);
-        if (GrantsXp) GameEvents.EnemyKilledXp(MonsterScaling.XpForKill(Tier, isBoss, IsMiniBoss)); // D9.6b
+        if (GrantsXp) DropXpGems(); // etapas 1+2 — gemas de XP no chão (no lugar do XP direto do D9.6b)
         GameEvents.EnemyKilledDetailed(gameObject.name, isBoss, directHitsThisLife, dotTicksThisLife, stats.maxHealth, energyReward, transform.position);
     }
 
@@ -1593,6 +1593,19 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // da lista. Um abate pode dropar vários materiais diferentes ao mesmo tempo (ou nenhum, se
     // todas as rolagens falharem — só acontece em entradas com chance < 100%, já que Monster
     // Essence de todo monstro comum é sempre 100% no Bestiário).
+    // Etapas 1+2 (spec 6.1) — gemas de 1 XP no chão: 1 por monstro comum, várias pro mini boss/boss
+    // (RunSettings), espalhadas num raio pequeno. Coletadas pelo XpGemPool (ímã/contato).
+    private void DropXpGems()
+    {
+        var pool = XpGemPool.Instance;
+        if (pool == null) return;
+        var settings = RunSettings.Current;
+        int count = isBoss ? settings.bossGems : IsMiniBoss ? settings.miniBossGems : 1;
+        Vector2 origin = transform.position;
+        for (int i = 0; i < count; i++)
+            pool.Spawn(count == 1 ? origin : origin + Random.insideUnitCircle * 0.5f, 1);
+    }
+
     private void DropLoot()
     {
         if (!RunSettings.Flag(s => s.lootEnabled)) return; // etapas 1+2: sem loot na run

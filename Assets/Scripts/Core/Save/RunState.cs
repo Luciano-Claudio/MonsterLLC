@@ -40,7 +40,6 @@ public class RunState
     // D9.6b — nível do herói (HeroLevel). Zera numa run nova; a morte apaga o save.
     public int level = 1;
     public long xpIntoLevel;
-    public long goldFromXpToday; // gold vindo do XP acima do cap, no dia atual (limite diário)
 }
 
 [System.Serializable]

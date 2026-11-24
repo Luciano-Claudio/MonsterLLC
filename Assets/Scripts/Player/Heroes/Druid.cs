@@ -554,16 +554,6 @@ public class Druid : HeroController
     // Volta stats/controller/collider/tamanho/ícones pro humano. keepHealthRatio (GDD):
     // HumanCurrentHealth = HumanMaxHealth × (CurrentElkHealth/ElkMaxHealth) — nunca cura cheia.
     // false = início do dia: a transformação logo em seguida cura pra 100% do urso de qualquer jeito.
-    // D9.6b — subir de nível no urso (ou no meio da transformação): a base humana guardada passa a
-    // ser a do nível novo, e o urso reaplica os multiplicadores por cima. Sem isso o ApplyLevel
-    // gravava os stats humanos no urso, e o RestoreHumanForm do dia seguinte voltava pro nível velho.
-    protected override void WriteLevelStats(float levelDamage, float levelMaxHealth)
-    {
-        humanDamage = levelDamage;
-        humanMaxHealth = levelMaxHealth;
-        stats.damage = isElkForm ? levelDamage * elkDamageMultiplier : levelDamage;
-        stats.maxHealth = isElkForm ? levelMaxHealth * elkMaxHealthMultiplier : levelMaxHealth;
-    }
 
     private void RestoreHumanForm(bool keepHealthRatio)
     {

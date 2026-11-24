@@ -33,6 +33,18 @@ public class RunSettings : ScriptableObject
     public float miniBossMinDelay = 15f; // 🔢 segundos depois do boss
     public float miniBossMaxDelay = 45f; // 🔢
 
+    [Header("Gemas de XP (etapa 2)")]
+    [Tooltip("Sprite da gema no chão.")]
+    public Sprite gemSprite;
+    public float gemScale = 0.5f; // 🔢
+    [Tooltip("Limite de gemas no chão (desempenho). Passou disso, uma gema existente absorve o XP da nova.")]
+    public int maxGems = 400; // 🔢
+    [Tooltip("Raio do ímã (unidades) antes das cartas de ímã.")]
+    public float gemMagnetRadius = 2.5f; // 🔢
+    public float gemFlySpeed = 12f; // 🔢 unidades/s
+    public int miniBossGems = 5; // 🔢
+    public int bossGems = 20; // 🔢
+
     [Header("Sistemas fora da run (etapa 3 religa baú/vendedor dando cartas)")]
     [Tooltip("Gold por kill/sobrevivência dentro da run. Não existe mais gold na run (etapas 1+2).")]
     public bool runGoldEnabled = false;

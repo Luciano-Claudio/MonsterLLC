@@ -107,8 +107,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     public float ShieldAmount => shieldAmount;
     public void AddShield(float amount) => shieldAmount = Mathf.Max(shieldAmount, amount);
 
-    // stats.maxHealth é o valor DO NÍVEL (D9.6b: ApplyLevel reescreve a partir da base do prefab
-    // guardada no Awake; o Druid ainda multiplica na forma Alce) — o bônus
+    // stats.maxHealth é o valor BASE do herói (o Druid multiplica na forma Alce) — o bônus
     // de World Perk (Vigor/Fortitude/Pulso Vital/Vitalidade Suprema) é um multiplicador lido
     // em cima, igual PickupRadiusMultiplier/MoveSpeedMultiplier. Todo clamp/UI de vida usa ISTO,
     // nunca stats.maxHealth direto (ver TakeDamage/Heal/Start).
@@ -452,40 +451,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // aplicar pra forma Alce.
     protected virtual bool AutoFlipBodyCollider => true;
 
-    // D9.6b — nível do herói (HeroLevel). stats.damage/stats.maxHealth passam a ser os valores DO
-    // NÍVEL, calculados da base guardada aqui (a base do prefab nunca se perde). Reescrever os
-    // stats (em vez de um multiplicador central) vale pros 10 heróis de uma vez: só Barbarian,
-    // Mage e Ranger usam o CentralDamageMultiplier; os outros leem stats.damage direto.
-    private float baseDamage;
-    private float baseMaxHealth;
-    public static float LevelHealthFactor = 1f; // vida do nível ÷ base (escudo do Paladin etc.)
-
-    public void ApplyLevel(int level)
-    {
-        float oldMax = EffectiveMaxHealth;
-        float levelDamage = HeroLevelRules.DamageAt(baseDamage, level);
-        float levelMaxHealth = HeroLevelRules.HealthAt(baseMaxHealth, level);
-        LevelHealthFactor = baseMaxHealth > 0f ? levelMaxHealth / baseMaxHealth : 1f;
-        WriteLevelStats(levelDamage, levelMaxHealth);
-        float newMax = EffectiveMaxHealth;
-        if (oldMax > 0f) stats.health = Mathf.Min(newMax, stats.health * newMax / oldMax); // sobe na proporção, não cura tudo
-        GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
-    }
-
-    // Grava os stats do nível. Herói com forma que multiplica stats (Druid Feral) sobrescreve pra
-    // atualizar a base da forma e reaplicar os multiplicadores dela por cima.
-    protected virtual void WriteLevelStats(float levelDamage, float levelMaxHealth)
-    {
-        stats.damage = levelDamage;
-        stats.maxHealth = levelMaxHealth;
-    }
-
     protected virtual void Awake()
     {
         Instance = this;
-        baseDamage = stats.damage;
-        baseMaxHealth = stats.maxHealth;
-        LevelHealthFactor = 1f;
 
         // Achado real: StartRun/ContinueGame (MainMenuUI) chamam WorldPerkEffects.Recompute()
         // ANTES do herói nascer (Instance ainda nulo lá) — o multiplicador do perk Central

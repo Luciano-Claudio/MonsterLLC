@@ -11,9 +11,9 @@ public static class GameEvents
     public static event Action<int, bool> OnEnemyKilled;
     public static void EnemyKilled(int energyValue, bool isBoss) => OnEnemyKilled?.Invoke(energyValue, isBoss);
 
-    // D9.6b — XP do kill (tabela por tier, MonsterScaling.XpForKill). Escutado pelo HeroLevel.
-    public static event Action<int> OnEnemyKilledXp;
-    public static void EnemyKilledXp(int xp) => OnEnemyKilledXp?.Invoke(xp);
+    // Etapas 1+2 — o herói coletou uma gema de XP (XpGemPool). Escutado pelo HeroLevel.
+    public static event Action<int> OnXpCollected;
+    public static void XpCollected(int xp) => OnXpCollected?.Invoke(xp);
 
     // D9.6b — o herói subiu de nível (o D9.6c abre a tela de cartas a partir daqui).
     public static event Action<int> OnHeroLeveledUp;
