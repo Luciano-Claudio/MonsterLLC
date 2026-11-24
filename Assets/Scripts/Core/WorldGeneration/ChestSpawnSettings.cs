@@ -1,22 +1,12 @@
 using UnityEngine;
 
-// Config central do spawn de Baú no mundo aberto (GDD Deadline 8.1, Seção 8) — paralelo a
-// BossSpawnSettings/MonsterSpawnSettings, mas pros parâmetros próprios do Baú. Decisão do
-// usuário: o Baú NÃO tem uma quantidade fixa/por-dia — é uma % de "o dia tem baú ou não",
-// rolada 1x por dia (pode não ter baú nenhum). Essa % é de propósito baixa — chestSpawnChancePercent
-// aqui é só a base fixa configurável no Inspector; o bônus dos World Perks Baú Extra/Baú Duplo
-// (redesenho 2026-11-09: eles somam % de chance de nascer em vez de +1 baú/+recompensa dupla)
-// é somado por cima em WorldChestSpawnManager.HandleDayStart, via WorldPerkEffects.
-// ChestSpawnChanceBonusPercent.
+// Config do baú no mundo aberto (posição/anel e chance de mímico). Etapa 3: QUANTOS baús por run
+// ficam no RunSettings (chestMin/MaxCount); a recompensa é a oferta de cartas (ChestRewardSystem).
 [CreateAssetMenu(fileName = "ChestSpawnSettings", menuName = "MonsterLLC/World Generation/Chest Spawn Settings")]
 public class ChestSpawnSettings : ScriptableObject
 {
     [Range(0f, 100f)]
-    [Tooltip("% de chance de nascer 1 baú no dia (rolado 1x só, no início do dia — nunca mais de 1 baú por dia nesta fase). Decisão do usuário: baús são fortes de propósito, não triviais — a base é baixa e cresce via World Perks depois.")]
-    public float chestSpawnChancePercent = 15f;
-
-    [Range(0f, 100f)]
-    [Tooltip("Rolado individualmente pro baú do dia, se ele nascer: chance de ser, na verdade, um Chest Mimic disfarçado em vez do Chest normal.")]
+    [Tooltip("Chance de cada baú de ser, na verdade, um Chest Mimic disfarçado em vez do Chest normal.")]
     public float mimicChancePercent = 20f;
 
     [Tooltip("Anel de spawn ao redor do jogador pro Baú, em CHUNKS (não em unidades de mundo) — decisão do usuário: baú precisa forçar exploração, nunca nascer perto. Convertido pra unidades de mundo multiplicando por WorldGenerationSettings.chunkSize (ex.: minChunksAway=2 com chunkSize=64 = raio mínimo real de 128).")]
@@ -33,19 +23,4 @@ public class ChestSpawnSettings : ScriptableObject
     [Tooltip("Mesmo mecanismo do monstro comum/Boss (WorldSpawnUtility) — raio de sondagem física pra não nascer colado numa borda.")]
     public float spawnObstacleClearanceRadius = 0.6f;
     public LayerMask obstacleLayerMask;
-
-    [Header("Recompensa (ChestRewardSystem — fonte única, abrir o Chest OU matar o Chest Mimic dão a MESMA recompensa)")]
-    [Range(0f, 100f)]
-    [Tooltip("Decisão do usuário (2026-11-08): 50% gold, 50% abre o Chest_Popup (perks/talentos).")]
-    public float choicePopupChancePercent = 50f;
-
-    public long minGoldReward = 50;
-    public long maxGoldReward = 200;
-
-    [Range(0f, 100f)]
-    [Tooltip("Chance de dar 2 recompensas em vez de 1. Configuração pura do Inspector — não tem perk nenhum somando aqui (Baú Duplo foi redesenhado em 2026-11-09 pra só aumentar a % de NASCER baú, ver ChestSpawnChancePercent acima).")]
-    public float doubleRewardChancePercent = 0f;
-
-    [Tooltip("Quanto tempo o \"Status_Gold\" do herói fica ativo quando o baú dá gold (decisão do usuário, 2026-11-08: NUNCA no caminho popup — só quando vem gold de verdade).")]
-    public float goldStatusDuration = 3f;
 }

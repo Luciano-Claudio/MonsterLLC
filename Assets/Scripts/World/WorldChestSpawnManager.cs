@@ -1,18 +1,14 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-// Spawn de Baú no mundo aberto (GDD Deadline 8.1, Seção 8) — mesmo padrão arquitetural de
-// WorldBossSpawnManager/WorldPopulationManager (singleton Instance, GameEvents.OnHeroSpawned
-// guarda o player, WorldSpawnUtility.TryGetSpawnPosition pro anel ao redor dele), mas bem mais
-// simples: SEM Tier/roster, SEM Timer periódico, SEM despawn por distância/replacement — é 1
-// roll só por dia (ChestSpawnSettings.chestSpawnChancePercent + WorldPerkEffects.
-// ChestSpawnChanceBonusPercent, dos World Perks Baú Extra/Baú Duplo), que pode nem acontecer
-// (decisão do usuário: baú é raro/forte de propósito). Se acontecer, nasce 1 baú, que só é
-// removido quando aberto (Chest/ChestMimicController já cuidam disso sozinhos) ou quando o
-// mundo inteiro é limpo (HandleClearAllEnemies abaixo).
-//
-// Funcionamento do Chest_Popup (perks/talentos de recompensa) fica pra depois — decisão do
-// usuário (2026-11-08): "no máximo a gente já pode fazer os spawns deles, mas o funcionamento
-// deixa só pra quando a gente terminar os perks e talentos". Este arquivo é só o spawn.
+// Baú (e mímico) no mundo aberto — etapa 3 (docs/superpowers/specs/2026-11-24-etapa-3-bau-vendedor-itens-design.md, 5.4).
+// - No início da run, sorteia os segundos de aparição (RewardSchedule: RunSettings.chestMin/MaxCount,
+//   espalhados em faixas iguais, nada nos primeiros rewardQuietSeconds).
+// - Na hora certa nasce 1 baú (mimicChancePercent de virar mímico) num anel ao redor do herói
+//   (ChestSpawnSettings.min/maxChunksAway). Só 1 baú vivo por vez: se a hora do próximo chega com
+//   um ainda fechado, ela ESPERA (nunca some nem duplica).
+// - Abrir/matar o mímico -> ChestRewardSystem -> oferta de 3 cartas (HeroCards, fonte Chest).
+// Mesmo padrão dos outros spawners (Instance, OnHeroSpawned guarda o player, WorldSpawnUtility).
 public class WorldChestSpawnManager : MonoBehaviour
 {
     public static WorldChestSpawnManager Instance { get; private set; }
@@ -27,17 +23,16 @@ public class WorldChestSpawnManager : MonoBehaviour
     public GameObject chestMimicPrefab;
 
     private Transform player;
-
-    // Nunca mais de 1 baú vivo por dia (Baú Extra/Baú Duplo não instanciam mais baú extra desde
-    // o redesenho de 2026-11-09 — agora só somam % de chance de NASCER o único baú do dia, ver
-    // WorldPerkEffects.ChestSpawnChanceBonusPercent).
     private GameObject aliveChest;
+    private float[] chestTimes = new float[0];
+    private int nextChest;
+    private readonly System.Random rng = new();
 
-    // Pra WorldTargetPointerUI (seta de borda de tela). Null quando não tem baú vivo hoje.
+    // Pra WorldTargetPointerUI (seta de borda de tela). Null quando não tem baú vivo.
     public Transform AliveChestTransform => aliveChest != null ? aliveChest.transform : null;
+    public IReadOnlyList<float> ChestTimes => chestTimes;
 
-    // Find-or-create "//CHESTS" — mesmo padrão de EnemyController.EnemysContainer/
-    // BossesContainer/lootContainer (GameplayBootstrap.herosContainer também segue isso).
+    // Find-or-create "//CHESTS" — mesmo padrão de EnemyController.EnemysContainer/BossesContainer.
     private static Transform chestsContainer;
     private static Transform ChestsContainer
     {
@@ -57,69 +52,96 @@ public class WorldChestSpawnManager : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
-        GameEvents.OnDayStart += HandleDayStart;
+        GameEvents.OnDayStart += HandleRunStart;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
     }
 
     private void OnDisable()
     {
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
-        GameEvents.OnDayStart -= HandleDayStart;
+        GameEvents.OnDayStart -= HandleRunStart;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
     }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
 
-    // "Regenerar Mundo"/novo dia — mesmo motivo de WorldBossSpawnManager.HandleClearAllEnemies:
-    // um baú (aberto ou não) não faz sentido sobreviver pro próximo dia, nem fisicamente (o
-    // mundo em volta mudou) nem logicamente (a Seção 8 não prevê baú "guardado" de um dia pro
-    // outro).
+    // "Regenerar Mundo": o baú não sobrevive à limpeza do mundo.
     private void HandleClearAllEnemies()
     {
         if (aliveChest != null) Destroy(aliveChest);
         aliveChest = null;
     }
 
-    private void HandleDayStart()
+    // Início da run (DayTimer.StartRun dispara OnDayStart): agenda nova.
+    private void HandleRunStart()
     {
-        if (chestSettings == null || worldSettings == null || player == null) return;
-
-        // Baú Extra/Baú Duplo (World Perks) somam direto aqui — ver WorldPerkEffects.
-        // ChestSpawnChanceBonusPercent.
-        float spawnChancePercent = chestSettings.chestSpawnChancePercent + WorldPerkEffects.ChestSpawnChanceBonusPercent;
-        if (Random.value * 100f >= spawnChancePercent) return; // maioria dos dias: nenhum baú — de propósito
-
-        SpawnOneChest();
+        HandleClearAllEnemies();
+        var s = RunSettings.Current;
+        chestTimes = s.chestsEnabled
+            ? RewardSchedule.Build(s.chestMinCount, s.chestMaxCount, s.runSeconds, s.rewardQuietSeconds, rng)
+            : new float[0];
+        nextChest = 0;
     }
 
-    private void SpawnOneChest()
+    private void Update()
     {
-        if (!RunSettings.Flag(s => s.chestsEnabled)) return; // etapas 1+2: baú volta na etapa 3 (dando cartas)
-        float minDistanceFromOrigin = worldSettings.safeZoneRadius + chestSettings.spawnSafetyPadding;
+        if (!GameplayGate.IsActive || HeroController.IsDying) return;
+        Tick();
+    }
 
-        // Decisão do usuário (2026-11-08, com desenho): baú só nasce a partir de
-        // minChunksAway chunks de distância do jogador — força exploração, nunca nasce perto.
-        // Chebyshev-distance(chunk) >= minChunksAway implica Euclidean >= minChunksAway *
-        // chunkSize sempre (e o inverso: Chebyshev <= minChunksAway-1 implica Euclidean <
-        // minChunksAway * chunkSize) — então um anel circular com esse raio reproduz exatamente
-        // a zona quadrada do desenho, sem precisar de um check de grid separado.
-        float spawnMinDistance = chestSettings.minChunksAway * (float)worldSettings.chunkSize;
-        float spawnMaxDistance = chestSettings.maxChunksAway * (float)worldSettings.chunkSize;
+    private void Tick()
+    {
+        var timer = DayTimer.Instance;
+        if (timer == null || player == null) return;
+        float now = timer.RunElapsed;
 
-        if (!WorldSpawnUtility.TryGetSpawnPosition(
-                player.position, spawnMinDistance, spawnMaxDistance,
-                minDistanceFromOrigin, chestSettings.maxSpawnPositionAttempts, out var spawnPosition,
-                chestSettings.spawnObstacleClearanceRadius, chestSettings.obstacleLayerMask))
+        // Hora do próximo baú chegou e não há baú vivo: nasce. Com baú vivo, a hora espera.
+        if (nextChest < chestTimes.Length && now >= chestTimes[nextChest] && aliveChest == null)
         {
-            return; // nenhuma posição válida — sem baú hoje, não trava em loop (mesmo critério do Boss)
+            if (SpawnOneChest()) nextChest++;
         }
+    }
+
+    private bool SpawnOneChest()
+    {
+        if (chestSettings == null || worldSettings == null) return false;
+        if (!TryGetRingPosition(out var spawnPosition)) return false; // sem lugar agora: tenta no próximo frame
 
         bool isMimic = chestMimicPrefab != null && Random.value * 100f < chestSettings.mimicChancePercent;
         GameObject prefab = isMimic ? chestMimicPrefab : chestPrefab;
-        if (prefab == null) return;
+        if (prefab == null) return false;
 
         var spawned = Instantiate(prefab, spawnPosition, Quaternion.identity, ChestsContainer);
         WorldSpawnUtility.RestrictToOpenWorldGraph(spawned); // no-op pro Chest normal (sem Seeker) — só importa pro Mimic
         aliveChest = spawned;
+        return true;
     }
+
+    // Anel de spawn (decisão do usuário, 2026-11-08): a partir de minChunksAway chunks do jogador —
+    // força exploração, nunca nasce em cima dele.
+    private bool TryGetRingPosition(out Vector3 position)
+    {
+#if UNITY_EDITOR
+        if (debugFixedSpawn) { position = player.position + Vector3.right * 8f; return true; }
+#endif
+        float minDistanceFromOrigin = worldSettings.safeZoneRadius + chestSettings.spawnSafetyPadding;
+        float spawnMinDistance = chestSettings.minChunksAway * (float)worldSettings.chunkSize;
+        float spawnMaxDistance = chestSettings.maxChunksAway * (float)worldSettings.chunkSize;
+        return WorldSpawnUtility.TryGetSpawnPosition(
+            player.position, spawnMinDistance, spawnMaxDistance,
+            minDistanceFromOrigin, chestSettings.maxSpawnPositionAttempts, out position,
+            chestSettings.spawnObstacleClearanceRadius, chestSettings.obstacleLayerMask);
+    }
+
+#if UNITY_EDITOR
+    // Só para verificação no Editor (eval): roda um tick ignorando pausa, com posição fixa.
+    private bool debugFixedSpawn;
+
+    public void DebugTick(Transform hero)
+    {
+        player = hero;
+        debugFixedSpawn = !Application.isPlaying;
+        Tick();
+    }
+#endif
 }

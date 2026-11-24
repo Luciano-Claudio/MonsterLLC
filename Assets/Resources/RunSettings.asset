@@ -59,8 +59,20 @@ MonoBehaviour:
   gemFlySpeed: 12
   miniBossGems: 5
   bossGems: 20
+  maxItemSlots: 6
+  statEveryLevels: 5
+  chestStatChancePercent: 15
+  chestMinCount: 4
+  chestMaxCount: 5
+  vendorMinCount: 6
+  vendorMaxCount: 8
+  rewardQuietSeconds: 60
+  vendorPrefab: {fileID: 0}
+  damageReductionCapPercent: 75
+  blastRadius: 1.5
+  blastDamagePercent: 100
   runGoldEnabled: 0
   lootEnabled: 0
-  chestsEnabled: 0
+  chestsEnabled: 1
   vendorEnabled: 0
   singleBiome: 1
