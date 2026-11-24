@@ -12,6 +12,8 @@ public class BossSignTimelineUI : MonoBehaviour
     private const float SignY = 42f;
 
     private readonly List<GameObject> spawnedSigns = new();
+    private readonly List<float> signSpawnSeconds = new(); // segundo de run em que o boss de cada sinal nasce
+    private int visibleIndex = -2;
 
     // OnEnable (não só Start/OnDayStart) — o HUD (e esse objeto dentro dele) só fica ativo
     // quando o MainMenuUI entra em GameState.Gameplay, e isso acontece DEPOIS de
@@ -21,10 +23,30 @@ public class BossSignTimelineUI : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnDayStart += RebuildTimeline;
+        GameEvents.OnTimeChanged += ShowOnlyNext;
         RebuildTimeline();
     }
 
-    private void OnDisable() => GameEvents.OnDayStart -= RebuildTimeline;
+    private void OnDisable()
+    {
+        GameEvents.OnDayStart -= RebuildTimeline;
+        GameEvents.OnTimeChanged -= ShowOnlyNext;
+    }
+
+    // Só o sinal do PRÓXIMO boss a nascer fica visível (25 sinais juntos poluíam a barra).
+    // Troca de sinal só quando o próximo boss muda — nunca SetActive por frame.
+    private void ShowOnlyNext(float timeRemaining)
+    {
+        if (DayTimer.Instance == null) return;
+        float elapsed = DayTimer.Instance.RunElapsed;
+        int next = -1;
+        for (int i = 0; i < signSpawnSeconds.Count; i++)
+            if (signSpawnSeconds[i] > elapsed) { next = i; break; }
+        if (next == visibleIndex) return;
+        visibleIndex = next;
+        for (int i = 0; i < spawnedSigns.Count; i++)
+            if (spawnedSigns[i] != null) spawnedSigns[i].SetActive(i == next);
+    }
 
     // Cobre o outro caso (objeto já ativo desde o load da cena, ex.: _TestScene direto sem
     // passar pelo MainMenuUI) — Start() garante que todo Awake() da cena já rodou, caso o
@@ -39,6 +61,8 @@ public class BossSignTimelineUI : MonoBehaviour
             if (sign != null) Destroy(sign);
         }
         spawnedSigns.Clear();
+        signSpawnSeconds.Clear();
+        visibleIndex = -2;
 
         if (signPrefab == null || timeBar == null) return;
         if (DayTimer.Instance == null || DayTimer.Instance.Schedule == null) return;
@@ -56,6 +80,8 @@ public class BossSignTimelineUI : MonoBehaviour
             signObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, SignY);
             signObj.GetComponent<BossSignUI>().Initialize(remaining);
             spawnedSigns.Add(signObj);
+            signSpawnSeconds.Add(schedule.BossSpawnSecond(slot));
         }
+        ShowOnlyNext(DayTimer.Instance.timeRemaining);
     }
 }

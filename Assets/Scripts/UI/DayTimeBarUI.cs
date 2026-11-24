@@ -16,7 +16,12 @@ public class DayTimeBarUI : MonoBehaviour
     [Tooltip("Fração (0-1) de onde termina o conteúdo opaco do Time_Bar. Sprite real: 99/112.")]
     [SerializeField] private float contentRightFraction = 99f / 112f;
 
-    private void OnEnable() => GameEvents.OnTimeChanged += UpdateTime;
+    private void OnEnable()
+    {
+        // Etapas 1+2 (pedido do usuário): o relógio não mostra mais os segundos em texto — só a barra.
+        if (valueLabel != null) valueLabel.gameObject.SetActive(false);
+        GameEvents.OnTimeChanged += UpdateTime;
+    }
     private void OnDisable() => GameEvents.OnTimeChanged -= UpdateTime;
 
     private void Start()
@@ -29,8 +34,6 @@ public class DayTimeBarUI : MonoBehaviour
         float dayDuration = DayTimer.Instance != null ? DayTimer.Instance.CurrentDayDuration : 0f;
         float fillAmount = dayDuration > 0f ? Mathf.Clamp01(timeRemaining / dayDuration) : 0f;
         HealthBarVisuals.Apply(timeBar, headBar, fillAmount, contentLeftFraction, contentRightFraction);
-
-        if (valueLabel != null) valueLabel.text = Mathf.CeilToInt(Mathf.Max(timeRemaining, 0f)).ToString();
     }
 
     // Boss Signs (BossSignTimelineUI) precisam da mesma posição X que o Head_Bar usaria pra um

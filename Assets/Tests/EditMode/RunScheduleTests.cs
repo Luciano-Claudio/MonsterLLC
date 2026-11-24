@@ -14,14 +14,16 @@ public class RunScheduleTests
     private RunSchedule Spec() => new RunSchedule(SpecOrder, settings);
 
     [Test]
-    public void Boss_slots_are_one_minute_apart_and_divine_god_is_at_1440()
+    public void Boss_slots_are_one_minute_apart_first_at_60_and_divine_god_at_1500()
     {
         var s = Spec();
-        Assert.AreEqual(0f, s.BossSpawnSecond(0));
-        Assert.AreEqual(1440f, s.BossSpawnSecond(24));
-        Assert.AreEqual(1440f, s.FinalBossSecond);
-        Assert.AreEqual(1, s.SlotsDueBy(0f));
-        Assert.AreEqual(2, s.SlotsDueBy(60f));
+        Assert.AreEqual(60f, s.BossSpawnSecond(0));
+        Assert.AreEqual(1500f, s.BossSpawnSecond(24));
+        Assert.AreEqual(1500f, s.FinalBossSecond);
+        Assert.AreEqual(0, s.SlotsDueBy(0f));
+        Assert.AreEqual(0, s.SlotsDueBy(59f));
+        Assert.AreEqual(1, s.SlotsDueBy(60f));
+        Assert.AreEqual(25, s.SlotsDueBy(1500f));
         Assert.AreEqual(25, s.SlotsDueBy(5000f));
     }
 
@@ -33,8 +35,9 @@ public class RunScheduleTests
         Assert.IsTrue(s.IsNight(60f));
         Assert.IsTrue(s.IsNight(89f));
         Assert.IsFalse(s.IsNight(90f));
-        Assert.IsTrue(s.IsNight(1440f));
-        Assert.IsTrue(s.IsNight(1441f));
+        Assert.IsFalse(s.IsNight(1440f)); // 1440 mod 90 = 0 -> dia (Divine God ainda não nasceu)
+        Assert.IsTrue(s.IsNight(1500f));
+        Assert.IsTrue(s.IsNight(1530f));  // 1530 mod 90 = 0 -> seria dia, mas a noite está travada
         Assert.IsTrue(s.IsNight(1600f));
     }
 
@@ -42,15 +45,15 @@ public class RunScheduleTests
     public void Tier_ramps_to_next_after_last_boss_of_tier()
     {
         var s = Spec();
-        Assert.AreEqual(1, s.TierShares(119f, out int a, out float shareA, out _));
+        Assert.AreEqual(1, s.TierShares(179f, out int a, out float shareA, out _));
         Assert.AreEqual(1, a);
 
-        Assert.AreEqual(2, s.TierShares(165f, out a, out shareA, out int b));
+        Assert.AreEqual(2, s.TierShares(225f, out a, out shareA, out int b));
         Assert.AreEqual(1, a);
         Assert.AreEqual(2, b);
         Assert.AreEqual(0.5f, shareA, 0.01f);
 
-        Assert.AreEqual(1, s.TierShares(210f, out a, out _, out _));
+        Assert.AreEqual(1, s.TierShares(270f, out a, out _, out _));
         Assert.AreEqual(2, a);
     }
 
@@ -58,12 +61,12 @@ public class RunScheduleTests
     public void Late_tiers_never_have_three_at_once_and_t10_is_never_horde()
     {
         var s = Spec();
-        Assert.AreEqual(2, s.TierShares(1210f, out int a, out float shareA, out int b));
+        Assert.AreEqual(2, s.TierShares(1270f, out int a, out float shareA, out int b));
         Assert.AreEqual(8, a);
         Assert.AreEqual(9, b);
         Assert.AreEqual(1f - 10f / 90f, shareA, 0.01f);
 
-        Assert.AreEqual(1, s.TierShares(1300f, out a, out _, out _));
+        Assert.AreEqual(1, s.TierShares(1360f, out a, out _, out _));
         Assert.AreEqual(9, a);
         Assert.AreEqual(1, s.TierShares(1480f, out a, out _, out _));
         Assert.AreEqual(9, a);
@@ -95,8 +98,8 @@ public class RunScheduleTests
     public void Mini_boss_is_15_to_45s_after_its_boss()
     {
         var s = Spec();
-        Assert.AreEqual(195f, s.MiniBossSecond(3, 0f));
-        Assert.AreEqual(225f, s.MiniBossSecond(3, 1f));
+        Assert.AreEqual(255f, s.MiniBossSecond(3, 0f));
+        Assert.AreEqual(285f, s.MiniBossSecond(3, 1f));
     }
 
     [Test]

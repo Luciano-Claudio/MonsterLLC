@@ -62,12 +62,14 @@ public class RunSchedule
         System.Array.Copy(start, transitionStart, count);
     }
 
-    public float BossSpawnSecond(int slot) => slot * interval;
+    // Espaço N nasce no FIM do minuto N+1 (1:00, 2:00 ... 25:00): a run nunca começa com boss.
+    // O Divine God (espaço 25) nasce aos 25:00, quando o relógio chega a 0 e fica parado.
+    public float BossSpawnSecond(int slot) => (slot + 1) * interval;
 
     public int SlotsDueBy(float t)
     {
         if (bossTiers.Length == 0 || t < 0f || interval <= 0f) return 0;
-        return Mathf.Min(bossTiers.Length, Mathf.FloorToInt(t / interval) + 1);
+        return Mathf.Min(bossTiers.Length, Mathf.FloorToInt(t / interval));
     }
 
     public int SlotTier(int slot) => slot >= 0 && slot < bossTiers.Length ? bossTiers[slot] : 0;
