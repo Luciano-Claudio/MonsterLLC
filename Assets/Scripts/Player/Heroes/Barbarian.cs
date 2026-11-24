@@ -597,7 +597,9 @@ public class Barbarian : HeroController
     // (sem override de CancelSecondaryAbility) — roda até secondaryAbilityDuration acabar.
     protected override void UseSecondaryAbility()
     {
-        secondaryAbilityRemaining = secondaryAbilityDuration;
+        // Carta Swift Fury (etapas 1+2, decisão do usuário): além de acelerar a animação, a Fúria dura mais
+        // na mesma proporção (+10% por nível).
+        secondaryAbilityRemaining = secondaryAbilityDuration * Cards.Get(CardAbility.Shift, CardStat.AnimSpeed);
         stats.moveSpeed = baseMoveSpeed * secondaryAbilitySpeedMultiplier;
         ApplyAbilityAnimSpeed(CardAbility.Shift); // etapas 1+2 — carta de velocidade da animação do Shift
         AnimatorTrigger("SecondaryAbilityTrigger");
