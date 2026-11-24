@@ -129,9 +129,9 @@ TextureImporter:
       name: UI_Inventory_0
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
-        width: 320
+        x: 64
+        y: 32
+        width: 192
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -143,6 +143,72 @@ TextureImporter:
       bones: []
       spriteID: 0c0dc45e6c43cc2a0800000000000000
       internalID: -6715934915461066560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Inventory_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 25
+        width: 256
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 568ecdc3d21b42d48a378ad2c17ff44c
+      internalID: 707672601
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Inventory_2
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 16
+        width: 248
+        height: 1
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 663fb92fb770ced4d94aa612d5b6121f
+      internalID: 138256769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Inventory_3
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 16
+        width: 2
+        height: 1
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c07c32eafdb9cae49b0941250d8c714a
+      internalID: -1671460330
       vertices: []
       indices: 
       edges: []
@@ -163,6 +229,8 @@ TextureImporter:
     nameFileIdTable:
       UI_Inventory_0: -6715934915461066560
       UI_Inventory_1: 707672601
+      UI_Inventory_2: 138256769
+      UI_Inventory_3: -1671460330
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
