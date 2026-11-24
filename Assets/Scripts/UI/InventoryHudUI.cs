@@ -2,50 +2,50 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Barra inferior de 10 ícones, sempre visível durante a gameplay (fora do TAB) — mostra SEMPRE
-// os 10 primeiros slots fixos da Bag (índice 0-9), nunca o resto, mesmo com slots extras
-// comprados (GDD Seção 37). Fica em "Inventory_Background".
+// Barra inferior ("Inventory_Background", 6 espaços), sempre visível na gameplay. Etapa 3
+// (docs/superpowers/specs/2026-11-24-etapa-3-bau-vendedor-itens-design.md, 5.2): mostra os ITENS do
+// herói (HeroCards.OwnedItems), na ordem em que foram pegos — ícone e nível no texto "Quantity".
+// Espaço vazio fica escondido. Não mostra mais os materiais da Bag.
 public class InventoryHudUI : MonoBehaviour
 {
-    public LootVisualSettings visuals;
-
     private Image[] icons;
-    private TMP_Text[] quantityLabels;
+    private TMP_Text[] levelLabels;
 
     private void Awake()
     {
         int count = transform.childCount;
         icons = new Image[count];
-        quantityLabels = new TMP_Text[count];
+        levelLabels = new TMP_Text[count];
 
         for (int i = 0; i < count; i++)
         {
             var item = transform.GetChild(i);
             icons[i] = item.GetComponent<Image>();
-            quantityLabels[i] = item.Find("Quantity").GetComponent<TMP_Text>();
+            var label = item.Find("Quantity");
+            levelLabels[i] = label != null ? label.GetComponent<TMP_Text>() : null;
         }
     }
 
     private void OnEnable()
     {
-        GameEvents.OnBagChanged += Refresh;
-        if (BagController.Instance != null) Refresh(BagController.Instance.Bag);
+        GameEvents.OnItemsChanged += Refresh;
+        Refresh();
     }
 
-    private void OnDisable() => GameEvents.OnBagChanged -= Refresh;
+    private void OnDisable() => GameEvents.OnItemsChanged -= Refresh;
 
-    private void Refresh(Bag bag)
+    private void Refresh()
     {
+        if (icons == null) return;
+        var cards = HeroCards.Instance;
+        var items = cards != null ? cards.OwnedItems : null;
         for (int i = 0; i < icons.Length; i++)
         {
-            var slot = bag.Slots[i];
-            bool hasItem = !slot.IsEmpty;
-            icons[i].gameObject.SetActive(hasItem);
-            quantityLabels[i].gameObject.SetActive(hasItem);
-            if (!hasItem) continue;
-
-            icons[i].sprite = visuals.GetSprite(slot.itemName, slot.quantity);
-            quantityLabels[i].text = LargeNumberFormatter.Format(slot.quantity);
+            bool has = items != null && i < items.Count && items[i] != null;
+            if (icons[i] != null) icons[i].gameObject.SetActive(has);
+            if (!has) continue;
+            if (icons[i] != null) icons[i].sprite = items[i].icon;
+            if (levelLabels[i] != null) levelLabels[i].text = cards.LevelOf(items[i]).ToString();
         }
     }
 }
