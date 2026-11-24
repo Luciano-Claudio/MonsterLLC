@@ -45,6 +45,14 @@ public class RunSettings : ScriptableObject
     public int miniBossGems = 5; // 🔢
     public int bossGems = 20; // 🔢
 
+    [Header("Cartas: itens e Stats (etapa 3)")]
+    [Tooltip("Espaços de item. Cheio: só sobem de nível os itens que o herói já tem.")]
+    public int maxItemSlots = 6; // 🔢
+    [Tooltip("A cada N níveis, a oferta de level up é de Stats.")]
+    public int statEveryLevels = 5; // 🔢
+    [Tooltip("Chance (%) de cada carta do baú virar um Stat.")]
+    public float chestStatChancePercent = 15f; // 🔢
+
     [Header("Sistemas fora da run (etapa 3 religa baú/vendedor dando cartas)")]
     [Tooltip("Gold por kill/sobrevivência dentro da run. Não existe mais gold na run (etapas 1+2).")]
     public bool runGoldEnabled = false;

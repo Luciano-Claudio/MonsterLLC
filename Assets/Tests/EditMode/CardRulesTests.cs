@@ -145,4 +145,112 @@ public class CardRulesTests
         Assert.AreEqual(0.30f, Bonuses(pool, new Dictionary<string, int> { { "b", 5 } }).Sum(CardAbility.None, CardStat.BlastChance), 1e-4f);
         Assert.AreEqual(0f, Bonuses(pool, new Dictionary<string, int>()).Sum(CardAbility.None, CardStat.BlastChance), 1e-4f);
     }
+
+    // ---- Etapa 3, Task 2: oferta por fonte ----
+
+    private static readonly OfferRules Rules = new OfferRules { maxItemSlots = 6, statEveryLevels = 5, chestStatChance01 = 0.15f };
+
+    private CardDefinition Kind(string id, CardKind kind, int maxLevel = 5)
+    {
+        var c = Card(id, CardAbility.None, CardStat.MoveSpeed, 0.1f, maxLevel);
+        c.kind = kind;
+        return c;
+    }
+
+    // 6 upgrades, 8 itens, 6 stats.
+    private List<CardDefinition> MixedPool()
+    {
+        var pool = new List<CardDefinition>();
+        for (int i = 0; i < 6; i++) pool.Add(Kind("u" + i, CardKind.Upgrade));
+        for (int i = 0; i < 8; i++) pool.Add(Kind("i" + i, CardKind.Item));
+        for (int i = 0; i < 6; i++) pool.Add(Kind("s" + i, CardKind.Stat, 3));
+        return pool;
+    }
+
+    [Test]
+    public void Level_5_offers_only_stats()
+    {
+        var pool = MixedPool(); var rng = new System.Random(7); var result = new List<CardDefinition>();
+        foreach (int lvl in new[] { 5, 10 })
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, lvl, pool, new Dictionary<string, int>(), "", 3, rng, Rules, result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var c in result) Assert.AreEqual(CardKind.Stat, c.kind);
+        }
+    }
+
+    [Test]
+    public void Level_5_without_stats_falls_back_to_common()
+    {
+        var pool = MixedPool(); var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["s" + i] = 3;
+        var result = new List<CardDefinition>();
+        CardRules.RollOffer(OfferSource.LevelUp, 5, pool, owned, "", 3, new System.Random(3), Rules, result);
+        Assert.AreEqual(3, result.Count);
+        foreach (var c in result) Assert.AreNotEqual(CardKind.Stat, c.kind);
+    }
+
+    [Test]
+    public void Common_level_mixes_upgrades_and_items_never_stats()
+    {
+        var pool = MixedPool(); var rng = new System.Random(11); var result = new List<CardDefinition>();
+        bool sawUpgrade = false, sawItem = false;
+        for (int n = 0; n < 200; n++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 3, pool, new Dictionary<string, int>(), "", 3, rng, Rules, result);
+            foreach (var c in result)
+            {
+                Assert.AreNotEqual(CardKind.Stat, c.kind);
+                if (c.kind == CardKind.Upgrade) sawUpgrade = true;
+                if (c.kind == CardKind.Item) sawItem = true;
+            }
+        }
+        Assert.IsTrue(sawUpgrade && sawItem);
+    }
+
+    [Test]
+    public void Six_items_blocks_new_items_everywhere()
+    {
+        var pool = MixedPool(); var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["i" + i] = 1; // i6 e i7 ficam de fora
+        var rng = new System.Random(5); var result = new List<CardDefinition>();
+        for (int n = 0; n < 200; n++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 3, pool, owned, "", 3, rng, Rules, result);
+            foreach (var c in result) Assert.IsFalse(c.id == "i6" || c.id == "i7");
+            CardRules.RollOffer(OfferSource.Vendor, 3, pool, owned, "", 3, rng, Rules, result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var c in result) { Assert.AreEqual(CardKind.Item, c.kind); Assert.IsTrue(owned.ContainsKey(c.id)); }
+        }
+        Assert.AreEqual(6, CardRules.CountOwnedItems(pool, owned));
+    }
+
+    [Test]
+    public void Vendor_with_all_items_maxed_returns_empty()
+    {
+        var pool = MixedPool(); var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["i" + i] = 5;
+        var result = new List<CardDefinition>();
+        CardRules.RollOffer(OfferSource.Vendor, 3, pool, owned, "", 3, new System.Random(1), Rules, result);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [Test]
+    public void Chest_stat_chance_zero_and_one()
+    {
+        var pool = MixedPool(); var rng = new System.Random(9); var result = new List<CardDefinition>();
+        var never = Rules; never.chestStatChance01 = 0f;
+        var always = Rules; always.chestStatChance01 = 1f;
+        for (int n = 0; n < 50; n++)
+        {
+            CardRules.RollOffer(OfferSource.Chest, 3, pool, new Dictionary<string, int>(), "", 3, rng, never, result);
+            Assert.AreEqual(3, result.Count);
+            foreach (var c in result) Assert.AreEqual(CardKind.Upgrade, c.kind);
+            CardRules.RollOffer(OfferSource.Chest, 3, pool, new Dictionary<string, int>(), "", 3, rng, always, result);
+            Assert.AreEqual(3, result.Count);
+            var ids = new HashSet<string>();
+            foreach (var c in result) { Assert.AreEqual(CardKind.Stat, c.kind); ids.Add(c.id); }
+            Assert.AreEqual(3, ids.Count);
+        }
+    }
 }
