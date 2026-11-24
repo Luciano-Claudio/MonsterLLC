@@ -53,6 +53,7 @@ public class PossessableMeleeEnemyController : MeleeEnemyController
         stats.maxHealth = possessedMaxHealth;
         stats.health = possessedMaxHealth;
         stats.attackDamage = possessedAttackDamage;
+        RebaseRunStats(); // etapas 1+2 — o buff noturno/enrage segue valendo em cima do dano possuído
         if (animator != null) animator.SetBool("IsPossessed", true);
 
         // Pedido do usuário (2026-10-26): a forma possuída já nasce em combate — não espera o

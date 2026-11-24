@@ -53,11 +53,27 @@ public class XpGemPool : MonoBehaviour
 
     public void Spawn(Vector2 position, int xp)
     {
+        var hero = HeroController.Instance;
+        Spawn(position, xp, hero != null ? (Vector2)hero.transform.position : position);
+    }
+
+    // No limite: a gema MAIS LONGE do herói (a que ficou pra trás) é trazida pro lugar do kill
+    // levando o XP dela junto — o XP nunca se perde nem fica preso longe (revisão final, achado 1).
+    public void Spawn(Vector2 position, int xp, Vector2 heroPosition)
+    {
         if (xp <= 0) return;
         if (active.Count >= Mathf.Max(1, Settings.maxGems))
         {
-            var target = active[0]; // limite: a gema mais antiga absorve o XP
+            var target = active[0];
+            float farthestSqr = -1f;
+            for (int i = 0; i < active.Count; i++)
+            {
+                float sqr = ((Vector2)active[i].transform.position - heroPosition).sqrMagnitude;
+                if (sqr > farthestSqr) { farthestSqr = sqr; target = active[i]; }
+            }
             target.xp += xp;
+            target.attracted = false;
+            target.transform.position = position;
             target.transform.localScale = Vector3.one * Settings.gemScale * 1.5f;
             return;
         }
@@ -69,6 +85,16 @@ public class XpGemPool : MonoBehaviour
         gem.transform.localScale = Vector3.one * Settings.gemScale;
         gem.go.SetActive(true);
         active.Add(gem);
+    }
+
+    // XP das gemas ativas a até `radius` de `position` (verificação/telemetria).
+    public int XpNear(Vector2 position, float radius)
+    {
+        int sum = 0;
+        float r2 = radius * radius;
+        for (int i = 0; i < active.Count; i++)
+            if (((Vector2)active[i].transform.position - position).sqrMagnitude <= r2) sum += active[i].xp;
+        return sum;
     }
 
     public void ClearAll()

@@ -16,7 +16,7 @@ public static class RunExit
     public static void ToMainMenu()
     {
         ScreenFader.Cancel();
-        if (TimeManager.Instance != null && TimeManager.Instance.IsPaused) TimeManager.Instance.Resume();
+        if (TimeManager.Instance != null) TimeManager.Instance.ResumeAll(); // nenhuma pausa (menu, cartas, câmera) sobrevive à saída
         if (GameStateManager.Instance != null) GameStateManager.Instance.SetState(GameState.MainMenu);
         SceneManager.LoadScene(MainMenuScene);
     }

@@ -61,6 +61,7 @@ public class HeroCards : MonoBehaviour
         pendingPrepared.Clear();
         pendingLevelOffers = 0;
         CloseOffer(resume: false);
+        if (TimeManager.Instance != null) TimeManager.Instance.ResumeBy(this); // nenhuma pausa de cartas da run anterior
         HeroController.Cards.Reset();
     }
 
@@ -108,7 +109,7 @@ public class HeroCards : MonoBehaviour
             }
 
             OfferOpen = true;
-            if (TimeManager.Instance != null) TimeManager.Instance.Pause();
+            if (TimeManager.Instance != null) TimeManager.Instance.PauseBy(this);
             screen.Show(this);
             OfferReady?.Invoke(currentOffer);
             return;
@@ -155,7 +156,7 @@ public class HeroCards : MonoBehaviour
         currentOffer.Clear();
         var screen = CardScreenUI.Find();
         if (screen != null) screen.Hide();
-        if (resume && TimeManager.Instance != null) TimeManager.Instance.Resume();
+        if (resume && TimeManager.Instance != null) TimeManager.Instance.ResumeBy(this);
         if (wasOpen || resume) OfferClosed?.Invoke();
     }
 }

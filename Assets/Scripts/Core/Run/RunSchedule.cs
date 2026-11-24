@@ -17,6 +17,7 @@ public class RunSchedule
     private readonly int startTier;
 
     public float FinalBossSecond { get; }
+    public bool HasFinalBoss => hasFinalBoss;
 
     public RunSchedule(int[] bossTiers, RunSettings s)
     {

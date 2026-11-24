@@ -88,6 +88,8 @@ public class RunSettings : ScriptableObject
         if (bossOrder.Count != 25) warnings.Add($"A ordem dos bosses tem {bossOrder.Count} espaços (esperado 25).");
         for (int i = 0; i < bossOrder.Count; i++)
             if (bossOrder[i] == null) warnings.Add($"Espaço {i + 1} da ordem dos bosses está vazio (esse minuto fica sem boss).");
+            else if (bossOrder[i].prefab == null || bossOrder[i].prefab.GetComponent("EnemyController") == null)
+                warnings.Add($"Espaço {i + 1} ({bossOrder[i].name}): prefab sem EnemyController (esse minuto fica sem boss).");
         if (bossOrder.Count > 0)
         {
             var last = bossOrder[bossOrder.Count - 1];

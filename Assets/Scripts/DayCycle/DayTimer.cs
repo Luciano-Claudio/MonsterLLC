@@ -54,6 +54,10 @@ public class DayTimer : MonoBehaviour
         timeRemaining = Mathf.Max(0f, currentDayDuration - RunElapsed);
         GameEvents.TimeChanged(timeRemaining);
 
+        // Lista sem Divine God (revisão final, achado 3): sem ninguém pra matar no fim, chegar aos
+        // 25:00 vivo é a vitória — senão a run nunca terminaria.
+        if (!Schedule.HasFinalBoss && RunElapsed >= currentDayDuration) DayResolver.EndRun(true);
+
         bool nowIsNight = Schedule.IsNight(RunElapsed);
         if (nowIsNight == IsNight) return;
         IsNight = nowIsNight;
@@ -61,10 +65,12 @@ public class DayTimer : MonoBehaviour
     }
 
     // Início da run: relógio zerado e ligado, dia, horda já perseguindo o herói.
-    public void StartRun()
+    public void StartRun() => StartRun(RunSettings.Load());
+
+    public void StartRun(RunSettings settings)
     {
         DayResolver.ResetForNewRun();
-        Settings = RunSettings.Load();
+        Settings = settings;
         if (Settings == null) Settings = ScriptableObject.CreateInstance<RunSettings>(); // sem asset: padrões (sem bosses)
         Schedule = new RunSchedule(Settings.BossTiers(), Settings);
         currentDayDuration = Settings.runSeconds;

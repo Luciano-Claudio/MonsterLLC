@@ -125,6 +125,14 @@ public class WorldBossSpawnManager : MonoBehaviour
         {
             var definition = order != null && spawnedSlots < order.Count ? order[spawnedSlots] : null;
             if (definition == null || definition.prefab == null) { spawnedSlots++; continue; } // espaço vazio: minuto sem boss
+            if (definition.prefab.GetComponent<EnemyController>() == null)
+            {
+                // Revisão final (achado 2): prefab sem EnemyController não é boss — pula o espaço em vez
+                // de tentar de novo pra sempre (travaria todos os bosses seguintes, Divine God incluso).
+                Debug.LogWarning($"[WorldBossSpawnManager] {definition.name}: prefab sem EnemyController — minuto {spawnedSlots + 1} fica sem boss.");
+                spawnedSlots++;
+                continue;
+            }
 
             var spawned = SpawnBoss(definition);
             if (spawned == null) return; // nenhuma posição válida agora — tenta de novo no próximo frame

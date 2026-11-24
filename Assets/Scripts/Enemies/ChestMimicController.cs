@@ -42,6 +42,7 @@ public class ChestMimicController : SlimeEnemyController
         stats.health = entry.health;
         stats.maxHealth = entry.health;
         stats.attackDamage = entry.attackDamage;
+        RebaseRunStats(); // etapas 1+2 — base nova pros multiplicadores da run
     }
 
     // Decisão do usuário (2026-11-08): morrer dá a MESMA recompensa que abrir um Chest normal

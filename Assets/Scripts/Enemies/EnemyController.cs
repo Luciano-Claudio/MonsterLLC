@@ -1383,6 +1383,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     // Segundos vivo, contados só com o jogo ativo (base do enrage). Setter público só pra verificação no Editor.
     public float AliveSeconds { get; set; }
 
+    // Quem troca stats.attackDamage depois do 1º SetRunMultipliers (possessão, mimic) chama isto:
+    // o dano atual vira a base nova e os multiplicadores da run são reaplicados por cima
+    // (revisão final, achado 5 — sem isso a próxima troca de dia/noite voltava pro dano antigo).
+    public void RebaseRunStats()
+    {
+        if (runBaseMoveSpeed < 0f) return; // multiplicadores nunca aplicados: stats já são a base
+        runBaseMoveSpeed = RunSpeedMultiplier > 0f ? stats.moveSpeed / RunSpeedMultiplier : stats.moveSpeed;
+        runBaseAttackDamage = stats.attackDamage;
+        stats.attackDamage = runBaseAttackDamage * RunDamageMultiplier;
+    }
+
     public void SetRunMultipliers(float speed, float damage)
     {
         if (runBaseMoveSpeed < 0f) { runBaseMoveSpeed = stats.moveSpeed; runBaseAttackDamage = stats.attackDamage; }

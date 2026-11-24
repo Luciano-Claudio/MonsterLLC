@@ -77,7 +77,7 @@ public class BossEncounterCameraController : MonoBehaviour
         {
             if (revealCamA != null) revealCamA.Priority = 0;
             if (revealCamB != null) revealCamB.Priority = 0;
-            TimeManager.Instance?.Resume();
+            TimeManager.Instance?.ResumeBy(this);
             revealInProgress = false;
         }
     }
@@ -102,7 +102,7 @@ public class BossEncounterCameraController : MonoBehaviour
     private IEnumerator PlayBossRevealSequence(IReadOnlyList<Transform> bosses)
     {
         revealInProgress = true;
-        TimeManager.Instance?.Pause();
+        TimeManager.Instance?.PauseBy(this);
 
         var active = revealCamA;
         var idle = revealCamB;
@@ -125,7 +125,7 @@ public class BossEncounterCameraController : MonoBehaviour
         revealCamB.Priority = 0;
         yield return new WaitForSecondsRealtime(returnToPlayerHoldDuration);
 
-        TimeManager.Instance?.Resume();
+        TimeManager.Instance?.ResumeBy(this);
         revealInProgress = false;
         revealRoutine = null;
     }
