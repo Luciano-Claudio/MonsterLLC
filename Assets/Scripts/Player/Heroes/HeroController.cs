@@ -999,8 +999,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     // `isDirectPlayerHit` não é usado aqui (só EnemyController se importa) — existe só pra
     // bater com a assinatura de IDamageable (ver comentário lá).
+    // Etapa 3: dano que o último TakeDamage de fato aplicou depois das reduções (0 se imune/morto).
+    public float LastDamageTaken { get; private set; }
+
     public virtual void TakeDamage(float amount, bool isDirectPlayerHit = true)
     {
+        LastDamageTaken = 0f;
         // Guarda contra reentrância: sem isso, dois hits antes do respawn terminar
         // disparam OnDeath() duas vezes (penalidade de -30s duplicada, PlayTransition
         // duplicado — o EasyTransition não suporta duas transições concorrentes).
@@ -1017,6 +1021,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (reduction > 0f) amount *= 1f - Mathf.Min(Mathf.Clamp01(reduction), RunSettings.Current.damageReductionCapPercent / 100f);
         float conditionalReduction = GetConditionalDamageReductionPercent();
         if (conditionalReduction > 0f) amount *= 1f - Mathf.Clamp01(conditionalReduction / 100f);
+        LastDamageTaken = amount;
 
         // Escudo (ex.: Último Fôlego do Barbarian) absorve ANTES do HP — mesma ordem do resto
         // (redução de % primeiro, escudo absorve o que sobrar, só então o HP perde o resto).
@@ -1185,6 +1190,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Etapa 3 — dano base dos efeitos de item (Blast Charm): o do ataque primário com os bônus de
     // primário e de cartas, sem crítico. Heróis com fórmula própria sobrescrevem.
     public virtual float EffectsBaseDamage => stats.damage * PrimaryDamageMultiplier * Cards.Get(CardAbility.Primary, CardStat.Damage) * CentralDamageMultiplier;
+
+    // Etapa 3 — golpe melee de um inimigo no herói: aplica o dano e devolve os espinhos (Thorn Mail)
+    // sobre o dano RECEBIDO (depois das reduções; nada se o herói estava imune/morto).
+    public static void HitByMelee(EnemyController attacker, HeroController hero, float amount)
+    {
+        if (hero == null) return;
+        hero.LastDamageTaken = 0f; // override que absorve tudo sem chamar a base (escudo do Paladin) = 0
+        hero.TakeDamage(amount);
+        ApplyThorns(attacker, hero.LastDamageTaken);
+    }
 
     // Etapa 3 — Thorn Mail: quem bateu (golpe melee) leva de volta dano × soma das cartas Thorns.
     public static void ApplyThorns(EnemyController attacker, float damageDealt)

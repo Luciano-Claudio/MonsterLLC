@@ -79,6 +79,13 @@ public static class CardRules
                     result[i] = pool[statEligible[pick]];
                     statEligible.RemoveAt(pick);
                 }
+                // Upgrades acabaram (todos no máximo): completa com Stats — o baú nunca sai vazio à toa.
+                while (result.Count < count && statEligible.Count > 0)
+                {
+                    int pick = rng.Next(statEligible.Count);
+                    result.Add(pool[statEligible[pick]]);
+                    statEligible.RemoveAt(pick);
+                }
                 return;
         }
     }

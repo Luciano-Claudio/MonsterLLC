@@ -628,8 +628,10 @@ public class Barbarian : HeroController
     // ShiftDamageMultiplier existe desde o R9 (par simétrico de Primary/UltimateDamageMultiplier)
     // mas nunca tinha sido lido em lugar nenhum — gap real encontrado agora, ao ligar os perks
     // de Direita #1-4 ("Dano do Shift"), que escrevem exatamente nele (ver RecomputePerkEffects).
+    // Etapa 3 (revisão final): GetOwn — este multiplicador vai POR CIMA do golpe primário/Ultimate, que já
+    // trazem o dano geral (Power Gauntlet/Ancestral Strength); com Get o geral entraria duas vezes.
     private float GetSecondaryAbilityDamageMultiplier() =>
-        secondaryAbilityRemaining > 0f ? secondaryAbilityDamageMultiplier * HeroController.Cards.Get(CardAbility.Shift, CardStat.Damage) * HeroController.ShiftDamageMultiplier : 1f;
+        secondaryAbilityRemaining > 0f ? secondaryAbilityDamageMultiplier * HeroController.Cards.GetOwn(CardAbility.Shift, CardStat.Damage) * HeroController.ShiftDamageMultiplier : 1f;
 
     // Classifica AimDirection (congelada em isAttacking) num dos 4 quadrantes diagonais —
     // mesmo critério que o Blend Tree 2D do Animator usa pra escolher entre atk_ne/nw/se/sw.

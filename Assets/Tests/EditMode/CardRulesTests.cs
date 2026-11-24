@@ -253,4 +253,28 @@ public class CardRulesTests
             Assert.AreEqual(3, ids.Count);
         }
     }
+
+    // ---- Etapa 3, revisão final ----
+
+    [Test]
+    public void Chest_fills_with_stats_when_upgrades_run_out()
+    {
+        var pool = MixedPool(); var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["u" + i] = 5; // todos os upgrades no máximo
+        var never = Rules; never.chestStatChance01 = 0f;
+        var result = new List<CardDefinition>();
+        CardRules.RollOffer(OfferSource.Chest, 3, pool, owned, "", 3, new System.Random(2), never, result);
+        Assert.AreEqual(3, result.Count);
+        foreach (var c in result) Assert.AreEqual(CardKind.Stat, c.kind);
+    }
+
+    [Test]
+    public void GetOwn_ignores_general_bonus()
+    {
+        var pool = new List<CardDefinition> { Card("s", CardAbility.Shift, CardStat.Damage, 1.5f), Card("g", CardAbility.None, CardStat.Damage, 2f) };
+        var b = new CardBonuses();
+        b.Recompute(pool, new Dictionary<string, int> { { "s", 1 }, { "g", 1 } });
+        Assert.AreEqual(1.5f, b.GetOwn(CardAbility.Shift, CardStat.Damage), 1e-4f);
+        Assert.AreEqual(3f, b.Get(CardAbility.Shift, CardStat.Damage), 1e-4f);
+    }
 }

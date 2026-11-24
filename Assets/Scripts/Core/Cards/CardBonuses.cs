@@ -50,6 +50,15 @@ public class CardBonuses
         return (1f + sum) * (1f + general);
     }
 
+    // Só a parte da própria habilidade, sem o geral — para multiplicadores que se aplicam POR CIMA de
+    // outro Get (ex.: dano do Shift somado ao golpe primário), senão o geral entraria duas vezes.
+    public float GetOwn(CardAbility ability, CardStat stat)
+    {
+        if (stat == CardStat.Damage) return damageMultiplier[(int)ability];
+        float sum = Sum(ability, stat);
+        return stat == CardStat.Cooldown ? Mathf.Max(CooldownFloor, 1f - sum) : 1f + sum;
+    }
+
     // Soma crua dos aditivos (sem o 1+): redução de dano, regeneração, espinhos, chance de explosão.
     public float Sum(CardAbility ability, CardStat stat) => additive[(int)ability * StatCount + (int)stat];
 }
