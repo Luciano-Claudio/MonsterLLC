@@ -32,7 +32,8 @@ public class CardSlotUI : MonoBehaviour
         if (kindLabel != null && style != null) { kindLabel.text = style.label; kindLabel.color = style.labelColor; }
         if (icon != null) { icon.sprite = definition.icon; icon.enabled = definition.icon != null; }
         if (nameText != null) nameText.text = definition.title;
-        if (description != null) description.text = string.Format(definition.description ?? "", ValueText(definition));
+        // {0} = ganho do próximo nível; {1} = vida do item por nível (etapa 3).
+        if (description != null) description.text = string.Format(definition.description ?? "", ValueText(definition, currentLevel), $"{definition.healthPerLevel * 100f:0.#}%");
         if (level != null) level.text = string.Format(levelFormat, currentLevel + 1, definition.maxLevel);
         if (button != null)
         {
@@ -41,10 +42,12 @@ public class CardSlotUI : MonoBehaviour
         }
     }
 
-    // "+25%" do próximo nível: dano multiplica (1,25 -> 25%); o resto soma (0,15 -> 15%).
-    private static string ValueText(CardDefinition d)
+    // "+25%" do próximo nível: dano multiplica (1,25 -> 25%); o resto soma (0,15 -> 15%). No 1º nível,
+    // o valor base entra junto (Blast Charm: 5% + 5% = 10%).
+    private static string ValueText(CardDefinition d, int currentLevel)
     {
-        float percent = d.Multiplicative ? (d.valuePerLevel - 1f) * 100f : d.valuePerLevel * 100f;
+        float percent = d.Multiplicative ? (d.valuePerLevel - 1f) * 100f
+            : (d.valuePerLevel + (currentLevel == 0 ? d.baseValue : 0f)) * 100f;
         return $"{percent:0.#}%";
     }
 
