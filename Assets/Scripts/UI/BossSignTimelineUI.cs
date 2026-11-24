@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Boss_Signs — instancia o prefab Boss_Sign.prefab direto (não depende de nenhum objeto
-// específico sobrevivendo na cena) uma vez por boss previsto no dia, usando
-// WorldBossSpawnManager.BossSpawnInterval (fonte única, nunca duplica o valor aqui — mudar o
-// intervalo no BossSpawnSettings já atualiza a UI sozinho) e DayTimer.CurrentDayDuration.
-// Reconstrói a timeline inteira a cada GameEvents.OnDayStart.
+// Boss_Signs — instancia o prefab Boss_Sign.prefab uma vez por boss da run (etapas 1+2: a ordem
+// do RunSettings, via DayTimer.Schedule — fonte única), no segundo em que cada um nasce.
+// Reconstrói a timeline inteira a cada GameEvents.OnDayStart (= início da run).
 public class BossSignTimelineUI : MonoBehaviour
 {
     [SerializeField] private GameObject signPrefab;
@@ -43,26 +41,20 @@ public class BossSignTimelineUI : MonoBehaviour
         spawnedSigns.Clear();
 
         if (signPrefab == null || timeBar == null) return;
-        if (DayTimer.Instance == null || WorldBossSpawnManager.Instance == null) return;
+        if (DayTimer.Instance == null || DayTimer.Instance.Schedule == null) return;
 
-        float dayDuration = DayTimer.Instance.CurrentDayDuration;
-        float interval = WorldBossSpawnManager.Instance.BossSpawnInterval;
-        float noSpawnWindow = WorldBossSpawnManager.Instance.NoSpawnWindowBeforeDayEnd;
-        if (dayDuration <= 0f || interval <= 0f) return;
-
-        for (float elapsed = interval; elapsed <= dayDuration; elapsed += interval)
+        // Etapas 1+2 — 1 sinal por espaço da ordem dos bosses (RunSettings), no segundo em que ele nasce.
+        var schedule = DayTimer.Instance.Schedule;
+        float runDuration = DayTimer.Instance.CurrentDayDuration;
+        if (runDuration <= 0f) return;
+        for (int slot = 0; slot < schedule.SlotCount; slot++)
         {
-            float remaining = dayDuration - elapsed;
-            // remaining só diminui a cada iteração — uma vez dentro da janela final sem spawn,
-            // todo boss seguinte também cairia nela, então pode parar de desenhar sign de vez.
-            if (remaining <= noSpawnWindow) break;
-
-            float x = timeBar.ComputeXForRemaining(remaining, dayDuration);
-
+            if (schedule.SlotTier(slot) <= 0) continue; // espaço vazio: sem boss nesse minuto
+            float remaining = Mathf.Max(0f, runDuration - schedule.BossSpawnSecond(slot));
+            float x = timeBar.ComputeXForRemaining(remaining, runDuration);
             var signObj = Instantiate(signPrefab, transform);
             signObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, SignY);
             signObj.GetComponent<BossSignUI>().Initialize(remaining);
-
             spawnedSigns.Add(signObj);
         }
     }

@@ -45,7 +45,7 @@ public class GameplayBootstrap : MonoBehaviour
                 SpawnHero(MainMenuUI.CurrentRun.hero);
 
                 LoadingScreenUI.Instance?.SetStatus("Loading entities...");
-                DayTimer.Instance.ResetForNewDay();
+                DayTimer.Instance.StartRun(); // etapas 1+2 — início da run de 25 min
                 // GameState.Gameplay só é setado DEPOIS do mundo/câmera assentarem (dentro da
                 // coroutine) — achado real do usuário: setar aqui liberava GameplayGate.IsActive
                 // (travamento de ação real do HeroController) antes da tela de loading sumir,

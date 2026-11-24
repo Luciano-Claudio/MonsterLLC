@@ -1,116 +1,97 @@
 using UnityEngine;
 
+// Etapas 1+2 (docs/superpowers/specs/2026-11-24-etapas-1-2-run-25min-cartas-design.md, 5.1/5.6) — o
+// relógio da RUN de 25 min (não existe mais "dia"). O nome ficou DayTimer porque luz, relógio do HUD,
+// barra, horda e telemetria já escutam OnTimeChanged/DayNightPhaseChanged daqui.
+// - timeRemaining = runSeconds - RunElapsed, em contagem regressiva; chega em 0 e fica parado lá
+//   enquanto o Divine God estiver vivo (ele é quem termina a run — DayResolver.EndRun).
+// - Noite pelo RunSchedule (ciclo dia/noite + noite travada a partir do Divine God).
 public class DayTimer : MonoBehaviour
 {
     public static DayTimer Instance { get; private set; }
-    public float timeRemaining = 100f;
+    public float timeRemaining = 1500f;
 
-    [Tooltip("Duração padrão (em segundos) de 1 ciclo dia/noite, usada tanto no Dia 1 (MainMenuUI) quanto em todo dia seguinte (ShopHandler) quando eles chamam ResetForNewDay() sem argumento. Único lugar pra configurar isso — hoje é só pra teste (explorar mais tempo), no futuro vira a base de compras que aumentam a duração do dia.")]
-    public float defaultDayDuration = 100f;
+    private bool runEnded;
 
-    private bool dayEnded;
+    // D9.4 (decisão do usuário, 2026-11-20): conta desde o começo. O loading continua de fora: o
+    // Update() só anda com GameplayGate ativo, e o estado só vira Gameplay quando a tela de loading some.
+    private bool clockStarted;
+    public bool IsClockRunning => clockStarted && !runEnded;
 
-    // D9.4 (decisão do usuário, 2026-11-20): o dia conta desde o começo — sai a regra da D8.1
-    // ("o cronômetro só começa no primeiro target"). ResetForNewDay() já liga o relógio. O
-    // loading continua de fora: o Update() só anda com GameplayGate ativo, e o estado só vira
-    // Gameplay quando o GameplayBootstrap/ShopHandler escondem a tela de loading.
-    private bool dayClockStarted;
-    public bool IsClockRunning => dayClockStarted && !dayEnded;
-
-    // Duração REAL do dia em curso (pode diferir de defaultDayDuration — ver o overload com
-    // argumento de ResetForNewDay) — guardada pra calcular a fase Dia/Noite (50/50, docs/new/
-    // Mudanca_Estrutural_Mapa_Unico_Spawn_Bosses_ATUALIZADO_V2.md, Seção 3) proporcional à
-    // duração de verdade do dia, não a um valor fixo.
-    private float currentDayDuration = 100f;
+    // Duração da run (RunSettings.runSeconds). Mantém o nome antigo: a barra do HUD, o relógio e a
+    // telemetria leem isto como "duração total".
+    private float currentDayDuration = 1500f;
     public float CurrentDayDuration => currentDayDuration;
 
-    // Fase atual (false = Dia, true = Noite) — 50% da duração do dia é Dia, os outros 50% são
-    // Noite, nunca quebra essa proporção (doc, Seção 3: "Nenhum bônus de tempo poderá quebrar
-    // essa proporção"). Todo dia novo começa em Dia (ver ResetForNewDay).
     public bool IsNight { get; private set; }
 
-    // Fração 0..1 do dia já decorrida — usada pela curva de população (WorldPopulationManager,
-    // GDD Deadline 8.1 Seção 2.1): 0 no início do dia, 0.5 no instante exato que vira noite, 1 no
-    // fim do dia. Mesma conta de UpdateDayNightPhase abaixo, centralizada aqui pra não duplicar.
-    public float ElapsedFraction01 => currentDayDuration > 0f
-        ? Mathf.Clamp01((currentDayDuration - timeRemaining) / currentDayDuration)
-        : 0f;
+    public RunSchedule Schedule { get; private set; }
+    public RunSettings Settings { get; private set; }
+    public float RunElapsed { get; private set; } // segundos de run decorridos (nunca pausa com boss)
+    public bool FinalBossAlive { get; set; } // setado pelo WorldBossSpawnManager
+
+    public float ElapsedFraction01 => currentDayDuration > 0f ? Mathf.Clamp01(RunElapsed / currentDayDuration) : 0f;
 
     private void Awake() => Instance = this;
     private void Start() => GameEvents.TimeChanged(timeRemaining);
 
     private void Update()
     {
-        if (dayEnded) return;
-        // GameplayGate já cobre pausa (TimeManager) e o estado do jogo (GameStateManager)
-        // — sem isso, o timer contava desde o load da Scene, mesmo parado no MainMenu,
-        // porque só checava pausa e nunca o GameState.
-        //
-        // HeroController.IsDying (não GameplayGate — ver comentário na declaração dele):
-        // GameState só muda pra Results no FIM da animação de morte (AnimationDieEndEvent),
-        // então sem isto o relógio continuava contando durante a animação inteira — achado
-        // real do usuário, o tempo devia parar no instante exato da morte, não no fim do "Die".
+        if (!IsClockRunning) return;
+        // GameplayGate cobre pausa e o estado do jogo; HeroController.IsDying para o relógio no
+        // instante da morte (o estado só vira Results no fim da animação "Die").
         if (!GameplayGate.IsActive || HeroController.IsDying) return;
-        if (!dayClockStarted) return;
-
-        timeRemaining -= Time.deltaTime;
-        GameEvents.TimeChanged(Mathf.Max(timeRemaining, 0f));
-        UpdateDayNightPhase();
-
-        if (timeRemaining <= 0f)
-        {
-            timeRemaining = 0f;
-            EndDay();
-        }
+        Tick(Time.deltaTime);
     }
 
-    // Recalcula a fase a partir do tempo decorrido (currentDayDuration - timeRemaining) e só
-    // dispara GameEvents.DayNightPhaseChanged na TROCA de fase (edge trigger), nunca todo
-    // frame — mesmo critério de outros eventos pontuais do projeto (ex.: OnDayStart).
-    private void UpdateDayNightPhase()
+    private void Tick(float deltaTime)
     {
-        if (currentDayDuration <= 0f) return;
+        if (Schedule == null) return;
+        RunElapsed += deltaTime;
+        timeRemaining = Mathf.Max(0f, currentDayDuration - RunElapsed);
+        GameEvents.TimeChanged(timeRemaining);
 
-        float elapsed = currentDayDuration - timeRemaining;
-        bool nowIsNight = elapsed >= currentDayDuration * 0.5f;
+        bool nowIsNight = Schedule.IsNight(RunElapsed);
         if (nowIsNight == IsNight) return;
-
         IsNight = nowIsNight;
         GameEvents.DayNightPhaseChanged(IsNight);
     }
 
-    // Sem argumento = usa defaultDayDuration (o campo configurável no Inspector) — é o que
-    // MainMenuUI/ShopHandler devem chamar normalmente. O overload com argumento continua
-    // existindo pra quem precisar de uma duração pontual diferente da padrão.
-    public void ResetForNewDay() => ResetForNewDay(defaultDayDuration);
-
-    public void ResetForNewDay(float duration)
+    // Início da run: relógio zerado e ligado, dia, horda já perseguindo o herói.
+    public void StartRun()
     {
-        timeRemaining = duration;
-        currentDayDuration = duration;
-        dayEnded = false;
-        dayClockStarted = true; // D9.4 — o dia conta desde o começo (nunca no loading, ver Update)
-        IsNight = false; // todo dia novo começa em Dia — doc, Seção 3
-        // Achado real do usuário: setar IsNight aqui (estado interno, pra WorldPopulationManager/
-        // WorldBossSpawnManager) não bastava — DayNightLightController só escuta o EVENTO, nunca lê
-        // IsNight direto. Sem este Invoke, quem sobrevivesse (ou morresse) até a Noite ficava com a
-        // luz noturna congelada pra sempre em todo dia seguinte, porque o Light2D nunca era avisado
-        // da troca de volta pro Dia.
+        Settings = RunSettings.Load();
+        if (Settings == null) Settings = ScriptableObject.CreateInstance<RunSettings>(); // sem asset: padrões (sem bosses)
+        Schedule = new RunSchedule(Settings.BossTiers(), Settings);
+        currentDayDuration = Settings.runSeconds;
+        RunElapsed = 0f;
+        timeRemaining = currentDayDuration;
+        FinalBossAlive = false;
+        runEnded = false;
+        clockStarted = true;
+        IsNight = false;
+        // O DayNightLightController só escuta o EVENTO — sem isto a luz ficava na noite da run anterior.
         GameEvents.DayNightPhaseChanged(false);
-        HeroController.GlobalAggroActive = true; // D9.4 — a horda já começa o dia perseguindo o herói
+        HeroController.GlobalAggroActive = true;
         GameEvents.TimeChanged(timeRemaining);
-        // Fonte única de "um novo dia começou" — cobre tanto o Dia 1 (MainMenuUI) quanto
-        // todo dia seguinte (ShopHandler), sem precisar duplicar a chamada nos dois lugares.
-        GameEvents.DayStarted();
+        GameEvents.DayStarted(); // "a run começou" — quem já escutava o início do dia continua funcionando
     }
 
-    // Chamado pelo setter de HeroController.GlobalAggroActive (false->true). Desde o D9.4 o
-    // relógio já começa ligado no ResetForNewDay, então isto virou só uma garantia idempotente.
-    public void StartDayClock() => dayClockStarted = true;
+    // Nome antigo, mantido para os callers que ainda não migraram (ShopHandler fica sem uso no fluxo).
+    public void ResetForNewDay() => StartRun();
 
-    private void EndDay()
+    // Chamado pelo setter de HeroController.GlobalAggroActive (false->true): garantia idempotente.
+    public void StartDayClock() => clockStarted = true;
+
+    // Fim da run (vitória ou derrota): o relógio para de vez.
+    public void StopClock() => runEnded = true;
+
+#if UNITY_EDITOR
+    // Só para verificação no Editor (eval): avança o relógio ignorando pausa/estado do jogo.
+    public void DebugAdvance(float seconds)
     {
-        dayEnded = true;
-        DayResolver.ResolveEndOfDay();
+        if (!IsClockRunning) return;
+        Tick(seconds);
     }
+#endif
 }
