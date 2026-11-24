@@ -236,9 +236,10 @@ A ordem fica numa **lista editável no Inspector**, num asset de configuração 
   - a mistura de tiers e o mini boss passam a vir do `RunSchedule`;
   - aplica o buff noturno;
   - saem os pesos de tier por dia (`DaySpawnDefinition` / `WorldTierSelector`).
-- **`HordeCurve`:**
-  - vira **uma curva única de 25 min**, partindo da forma aprovada do dia 1 (10 → 150 em 4 min) e subindo até o teto de 300 por volta do minuto 15 *(decisão minha, editável)*;
-  - os picos periódicos continuam.
+- **`HordeCurve`:** vira **uma curva única de 25 min**.
+  - **Pedido do usuário:** começa baixo, como no Vampire Survivors, e sobe. Tem **~50 monstros vivos no minuto 1** e **~150 no minuto 3, de dia**. **À noite, a meta é o dobro da meta do dia.**
+  - **Limite de desempenho:** continua em 300 monstros comuns vivos (D9.3). *(decisão minha, a confirmar com o usuário)* Depois do minuto 3, a meta do dia fica perto de 150, e a noite (2× = 300) encosta no limite. O dia só sobe além disso, e o limite só passa de 300, depois de um teste de FPS com gemas e cartas na tela.
+  - **Picos:** os picos periódicos de hoje saem, porque a noite é o pico.
 
 **Fim da run e mundo:**
 - **`DayResolver` / `ResultsHandler`:**
