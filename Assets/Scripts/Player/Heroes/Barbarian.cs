@@ -658,6 +658,10 @@ public class Barbarian : HeroController
 
     // passiveDamagePerStepBonus (#17-19) é ABSOLUTO — soma direto ao 0.25f base, não é um % dele
     // (GDD: "+5%/step ADICIONAL por rank", não "+5% do step base").
+    // Etapa 3 — mesma fórmula do golpe primário (sem crítico), base do Blast Charm.
+    public override float EffectsBaseDamage => stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
+        * HeroController.PrimaryDamageMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * HeroController.CentralDamageMultiplier;
+
     private float GetPassiveDamageMultiplier() => 1f + GetPassiveDamageSteps() * (0.25f + passiveDamagePerStepBonus);
 
     protected override void OnEnable()

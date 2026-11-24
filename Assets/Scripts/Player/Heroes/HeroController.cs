@@ -1012,7 +1012,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // volta", o que pareceria cura, não redução). GetConditionalDamageReductionPercent
         // (ex.: Fúria Protetora do Barbarian, só durante o Shift) se acumula com a de Mundo,
         // nunca substitui — por isso os 2 "if" separados, não um só somado antes do clamp.
-        if (DamageReductionPercent > 0f) amount *= 1f - Mathf.Clamp01(DamageReductionPercent / 100f);
+        // Etapa 3: Iron Plate/Iron Will (cartas DamageTaken) somam com a de Mundo, com teto (RunSettings).
+        float reduction = DamageReductionPercent / 100f + Cards.Sum(CardAbility.None, CardStat.DamageTaken);
+        if (reduction > 0f) amount *= 1f - Mathf.Min(Mathf.Clamp01(reduction), RunSettings.Current.damageReductionCapPercent / 100f);
         float conditionalReduction = GetConditionalDamageReductionPercent();
         if (conditionalReduction > 0f) amount *= 1f - Mathf.Clamp01(conditionalReduction / 100f);
 
@@ -1163,17 +1165,33 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     [SerializeField] private float hpRegenTextInterval = 2f;
     private float hpRegenTextElapsed;
 
+    // Etapa 3: Troll Heart (carta Regen, fração da vida por segundo) soma na % de regeneração.
+    private float RegenPercentPerSecond => HpRegenPercentPerSecond + Cards.Sum(CardAbility.None, CardStat.Regen) * 100f;
+
     private void UpdateHpRegen()
     {
-        if (HpRegenPercentPerSecond <= 0f) return;
+        float regenPercent = RegenPercentPerSecond;
+        if (regenPercent <= 0f) return;
 
         hpRegenTextElapsed += Time.deltaTime;
         if (hpRegenTextElapsed < hpRegenTextInterval) return;
 
-        float healed = Heal(EffectiveMaxHealth * HpRegenPercentPerSecond / 100f * hpRegenTextElapsed, showFloatingText: false);
+        float healed = Heal(EffectiveMaxHealth * regenPercent / 100f * hpRegenTextElapsed, showFloatingText: false);
         hpRegenTextElapsed = 0f;
 
         if (healed > 0f) GameEvents.HealReceived(GetFloatingTextSpawnPosition(), healed);
+    }
+
+    // Etapa 3 — dano base dos efeitos de item (Blast Charm): o do ataque primário com os bônus de
+    // primário e de cartas, sem crítico. Heróis com fórmula própria sobrescrevem.
+    public virtual float EffectsBaseDamage => stats.damage * PrimaryDamageMultiplier * Cards.Get(CardAbility.Primary, CardStat.Damage) * CentralDamageMultiplier;
+
+    // Etapa 3 — Thorn Mail: quem bateu (golpe melee) leva de volta dano × soma das cartas Thorns.
+    public static void ApplyThorns(EnemyController attacker, float damageDealt)
+    {
+        float thorns = Cards.Sum(CardAbility.None, CardStat.Thorns);
+        if (thorns <= 0f || attacker == null || attacker.IsDead || damageDealt <= 0f) return;
+        attacker.TakeDamage(damageDealt * thorns, false);
     }
 
     private void TriggerDamageFlash()

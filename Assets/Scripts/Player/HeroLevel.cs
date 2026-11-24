@@ -18,12 +18,20 @@ public class HeroLevel : MonoBehaviour
 
     private void Awake() => Instance = this;
 
-    private void OnEnable() => GameEvents.OnXpCollected += HandleXp;
-    private void OnDisable() => GameEvents.OnXpCollected -= HandleXp;
+    // Etapa 3: Scholar Tome/Greed (cartas XpGain) multiplicam o XP; a fração que sobra fica guardada.
+    private float xpFraction;
+
+    private void OnEnable() { GameEvents.OnXpCollected += HandleXp; GameEvents.OnDayStart += ResetFraction; }
+    private void OnDisable() { GameEvents.OnXpCollected -= HandleXp; GameEvents.OnDayStart -= ResetFraction; }
+    private void ResetFraction() => xpFraction = 0f;
 
     private void HandleXp(int xp)
     {
         if (Run == null || xp <= 0) return;
+        float scaled = xp * HeroController.Cards.Get(CardAbility.None, CardStat.XpGain) + xpFraction;
+        xp = Mathf.FloorToInt(scaled);
+        xpFraction = scaled - xp;
+        if (xp <= 0) return;
 
         var r = HeroLevelRules.AddXp(Level, Run.xpIntoLevel, xp);
         Run.level = r.level;

@@ -189,6 +189,7 @@ public class MeleeEnemyController : EnemyController
         if (hero == null) return;
 
         hero.TakeDamage(stats.attackDamage);
+        HeroController.ApplyThorns(this, stats.attackDamage); // etapa 3 — Thorn Mail
     }
 
     // Classifica AimDirection (sempre em direção ao player) num dos 4 quadrantes

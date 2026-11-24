@@ -53,6 +53,14 @@ public class RunSettings : ScriptableObject
     [Tooltip("Chance (%) de cada carta do baú virar um Stat.")]
     public float chestStatChancePercent = 15f; // 🔢
 
+    [Header("Efeitos de itens e Stats (etapa 3)")]
+    [Tooltip("Teto da redução de dano somada (perks + Iron Plate + Iron Will), em %.")]
+    public float damageReductionCapPercent = 75f; // 🔢
+    [Tooltip("Blast Charm: raio da explosão (unidades).")]
+    public float blastRadius = 1.5f; // 🔢
+    [Tooltip("Blast Charm: dano da explosão em % do dano do ataque primário do herói.")]
+    public float blastDamagePercent = 100f; // 🔢
+
     [Header("Sistemas fora da run (etapa 3 religa baú/vendedor dando cartas)")]
     [Tooltip("Gold por kill/sobrevivência dentro da run. Não existe mais gold na run (etapas 1+2).")]
     public bool runGoldEnabled = false;
