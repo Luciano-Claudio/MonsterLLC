@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d18ab90e2b44b324fa680db6f93c19b4, type: 3}
+  m_Name: RunSettings
+  m_EditorClassIdentifier: Core::RunSettings
+  bossOrder:
+  - {fileID: 11400000, guid: 9ff5ae3ffe44b9e27edb5c403a797bc5, type: 2}
+  - {fileID: 11400000, guid: 6e77a2fcfbd1fd5f354f1777a49a8f1e, type: 2}
+  - {fileID: 11400000, guid: 9945c4bb408d1214ab3a0b9ade159a3f, type: 2}
+  - {fileID: 11400000, guid: 5eed5bed5bcd0223b20895339440a2a4, type: 2}
+  - {fileID: 11400000, guid: dc8e73e9bc3a6fce84173a4c08fa2576, type: 2}
+  - {fileID: 11400000, guid: a8dd80435169bacc2f0624879da466a4, type: 2}
+  - {fileID: 11400000, guid: 5001d126a68c43d296b2d95ac01ed21f, type: 2}
+  - {fileID: 11400000, guid: 7915fa17bc4449cd8b457a9296b24dc0, type: 2}
+  - {fileID: 11400000, guid: e7752cdc4edc4c5d8b3f2dd25c033c3c, type: 2}
+  - {fileID: 11400000, guid: bde25ad2f7d346e08d7ad68a54315eb5, type: 2}
+  - {fileID: 11400000, guid: e771717f6f35487285eeb56ec028733f, type: 2}
+  - {fileID: 11400000, guid: a0dfdd87aed942f9a16db51d1cc60911, type: 2}
+  - {fileID: 11400000, guid: 2ce8f295c39c4f5b86dd1449e0b4fc92, type: 2}
+  - {fileID: 11400000, guid: 1935d123e2894581bc390e71e8033df3, type: 2}
+  - {fileID: 11400000, guid: 87bc8c72dd16446ca028a9d62a16b074, type: 2}
+  - {fileID: 11400000, guid: 1a0891e76ba44b6db1c8226027aba694, type: 2}
+  - {fileID: 11400000, guid: b6565b306b944d2091e470b9986a370b, type: 2}
+  - {fileID: 11400000, guid: cb06cec282ca4dbb9ebbd94a389b7cfb, type: 2}
+  - {fileID: 11400000, guid: 2d67fbe1aaf64739b1323113b99a4075, type: 2}
+  - {fileID: 11400000, guid: 82acb38791614b73872aeddecea27526, type: 2}
+  - {fileID: 11400000, guid: f8a5c383fe8a4604930a93df63d233d9, type: 2}
+  - {fileID: 11400000, guid: 8525b4219a00470eb25187b154bd1230, type: 2}
+  - {fileID: 11400000, guid: 35a63e122aa244fcab604b1840d0b2bd, type: 2}
+  - {fileID: 11400000, guid: f7120cb9ad9340a8a5ad49b57dc16e47, type: 2}
+  - {fileID: 11400000, guid: eb85271a850a43d68a3f96a0ab49d769, type: 2}
+  runSeconds: 1500
+  bossIntervalSeconds: 60
+  daySeconds: 60
+  nightSeconds: 30
+  nightSpeedMultiplier: 1.15
+  enrageSpeedAfter: 60
+  enrageSpeedMultiplier: 1.5
+  enrageDamageAfter: 120
+  enrageDamageMultiplier: 1.5
+  enrageDamageStepSeconds: 30
+  enrageDamageStepPercent: 25
+  tierRampSeconds: 90
+  miniBossMinDelay: 15
+  miniBossMaxDelay: 45
