@@ -162,6 +162,10 @@ public static class GameEvents
     public static event Action<string, int> OnCardGranted;
     public static void CardGranted(string cardId, int levelAfter) => OnCardGranted?.Invoke(cardId, levelAfter);
 
+    // Etapa 3: os itens do herói mudaram (item novo, nível de item, run nova) — barra de itens do HUD.
+    public static event Action OnItemsChanged;
+    public static void ItemsChanged() => OnItemsChanged?.Invoke();
+
     // Disparado pelo botão de debug "Regenerar Mundo" (ChunkTerrainGenerator.RegenerateWorld)
     // e por qualquer compra de Tier Suppression (ShopHandler.BuyNextTierSuppression) — decisão
     // do usuário: nos dois casos a população precisa renascer do zero sob as regras atuais
