@@ -558,6 +558,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (animator != null) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
     }
 
+    // Etapas 1+2 — carta de velocidade da animação do Shift/Ultimate. O Animator tem UM parâmetro
+    // (ActionSpeedMultiplier) pros estados Attack/Attack_Walk/Shift/Ultimate; cada ação ajusta o
+    // valor dela no instante em que começa. O Primário nunca tem carta de velocidade (decisão do
+    // usuário: ele já anda atacando) — volta pro valor base.
+    public static float AbilityAnimSpeedFactor(CardAbility ability)
+        => ability == CardAbility.Shift || ability == CardAbility.Ultimate ? Cards.Get(ability, CardStat.AnimSpeed) : 1f;
+
+    protected void ApplyAbilityAnimSpeed(CardAbility ability)
+    {
+        if (animator != null) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier * AbilityAnimSpeedFactor(ability));
+    }
+
     // Exposto só pra heróis com Animator FILHO independente do próprio (ex.: MageAttackHitbox)
     // repassarem o mesmo multiplicador — SetFloat não propaga entre Animators diferentes.
     protected float ActionSpeedMultiplier => actionSpeedMultiplier;

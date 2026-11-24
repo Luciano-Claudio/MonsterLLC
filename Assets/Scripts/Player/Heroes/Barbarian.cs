@@ -358,6 +358,7 @@ public class Barbarian : HeroController
         isAttacking = true;
         actionElapsed = 0f;
         attackHitFired = false;
+        ApplyAbilityAnimSpeed(CardAbility.Primary); // volta pro valor base (o Shift/Ultimate podem ter acelerado)
         AnimatorTrigger("AttackTrigger");
     }
 
@@ -506,6 +507,7 @@ public class Barbarian : HeroController
         actionElapsed = 0f;
         ultimateLandFired = false;
         ultimateUseCount++;
+        ApplyAbilityAnimSpeed(CardAbility.Ultimate); // etapas 1+2 — carta de velocidade da animação da Ultimate
         AnimatorTrigger("UltimateTrigger");
     }
 
@@ -597,6 +599,7 @@ public class Barbarian : HeroController
     {
         secondaryAbilityRemaining = secondaryAbilityDuration;
         stats.moveSpeed = baseMoveSpeed * secondaryAbilitySpeedMultiplier;
+        ApplyAbilityAnimSpeed(CardAbility.Shift); // etapas 1+2 — carta de velocidade da animação do Shift
         AnimatorTrigger("SecondaryAbilityTrigger");
 
         // #24 "Último Fôlego" — escudo ao ativar o Shift, % do HP máximo efetivo.
