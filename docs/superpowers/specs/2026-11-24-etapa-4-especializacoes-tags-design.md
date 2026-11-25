@@ -269,7 +269,10 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
 
 ## Ajustes do usuário (2026-11-25, depois da revisão)
 
-- **XP:** o 1º nível custa 5 de XP (antes 15). Do 2º nível em diante, a curva é a mesma: o 2º custa 23 e o 40º custa 137.
+- **XP:** tabela escrita por extenso em `HeroLevelRules.XpTable`.
+  - Só múltiplos de 5, e cada nível custa mais que o anterior.
+  - Níveis 1 a 5: 5, 10, 20, 30, 40. Do 6 ao 44, +5 por nível (45, 50 ... 235). Depois, a curva sobe até 1.495.
+  - Total até o nível 40: 4.440 XP. Até o 60: 16.375.
 - **1º level up:** a oferta sempre traz Brute Force (dano) e Iron Constitution (vida), configurados em
   `RunSettings.firstLevelUpCards`. A 3ª carta segue o sorteio normal.
 - **Peso dos itens:** a chance de sair item continua 40%. Dentro do item, os que o herói já tem pesam
