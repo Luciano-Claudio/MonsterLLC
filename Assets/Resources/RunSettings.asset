@@ -65,6 +65,10 @@ MonoBehaviour:
   levelUpUpgradeChancePercent: 60
   maxItemsPerOffer: 2
   maxStatSlots: 6
+  firstLevelUpCards:
+  - {fileID: 11400000, guid: 424ff637c12c7884d806604ceb400fad, type: 2}
+  - {fileID: 11400000, guid: 9421e792a44adeb41a01695d17329378, type: 2}
+  ownedItemWeight: 3
   chestMinCount: 4
   chestMaxCount: 5
   vendorMinCount: 6

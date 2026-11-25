@@ -14,6 +14,9 @@ public struct OfferRules
     public int maxItemsPerOffer;
     // Etapa 4: atributos (Stats) — no máximo N, e não sobem de nível.
     public int maxStatSlots;
+    // Pedido do usuário (2026-11-25): cartas sempre presentes no 1º level up, e peso dos itens já possuídos.
+    public IReadOnlyList<CardDefinition> firstLevelUpCards;
+    public float ownedItemWeight;
 
     public static OfferRules From(RunSettings s) => new OfferRules
     {
@@ -23,6 +26,8 @@ public struct OfferRules
         levelUpUpgradeChance01 = s != null ? s.levelUpUpgradeChancePercent / 100f : 0.6f,
         maxItemsPerOffer = s != null ? s.maxItemsPerOffer : 2,
         maxStatSlots = s != null ? s.maxStatSlots : 6,
+        firstLevelUpCards = s != null ? s.firstLevelUpCards : null,
+        ownedItemWeight = s != null ? s.ownedItemWeight : 3f,
     };
 }
 
@@ -32,6 +37,7 @@ public struct OfferRules
 public static class CardRules
 {
     private const int AllKinds = ~0;
+    public const int FirstLevelUpLevel = 2; // o 1º level up leva o herói ao nível 2
     private static readonly List<int> eligible = new();
     private static readonly List<int> statEligible = new();
     private static readonly List<int> itemEligible = new();
@@ -72,12 +78,12 @@ public static class CardRules
                     TakeRandom(pool, eligible, count, rng, result);
                     if (result.Count > 0) return;
                 }
-                RollLevelUpMix(pool, owned, heroId, heroTags, caps, count, rng, rules, result);
+                RollLevelUpMix(pool, owned, heroId, heroTags, caps, heroLevel, count, rng, rules, result);
                 return;
 
             case OfferSource.Vendor:
                 Collect(pool, owned, heroId, heroTags, KindBit(CardKind.Item), caps, eligible);
-                TakeRandom(pool, eligible, count, rng, result);
+                while (result.Count < count && eligible.Count > 0) result.Add(TakeItem(pool, eligible, owned, rules.ownedItemWeight, rng));
                 return;
 
             case OfferSource.Chest:
@@ -98,21 +104,57 @@ public static class CardRules
     // Level up comum (etapa 4): cada carta é Upgrade com a chance, senão Item (até o limite por oferta).
     // Os 3 buffers encolhem a cada pick, então as cartas nunca se repetem.
     private static void RollLevelUpMix(IReadOnlyList<CardDefinition> pool, IReadOnlyDictionary<string, int> owned,
-        string heroId, SpecTag heroTags, Caps caps, int count, System.Random rng, OfferRules rules, List<CardDefinition> result)
+        string heroId, SpecTag heroTags, Caps caps, int heroLevel, int count, System.Random rng, OfferRules rules, List<CardDefinition> result)
     {
         Collect(pool, owned, heroId, heroTags, KindBit(CardKind.Upgrade), caps, eligible);
         Collect(pool, owned, heroId, heroTags, KindBit(CardKind.Item), caps, itemEligible);
         Collect(pool, owned, heroId, heroTags, KindBit(CardKind.Stat), caps, statEligible);
+        // 1º level up: as cartas garantidas entram primeiro (se forem elegíveis) e saem do sorteio.
+        if (heroLevel == FirstLevelUpLevel && rules.firstLevelUpCards != null)
+            for (int g = 0; g < rules.firstLevelUpCards.Count && result.Count < count; g++)
+            {
+                var card = rules.firstLevelUpCards[g];
+                if (RemoveCard(pool, eligible, card) || RemoveCard(pool, itemEligible, card) || RemoveCard(pool, statEligible, card))
+                    result.Add(card);
+            }
         int items = 0;
-        for (int n = 0; n < count; n++)
+        while (result.Count < count)
         {
             bool itemRoom = items < rules.maxItemsPerOffer && itemEligible.Count > 0;
             bool wantUpgrade = rng.NextDouble() < rules.levelUpUpgradeChance01;
             if ((wantUpgrade || !itemRoom) && eligible.Count > 0) result.Add(TakeOne(pool, eligible, rng));
-            else if (itemRoom) { result.Add(TakeOne(pool, itemEligible, rng)); items++; }
+            else if (itemRoom) { result.Add(TakeItem(pool, itemEligible, owned, rules.ownedItemWeight, rng)); items++; }
             else if (statEligible.Count > 0) result.Add(TakeOne(pool, statEligible, rng));
             else return;
         }
+    }
+
+    private static bool RemoveCard(IReadOnlyList<CardDefinition> pool, List<int> from, CardDefinition card)
+    {
+        if (card == null) return false;
+        for (int i = 0; i < from.Count; i++)
+            if (pool[from[i]] == card) { from[i] = from[from.Count - 1]; from.RemoveAt(from.Count - 1); return true; }
+        return false;
+    }
+
+    // Item com peso: os que o herói já tem pesam `ownedWeight` (os novos pesam 1). Peso <= 1 = sorteio igual.
+    private static CardDefinition TakeItem(IReadOnlyList<CardDefinition> pool, List<int> from,
+        IReadOnlyDictionary<string, int> owned, float ownedWeight, System.Random rng)
+    {
+        if (ownedWeight <= 1f) return TakeOne(pool, from, rng);
+        double total = 0;
+        for (int i = 0; i < from.Count; i++) total += LevelOf(owned, pool[from[i]]) > 0 ? ownedWeight : 1f;
+        double roll = rng.NextDouble() * total;
+        int pick = from.Count - 1;
+        for (int i = 0; i < from.Count; i++)
+        {
+            roll -= LevelOf(owned, pool[from[i]]) > 0 ? ownedWeight : 1f;
+            if (roll < 0) { pick = i; break; }
+        }
+        var card = pool[from[pick]];
+        from[pick] = from[from.Count - 1];
+        from.RemoveAt(from.Count - 1);
+        return card;
     }
 
     private static CardDefinition TakeOne(IReadOnlyList<CardDefinition> pool, List<int> from, System.Random rng)

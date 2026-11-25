@@ -471,4 +471,62 @@ public class CardRulesTests
         Assert.AreEqual(expected, b.Get(CardAbility.Shift, CardStat.Damage), 1e-4f);
         Assert.AreEqual(expected, b.Get(CardAbility.Ultimate, CardStat.Damage), 1e-4f);
     }
+
+    // ===== Pedido do usuário (2026-11-25): 1º level up com dano e vida garantidos; itens que o herói já
+    // tem saem mais (level up e vendedor) =====
+
+    [Test]
+    public void First_level_up_always_offers_damage_and_health()
+    {
+        var pool = BigPool(6, 6, 0);
+        var dmg = Kind("general_damage", CardKind.Upgrade, 10);
+        var hp = Kind("general_max_health", CardKind.Upgrade, 10);
+        pool.Add(dmg); pool.Add(hp);
+        var rules = Rules; rules.firstLevelUpCards = new[] { dmg, hp };
+        var rng = new System.Random(71);
+        var result = new List<CardDefinition>();
+        for (int n = 0; n < 300; n++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 2, pool, new Dictionary<string, int>(), "", SpecTag.None, 3, rng, rules, result);
+            Assert.AreEqual(3, result.Count);
+            CollectionAssert.Contains(result, dmg);
+            CollectionAssert.Contains(result, hp);
+            Assert.AreEqual(3, new HashSet<CardDefinition>(result).Count);
+        }
+        // nos outros níveis, nada é garantido
+        int both = 0;
+        for (int n = 0; n < 300; n++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 3, pool, new Dictionary<string, int>(), "", SpecTag.None, 3, rng, rules, result);
+            if (result.Contains(dmg) && result.Contains(hp)) both++;
+        }
+        Assert.Less(both, 300);
+    }
+
+    [Test]
+    public void Owned_items_are_more_likely_in_vendor_and_level_up()
+    {
+        var pool = BigPool(10, 10, 0);
+        var owned = new Dictionary<string, int> { { "i0", 1 } };
+        var rules = Rules; rules.ownedItemWeight = 3f;
+        var rng = new System.Random(81);
+        var result = new List<CardDefinition>();
+        int vendorHits = 0, vendorTotal = 4000;
+        for (int n = 0; n < vendorTotal; n++)
+        {
+            CardRules.RollOffer(OfferSource.Vendor, 3, pool, owned, "", SpecTag.None, 1, rng, rules, result);
+            if (result[0].id == "i0") vendorHits++;
+        }
+        // peso 3 contra 9 itens de peso 1: 3/12 = 25% (sem peso seria 10%)
+        Assert.That(vendorHits / (float)vendorTotal, Is.InRange(0.21f, 0.29f));
+
+        rules.levelUpUpgradeChance01 = 0f; // só itens, 1 carta
+        int lvlHits = 0;
+        for (int n = 0; n < vendorTotal; n++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 3, pool, owned, "", SpecTag.None, 1, rng, rules, result);
+            if (result[0].id == "i0") lvlHits++;
+        }
+        Assert.That(lvlHits / (float)vendorTotal, Is.InRange(0.21f, 0.29f));
+    }
 }

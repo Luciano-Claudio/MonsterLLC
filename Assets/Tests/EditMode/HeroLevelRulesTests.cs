@@ -5,7 +5,8 @@ using NUnit.Framework;
 // nível não dá status — só abre as cartas.
 public class HeroLevelRulesTests
 {
-    [Test] public void First_level_costs_15() => Assert.AreEqual(15, HeroLevelRules.XpToNext(1));
+    [Test] public void First_level_costs_5() => Assert.AreEqual(5, HeroLevelRules.XpToNext(1)); // pedido do usuário (2026-11-25): 15 era alto demais
+    [Test] public void Level_2_keeps_the_curve() => Assert.AreEqual(23, HeroLevelRules.XpToNext(2));
     [Test] public void Level_40_costs_137() => Assert.AreEqual(137, HeroLevelRules.XpToNext(40));
     [Test] public void Level_59_costs_1492() => Assert.AreEqual(1492, HeroLevelRules.XpToNext(59));
     [Test] public void Level_60_is_max() => Assert.AreEqual(long.MaxValue, HeroLevelRules.XpToNext(60));
@@ -19,14 +20,14 @@ public class HeroLevelRulesTests
             if (l <= 39) to40 += HeroLevelRules.XpToNext(l);
             to60 += HeroLevelRules.XpToNext(l);
         }
-        Assert.That(to40, Is.InRange(3200, 3500));
+        Assert.That(to40, Is.InRange(3190, 3500));
         Assert.That(to60, Is.InRange(14500, 15500));
     }
 
     [Test]
     public void One_level_up()
     {
-        var r = HeroLevelRules.AddXp(1, 0, 15);
+        var r = HeroLevelRules.AddXp(1, 0, 5);
         Assert.AreEqual(2, r.level);
         Assert.AreEqual(0, r.xpIntoLevel);
         Assert.AreEqual(1, r.levelsGained);
@@ -36,7 +37,7 @@ public class HeroLevelRulesTests
     [Test]
     public void Several_levels_at_once()
     {
-        var r = HeroLevelRules.AddXp(1, 0, 15 + 23 + 5);
+        var r = HeroLevelRules.AddXp(1, 0, 5 + 23 + 5);
         Assert.AreEqual(3, r.level);
         Assert.AreEqual(5, r.xpIntoLevel);
         Assert.AreEqual(2, r.levelsGained);
