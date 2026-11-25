@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_ultimate_anim_speed
   kind: 1
-  title: Quick Throw
-  description: +{0} Axe Throw Animation Speed
+  title: Swift Thunder
+  description: +{0} Ultimate Animation Speed
   icon: {fileID: 0}
   ability: 3
   stat: 3
   valuePerLevel: 0.1
   maxLevel: 5
+  baseValue: 0
+  healthPerLevel: 0
   heroId: Barbarian
+  requiredTags: 0

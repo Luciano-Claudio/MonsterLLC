@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_primary_damage
   kind: 1
-  title: Heavy Axe
+  title: Heavy Blade
   description: +{0} Primary Attack Damage
   icon: {fileID: 0}
   ability: 1
   stat: 0
   valuePerLevel: 1.25
   maxLevel: 5
+  baseValue: 0
+  healthPerLevel: 0
   heroId: Barbarian
+  requiredTags: 0

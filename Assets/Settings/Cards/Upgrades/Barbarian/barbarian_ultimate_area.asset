@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Core::CardDefinition
   id: barbarian_ultimate_area
   kind: 1
-  title: Giant Axe
-  description: +{0} Thrown Axe Size
+  title: Giant Blades
+  description: +{0} Thunder Blade Size
   icon: {fileID: 0}
   ability: 3
   stat: 1
   valuePerLevel: 0.15
   maxLevel: 5
+  baseValue: 0
+  healthPerLevel: 0
   heroId: Barbarian
+  requiredTags: 0

@@ -49,7 +49,7 @@ public class HeroProjectile : MonoBehaviour
     private float healPercentPerHit;
     public void SetHealOnHit(float percentOfDamageDealt) => healPercentPerHit = percentOfDamageDealt;
 
-    // Etapa 4 — Barbarian Bloodlust: o machado aplica Bleeding em CADA acerto. O dps vem pronto
+    // Etapa 4 — Barbarian Bloodlust: a lâmina (Thunder Blade) aplica Bleeding em CADA acerto. O dps vem pronto
     // (congelado no arremesso, já com o Shift). 0 = sem efeito (default).
     private float bleedDamagePerSecond;
     private float bleedDuration;

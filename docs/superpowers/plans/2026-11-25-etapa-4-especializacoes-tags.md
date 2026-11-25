@@ -310,7 +310,7 @@ direita.
 - **Bloodlust:**
   - O primário **não** cria Ground Crack. Pule as chamadas de `SpawnGroundCrackAtWithDamage` e
     `SpawnGroundCrackAt` quando a especialização for Bloodlust.
-  - O primário e a Ultimate (machado arremessado, `FireUltimateVolley` e o acerto dele) aplicam
+  - O primário e a Ultimate (Thunder Blades, `FireUltimateVolley` e o acerto delas) aplicam
     `StatusEffectType.Bleeding` no inimigo atingido, com:
     - `dps = danoDoGolpe * bloodlustBleedPercentOfHit / 100`;
     - `[SerializeField] float bloodlustBleedPercentOfHit = 50f; // 🔢`;
@@ -335,7 +335,7 @@ direita.
     (`IsEffectActive(Bleeding)`) com dps = 50% do dano do golpe.
   - (c) Bloodlust com `secondaryAbilityRemaining > 0`: o dps é maior que em (b), na razão do
     multiplicador do Shift.
-  - (d) Bloodlust: o acerto do machado da Ultimate aplica Bleeding.
+  - (d) Bloodlust: o acerto da Thunder Blade da Ultimate aplica Bleeding.
 - [ ] **Passo 2:** rodar o eval. Esperado: `FAIL`.
 - [ ] **Passo 3:** implementar.
 - [ ] **Passo 4:** rodar o eval e a suíte. Esperado: eval `PASS`, a suíte na linha de base.

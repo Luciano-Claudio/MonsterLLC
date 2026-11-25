@@ -30,7 +30,7 @@ public class Barbarian : HeroController
 
     // Etapa 4 — especializações (docs/superpowers/specs/2026-11-24-etapa-4-especializacoes-tags-design.md).
     // Earthquake: Ground Crack no primário (como sempre foi). Bloodlust: sem Ground Crack; primário e
-    // machado da Ultimate aplicam Bleeding = % do dano do golpe (sem crítico, COM o Shift), congelado
+    // lâminas da Ultimate (Thunder Blades) aplicam Bleeding = % do dano do golpe (sem crítico, COM o Shift), congelado
     // na aplicação — golpe dado durante o Shift sangra mais, mesmo depois do Shift acabar.
     public const string SpecEarthquake = "barbarian_earthquake";
     public const string SpecBloodlust = "barbarian_bloodlust";
@@ -574,7 +574,7 @@ public class Barbarian : HeroController
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
-            obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapas 1+2 — carta de tamanho do machado
+            obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapas 1+2 — carta de tamanho das lâminas (Thunder Blades)
             var projectile = obj.GetComponent<HeroProjectile>();
             if (projectile == null) continue;
 
