@@ -111,14 +111,14 @@ public class RangerArrow : MonoBehaviour
         {
             // #30 "Enxame Perfurante" — dano cheio em TODO monstro no caminho, a reserva
             // nunca é consumida (nunca morre por perfuração — só por "lifetime"/bumerangue).
-            enemy.TakeDamage(effectiveReserve);
+            HeroDamage.Direct(enemy, effectiveReserve, CardAbility.Primary, pierce: true); // catálogo de cartas: ponto único
             enemy.ApplyKnockback(direction, knockbackForce);
             RollBleed(enemy);
             return;
         }
 
         float damageDealt = Mathf.Min(effectiveReserve, enemy.stats.health);
-        enemy.TakeDamage(damageDealt);
+        HeroDamage.Direct(enemy, damageDealt, CardAbility.Primary, pierce: true); // catálogo de cartas: ponto único
         enemy.ApplyKnockback(direction, knockbackForce);
         RollBleed(enemy);
 

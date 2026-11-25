@@ -110,7 +110,7 @@ public class RangerKnife : MonoBehaviour
         if (phase == Phase.Flying)
         {
             float damageDealt = Mathf.Min(flightDamageReserve, enemy.stats.health);
-            enemy.TakeDamage(damageDealt);
+            HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
             enemy.ApplyKnockback(direction, flightKnockbackForce);
             ApplyBleeding(enemy);
 

@@ -43,6 +43,10 @@ public class MageAttackHitbox : MonoBehaviour
     // (dps do Fire, duração). Nulo = a chama só dá o dano do tick (Phoenix Pact).
     private System.Func<float> fireStatusDps;
     private float fireStatusDuration;
+    // Catálogo de cartas — peso de 1 tick dentro do ciclo da animação (intervalo / ciclo): efeitos "por
+    // acerto" valem esta fração por tick, e o ciclo inteiro soma 1 acerto.
+    private float tickHitWeight = 1f;
+    public float TickHitWeight { get => tickHitWeight; set => tickHitWeight = value; }
 
     public void StartFire(System.Func<float> tickDamage, float tickInterval, float actionSpeedMultiplier,
         System.Func<float> fireStatusDps = null, float fireStatusDuration = 0f)
@@ -100,7 +104,7 @@ public class MageAttackHitbox : MonoBehaviour
         if (enemy == null || enemy.IsDead) return;
         // Tick repetido: sem shake/zoom (isDirectPlayerHit false, mesmo critério do pulse
         // do Rogue e das áreas "grounded") — só o filtro de juice muda, o dano não.
-        enemy.TakeDamage(rollTickDamage != null ? rollTickDamage() : 0f, isDirectPlayerHit: false);
+        HeroDamage.Direct(enemy, rollTickDamage != null ? rollTickDamage() : 0f, CardAbility.Primary, tickHitWeight, juice: false); // catálogo de cartas: ponto único
         if (fireStatusDps == null || enemy.IsDead) return;
         var status = enemy.GetComponent<StatusEffectController>();
         if (status != null) status.ApplyStatusEffect(StatusEffectType.Fire, fireStatusDuration, fireStatusDps());

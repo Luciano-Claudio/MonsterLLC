@@ -382,9 +382,9 @@ public class Barbarian : HeroController
         var (hitbox, facingDirection) = GetHitboxForFacing();
         if (hitbox == null) return;
 
-        float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
+        // Catálogo de cartas: o crítico agora é sorteado no HeroDamage.Direct (por inimigo atingido).
         float damage = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
-            * HeroController.PrimaryDamageMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * HeroController.CentralDamageMultiplier * critMultiplier;
+            * HeroController.PrimaryDamageMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * HeroController.CentralDamageMultiplier;
 
         // 128 (não 16) — bug real reportado pelo usuário (2026-10-26): com muito monstro
         // aglomerado perto do player (vários já "parados" no próprio slot de ataque, viram
@@ -405,14 +405,14 @@ public class Barbarian : HeroController
         if (furiaDiagonalBonusPerExtraTarget > 0f && hitTargets.Count > 1)
             damage *= 1f + (hitTargets.Count - 1) * furiaDiagonalBonusPerExtraTarget / 100f;
 
-        float bloodlustBleedDps = bloodlust ? damage / critMultiplier * bloodlustBleedPercentOfHit / 100f : 0f;
+        float bloodlustBleedDps = bloodlust ? damage * bloodlustBleedPercentOfHit / 100f : 0f;
 
         float totalDamageDealt = 0f;
         foreach (var enemy in hitTargets)
         {
-            enemy.TakeDamage(damage);
+            var hit = HeroDamage.Direct(enemy, damage, CardAbility.Primary);
             enemy.ApplyKnockback(AimDirection, knockbackForce);
-            totalDamageDealt += damage;
+            totalDamageDealt += hit.damage;
 
             if (bloodlustBleedDps > 0f)
             {
@@ -538,11 +538,11 @@ public class Barbarian : HeroController
 
         if (ultimateProjectilePrefab == null) return;
 
-        float critMultiplier = HeroController.RollCritMultiplier(HeroController.UltimateCritChance);
+        // Catálogo de cartas: crítico por acerto de lâmina, no HeroDamage.Direct.
         float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
-            * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage) * HeroController.CentralDamageMultiplier * critMultiplier;
+            * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage) * HeroController.CentralDamageMultiplier;
 
-        ultimateBleedDamagePerSecond = bloodlust ? reserve / critMultiplier * bloodlustBleedPercentOfHit / 100f : 0f;
+        ultimateBleedDamagePerSecond = bloodlust ? reserve * bloodlustBleedPercentOfHit / 100f : 0f;
 
         // #29 "Avatar da Destruição" — a cada 5 usos, o 5º vem com o dobro de dano e projéteis.
         bool isDoubledUse = ultimateEveryFifthUseDoubled && ultimateUseCount % 5 == 0;

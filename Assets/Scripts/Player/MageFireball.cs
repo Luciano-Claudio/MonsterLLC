@@ -173,7 +173,7 @@ public class MageFireball : MonoBehaviour
         // (O dano no chão em UpdateGrounded usa enemiesInRange, que já deduplica por natureza
         // sendo HashSet — mas precisou de uma cópia própria por um motivo diferente, ver lá.)
         EnemyController.CollectDistinct(results, count, explosionTargets);
-        foreach (var enemy in explosionTargets) enemy.TakeDamage(impactDamage);
+        foreach (var enemy in explosionTargets) HeroDamage.Direct(enemy, impactDamage, CardAbility.Ultimate); // catálogo de cartas: ponto único
     }
 
     // Animation Event, no fim do clipe "Explosion" — vira a área persistente no chão (mesmo

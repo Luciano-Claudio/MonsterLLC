@@ -189,7 +189,7 @@ public class HeroProjectile : MonoBehaviour
         if (enemy == null) return;
 
         float damageDealt = Mathf.Min(damageReserve, enemy.stats.health);
-        enemy.TakeDamage(damageDealt);
+        HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
         enemy.ApplyKnockback(direction, knockbackForce);
 
         if (bleedDamagePerSecond > 0f)

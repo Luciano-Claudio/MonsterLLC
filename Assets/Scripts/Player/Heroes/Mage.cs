@@ -270,6 +270,7 @@ public class Mage : HeroController
         rollFireTickDamage ??= RollFireTickDamage;
         fireStatusDpsGetter ??= PrimaryFireStatusDps;
         attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area);
+        attackHitbox.TickHitWeight = FlameTickWeight;
         attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier,
             immolation ? fireStatusDpsGetter : null, fireballFireStatusDuration);
         ApplyPrimaryCastPerks();
@@ -295,12 +296,32 @@ public class Mage : HeroController
 
     // Dano de 1 tick do fogo (crit rolado por tick) — dano do Mage vira dano por segundo
     // (decisão do usuário: dano × intervalo, mesmo critério do pulse do Rogue).
+    // Catálogo de cartas (regra do usuário): cada CICLO da animação (attack_continuous, 12 quadros) dá o
+    // dano cheio do Mage, dividido entre os ticks do ciclo. O crítico é sorteado no HeroDamage.Direct.
     private float RollFireTickDamage()
+        => stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * FlameTickWeight;
+
+    // Duração real de 1 ciclo da chama (clipe attack_continuous ÷ velocidade de ação). 1 s se não achar o clipe.
+    private float flameClipSeconds = -1f;
+    public float FlameCycleSeconds
     {
-        float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
-        return stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier * fireTickInterval
-            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
+        get
+        {
+            if (flameClipSeconds < 0f)
+            {
+                flameClipSeconds = 1f;
+                var anim = animator != null ? animator : GetComponent<Animator>();
+                var ctrl = anim != null ? anim.runtimeAnimatorController : null;
+                if (ctrl != null)
+                    foreach (var clip in ctrl.animationClips)
+                        if (clip != null && clip.name.StartsWith("attack_continuous")) { flameClipSeconds = clip.length; break; }
+            }
+            return flameClipSeconds / Mathf.Max(0.01f, ActionSpeedMultiplier);
+        }
     }
+
+    private float FlameTickWeight => fireTickInterval / Mathf.Max(0.01f, FlameCycleSeconds);
 
     // Fire aplicado pela chama (Immolation): mesma fórmula do Fire da bola de fogo + a carta de dano
     // do primário. O Mage não tem buff de Shift, então o valor congelado é sempre o atual.
@@ -399,8 +420,8 @@ public class Mage : HeroController
 
         if (fireballPrefab == null) return;
 
-        float ultimateCritMultiplier = HeroController.RollCritMultiplier(HeroController.UltimateCritChance);
-        float impactDamage = stats.damage * ultimateDamageMultiplier * HeroController.CentralDamageMultiplier * ultimateCritMultiplier
+        // Catálogo de cartas: o crítico é sorteado no HeroDamage.Direct, por inimigo da explosão.
+        float impactDamage = stats.damage * ultimateDamageMultiplier * HeroController.CentralDamageMultiplier
             * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage);
         float trailDamagePerTick = stats.damage * ultimateTrailDamageMultiplier * HeroController.CentralDamageMultiplier;
         float fireStatusDamagePerSecond = stats.damage * fireStatusDamageMultiplier * HeroController.CentralDamageMultiplier

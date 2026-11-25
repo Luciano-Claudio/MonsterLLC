@@ -78,6 +78,17 @@ public class StatusEffectController : MonoBehaviour
     // Laço simples, sem lambda: o Exists(e => e.type == type) alocava um closure por chamada, e
     // isto roda por monstro por frame (IsIncapacitated no EnemyController + UpdateVisual) — achado
     // da revisão final do D9.1, antes do teste de densidade da horda.
+    // Catálogo de cartas — algum efeito que dá dano (DOT) ativo? (Withering Eye, Elemental Supremacy...)
+    public bool HasAnyDot
+    {
+        get
+        {
+            for (int i = 0; i < activeEffects.Count; i++)
+                if (DealsDamage(activeEffects[i].damagePerSecond)) return true;
+            return false;
+        }
+    }
+
     public bool IsEffectActive(StatusEffectType type)
     {
         for (int i = 0; i < activeEffects.Count; i++)
