@@ -378,6 +378,7 @@ public class Barbarian : HeroController
     {
         if (attackHitFired) return;
         attackHitFired = true;
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário
 
         var (hitbox, facingDirection) = GetHitboxForFacing();
         if (hitbox == null) return;

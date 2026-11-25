@@ -107,6 +107,21 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     public float ShieldAmount => shieldAmount;
     public void AddShield(float amount) => shieldAmount = Mathf.Max(shieldAmount, amount);
 
+    // Catálogo de cartas — escudo temporário (Unbroken, Warrior's Feast): some quando o tempo acaba.
+    private float shieldRemaining = float.PositiveInfinity;
+    public void AddShield(float amount, float duration)
+    {
+        if (amount <= 0f) return;
+        shieldAmount = Mathf.Max(shieldAmount, amount);
+        shieldRemaining = duration;
+    }
+
+    // Catálogo de cartas — cura vinda de carta (Crimson Pact, Reaper's Feast, Warrior's Feast...).
+    public void HealFromCard(float amount) { if (amount > 0f) Heal(amount); }
+
+    // Catálogo de cartas — tira tempo da recarga do Shift (Relentless Casting).
+    public void ReduceShiftCooldown(float seconds) => secondaryAbilityCooldown?.ReduceTimeRemaining(seconds);
+
     // stats.maxHealth é o valor BASE do herói (o Druid multiplica na forma Alce) — o bônus
     // de World Perk (Vigor/Fortitude/Pulso Vital/Vitalidade Suprema) é um multiplicador lido
     // em cima, igual PickupRadiusMultiplier/MoveSpeedMultiplier. Todo clamp/UI de vida usa ISTO,
@@ -131,7 +146,18 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     protected virtual void OnCardsChanged() { }
 
     public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier * CentralHealthMultiplier * Cards.Get(CardAbility.None, CardStat.MaxHealth)
-        * (1f + GetConditionalMaxHealthBonusPercent() / 100f);
+        * (1f + GetConditionalMaxHealthBonusPercent() / 100f) * TitanTributeFactor;
+
+    // Catálogo de cartas — Titan's Tribute: +1% a cada 25 abates (até +50%), sobre a vida máxima ATUAL.
+    public static float TitanTributeFactor
+    {
+        get
+        {
+            if (Cards.Sum(CardAbility.None, CardStat.TitansTribute) <= 0f) return 1f;
+            var t = RunSettings.Current;
+            return 1f + Mathf.Min(CardRunState.Kills / Mathf.Max(1, t.titanKillsPerStep) * t.titanPerStep, t.titanCap);
+        }
+    }
 
     // Hook pra bônus de HP máximo CONDICIONAL (ex.: Direita #27 do Barbarian, "Vontade
     // Inquebrável" — HP máximo temporário enquanto o Shift estiver ativo). Default 0 — sem
@@ -668,6 +694,12 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     protected virtual void Update()
     {
+        if (shieldAmount > 0f && !float.IsPositiveInfinity(shieldRemaining) && GameplayGate.IsActive)
+        {
+            shieldRemaining -= Time.deltaTime;
+            if (shieldRemaining <= 0f) { shieldAmount = 0f; shieldRemaining = float.PositiveInfinity; }
+        }
+
         // Reflete qualquer upgrade de Pickup Radius no collider de verdade, todo frame — mais
         // simples que um setter dedicado, já que PickupRadius é static (qualquer sistema pode
         // mudar o valor direto, mesmo critério do LootMultiplier). PickupRadiusMultiplier
@@ -913,7 +945,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (ultimateEnergyLockoutRemaining > 0f) return;
         if (!CanGainUltimateEnergy) return;
 
-        int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier * EnergyGainMultiplier);
+        int adjustedEnergy = Mathf.RoundToInt(energyValue * UltimateEnergyMultiplier * EnergyGainMultiplier * CardKillEnergyFactor);
         stats.energy = EnergySystem.AddEnergy(stats.energy, stats.maxEnergy, adjustedEnergy);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
     }
@@ -922,6 +954,21 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // por abate acima (HandleEnemyKilled): não passa pelo lockout pós-ultimate nem pelos
     // multiplicadores de abate (UltimateEnergyMultiplier/EnergyGainMultiplier são especificamente
     // sobre recompensa de abate) — é % FLAT do próprio maxEnergy, decidida por quem chama.
+    // Catálogo de cartas — Soul Furnace (+% por nível) e Survivor's Legacy (+5% por chefe, até +50%).
+    private static float CardKillEnergyFactor
+    {
+        get
+        {
+            float f = 1f + Cards.Sum(CardAbility.None, CardStat.KillEnergy);
+            if (Cards.Sum(CardAbility.None, CardStat.SurvivorsLegacy) > 0f)
+            {
+                var t = RunSettings.Current;
+                f *= 1f + Mathf.Min(CardRunState.BossesKilled * t.survivorPerBoss, t.survivorCap);
+            }
+            return f;
+        }
+    }
+
     // Catálogo de cartas — energia da Ultimate vinda de cartas (Affliction Harvest, Spirit Link...).
     public void AddUltimateEnergyPercent(float percent) => GainEnergyPercentOfMax(percent);
 

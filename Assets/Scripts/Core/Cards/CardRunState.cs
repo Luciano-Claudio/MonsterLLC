@@ -10,6 +10,9 @@ public static class CardRunState
     public static float FeverRemaining;
     public static float NextPrimaryBonus; // Relentless Momentum + Crowd Breaker pendentes
     public static float NextPrimaryArea;  // Relentless Momentum (área)
+    public static float PendingPrimaryBonus; // bônus guardado para o PRÓXIMO ataque primário
+    public static float PendingPrimaryArea;
+    public static int AttackTargets;      // inimigos atingidos no ataque primário atual (Crowd Breaker)
     public static object FocusTarget;     // Predator's Focus (EnemyController, guardado como object no Core)
     public static int FocusStacks;
     public static int DotTicks;           // Affliction Heart / Affliction Harvest
@@ -34,7 +37,7 @@ public static class CardRunState
     {
         Kills = 0; KillsSinceDamage = 0; BossesKilled = 0;
         FeverStacks = 0; FeverRemaining = 0f;
-        NextPrimaryBonus = 0f; NextPrimaryArea = 0f;
+        NextPrimaryBonus = 0f; NextPrimaryArea = 0f; PendingPrimaryBonus = 0f; PendingPrimaryArea = 0f; AttackTargets = 0;
         FocusTarget = null; FocusStacks = 0;
         DotTicks = 0; PrimaryHits = 0;
         LastEmberTime = float.NegativeInfinity;

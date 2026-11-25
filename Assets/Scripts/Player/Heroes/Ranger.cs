@@ -414,6 +414,7 @@ public class Ranger : HeroController
     // Animation Event, no frame exato em que o Ranger solta as flechas.
     public void AnimationShootEvent()
     {
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (disparo)
         if (shotFired) return;
         shotFired = true;
 

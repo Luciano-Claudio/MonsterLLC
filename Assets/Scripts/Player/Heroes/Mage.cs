@@ -267,6 +267,7 @@ public class Mage : HeroController
         if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
         if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
         fireElapsed = 0f;
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (o ciclo da chama é a Task 10)
         rollFireTickDamage ??= RollFireTickDamage;
         fireStatusDpsGetter ??= PrimaryFireStatusDps;
         attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area);

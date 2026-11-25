@@ -19,6 +19,18 @@ public static class HeroDamage
 {
     public static event System.Action<HeroHit> OnDirectHit;
 
+    // Começo de um ataque primário (golpe do Barbarian, disparo do Ranger, ciclo da chama do Mage): os
+    // bônus guardados de "próximo primário" (Relentless Momentum, Crowd Breaker) passam a valer para os
+    // acertos DESTE ataque, e a contagem de alvos recomeça.
+    public static void BeginPrimaryAttack()
+    {
+        CardRunState.NextPrimaryBonus = CardRunState.PendingPrimaryBonus;
+        CardRunState.NextPrimaryArea = CardRunState.PendingPrimaryArea;
+        CardRunState.PendingPrimaryBonus = 0f;
+        CardRunState.PendingPrimaryArea = 0f;
+        CardRunState.AttackTargets = 0;
+    }
+
     // pierce: projétil com reserva de perfuração (flecha, faca, Thunder Blade) — o que sobra continua no
     // projétil, então nunca gera Overkill. juice: false = sem shake/zoom (ex.: tick da chama).
     public static HeroHit Direct(EnemyController target, float baseDamage, CardAbility ability,
