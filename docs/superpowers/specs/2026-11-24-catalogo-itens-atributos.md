@@ -169,3 +169,10 @@ São as cartas mais comuns: 60% de chance por carta no level up, com no máximo 
    - status Bleeding, Fire e Poison (hoje sem pilhas: aplicar de novo só renova a duração);
    - energia da Ultimate;
    - Gold por abate.
+
+## Próxima conversa: animações e efeitos das cartas
+
+Ainda vamos discutir, depois da etapa 4: quais itens, atributos e upgrades podem usar as animações e os
+efeitos que já existem no projeto (Ground Crack, bola de fogo, facas, explosões, status etc.), e quais
+dá para editar para ganhar animação própria. Regra do projeto: procurar primeiro o precedente que já
+existe e copiar a estrutura dele.

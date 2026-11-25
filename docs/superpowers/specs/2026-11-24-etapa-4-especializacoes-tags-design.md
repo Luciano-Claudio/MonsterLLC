@@ -88,7 +88,7 @@ A tag "Terremoto" se chama **Earthquake** no código e nos assets.
 
 | Especialização | DOT | Pet | Outras mudanças |
 |---|---|---|---|
-| Barbarian Bloodlust | Bleeding em **todos** os ataques (Primário, Shift, Ultimate) | — | **Sem** Ground Crack |
+| Barbarian Bloodlust | Bleeding nos ataques que dão dano: Primário (inclusive os golpes buffados pelo Shift) e Ultimate | — | **Sem** Ground Crack. O Shift aprimora o DOT (detalhe abaixo) |
 | Barbarian Earthquake | Nenhum | — | Fica com o Ground Crack, como hoje |
 | Ranger Crimson Arrow | Bleeding em tudo: todas as flechas e a Ultimate | — | — |
 | Ranger Beastmaster | Bleeding **só na Ultimate**; flechas do primário sem Bleeding | **Pet novo** (animal) | — |
@@ -159,8 +159,15 @@ O que já existe no código para isso:
   vira Item, respeitando o limite de 2 itens. Se não houver item possível, vira Stat. Se nada for possível,
   a oferta sai com menos cartas.
 - **"Em tudo" significa os ataques que dão dano:**
-  - **Barbarian Sangramento:** Bleeding no Primário, no Shift e na Ultimate, com os números do
-    "Sangramento Perfurante". No Shift e na Ultimate o código é novo.
+  - **Barbarian Bloodlust**, definido pelo usuário em 2026-11-25:
+    - **Onde aplica:** Bleeding no Primário e na Ultimate, com os números do "Sangramento Perfurante".
+      Na Ultimate o código é novo.
+    - **O Shift não dá dano:** ele não é ataque e não aplica Bleeding sozinho. Os golpes do Primário
+      buffados pelo Shift continuam aplicando Bleeding.
+    - **O Shift aprimora o DOT:** um Bleeding aplicado durante o Shift usa o dano do golpe que o aplicou,
+      já com o buff do Shift. O valor é congelado no momento da aplicação. Se o Shift acabar e o
+      Bleeding continuar, o Bleeding segue aprimorado até o fim da duração. Isso vale para todo DOT: o
+      dano é sempre o do ataque inicial.
   - **Mage Ignite:** o teleporte não é ataque, então não aplica Fire.
   - **Mage Summoner:** "primário sem Fire" vale para a bola de fogo e para as manchas de fogo no chão que
     ela deixa.
@@ -206,14 +213,18 @@ Textos em inglês para a tela. Proposta do Claude, editável no asset:
 
 | Especialização | Description |
 |---|---|
-| Bloodlust | All your attacks apply Bleeding. |
+| Bloodlust | Your attacks apply Bleeding. Bleeds applied while your Shift is active are stronger. |
 | Earthquake | Your primary attack splits the ground, damaging enemies over time. |
 | Crimson Arrow | Every arrow and your Ultimate apply Bleeding. |
 | Beastmaster | A loyal bear fights by your side. Only your Ultimate applies Bleeding. |
 | Immolation | All your attacks set enemies on fire. |
 | Phoenix Pact | A phoenix fights by your side. Only your Ultimate burns. |
 
-Os ícones são escolhidos pelo usuário no `Icons.png`. Até lá, os assets ficam sem ícone.
+O usuário coloca todos os ícones à mão, os das especializações e os das cartas:
+- **Especializações:** campo `icon` de cada asset de especialização. A pasta é definida no plano.
+- **Cartas:** campo `icon` de cada `CardDefinition` em `Assets/Settings/Cards/`.
+
+O código não preenche ícone nenhum. Asset sem ícone mostra o slot vazio.
 
 O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-itens-atributos.md`.
 
