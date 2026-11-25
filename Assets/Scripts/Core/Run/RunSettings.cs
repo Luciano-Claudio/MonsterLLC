@@ -53,6 +53,14 @@ public class RunSettings : ScriptableObject
     [Tooltip("Chance (%) de cada carta do baú virar um Stat.")]
     public float chestStatChancePercent = 15f; // 🔢
 
+    [Header("Cartas: oferta de level up e atributos (etapa 4)")]
+    [Tooltip("Chance (%) de cada carta do level up comum ser Upgrade (senão, Item).")]
+    public float levelUpUpgradeChancePercent = 60f; // 🔢
+    [Tooltip("No máximo N itens por oferta de level up; o excedente vira Upgrade.")]
+    public int maxItemsPerOffer = 2; // 🔢
+    [Tooltip("Atributos (Stats) que o herói pode ter. Cheio: Stat nenhum aparece mais.")]
+    public int maxStatSlots = 6; // 🔢
+
     [Header("Baú e vendedor no mundo (etapa 3)")]
     [Tooltip("Aparições de baú por run (sorteado entre mín e máx, espalhado em faixas iguais).")]
     public int chestMinCount = 4; // 🔢

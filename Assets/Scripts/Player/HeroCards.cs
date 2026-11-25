@@ -94,7 +94,7 @@ public class HeroCards : MonoBehaviour
     // Há ao menos 1 carta possível AGORA para essa fonte (o vendedor só aparece/funciona se sim).
     public bool CanOffer(OfferSource source)
     {
-        CardRules.RollOffer(source, HeroLevelNow, Pool, owned, HeroId, 1, rng, Rules, probe);
+        CardRules.RollOffer(source, HeroLevelNow, Pool, owned, HeroId, RunSpecialization.Tags, 1, rng, Rules, probe);
         return probe.Count > 0;
     }
 
@@ -105,7 +105,7 @@ public class HeroCards : MonoBehaviour
     }
 
     private void RollCurrent()
-        => CardRules.RollOffer(current.source, current.level, Pool, owned, HeroId, CardsPerOffer, rng, Rules, currentOffer);
+        => CardRules.RollOffer(current.source, current.level, Pool, owned, HeroId, RunSpecialization.Tags, CardsPerOffer, rng, Rules, currentOffer);
 
     private void OpenNext()
     {
