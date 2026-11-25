@@ -77,7 +77,6 @@ GameObject:
   - component: {fileID: 6006921564189516423}
   - component: {fileID: 4603881260930512254}
   - component: {fileID: 6375903834917578240}
-  - component: {fileID: 1137751000451965340}
   - component: {fileID: 8048400557567247715}
   - component: {fileID: 243817099241737393}
   m_Layer: 8
@@ -333,42 +332,6 @@ MonoBehaviour:
   statusAnimator: {fileID: 5027192718664090439}
   tickInterval: 1
   immunities: 
---- !u!114 &1137751000451965340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4385074858891067883}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69beb381e244f92449b8c4cf954630e9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.PropertyVariants.GameObjectLocalizer
-  m_TrackedObjects:
-  - rid: 6837606827014488210
-  references:
-    version: 2
-    RefIds:
-    - rid: 6837606827014488210
-      type: {class: TrackedMonoBehaviourObject, ns: UnityEngine.Localization.PropertyVariants.TrackedObjects, asm: Unity.Localization}
-      data:
-        m_Target: {fileID: 4603881260930512254}
-        m_TrackedProperties:
-          items:
-          - rid: 6837606827014488211
-        m_UpdateType: 0
-        m_Changed:
-          m_PersistentCalls:
-            m_Calls: []
-    - rid: 6837606827014488211
-      type: {class: FloatTrackedProperty, ns: UnityEngine.Localization.PropertyVariants.TrackedProperties, asm: Unity.Localization}
-      data:
-        m_PropertyPath: attackHitboxSizeMultiplier
-        m_VariantData:
-        - localeIdentifier:
-            m_Code: en
-          value: 2
 --- !u!70 &8048400557567247715
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
