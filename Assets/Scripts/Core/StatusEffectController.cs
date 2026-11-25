@@ -151,6 +151,13 @@ public class StatusEffectController : MonoBehaviour
     // Chamado por quem aplica o efeito (ex.: MageFireball, no tick da área de fogo no chão).
     // Reaplicar o mesmo tipo só reseta a duração/dano da instância existente — não empilha
     // múltiplas instâncias do mesmo efeito na mesma entidade.
+    // Etapa 4 — dps do efeito ativo (0 se não estiver ativo). Leitura pra testes/UI.
+    public float GetDamagePerSecond(StatusEffectType type)
+    {
+        var existing = activeEffects.Find(e => e.type == type);
+        return existing != null ? existing.damagePerSecond : 0f;
+    }
+
     public void ApplyStatusEffect(StatusEffectType type, float duration, float damagePerSecond)
     {
         if (IsImmuneTo(type)) return;

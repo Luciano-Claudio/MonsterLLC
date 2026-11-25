@@ -49,6 +49,17 @@ public class HeroProjectile : MonoBehaviour
     private float healPercentPerHit;
     public void SetHealOnHit(float percentOfDamageDealt) => healPercentPerHit = percentOfDamageDealt;
 
+    // Etapa 4 — Barbarian Bloodlust: o machado aplica Bleeding em CADA acerto. O dps vem pronto
+    // (congelado no arremesso, já com o Shift). 0 = sem efeito (default).
+    private float bleedDamagePerSecond;
+    private float bleedDuration;
+    public float BleedDamagePerSecond => bleedDamagePerSecond;
+    public void SetBleed(float damagePerSecond, float duration)
+    {
+        bleedDamagePerSecond = damagePerSecond;
+        bleedDuration = duration;
+    }
+
     // Cima #24 (Trilha de Fúria) — rolado periodicamente (groundCrackTrailTickInterval) enquanto
     // o projétil viaja; prefab nulo = sem efeito (default). Reaproveita o MESMO prefab de
     // GroundCrack do Barbarian (passado por quem chama SetGroundCrackTrail), nunca cria um novo.
@@ -181,6 +192,11 @@ public class HeroProjectile : MonoBehaviour
         enemy.TakeDamage(damageDealt);
         enemy.ApplyKnockback(direction, knockbackForce);
 
+        if (bleedDamagePerSecond > 0f)
+        {
+            var status = enemy.GetComponent<StatusEffectController>();
+            if (status != null) status.ApplyStatusEffect(StatusEffectType.Bleeding, bleedDuration, bleedDamagePerSecond);
+        }
         if (healPercentPerHit > 0f) owner?.HealFromProjectile(damageDealt * healPercentPerHit / 100f);
         if (explosionRadius > 0f) ApplyExplosion(enemy, damageDealt);
 

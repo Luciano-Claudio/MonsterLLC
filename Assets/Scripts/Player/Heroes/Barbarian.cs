@@ -27,6 +27,17 @@ public class Barbarian : HeroController
     [SerializeField] private float furiaDiagonalBonusPerExtraTarget = 0f; // #25 — % de dano extra por ALVO ADICIONAL distinto no mesmo golpe, por rank (reinterpretação: o golpe já acerta todos que estão na hitbox de uma vez, então "cada hitbox que acerta alvo diferente" = cada alvo extra no mesmo swing)
     [SerializeField] private float sangramentoPerfuranteDamagePerSecond = 0f; // #26 "Sangramento Perfurante" (redesign — era "Golpe Perfurante", decisão do usuário: trocou perfuração física por um Bleeding real, mesmo StatusEffectController que Ranger/Mage/Cleric já usam)
     [SerializeField] private float sangramentoPerfuranteDuration = 3f; // 🔢 ajustável
+
+    // Etapa 4 — especializações (docs/superpowers/specs/2026-11-24-etapa-4-especializacoes-tags-design.md).
+    // Earthquake: Ground Crack no primário (como sempre foi). Bloodlust: sem Ground Crack; primário e
+    // machado da Ultimate aplicam Bleeding = % do dano do golpe (sem crítico, COM o Shift), congelado
+    // na aplicação — golpe dado durante o Shift sangra mais, mesmo depois do Shift acabar.
+    public const string SpecEarthquake = "barbarian_earthquake";
+    public const string SpecBloodlust = "barbarian_bloodlust";
+    [SerializeField] private float bloodlustBleedPercentOfHit = 50f; // 🔢
+    [SerializeField] private float bloodlustBleedDuration = 3f; // 🔢
+    private bool bloodlust;
+    private float ultimateBleedDamagePerSecond;
     [SerializeField] private float groundCrackShiftBonusPercent = 0f; // #27 "Fenda Enfurecida" — dano do Ground Crack +% enquanto o Shift estiver ativo
     [SerializeField] private float groundCrackHpLostBonusPerStep = 0f; // #28 "Fenda Selvagem" — dano do Ground Crack +X% por step de HP perdido (mesmos steps da passiva)
     [SerializeField] private bool groundCrackPermanent = false; // #29 "Fenda Permanente" — rank 0/1
@@ -332,7 +343,7 @@ public class Barbarian : HeroController
             if (enemy == null) { echoTrackedEnemies.RemoveAt(i); continue; }
             if (enemy.IsBeingKnockedBack) continue;
 
-            SpawnGroundCrackAt(enemy.transform.position, GroundCrack.Direction.SE, ecoDoImpactoSizeMultiplier, permanent: false);
+            if (!bloodlust) SpawnGroundCrackAt(enemy.transform.position, GroundCrack.Direction.SE, ecoDoImpactoSizeMultiplier, permanent: false);
             echoTrackedEnemies.RemoveAt(i);
         }
     }
@@ -394,12 +405,20 @@ public class Barbarian : HeroController
         if (furiaDiagonalBonusPerExtraTarget > 0f && hitTargets.Count > 1)
             damage *= 1f + (hitTargets.Count - 1) * furiaDiagonalBonusPerExtraTarget / 100f;
 
+        float bloodlustBleedDps = bloodlust ? damage / critMultiplier * bloodlustBleedPercentOfHit / 100f : 0f;
+
         float totalDamageDealt = 0f;
         foreach (var enemy in hitTargets)
         {
             enemy.TakeDamage(damage);
             enemy.ApplyKnockback(AimDirection, knockbackForce);
             totalDamageDealt += damage;
+
+            if (bloodlustBleedDps > 0f)
+            {
+                var bleedTarget = enemy.GetComponent<StatusEffectController>();
+                if (bleedTarget != null) bleedTarget.ApplyStatusEffect(StatusEffectType.Bleeding, bloodlustBleedDuration, bloodlustBleedDps);
+            }
 
             // #26 "Sangramento Perfurante" — mesmo StatusEffectController/Bleeding que Ranger
             // já usa (ver RangerKnife.ApplyBleeding), reaplicar só reseta duração/dano, nunca
@@ -419,7 +438,7 @@ public class Barbarian : HeroController
         if (secondaryAbilityRemaining > 0f && shiftLifestealPercent > 0f)
             Heal(totalDamageDealt * shiftLifestealPercent / 100f);
 
-        if (groundCrackPrefab != null)
+        if (groundCrackPrefab != null && !bloodlust) // etapa 4: Bloodlust não abre fenda
         {
             // Pedido do usuário (2026-11-11): o dano base do Ground Crack passa a ser SEMPRE
             // metade do dano do golpe que o gerou ("damage", já calculado acima com toda a
@@ -523,6 +542,8 @@ public class Barbarian : HeroController
         float reserve = stats.damage * GetPassiveDamageMultiplier() * GetSecondaryAbilityDamageMultiplier()
             * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage) * HeroController.CentralDamageMultiplier * critMultiplier;
 
+        ultimateBleedDamagePerSecond = bloodlust ? reserve / critMultiplier * bloodlustBleedPercentOfHit / 100f : 0f;
+
         // #29 "Avatar da Destruição" — a cada 5 usos, o 5º vem com o dobro de dano e projéteis.
         bool isDoubledUse = ultimateEveryFifthUseDoubled && ultimateUseCount % 5 == 0;
         if (isDoubledUse) reserve *= 2f;
@@ -561,6 +582,7 @@ public class Barbarian : HeroController
             projectile.SetOwner(this);
             if (ultimateExplosionRadius > 0f) projectile.SetExplosion(ultimateExplosionRadius, ultimateExplosionDamagePercent);
             if (ultimateHealPercentPerHit > 0f) projectile.SetHealOnHit(ultimateHealPercentPerHit);
+            if (bloodlust && ultimateBleedDamagePerSecond > 0f) projectile.SetBleed(ultimateBleedDamagePerSecond, bloodlustBleedDuration);
             if (ultimateGroundCrackTrailChance > 0f && groundCrackPrefab != null)
                 projectile.SetGroundCrackTrail(groundCrackPrefab, ultimateGroundCrackTrailChance / 100f, groundCrackDamagePerSecond, groundCrackTickInterval, groundCrackDuration);
             if (ultimateFragmentOnHit && ultimateFragmentMaxDepth > 0)
@@ -700,6 +722,12 @@ public class Barbarian : HeroController
         RecomputeEsquerda();
         RecomputeDireita();
         RecomputeCima();
+        ReapplyRunSpecialization(); // etapa 4 — a especialização ganha dos perks
+    }
+
+    protected override void ApplySpecialization(SpecializationDefinition spec)
+    {
+        bloodlust = spec != null && spec.id == SpecBloodlust;
     }
 
     private void RecomputeEsquerda()
