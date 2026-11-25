@@ -22,6 +22,15 @@ public static class HeroDamage
     // Começo de um ataque primário (golpe do Barbarian, disparo do Ranger, ciclo da chama do Mage): os
     // bônus guardados de "próximo primário" (Relentless Momentum, Crowd Breaker) passam a valer para os
     // acertos DESTE ataque, e a contagem de alvos recomeça.
+    // Chama do Mage: cada volta (ciclo de 12 quadros) conta como 1 ataque primário — avisa as cartas que
+    // contam por ataque (Echo Fang, Predator's Focus, Crowd Breaker) e abre o próximo ataque.
+    public static event System.Action OnFlameCycle;
+    public static void FlameCycle()
+    {
+        OnFlameCycle?.Invoke();
+        BeginPrimaryAttack();
+    }
+
     public static void BeginPrimaryAttack()
     {
         CardRunState.NextPrimaryBonus = CardRunState.PendingPrimaryBonus;

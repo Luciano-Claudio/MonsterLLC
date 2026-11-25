@@ -223,7 +223,7 @@ public class Mage : HeroController
         if (isAttacking && !isTeleporting)
         {
             actionElapsed += Time.deltaTime;
-            if (actionElapsed >= maxActionDuration + primaryExtraDuration)
+            if (!float.IsPositiveInfinity(CardFlameExtraSeconds) && actionElapsed >= maxActionDuration + primaryExtraDuration + CardFlameExtraSeconds)
             {
                 Debug.LogWarning("[Mage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
@@ -270,7 +270,8 @@ public class Mage : HeroController
         HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (o ciclo da chama é a Task 10)
         rollFireTickDamage ??= RollFireTickDamage;
         fireStatusDpsGetter ??= PrimaryFireStatusDps;
-        attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area);
+        attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area)
+            * (1f + CardRunState.NextPrimaryArea); // catálogo de cartas: Relentless Momentum
         attackHitbox.TickHitWeight = FlameTickWeight;
         attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier,
             immolation ? fireStatusDpsGetter : null, fireballFireStatusDuration);
@@ -282,7 +283,8 @@ public class Mage : HeroController
     public void AnimationFireDurationCheckEvent()
     {
         if (fireElapsed < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
-        if (!PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration)) return;
+        HeroDamage.FlameCycle(); // catálogo de cartas: cada volta = 1 ataque primário
+        if (!PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration + CardFlameExtraSeconds, IsAttackHeld)) return;
         attackHitbox.EndFire();
         if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
@@ -323,6 +325,16 @@ public class Mage : HeroController
     }
 
     private float FlameTickWeight => fireTickInterval / Mathf.Max(0.01f, FlameCycleSeconds);
+
+    // Catálogo de cartas — Lasting Flames: +10% do ciclo por nível; nível 10 = infinita enquanto segura.
+    private float CardFlameExtraSeconds
+    {
+        get
+        {
+            int level = Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.FlameDuration) / PrimaryDuration.ExtraPerLevel);
+            return PrimaryDuration.ExtraSeconds(level, FlameCycleSeconds);
+        }
+    }
 
     // Fire aplicado pela chama (Immolation): mesma fórmula do Fire da bola de fogo + a carta de dano
     // do primário. O Mage não tem buff de Shift, então o valor congelado é sempre o atual.

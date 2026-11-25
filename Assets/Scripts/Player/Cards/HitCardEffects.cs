@@ -11,10 +11,13 @@ using UnityEngine;
 public class HitCardEffects : MonoBehaviour
 {
     private static readonly List<EnemyController> nearby = new();
+    // Chama do Mage: dano de cada alvo no ciclo atual (os ticks têm peso < 1).
+    private static readonly Dictionary<EnemyController, float> cycleDamage = new();
 
     private void OnEnable()
     {
         HeroDamage.OnDirectHit += HandleHit;
+        HeroDamage.OnFlameCycle += HandleFlameCycle;
         GameEvents.OnEnemyKilledDetailed += HandleKill;
         GameEvents.OnDamageTaken += HandleDamageTaken;
     }
@@ -22,6 +25,8 @@ public class HitCardEffects : MonoBehaviour
     private void OnDisable()
     {
         HeroDamage.OnDirectHit -= HandleHit;
+        HeroDamage.OnFlameCycle -= HandleFlameCycle;
+        cycleDamage.Clear();
         GameEvents.OnEnemyKilledDetailed -= HandleKill;
         GameEvents.OnDamageTaken -= HandleDamageTaken;
     }
@@ -64,6 +69,9 @@ public class HitCardEffects : MonoBehaviour
                 if (cut > 0f) { hero.ReduceShiftCooldown(cut); CardRunState.RelentlessCastingInWindow += cut; }
             }
 
+            if (!CardRunState.InEcho && hit.hitWeight < 1f && hit.target != null)
+                cycleDamage[hit.target] = (cycleDamage.TryGetValue(hit.target, out float d) ? d : 0f) + hit.damage;
+
             if (!CardRunState.InEcho && hit.hitWeight >= 1f)
             {
                 // Crowd Breaker — o bônus fica guardado para o PRÓXIMO primário.
@@ -97,6 +105,33 @@ public class HitCardEffects : MonoBehaviour
         {
             CardEffectsUtil.Nearby(hit.target.transform.position, t.overkillRange, hit.target, nearby);
             if (nearby.Count > 0) Echo(nearby[0], hit.overkill * t.overkillPercent, hit.ability, 1f);
+        }
+    }
+
+    // Fim de um ciclo da chama do Mage: o ciclo inteiro conta como 1 ataque primário.
+    private static void HandleFlameCycle()
+    {
+        if (cycleDamage.Count == 0) return;
+        var t = RunSettings.Current;
+        EnemyController top = null; float topDamage = 0f; int targets = 0;
+        foreach (var kv in cycleDamage)
+        {
+            if (kv.Key == null) continue;
+            targets++;
+            if (kv.Value > topDamage) { topDamage = kv.Value; top = kv.Key; }
+        }
+        cycleDamage.Clear();
+
+        if (S(CardStat.CrowdBreaker) > 0f && targets >= t.crowdBreakerTargets) CardRunState.PendingPrimaryBonus += t.crowdBreakerBonus;
+        if (top == null) return;
+        if (ReferenceEquals(CardRunState.FocusTarget, top)) CardRunState.FocusStacks++;
+        else { CardRunState.FocusTarget = top; CardRunState.FocusStacks = 1; }
+
+        float echo = S(CardStat.EchoFang);
+        if (echo > 0f)
+        {
+            CardRunState.PrimaryHits++;
+            if (CardRunState.PrimaryHits % Mathf.Max(1, t.echoFangEvery) == 0 && !top.IsDead) Echo(top, topDamage * echo, CardAbility.Primary, 1f);
         }
     }
 
