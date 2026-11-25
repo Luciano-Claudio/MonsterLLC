@@ -173,14 +173,22 @@ as cartas criadas de uma vez, para colocar os ícones de uma só vez.
 
 - **Crítico base:** todo ataque direto dos 3 heróis tem **5% de chance de crítico** (×2). O Deadeye Lens soma
   em cima. Os statics antigos de crítico dos perks deixam de ser a fonte.
-- **Chama do Mage:**
-  - Cada tick da chama conta como um acerto, com o valor "por acerto" multiplicado pelo intervalo do tick.
-    Por exemplo, o Sovereign's Bane dá 1% × 0,2 = 0,2% por tick, com tick de 0,2 s.
-  - O que conta acertos ou vale para "o próximo primário" é amarrado à **conjuração**, não ao tick.
-    - Contadores dentro de uma conjuração (Echo Fang, Predator's Focus, Crowd Breaker): recomeçam quando uma
-      nova conjuração começa.
-    - Buffs de "próximo primário" (Relentless Momentum, Crowd Breaker): valem para a conjuração inteira e são
-      gastos quando ela termina.
+- **Chama do Mage**, explicada pelo usuário:
+  - A unidade é o **ciclo da animação de ataque**, de 12 quadros. Cada ciclo dá o dano cheio do Mage,
+    dividido entre os ticks daquele ciclo. Exemplo: 3 de dano, com tick a cada 0,25 s.
+  - Se a duração do ataque passar de um ciclo, a animação recomeça e o dano recomeça junto. Com 24 quadros, o
+    Mage dá 3 + 3 = 6.
+  - **Efeitos "por acerto"** (Sovereign's Bane, Crimson Pact, Echo Fang, Relentless Casting...): o valor de um
+    acerto é dividido entre os ticks do ciclo da mesma forma.
+    - Exemplo: um item que daria 1 de dano por ciclo dá 1 dividido pelos ticks, e 2 no total em 24 quadros.
+  - **Contadores e "próximo primário":** cada ciclo conta como 1 ataque.
+    - Echo Fang: conta 1 ataque por ciclo.
+    - Predator's Focus: 1 pilha por ciclo.
+    - Crowd Breaker: olha quantos inimigos o ciclo acertou.
+    - Relentless Momentum: o bônus vale para o próximo ciclo inteiro.
+- **Carta nova do Mage: Lasting Flames** (`mage_primary_duration`). Upgrade de +10% de duração da chama por
+  nível, até o nível 10. Vem do usuário: faltava uma carta de duração. No máximo, a duração dobra: um ataque
+  de 12 quadros vira 24, ou seja, 2 ciclos de dano.
 
 ## Decisões do Claude depois da revisão do construtor (o usuário pode corrigir)
 
