@@ -266,3 +266,16 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
   - Barbarian: área do primário (só Earthquake), cooldown e duração do Shift, área, custo de energia e velocidade de animação da Ultimate.
   - Ranger: área do primário, cooldown e duração da camuflagem, área, custo de energia e velocidade de animação da Ultimate.
   - Mage: área do primário, cooldown e velocidade do teleporte, área, custo de energia e velocidade de animação da Ultimate.
+
+## Ajustes do usuário (2026-11-25, depois da revisão)
+
+- **XP:** o 1º nível custa 5 de XP (antes 15). Do 2º nível em diante, a curva é a mesma: o 2º custa 23 e o 40º custa 137.
+- **1º level up:** a oferta sempre traz Brute Force (dano) e Iron Constitution (vida), configurados em
+  `RunSettings.firstLevelUpCards`. A 3ª carta segue o sorteio normal.
+- **Peso dos itens:** a chance de sair item continua 40%. Dentro do item, os que o herói já tem pesam
+  `RunSettings.ownedItemWeight = 3` (decisão do Claude, ajustável); os novos pesam 1. Vale para o level up e para o
+  vendedor.
+- **Cartas novas, todas até o nível 10:**
+  - Multishot (Ranger): +1 flecha.
+  - Thunder Storm (Barbarian): +1 Thunder Blade.
+  - Cartas de pet do Phoenix Pact e do Beastmaster: +15% de tamanho, +10% de velocidade de ataque, −10% de cooldown.
