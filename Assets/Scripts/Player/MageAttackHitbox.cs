@@ -104,7 +104,7 @@ public class MageAttackHitbox : MonoBehaviour
         if (enemy == null || enemy.IsDead) return;
         // Tick repetido: sem shake/zoom (isDirectPlayerHit false, mesmo critério do pulse
         // do Rogue e das áreas "grounded") — só o filtro de juice muda, o dano não.
-        HeroDamage.Direct(enemy, rollTickDamage != null ? rollTickDamage() : 0f, CardAbility.Primary, tickHitWeight, juice: false); // catálogo de cartas: ponto único
+        HeroDamage.Direct(enemy, rollTickDamage != null ? rollTickDamage() : 0f, CardAbility.Primary, tickHitWeight, juice: false, flameTick: true); // catálogo de cartas: ponto único
         if (fireStatusDps == null || enemy.IsDead) return;
         var status = enemy.GetComponent<StatusEffectController>();
         if (status != null) status.ApplyStatusEffect(StatusEffectType.Fire, fireStatusDuration, fireStatusDps());

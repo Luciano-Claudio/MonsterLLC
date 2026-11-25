@@ -48,6 +48,7 @@ public class RangerArrow : MonoBehaviour
     // gera outro filho.
     private float launchKnockback, launchBleedChance, launchBleedPerSecond, launchBleedDuration, launchLifetime;
     private bool isChild;
+    private EnemyController ignoreTarget; // filho: o inimigo que gerou a cópia não é acertado de novo
     private EnemyController homingTarget;
 
     // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca disparava
@@ -125,7 +126,7 @@ public class RangerArrow : MonoBehaviour
         if (!other.CompareTag("Enemy")) return;
 
         var enemy = other.GetComponent<EnemyController>();
-        if (enemy == null) return;
+        if (enemy == null || ReferenceEquals(enemy, ignoreTarget)) return;
 
         // #27 "Tiro à Distância" — bônus proporcional à fração do alcance já percorrida.
         float distanceFraction = lifetime > 0f ? Mathf.Clamp01(timer / lifetime) : 0f;
@@ -161,22 +162,23 @@ public class RangerArrow : MonoBehaviour
         var t = RunSettings.Current;
         if (ProjectileCards.SplitChance > 0f && Random.value < ProjectileCards.SplitChance)
         {
-            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent, 0.7f);
-            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent, 0.7f);
+            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent, 0.7f, hit);
+            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent, 0.7f, hit);
         }
         if (ProjectileCards.Ricochet)
         {
             var next = ProjectileCards.RicochetTarget(transform.position, hit);
-            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent, 1f);
+            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent, 1f, hit);
         }
     }
 
-    private void SpawnChild(Vector2 dir, float reserve, float scale)
+    private void SpawnChild(Vector2 dir, float reserve, float scale, EnemyController source)
     {
         var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
         obj.transform.localScale = transform.localScale * scale;
         var child = obj.GetComponent<RangerArrow>();
         child.isChild = true;
+        child.ignoreTarget = source;
         child.Launch(dir, reserve, speed / ProjectileCards.SpeedFactor, launchLifetime, launchKnockback, 0f,
             launchBleedChance, launchBleedPerSecond, launchBleedDuration);
     }

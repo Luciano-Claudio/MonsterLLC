@@ -189,6 +189,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     // Catálogo de cartas — tamanho do herói: Colossus Heart (+% por nível) × Titan's Tribute.
     public static float CardSizeFactor => (1f + Cards.Sum(CardAbility.None, CardStat.HeroSize)) * TitanTributeFactor;
+    // Colossus Heart nos ataques que NÃO são filhos do herói (projéteis, Ground Crack, explosões). Os filhos
+    // (chama do Mage, golpe do Barbarian) já crescem com o transform do herói — não multiplicar de novo.
+    public static float CardAttackSizeFactor => 1f + Cards.Sum(CardAbility.None, CardStat.HeroSize);
 
     // Escala "própria" do herói antes das cartas (o Barbarian tem a dele, dos perks).
     public virtual float BaseScale => 1f;

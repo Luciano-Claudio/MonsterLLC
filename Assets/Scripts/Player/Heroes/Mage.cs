@@ -267,7 +267,7 @@ public class Mage : HeroController
         if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
         if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
         fireElapsed = 0f;
-        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (o ciclo da chama é a Task 10)
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (as voltas seguintes abrem no FlameCycle)
         rollFireTickDamage ??= RollFireTickDamage;
         fireStatusDpsGetter ??= PrimaryFireStatusDps;
         attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area)
@@ -283,8 +283,9 @@ public class Mage : HeroController
     public void AnimationFireDurationCheckEvent()
     {
         if (fireElapsed < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
-        HeroDamage.FlameCycle(); // catálogo de cartas: cada volta = 1 ataque primário
-        if (!PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration + CardFlameExtraSeconds, IsAttackHeld)) return;
+        bool ends = PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration + CardFlameExtraSeconds, IsAttackHeld);
+        HeroDamage.FlameCycle(continues: !ends); // catálogo de cartas: cada volta = 1 ataque primário
+        if (!ends) return;
         attackHitbox.EndFire();
         if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
@@ -442,7 +443,7 @@ public class Mage : HeroController
         // Explosão e área no chão escalam junto com o tamanho da bola de fogo — valor FINAL
         // (já multiplicado) calculado aqui, não dentro do MageFireball (ver comentário lá
         // sobre circleCollider.radius precisar compensar a escala do GameObject).
-        float ultimateAreaCard = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapa 4
+        float ultimateAreaCard = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area) * HeroController.CardAttackSizeFactor; // etapa 4 + Colossus
         float explosionRadius = fireballExplosionRadius * ultimateSizeMultiplier * ultimateAreaCard;
         float groundedRadius = fireballGroundedRadius * ultimateSizeMultiplier * ultimateAreaCard;
 

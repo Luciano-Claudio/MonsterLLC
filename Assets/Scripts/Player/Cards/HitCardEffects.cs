@@ -11,7 +11,7 @@ using UnityEngine;
 public class HitCardEffects : MonoBehaviour
 {
     private static readonly List<EnemyController> nearby = new();
-    // Chama do Mage: dano de cada alvo no ciclo atual (os ticks têm peso < 1).
+    // Chama do Mage: dano de cada alvo no ciclo atual (ticks marcados com flameTick).
     private static readonly Dictionary<EnemyController, float> cycleDamage = new();
 
     private void OnEnable()
@@ -69,10 +69,10 @@ public class HitCardEffects : MonoBehaviour
                 if (cut > 0f) { hero.ReduceShiftCooldown(cut); CardRunState.RelentlessCastingInWindow += cut; }
             }
 
-            if (!CardRunState.InEcho && hit.hitWeight < 1f && hit.target != null)
+            if (!CardRunState.InEcho && hit.flameTick && hit.target != null)
                 cycleDamage[hit.target] = (cycleDamage.TryGetValue(hit.target, out float d) ? d : 0f) + hit.damage;
 
-            if (!CardRunState.InEcho && hit.hitWeight >= 1f)
+            if (!CardRunState.InEcho && !hit.flameTick)
             {
                 // Crowd Breaker — o bônus fica guardado para o PRÓXIMO primário.
                 CardRunState.AttackTargets++;
@@ -86,9 +86,9 @@ public class HitCardEffects : MonoBehaviour
 
         if (CardRunState.InEcho) return;
 
-        // Echo Fang — a cada N acertos inteiros do primário (no Mage, a contagem por ciclo é a Task 10).
+        // Echo Fang — a cada N acertos inteiros do primário (no Mage, conta por ciclo em HandleFlameCycle).
         float echo = S(CardStat.EchoFang);
-        if (echo > 0f && hit.ability == CardAbility.Primary && hit.hitWeight >= 1f)
+        if (echo > 0f && hit.ability == CardAbility.Primary && !hit.flameTick)
         {
             CardRunState.PrimaryHits++;
             if (CardRunState.PrimaryHits % Mathf.Max(1, t.echoFangEvery) == 0 && hit.target != null && !hit.target.IsDead)
@@ -138,7 +138,8 @@ public class HitCardEffects : MonoBehaviour
     private static void Echo(EnemyController target, float damage, CardAbility ability, float weight)
     {
         CardRunState.InEcho = true;
-        try { HeroDamage.Direct(target, damage, ability, weight, canCrit: false); }
+        // raw: o valor já vem de um acerto com todos os bônus — nunca reaplica multiplicadores.
+        try { HeroDamage.Direct(target, damage, ability, weight, canCrit: false, raw: true); }
         finally { CardRunState.InEcho = false; }
     }
 

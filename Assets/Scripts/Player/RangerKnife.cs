@@ -50,6 +50,7 @@ public class RangerKnife : MonoBehaviour
     // Catálogo de cartas — projéteis (ProjectileCards): mesmos efeitos da flecha, só na fase de voo.
     private float launchGroundedDamage, launchSpeed, launchDistance;
     private bool isChild;
+    private EnemyController ignoreTarget; // filho: o inimigo que gerou a cópia não é acertado de novo em voo
     private EnemyController homingTarget;
 
     private void Awake()
@@ -90,22 +91,24 @@ public class RangerKnife : MonoBehaviour
         var t = RunSettings.Current;
         if (ProjectileCards.SplitChance > 0f && Random.value < ProjectileCards.SplitChance)
         {
-            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent);
-            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent);
+            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent, t.shardDamagePercent, hit);
+            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent, t.shardDamagePercent, hit);
         }
         if (ProjectileCards.Ricochet)
         {
             var next = ProjectileCards.RicochetTarget(transform.position, hit);
-            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent);
+            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent, t.ricochetDamagePercent, hit);
         }
     }
 
-    private void SpawnChild(Vector2 dir, float reserve)
+    // percent: a mesma fração do voo vale para o dano no chão e o sangramento da cópia.
+    private void SpawnChild(Vector2 dir, float reserve, float percent, EnemyController source)
     {
         var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
         var child = obj.GetComponent<RangerKnife>();
         child.isChild = true;
-        child.Launch(dir, reserve, launchGroundedDamage, bleedDamagePerSecond, launchSpeed, launchDistance, flightKnockbackForce,
+        child.ignoreTarget = source;
+        child.Launch(dir, reserve, launchGroundedDamage * percent, bleedDamagePerSecond * percent, launchSpeed, launchDistance, flightKnockbackForce,
             groundedDuration, groundedTickInterval, groundedRadius, groundedKnockbackForce, bleedDuration);
     }
 
@@ -143,6 +146,7 @@ public class RangerKnife : MonoBehaviour
 
         if (phase == Phase.Flying)
         {
+            if (ReferenceEquals(enemy, ignoreTarget)) return;
             float damageDealt = Mathf.Min(flightDamageReserve, enemy.stats.health);
             HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
             enemy.ApplyKnockback(direction, flightKnockbackForce);

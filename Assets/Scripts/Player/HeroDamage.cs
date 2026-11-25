@@ -13,6 +13,7 @@ public struct HeroHit
     public bool killed;
     public float overkill;  // dano além da vida que o alvo tinha (0 em projéteis com reserva de perfuração)
     public float hitWeight; // 1 = acerto inteiro; tick da chama do Mage = intervalo / ciclo
+    public bool flameTick;  // tick da chama do Mage: conta por CICLO (OnFlameCycle), nunca como acerto inteiro
 }
 
 public static class HeroDamage
@@ -25,10 +26,12 @@ public static class HeroDamage
     // Chama do Mage: cada volta (ciclo de 12 quadros) conta como 1 ataque primário — avisa as cartas que
     // contam por ataque (Echo Fang, Predator's Focus, Crowd Breaker) e abre o próximo ataque.
     public static event System.Action OnFlameCycle;
-    public static void FlameCycle()
+    // continues: false na última volta (a chama apaga) — o bônus guardado fica para o PRÓXIMO ataque,
+    // que é aberto pelo AnimationFireStartEvent.
+    public static void FlameCycle(bool continues)
     {
         OnFlameCycle?.Invoke();
-        BeginPrimaryAttack();
+        if (continues) BeginPrimaryAttack();
     }
 
     public static void BeginPrimaryAttack()
@@ -42,18 +45,26 @@ public static class HeroDamage
 
     // pierce: projétil com reserva de perfuração (flecha, faca, Thunder Blade) — o que sobra continua no
     // projétil, então nunca gera Overkill. juice: false = sem shake/zoom (ex.: tick da chama).
+    // raw: o dano já vem pronto (eco, segundo impacto, overkill — derivados de um acerto que já recebeu
+    // os bônus): não reaplica os multiplicadores nem o Sovereign's Bane.
+    // flameTick: tick da chama do Mage (conta por ciclo, ver HitCardEffects).
     public static HeroHit Direct(EnemyController target, float baseDamage, CardAbility ability,
-        float hitWeight = 1f, bool canCrit = true, bool juice = true, bool pierce = false)
+        float hitWeight = 1f, bool canCrit = true, bool juice = true, bool pierce = false,
+        bool raw = false, bool flameTick = false)
     {
-        var hit = new HeroHit { target = target, ability = ability, hitWeight = hitWeight };
+        var hit = new HeroHit { target = target, ability = ability, hitWeight = hitWeight, flameTick = flameTick };
         if (target == null || target.IsDead || baseDamage <= 0f) return hit;
 
         var cards = HeroController.Cards;
         var t = RunSettings.Current;
-        float damage = baseDamage * HeroDamageRules.SelfMultiplier(BuildSelf(ability, t), t)
-            * HeroDamageRules.TargetMultiplier(BuildTarget(target, ability, t), BuildCards(t), t);
-        if (ability == CardAbility.Primary)
-            damage += HeroDamageRules.SovereignBonus(target.stats.maxHealth, cards.Sum(CardAbility.None, CardStat.BossHealthPercentDamage), hitWeight);
+        float damage = baseDamage;
+        if (!raw)
+        {
+            damage *= HeroDamageRules.SelfMultiplier(BuildSelf(ability, t), t)
+                * HeroDamageRules.TargetMultiplier(BuildTarget(target, ability, t), BuildCards(t), t);
+            if (ability == CardAbility.Primary)
+                damage += HeroDamageRules.SovereignBonus(target.stats.maxHealth, cards.Sum(CardAbility.None, CardStat.BossHealthPercentDamage), hitWeight);
+        }
 
         if (canCrit && Random.value < HeroDamageRules.CritChance(cards.Sum(CardAbility.None, CardStat.CritChance), t))
         {

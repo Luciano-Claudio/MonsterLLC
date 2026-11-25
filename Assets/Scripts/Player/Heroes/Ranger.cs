@@ -414,9 +414,9 @@ public class Ranger : HeroController
     // Animation Event, no frame exato em que o Ranger solta as flechas.
     public void AnimationShootEvent()
     {
-        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (disparo)
         if (shotFired) return;
         shotFired = true;
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (disparo) — só no 1º evento
 
         // Direção crua do mouse (não travada nas 8 direções) — só a pose do personagem e a
         // sprite da flecha (RangerArrow.Launch escolhe o sub-sprite mais próximo) ficam
@@ -442,7 +442,7 @@ public class Ranger : HeroController
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
         float arrowBleedPerSecond = stats.damage * bleedDamageMultiplier * GetShiftDamageDealtMultiplier()
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage); // etapa 4: congela o Shift e as cartas de dano
-        float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area) * (1f + CardRunState.NextPrimaryArea); // etapa 4 + Relentless Momentum
+        float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area) * HeroController.CardAttackSizeFactor * (1f + CardRunState.NextPrimaryArea); // etapa 4 + Colossus + Relentless Momentum
 
         int totalArrows = arrowCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.ProjectileCount)); // etapa 4
         Vector2[] offsets = ArrowFormation.GetOffsets(totalArrows, arrowLateralStep, arrowForwardStep);
@@ -535,7 +535,7 @@ public class Ranger : HeroController
     private void LaunchKnife(Vector2 dir, float flightDamage, float groundedDamage, float bleedDamagePerSecond)
     {
         var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
-        float knifeScale = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapa 4
+        float knifeScale = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area) * HeroController.CardAttackSizeFactor; // etapa 4 + Colossus
         if (knifeScale != 1f) knifeObj.transform.localScale *= knifeScale;
         knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,
             knifeFlightSpeed, knifeMaxDistance, knifeFlightKnockbackForce, knifeGroundedDuration, knifeGroundedTickInterval, knifeGroundedRadius, knifeGroundedKnockbackForce, knifeBleedDuration);

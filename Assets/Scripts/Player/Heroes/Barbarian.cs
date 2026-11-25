@@ -468,7 +468,7 @@ public class Barbarian : HeroController
         var crack = crackObj.GetComponent<GroundCrack>();
         // "this" como dono — só o crack do golpe normal (não o do Eco do Impacto, ver
         // SpawnGroundCrackAt abaixo) acompanha Shift/HP perdido em tempo real.
-        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area), this);
+        if (crack != null) crack.Initialize(direction, sizeMultiplier, damagePerSecond, groundCrackTickInterval, groundCrackAreaMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area) * HeroController.CardAttackSizeFactor, this);
 
         if (permanent) activePermanentCracks.Add(new GroundCrackTracker { Instance = crackObj, OriginPosition = position, LeaveGraceRemaining = groundCrackDuration });
         else Destroy(crackObj, groundCrackDuration);
@@ -576,7 +576,7 @@ public class Barbarian : HeroController
         {
             var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
             // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
-            obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapas 1+2 — carta de tamanho das lâminas (Thunder Blades)
+            obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area) * HeroController.CardAttackSizeFactor; // etapas 1+2 — carta de tamanho das lâminas (Thunder Blades)
             var projectile = obj.GetComponent<HeroProjectile>();
             if (projectile == null) continue;
 
