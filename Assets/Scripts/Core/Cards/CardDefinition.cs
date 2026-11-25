@@ -30,6 +30,8 @@ public class CardDefinition : ScriptableObject
     public float healthPerLevel = 0f; // 🔢
     [Tooltip("Vazio = vale pra todos os heróis; senão, só pro herói com esse nome (ex.: Barbarian).")]
     public string heroId = "";
+    // Etapa 4 — tags que a especialização precisa ter (basta UMA). None = aparece para todos.
+    public SpecTag requiredTags = SpecTag.None;
 
     public bool Multiplicative => stat == CardStat.Damage;
 }
