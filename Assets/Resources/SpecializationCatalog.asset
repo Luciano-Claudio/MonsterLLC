@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74b621d1267ac8f4c9e6be29afc690d2, type: 3}
+  m_Name: SpecializationCatalog
+  m_EditorClassIdentifier: Core::SpecializationCatalog
+  specializations:
+  - {fileID: 11400000, guid: 8f9bfca81e4013540bd86c6cc6b1f043, type: 2}
+  - {fileID: 11400000, guid: 8b52b4199fae5c94289422744b331473, type: 2}
+  - {fileID: 11400000, guid: d2e1d87d599007641a75f4a79035fe37, type: 2}
+  - {fileID: 11400000, guid: 54683d6011c600f4cbcbf0dbc6d39730, type: 2}
+  - {fileID: 11400000, guid: c47663576d598d748ad5081e9b8bb37d, type: 2}
+  - {fileID: 11400000, guid: f1ed43e5a0f579745b98eb91beaa414c, type: 2}
