@@ -205,6 +205,12 @@ public class Ranger : HeroController
     // RangerArrow rolar no hit).
     private float arrowBleedChancePercent;
 
+    // Etapa 4 — especializações (docs/superpowers/specs/2026-11-24-etapa-4-especializacoes-tags-design.md).
+    // Crimson Arrow: toda flecha sangra (100%). Beastmaster: flechas não sangram, ganha o pet urso.
+    // As facas da Ultimate sangram nas duas. O sangramento congela o buff do Shift no disparo.
+    public const string SpecCrimsonArrow = "ranger_crimson_arrow";
+    public const string SpecBeastmaster = "ranger_beastmaster";
+
     // #29/#30 — gates da Esquerda, repassados pra RangerArrow decidir o comportamento no
     // hit/fim de vida (ver RangerArrow.Launch()).
     private bool boomerangArrowEnabled;
@@ -291,7 +297,8 @@ public class Ranger : HeroController
 
             camouflageElapsed += Time.deltaTime;
             // #25 "Veterano de Guerra" — a janela de efeitos dura 30% menos nesse modo.
-            float maxDuration = veteranoDeGuerraEnabled ? secondaryAbilityMaxDuration * 0.7f : secondaryAbilityMaxDuration;
+            float maxDuration = (veteranoDeGuerraEnabled ? secondaryAbilityMaxDuration * 0.7f : secondaryAbilityMaxDuration)
+                * Cards.Get(CardAbility.Shift, CardStat.AnimSpeed); // etapa 4 — carta de duração da camuflagem
             if (camouflageElapsed >= maxDuration) EndCamouflage();
         }
 
@@ -405,18 +412,22 @@ public class Ranger : HeroController
         // sua própria reserva de perfuração, não mais uma fração. Esquerda "Dano" (#1-5) +
         // #26 + Central entram todos aqui, mesma fórmula do Barbarian.
         float reservePerArrow = stats.damage * attackDamageMultiplier * (1f + primaryDamagePercent / 100f)
-            * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier();
+            * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier()
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
+        float arrowBleedPerSecond = stats.damage * bleedDamageMultiplier * GetShiftDamageDealtMultiplier(); // etapa 4: congela o Shift
+        float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area); // etapa 4
 
         Vector2[] offsets = ArrowFormation.GetOffsets(arrowCount, arrowLateralStep, arrowForwardStep);
         foreach (var offset in offsets)
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
             var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
+            if (arrowScale != 1f) arrowObj.transform.localScale *= arrowScale;
             // #28 "Flechas Sangrentas" é "mesmo efeito da Ultimate" (GDD) — reaproveita a
             // magnitude/duração do bleed das facas (bleedDamageMultiplier/knifeBleedDuration),
             // só a CHANCE por flecha é própria desta família.
             arrowObj.GetComponent<RangerArrow>().Launch(forward, reservePerArrow, arrowSpeed, arrowLifetime, arrowKnockbackForce,
-                distanceDamageBonusPercent, arrowBleedChancePercent, stats.damage * bleedDamageMultiplier, knifeBleedDuration,
+                distanceDamageBonusPercent, arrowBleedChancePercent, arrowBleedPerSecond, knifeBleedDuration,
                 boomerangArrowEnabled, infinitePierceEnabled);
         }
     }
@@ -470,7 +481,7 @@ public class Ranger : HeroController
         float shiftMultiplier = GetShiftDamageDealtMultiplier();
         // Cima "Dano em voo" (#1-5) + Central entram aqui, mesma fórmula do Barbarian.
         float flightDamage = stats.damage * ultimateDamageMultiplier * HeroController.UltimateDamageMultiplier
-            * HeroController.CentralDamageMultiplier * shiftMultiplier;
+            * HeroController.CentralDamageMultiplier * shiftMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage);
         // "Dano no chão" (pedido do usuário, 2026-11-11) nunca mais um número fixo
         // desconectado do personagem — sempre metade do dano em voo, piso 1 (mesma solução
         // do Ground Crack do Barbarian). #6-8 multiplicam ESSE valor por cima.
@@ -494,6 +505,8 @@ public class Ranger : HeroController
     private void LaunchKnife(Vector2 dir, float flightDamage, float groundedDamage, float bleedDamagePerSecond)
     {
         var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+        float knifeScale = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapa 4
+        if (knifeScale != 1f) knifeObj.transform.localScale *= knifeScale;
         knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,
             knifeFlightSpeed, knifeMaxDistance, knifeFlightKnockbackForce, knifeGroundedDuration, knifeGroundedTickInterval, knifeGroundedRadius, knifeGroundedKnockbackForce, knifeBleedDuration);
     }
@@ -590,7 +603,7 @@ public class Ranger : HeroController
 
     // #27 "Fúria Curativa" — dano causado +%, só enquanto o Shift estiver ativo.
     private float GetShiftDamageDealtMultiplier() =>
-        isUsingSecondaryAbility ? 1f + shiftDamageDealtBonusPercent / 100f : 1f;
+        isUsingSecondaryAbility ? (1f + shiftDamageDealtBonusPercent / 100f) * HeroController.Cards.GetOwn(CardAbility.Shift, CardStat.Damage) : 1f;
 
     // Shift de novo durante a camuflagem — só faz efeito depois que a janela de efeitos
     // realmente começou (cancelar no meio da animação de esconder, no modo clássico, ainda
@@ -688,6 +701,13 @@ public class Ranger : HeroController
         RecomputeEsquerda();
         RecomputeDireita();
         RecomputeCima();
+        ReapplyRunSpecialization(); // etapa 4 — a especialização ganha dos perks
+    }
+
+    protected override void ApplySpecialization(SpecializationDefinition spec)
+    {
+        if (spec == null) return;
+        arrowBleedChancePercent = spec.id == SpecCrimsonArrow ? 100f : 0f;
     }
 
     private void RecomputeEsquerda()
