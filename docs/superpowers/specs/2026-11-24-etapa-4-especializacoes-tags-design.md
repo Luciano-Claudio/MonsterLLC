@@ -223,7 +223,7 @@ Textos em inglês para a tela. Proposta do Claude, editável no asset:
 
 O usuário coloca todos os ícones à mão, os das especializações e os das cartas:
 - **Especializações:** campo `icon` de cada asset de especialização. A pasta é definida no plano.
-- **Cartas:** campo `icon` de cada `CardDefinition` em `Assets/Settings/Cards/`.
+- **Cartas:** campo `icon` de cada `CardDefinition` em `Assets/Settings/Cards/` — `Items/`, `Stats/` e `Upgrades/<Herói>` (`General` = sem herói).
 
 O código não preenche ícone nenhum. Asset sem ícone mostra o slot vazio.
 
