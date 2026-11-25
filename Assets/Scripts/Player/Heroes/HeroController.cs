@@ -169,7 +169,35 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // dano recebido -% enquanto o Shift estiver ativo). Default 0 — nunca interfere com
     // DamageReductionPercent (World Perks, incondicional), os dois se acumulam.
     protected virtual float GetConditionalDamageReductionPercent() => 0f;
-    private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier * Cards.Get(CardAbility.None, CardStat.MoveSpeed);
+    private float EffectiveMoveSpeed => stats.moveSpeed * MoveSpeedMultiplier * Cards.Get(CardAbility.None, CardStat.MoveSpeed) * CardSpeedFactor;
+
+    // Catálogo de cartas — buffs temporários de velocidade (Golden Momentum, Adrenaline Rush, Critical
+    // Fever, Blood Frenzy). Somam entre si.
+    public static float CardSpeedFactor
+    {
+        get
+        {
+            var t = RunSettings.Current;
+            float f = 1f;
+            if (CardRunState.SpeedBuffRemaining > 0f) f += t.goldenMomentumBonus;
+            if (CardRunState.AdrenalineRemaining > 0f) f += t.adrenalineBonus;
+            if (Cards.Sum(CardAbility.None, CardStat.CriticalFever) > 0f) f += CardRunState.FeverStacks * t.feverPerStack;
+            if (CardRunState.BloodFrenzyRemaining > 0f) f += t.bloodFrenzyBonus;
+            return f;
+        }
+    }
+
+    // Catálogo de cartas — tamanho do herói: Colossus Heart (+% por nível) × Titan's Tribute.
+    public static float CardSizeFactor => (1f + Cards.Sum(CardAbility.None, CardStat.HeroSize)) * TitanTributeFactor;
+
+    // Escala "própria" do herói antes das cartas (o Barbarian tem a dele, dos perks).
+    public virtual float BaseScale => 1f;
+
+    public bool IsMovingInput => moveInput.sqrMagnitude > 0.0001f;
+
+    // Catálogo de cartas — dano direto recebido (Thornwake, Scars, Adrenaline) e uso do Shift (Wellspring, Spirit Link).
+    public static event System.Action<HeroController, float> OnHeroDirectDamaged;
+    public static event System.Action<HeroController> OnShiftUsed;
 
     // Efeitos Nocivos de dano-ao-longo-do-tempo (GDD Seção 33) — componente compartilhado
     // com EnemyController (ver StatusEffectController.cs). Trapped continua à parte, é
@@ -1034,6 +1062,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         if (!secondaryAbilityCooldown.IsReady) return;
         UpdateAimDirection(controls.Gameplay.Look.ReadValue<Vector2>());
         isUsingSecondaryAbility = true;
+        OnShiftUsed?.Invoke(this); // catálogo de cartas
         UseSecondaryAbility();
     }
 
@@ -1090,6 +1119,10 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // duplicado — o EasyTransition não suporta duas transições concorrentes).
         if (isDead) return;
         if (IsDamageImmune) return;
+        if (CardRunState.EmberInvulnerableRemaining > 0f) return; // catálogo de cartas — Last Ember
+
+        // Catálogo de cartas — Dangerous Bargain: +15% de dano recebido.
+        if (Cards.Sum(CardAbility.None, CardStat.DangerousBargain) > 0f) amount *= 1f + RunSettings.Current.dangerousDamageTaken;
 
         // Pele Grossa/Couraça/Casco de Ferro (World Perks) — % de redução, aplicada ANTES do
         // ApplyDamage (nunca depois: reduzir o dano JÁ aplicado deixaria o herói com vida "de
@@ -1097,7 +1130,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // (ex.: Fúria Protetora do Barbarian, só durante o Shift) se acumula com a de Mundo,
         // nunca substitui — por isso os 2 "if" separados, não um só somado antes do clamp.
         // Etapa 3: Iron Plate/Iron Will (cartas DamageTaken) somam com a de Mundo, com teto (RunSettings).
-        float reduction = DamageReductionPercent / 100f + Cards.Sum(CardAbility.None, CardStat.DamageTaken);
+        float reduction = DamageReductionPercent / 100f + Cards.Sum(CardAbility.None, CardStat.DamageTaken) + CardRunState.ExtraReduction;
         if (reduction > 0f) amount *= 1f - Mathf.Min(Mathf.Clamp01(reduction), RunSettings.Current.damageReductionCapPercent / 100f);
         float conditionalReduction = GetConditionalDamageReductionPercent();
         if (conditionalReduction > 0f) amount *= 1f - Mathf.Clamp01(conditionalReduction / 100f);
@@ -1135,9 +1168,20 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             stats.health = 1f;
         }
 
+        // Catálogo de cartas — Last Ember: evita a morte 1x a cada N segundos de run e dá invulnerabilidade curta.
+        float ember = Cards.Sum(CardAbility.None, CardStat.CheatDeath);
+        if (ember > 0f && HealthSystem.IsDead(stats.health)
+            && CardRunState.RunSeconds - CardRunState.LastEmberTime >= RunSettings.Current.lastEmberCooldown)
+        {
+            CardRunState.LastEmberTime = CardRunState.RunSeconds;
+            stats.health = EffectiveMaxHealth * Mathf.Min(1f, ember);
+            CardRunState.EmberInvulnerableRemaining = RunSettings.Current.lastEmberInvulnerable;
+        }
+
         GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         // isDirectPlayerHit não importa aqui (isPlayer=true) — valor fixo, nunca lido pelo HitFeelController nesse caso.
         GameEvents.DamageTaken(GetFloatingTextSpawnPosition(), amount, isPlayer: true, isDirectPlayerHit: true);
+        if (isDirectPlayerHit && amount > 0f && !HealthSystem.IsDead(stats.health)) OnHeroDirectDamaged?.Invoke(this, amount);
 
         // Golpe fatal vai direto pro DieTrigger — não dispara Damage no mesmo frame que
         // já vai morrer.

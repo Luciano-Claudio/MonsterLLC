@@ -141,6 +141,11 @@ public class RunSettings : ScriptableObject
     public float thornCooldown = 0.5f; // 🔢 Thornwake Armor
     public int thornBaseCount = 2; // 🔢 + nível
     public float thornScale = 0.5f; // 🔢 escala do projétil (Thunder Blade) usado como espinho
+    public float thornDamagePerLevel = 0.03f; // 🔢 igual ao valor por nível da carta (usado pra contar o nível)
+    public float thornSpeed = 10f; // 🔢
+    public float thornRange = 4f; // 🔢
+    [Tooltip("Prefab do espinho do Thornwake Armor (precisa de HeroProjectile). Provisório: a Thunder Blade.")]
+    public GameObject thornProjectilePrefab;
     public float lastEmberCooldown = 300f; // 🔢 5 minutos
     public float lastEmberInvulnerable = 2f; // 🔢
     public float graveboundRadius = 2.5f; // 🔢

@@ -206,7 +206,7 @@ public class Barbarian : HeroController
         baseProjectileMaxDistance = projectileMaxDistance;
         baseProjectileKnockbackForce = projectileKnockbackForce;
 
-        transform.localScale = Vector3.one * sizeMultiplier;
+        transform.localScale = Vector3.one * sizeMultiplier * HeroController.CardSizeFactor; // catálogo de cartas: Colossus/Titan
 
         // Aplica de cara qualquer rank já comprado/salvo (Continue Game, ou reabrir a Loja
         // depois de já ter comprado algo nesta run) — mesmo motivo de WorldPerkEffects.Recompute()
@@ -727,6 +727,8 @@ public class Barbarian : HeroController
         ReapplyRunSpecialization(); // etapa 4 — a especialização ganha dos perks
     }
 
+    public override float BaseScale => sizeMultiplier; // catálogo de cartas: escala dos perks, antes das cartas
+
     protected override void ApplySpecialization(SpecializationDefinition spec)
     {
         bloodlust = spec != null && spec.id == SpecBloodlust;
@@ -768,7 +770,7 @@ public class Barbarian : HeroController
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaCrescimentoBrutal) * 10f
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaCorpoDeTita) * 15f;
         sizeMultiplier = baseSizeMultiplier * (1f + corpoPercent / 100f);
-        transform.localScale = Vector3.one * sizeMultiplier;
+        transform.localScale = Vector3.one * sizeMultiplier * HeroController.CardSizeFactor; // catálogo de cartas: Colossus/Titan
 
         float duracaoPercent = PerkState.GetRank(BarbarianPerkIds.EsquerdaFendaDuradoura) * 10f
             + PerkState.GetRank(BarbarianPerkIds.EsquerdaRachaduraProfunda) * 20f

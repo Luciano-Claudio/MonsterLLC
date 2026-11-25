@@ -28,7 +28,8 @@ public class HeroLevel : MonoBehaviour
     private void HandleXp(int xp)
     {
         if (Run == null || xp <= 0) return;
-        float scaled = xp * HeroController.Cards.Get(CardAbility.None, CardStat.XpGain) + xpFraction;
+        float bargain = HeroController.Cards.Sum(CardAbility.None, CardStat.DangerousBargain) > 0f ? 1f + RunSettings.Current.dangerousXpBonus : 1f; // catálogo de cartas
+        float scaled = xp * HeroController.Cards.Get(CardAbility.None, CardStat.XpGain) * bargain + xpFraction;
         xp = Mathf.FloorToInt(scaled);
         xpFraction = scaled - xp;
         if (xp <= 0) return;

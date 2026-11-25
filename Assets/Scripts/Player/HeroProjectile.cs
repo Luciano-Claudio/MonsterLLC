@@ -51,6 +51,10 @@ public class HeroProjectile : MonoBehaviour
 
     // Etapa 4 — Barbarian Bloodlust: a lâmina (Thunder Blade) aplica Bleeding em CADA acerto. O dps vem pronto
     // (congelado no arremesso, já com o Shift). 0 = sem efeito (default).
+    // Catálogo de cartas — espinho do Thornwake Armor NÃO é acerto direto do herói (sem crítico/bônus).
+    private bool countsAsHeroHit = true;
+    public void SetCountsAsHeroHit(bool value) => countsAsHeroHit = value;
+
     private float bleedDamagePerSecond;
     private float bleedDuration;
     public float BleedDamagePerSecond => bleedDamagePerSecond;
@@ -189,7 +193,8 @@ public class HeroProjectile : MonoBehaviour
         if (enemy == null) return;
 
         float damageDealt = Mathf.Min(damageReserve, enemy.stats.health);
-        HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
+        if (countsAsHeroHit) HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
+        else enemy.TakeDamage(damageDealt, isDirectPlayerHit: false);
         enemy.ApplyKnockback(direction, knockbackForce);
 
         if (bleedDamagePerSecond > 0f)

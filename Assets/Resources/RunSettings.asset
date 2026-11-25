@@ -82,6 +82,87 @@ MonoBehaviour:
   damageReductionCapPercent: 75
   blastRadius: 1.5
   blastDamagePercent: 100
+  baseCritChancePercent: 5
+  executeThreshold: 0.3
+  elementalSupremacyBonus: 0.25
+  finalJudgmentBonus: 0.3
+  trophyPerBoss: 0.05
+  trophyCap: 0.5
+  focusPerHit: 0.05
+  focusCap: 0.5
+  endlessKillsPerStep: 30
+  endlessPerStep: 0.01
+  endlessCap: 0.25
+  finalStandThreshold: 0.3
+  finalStandDamage: 0.2
+  finalStandReduction: 0.2
+  feverPerStack: 0.02
+  feverMaxStacks: 10
+  feverDuration: 4
+  bloodFrenzyThreshold: 0.4
+  bloodFrenzyBonus: 0.25
+  bloodFrenzyDuration: 4
+  echoFangEvery: 4
+  critSecondImpactPercent: 0.5
+  overkillPercent: 0.5
+  overkillRange: 3
+  crowdBreakerTargets: 3
+  crowdBreakerBonus: 0.4
+  relentlessMoveSeconds: 2
+  relentlessDamage: 0.5
+  relentlessArea: 0.3
+  relentlessCastingPerHit: 0.1
+  relentlessCastingPerSecond: 0.5
+  dotExplosionEveryTicks: 8
+  dotExplosionRadius: 1.5
+  plagueRadius: 2.5
+  plagueTargets: 2
+  deathsEchoPercent: 0.5
+  deathsEchoRadius: 1.5
+  afflictionHarvestEvery: 20
+  afflictionHarvestEnergyPercent: 2
+  wellspringCooldown: 10
+  thornCooldown: 0.5
+  thornBaseCount: 2
+  thornScale: 0.5
+  thornDamagePerLevel: 0.03
+  thornSpeed: 10
+  thornRange: 4
+  thornProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
+  lastEmberCooldown: 300
+  lastEmberInvulnerable: 2
+  graveboundRadius: 2.5
+  graveboundMaxEnemies: 10
+  killHealCapPerSecond: 0.05
+  titanKillsPerStep: 25
+  titanPerStep: 0.01
+  titanCap: 0.5
+  survivorPerBoss: 0.05
+  survivorCap: 0.5
+  goldenMomentumBonus: 0.2
+  goldenMomentumDuration: 2
+  dangerousXpBonus: 0.3
+  dangerousDamageTaken: 0.15
+  scarPerStack: 0.03
+  scarMaxStacks: 5
+  scarDuration: 4
+  unbrokenKills: 15
+  unbrokenShield: 0.2
+  unbrokenDuration: 8
+  adrenalineThreshold: 0.25
+  adrenalineBonus: 0.3
+  adrenalineDuration: 3
+  adrenalineCooldown: 10
+  warriorsHeal: 0.25
+  warriorsShield: 0.15
+  warriorsDuration: 10
+  movingFortressSeconds: 1.5
+  movingFortressReduction: 0.15
+  spiritLinkEnergyPercent: 5
+  homingBaseRadius: 3
+  shardDamagePercent: 0.4
+  ricochetRange: 4
+  ricochetDamagePercent: 0.6
   runGoldEnabled: 0
   lootEnabled: 0
   chestsEnabled: 1

@@ -44,6 +44,7 @@ public class SystemsBootstrap : MonoBehaviour
         gameObject.AddComponent<CardRunStateReset>(); // catálogo de cartas — zera o estado das cartas a cada run
         gameObject.AddComponent<DotCardEffects>(); // catálogo de cartas — pilhas e cartas de DOT
         gameObject.AddComponent<HitCardEffects>(); // catálogo de cartas — cartas de acerto e de abate
+        gameObject.AddComponent<HeroStateCardEffects>(); // catálogo de cartas — defesa, movimento e estado do herói
         var scaling = MonsterScalingSettings.Load(); // D9.6a — tabela por tier editável (XP por kill em runtime)
         if (scaling != null) scaling.ApplyToRuntime();
         controls = new PlayerControls();

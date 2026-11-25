@@ -32,6 +32,10 @@ public static class CardRunState
     public static float RelentlessCastingWindowStart;
     public static float RelentlessCastingInWindow;
     public static bool InEcho;            // guarda de reentrada (Echo Fang, Shattered Fortune, Overkill)
+    public static float RunSeconds;       // tempo de jogo da run (Last Ember)
+    public static float EmberInvulnerableRemaining;
+    public static float ExtraReduction;   // Gravebound + Final Stand + Scars + Moving Fortress (recalculado a cada frame)
+    public static bool RelentlessArmed;   // Relentless Momentum já guardou o bônus nesta caminhada
 
     public static void Reset()
     {
@@ -49,5 +53,6 @@ public static class CardRunState
         KillHealWindowStart = 0f; KillHealInWindow = 0f;
         RelentlessCastingWindowStart = 0f; RelentlessCastingInWindow = 0f;
         InEcho = false;
+        RunSeconds = 0f; EmberInvulnerableRemaining = 0f; ExtraReduction = 0f; RelentlessArmed = false;
     }
 }

@@ -50,6 +50,8 @@ public class CardBonuses
         float sum = Sum(ability, stat);
         float general = withGeneral ? Sum(CardAbility.None, stat) : 0f;
         if (stat == CardStat.Cooldown) return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general));
+        // Catálogo de cartas — Colossus Heart: +tamanho do herói também é +área de todos os ataques.
+        if (stat == CardStat.Area) return (1f + sum) * (1f + general) * (1f + Sum(CardAbility.None, CardStat.HeroSize));
         if (stat == CardStat.MaxHealth && ability == CardAbility.None) return (1f + sum) * healthMultiplier;
         return (1f + sum) * (1f + general);
     }
