@@ -39,11 +39,19 @@ public class MageAttackHitbox : MonoBehaviour
     // separado do corpo do Mage, então o SetFloat do HeroController não chega aqui sozinho.
     // Idempotente: o frame 1 do attack_continuous dispara de novo a cada volta, mas o fogo só
     // acende uma vez por ataque.
-    public void StartFire(System.Func<float> tickDamage, float tickInterval, float actionSpeedMultiplier)
+    // Etapa 4 — Mage Immolation: com fireStatusDps, cada tick que acerta também aplica o status Fire
+    // (dps do Fire, duração). Nulo = a chama só dá o dano do tick (Phoenix Pact).
+    private System.Func<float> fireStatusDps;
+    private float fireStatusDuration;
+
+    public void StartFire(System.Func<float> tickDamage, float tickInterval, float actionSpeedMultiplier,
+        System.Func<float> fireStatusDps = null, float fireStatusDuration = 0f)
     {
         if (fireActive) return;
         fireActive = true;
         rollTickDamage = tickDamage;
+        this.fireStatusDps = fireStatusDps;
+        this.fireStatusDuration = fireStatusDuration;
         tickTracker.SetInterval(tickInterval);
         if (animator == null) return;
         animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
@@ -76,9 +84,7 @@ public class MageAttackHitbox : MonoBehaviour
         {
             if (enemy == null || enemy.IsDead) continue;
             if (!tickTracker.TryHit(enemy.GetInstanceID(), now)) continue;
-            // Tick repetido: sem shake/zoom (isDirectPlayerHit false, mesmo critério do pulse
-            // do Rogue e das áreas "grounded") — só o filtro de juice muda, o dano não.
-            enemy.TakeDamage(rollTickDamage != null ? rollTickDamage() : 0f, isDirectPlayerHit: false);
+            ApplyTickTo(enemy);
         }
 
         if (now >= nextPruneTime)
@@ -86,5 +92,17 @@ public class MageAttackHitbox : MonoBehaviour
             nextPruneTime = now + PruneInterval;
             tickTracker.Prune(now);
         }
+    }
+
+    // 1 tick da chama num inimigo (extraído do Update pra ser testável fora do Play).
+    public void ApplyTickTo(EnemyController enemy)
+    {
+        if (enemy == null || enemy.IsDead) return;
+        // Tick repetido: sem shake/zoom (isDirectPlayerHit false, mesmo critério do pulse
+        // do Rogue e das áreas "grounded") — só o filtro de juice muda, o dano não.
+        enemy.TakeDamage(rollTickDamage != null ? rollTickDamage() : 0f, isDirectPlayerHit: false);
+        if (fireStatusDps == null || enemy.IsDead) return;
+        var status = enemy.GetComponent<StatusEffectController>();
+        if (status != null) status.ApplyStatusEffect(StatusEffectType.Fire, fireStatusDuration, fireStatusDps());
     }
 }

@@ -21,6 +21,14 @@ public class Mage : HeroController
     // tempo pausado contava como duração (revisão final do D9.1). -1 = ainda não acendeu.
     private float fireElapsed = -1f;
     private System.Func<float> rollFireTickDamage; // cache do delegate (criado 1x, sem alocar por ataque)
+    private System.Func<float> fireStatusDpsGetter; // etapa 4 — cache, mesmo critério
+
+    // Etapa 4 — especializações (docs/superpowers/specs/2026-11-24-etapa-4-especializacoes-tags-design.md).
+    // Immolation: sem Fênix; a chama do primário também aplica o status Fire (a Ultimate já aplica).
+    // Phoenix Pact: com a Fênix; a chama do primário NÃO queima, só a Ultimate.
+    public const string SpecImmolation = "mage_immolation";
+    public const string SpecPhoenixPact = "mage_phoenix_pact";
+    private bool immolation;
 
     [Header("Ultimate — bola de fogo em ângulo livre (GDD Seção 17.3)")]
     [SerializeField] private GameObject fireballPrefab; // precisa ter MageFireball
@@ -259,7 +267,10 @@ public class Mage : HeroController
         if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
         fireElapsed = 0f;
         rollFireTickDamage ??= RollFireTickDamage;
-        attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier);
+        fireStatusDpsGetter ??= PrimaryFireStatusDps;
+        attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area);
+        attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier,
+            immolation ? fireStatusDpsGetter : null, fireballFireStatusDuration);
         ApplyPrimaryCastPerks();
     }
 
@@ -286,8 +297,15 @@ public class Mage : HeroController
     private float RollFireTickDamage()
     {
         float critMultiplier = HeroController.RollCritMultiplier(HeroController.PrimaryCritChance);
-        return stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier * fireTickInterval;
+        return stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier * critMultiplier * fireTickInterval
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
     }
+
+    // Fire aplicado pela chama (Immolation): mesma fórmula do Fire da bola de fogo + a carta de dano
+    // do primário. O Mage não tem buff de Shift, então o valor congelado é sempre o atual.
+    private float PrimaryFireStatusDps()
+        => stats.damage * fireStatusDamageMultiplier * HeroController.CentralDamageMultiplier
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
 
     // Perks "por ataque" do primário (saem no D9.6 com o sistema de perks) — 1x quando o fogo
     // acende. Os perks "por hit" (Queimadura Residual, Eco, Impacto Explosivo, Rajada Dupla)
@@ -380,14 +398,16 @@ public class Mage : HeroController
         if (fireballPrefab == null) return;
 
         float ultimateCritMultiplier = HeroController.RollCritMultiplier(HeroController.UltimateCritChance);
-        float impactDamage = stats.damage * ultimateDamageMultiplier * HeroController.CentralDamageMultiplier * ultimateCritMultiplier;
+        float impactDamage = stats.damage * ultimateDamageMultiplier * HeroController.CentralDamageMultiplier * ultimateCritMultiplier
+            * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage);
         float trailDamagePerTick = stats.damage * ultimateTrailDamageMultiplier * HeroController.CentralDamageMultiplier;
         float fireStatusDamagePerSecond = stats.damage * fireStatusDamageMultiplier * HeroController.CentralDamageMultiplier;
         // Explosão e área no chão escalam junto com o tamanho da bola de fogo — valor FINAL
         // (já multiplicado) calculado aqui, não dentro do MageFireball (ver comentário lá
         // sobre circleCollider.radius precisar compensar a escala do GameObject).
-        float explosionRadius = fireballExplosionRadius * ultimateSizeMultiplier;
-        float groundedRadius = fireballGroundedRadius * ultimateSizeMultiplier;
+        float ultimateAreaCard = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area); // etapa 4
+        float explosionRadius = fireballExplosionRadius * ultimateSizeMultiplier * ultimateAreaCard;
+        float groundedRadius = fireballGroundedRadius * ultimateSizeMultiplier * ultimateAreaCard;
 
         // Cima #30 "Trindade Flamejante" — a cada 3 usos da Ultimate (nunca reseta por dia),
         // sai 1 projétil extra pra cada lado (ângulos próximos), TODOS com dano cheio (nenhuma
@@ -722,6 +742,13 @@ public class Mage : HeroController
         RecomputeEsquerda();
         RecomputeDireita();
         RecomputeCima();
+        ReapplyRunSpecialization(); // etapa 4 — a especialização ganha dos perks
+    }
+
+    protected override void ApplySpecialization(SpecializationDefinition spec)
+    {
+        immolation = spec != null && spec.id == SpecImmolation;
+        if (petSummoner != null) petSummoner.HasPet = spec != null && spec.id == SpecPhoenixPact;
     }
 
     private void RecomputeEsquerda()
