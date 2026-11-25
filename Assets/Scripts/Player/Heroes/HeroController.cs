@@ -614,6 +614,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         GameEvents.HealthChanged(stats.health, EffectiveMaxHealth);
         GameEvents.EnergyChanged(stats.energy, stats.maxEnergy);
+
+        ReapplyRunSpecialization(); // etapa 4 — herói recriado no meio da run
     }
 
     protected virtual void OnEnable()
@@ -621,6 +623,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         controls.Enable();
         GameEvents.OnEnemyKilled += HandleEnemyKilled;
         GameEvents.OnDayStart += HandleDayStartForSegundaChance;
+        RunSpecialization.Chosen += ApplySpecializationNow;
     }
 
     protected virtual void OnDisable()
@@ -628,7 +631,30 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         controls.Disable();
         GameEvents.OnEnemyKilled -= HandleEnemyKilled;
         GameEvents.OnDayStart -= HandleDayStartForSegundaChance;
+        RunSpecialization.Chosen -= ApplySpecializationNow;
     }
+
+    // ===================== Etapa 4: especialização =====================
+    // A escolhida na tela do começo da run (RunSpecialization). Aplicada quando é escolhida, no Start
+    // (herói recriado no meio da run) e no FIM do RecomputePerkEffects de cada herói — assim ela
+    // sempre ganha dos perks antigos (desligados, mas o código ainda escreve nos mesmos campos).
+    public SpecializationDefinition AppliedSpecialization { get; private set; }
+
+    protected void ApplySpecializationNow(SpecializationDefinition spec)
+    {
+        if (spec == null) return;
+        AppliedSpecialization = spec;
+        ApplySpecialization(spec);
+    }
+
+    // Reaplica a especialização da run, se houver — chamar no fim do RecomputePerkEffects.
+    protected void ReapplyRunSpecialization()
+    {
+        if (RunSpecialization.IsChosen) ApplySpecializationNow(RunSpecialization.Current);
+    }
+
+    // Cada herói liga/desliga o próprio comportamento pelo spec.id. Default: nada.
+    protected virtual void ApplySpecialization(SpecializationDefinition spec) { }
 
     private void HandleDayStartForSegundaChance()
     {

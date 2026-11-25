@@ -129,7 +129,7 @@ TextureImporter:
       name: UI_Inventory_0
       rect:
         serializedVersion: 2
-        x: 64
+        x: 32
         y: 32
         width: 192
         height: 32
@@ -151,12 +151,12 @@ TextureImporter:
       name: UI_Inventory_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 0
         y: 25
         width: 256
         height: 7
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -173,12 +173,12 @@ TextureImporter:
       name: UI_Inventory_2
       rect:
         serializedVersion: 2
-        x: 36
+        x: 4
         y: 16
         width: 248
         height: 1
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -195,12 +195,12 @@ TextureImporter:
       name: UI_Inventory_3
       rect:
         serializedVersion: 2
-        x: 304
+        x: 272
         y: 16
         width: 2
         height: 1
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -209,6 +209,28 @@ TextureImporter:
       bones: []
       spriteID: c07c32eafdb9cae49b0941250d8c714a
       internalID: -1671460330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_Inventory_4
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 27
+        width: 64
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: efc8e57c8a68a854cb2823680927ba6e
+      internalID: 23755090
       vertices: []
       indices: 
       edges: []
@@ -231,6 +253,7 @@ TextureImporter:
       UI_Inventory_1: 707672601
       UI_Inventory_2: 138256769
       UI_Inventory_3: -1671460330
+      UI_Inventory_4: 23755090
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
