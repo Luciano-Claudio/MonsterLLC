@@ -33,5 +33,7 @@ public class CardDefinition : ScriptableObject
     // Etapa 4 — tags que a especialização precisa ter (basta UMA). None = aparece para todos.
     public SpecTag requiredTags = SpecTag.None;
 
-    public bool Multiplicative => stat == CardStat.Damage;
+    // Dano sempre multiplica. Vida: o UPGRADE geral de vida multiplica (×1,2/nível, etapa 4); a vida
+    // dos itens (healthPerLevel) e o Stat Vitality continuam somando.
+    public bool Multiplicative => stat == CardStat.Damage || (stat == CardStat.MaxHealth && kind == CardKind.Upgrade);
 }

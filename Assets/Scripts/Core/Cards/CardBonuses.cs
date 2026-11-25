@@ -12,6 +12,7 @@ public class CardBonuses
     private static readonly int StatCount = System.Enum.GetValues(typeof(CardStat)).Length;
 
     private readonly float[] damageMultiplier = new float[AbilityCount];
+    private float healthMultiplier = 1f; // etapa 4 — upgrade geral de vida (multiplica a soma dos itens/Stats)
     private readonly float[] additive = new float[AbilityCount * StatCount];
 
     public CardBonuses() => Reset();
@@ -19,6 +20,7 @@ public class CardBonuses
     public void Reset()
     {
         for (int i = 0; i < damageMultiplier.Length; i++) damageMultiplier[i] = 1f;
+        healthMultiplier = 1f;
         System.Array.Clear(additive, 0, additive.Length);
     }
 
@@ -32,7 +34,8 @@ public class CardBonuses
             int level = CardRules.LevelOf(owned, card);
             if (level <= 0) continue;
             int a = (int)card.ability;
-            if (card.Multiplicative) damageMultiplier[a] *= Mathf.Pow(card.valuePerLevel, level);
+            if (card.Multiplicative && card.stat == CardStat.MaxHealth) healthMultiplier *= Mathf.Pow(card.valuePerLevel, level);
+            else if (card.Multiplicative) damageMultiplier[a] *= Mathf.Pow(card.valuePerLevel, level);
             else additive[a * StatCount + (int)card.stat] += card.baseValue + card.valuePerLevel * level;
             if (card.healthPerLevel != 0f) additive[(int)CardAbility.None * StatCount + (int)CardStat.MaxHealth] += card.healthPerLevel * level;
         }
@@ -47,6 +50,7 @@ public class CardBonuses
         float sum = Sum(ability, stat);
         float general = withGeneral ? Sum(CardAbility.None, stat) : 0f;
         if (stat == CardStat.Cooldown) return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general));
+        if (stat == CardStat.MaxHealth && ability == CardAbility.None) return (1f + sum) * healthMultiplier;
         return (1f + sum) * (1f + general);
     }
 

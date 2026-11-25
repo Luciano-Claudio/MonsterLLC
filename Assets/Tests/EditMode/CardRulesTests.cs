@@ -443,4 +443,32 @@ public class CardRulesTests
         Assert.Greater(result.Count, 0);
         foreach (var c in result) Assert.AreEqual(CardKind.Stat, c.kind);
     }
+
+    // ===== Etapa 4 (revisão do balanceamento): upgrades gerais de dano e vida multiplicam =====
+
+    [Test]
+    public void General_health_upgrade_multiplies_item_and_stat_health()
+    {
+        var item = Kind("it", CardKind.Item); item.stat = CardStat.MoveSpeed; item.healthPerLevel = 0.10f;
+        var vit = Kind("vit", CardKind.Stat, 1); vit.stat = CardStat.MaxHealth; vit.valuePerLevel = 0.25f;
+        var hp = Kind("hp", CardKind.Upgrade, 10); hp.stat = CardStat.MaxHealth; hp.valuePerLevel = 1.2f;
+        var pool = new List<CardDefinition> { item, vit, hp };
+        var b = Bonuses(pool, new Dictionary<string, int> { { "it", 2 }, { "vit", 1 }, { "hp", 2 } });
+        // itens e Vitality somam (1 + 0,20 + 0,25); o upgrade multiplica (×1,2²)
+        Assert.AreEqual(1.45f * 1.44f, b.Get(CardAbility.None, CardStat.MaxHealth), 1e-4f);
+        Assert.IsTrue(hp.Multiplicative);
+        Assert.IsFalse(vit.Multiplicative);
+    }
+
+    [Test]
+    public void General_damage_upgrade_multiplies_every_ability()
+    {
+        var dmg = Kind("dmg", CardKind.Upgrade, 10); dmg.stat = CardStat.Damage; dmg.valuePerLevel = 1.3f;
+        var pool = new List<CardDefinition> { dmg };
+        var b = Bonuses(pool, new Dictionary<string, int> { { "dmg", 3 } });
+        float expected = 1.3f * 1.3f * 1.3f;
+        Assert.AreEqual(expected, b.Get(CardAbility.Primary, CardStat.Damage), 1e-4f);
+        Assert.AreEqual(expected, b.Get(CardAbility.Shift, CardStat.Damage), 1e-4f);
+        Assert.AreEqual(expected, b.Get(CardAbility.Ultimate, CardStat.Damage), 1e-4f);
+    }
 }
