@@ -237,3 +237,15 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
   `DayTimer.StartRun()`.
 - O visual da tela de escolha, seguindo o padrão da tela das cartas (Canvas, `CardScreenUI`).
 - Os testes (EditMode mais evals no Editor, limpando tudo).
+
+## Acréscimos do usuário (2026-11-25)
+
+- **Atributos (Stats):**
+  - No máximo 6, e não sobem de nível (nível máximo 1).
+  - Depois de 6, nenhum Stat aparece mais.
+  - Ficam na barra `Atribute_Background`, com 6 ícones.
+- **Itens:** no máximo 6. Depois disso, só aparecem os que o jogador já tem, até o nível máximo, como
+  já é hoje. O nível do item não aparece mais na barra (o `Quantity` foi removido).
+- **Upgrades de habilidade:** não aparecem em barra nenhuma. O jogador só sente o efeito.
+- **Limpeza:** remover o Tab (ação `Inventory`, que abria a Bag) e os painéis `Inventory` e `Shop` da
+  cena. O `ShopHandler` e o estado `Shop` ficam para a etapa 6.

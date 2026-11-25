@@ -150,6 +150,17 @@ chance de upgrade por carta, com no máximo 2 itens por oferta.
      a oferta sai com menos cartas.
   4. As cartas nunca se repetem na mesma oferta. Retire do buffer de elegíveis a cada pick.
 - **Level up múltiplo de 5, baú e vendedor:** iguais à etapa 3, só com o filtro de tag.
+- **Atributos (Stats)**, decididos pelo usuário em 2026-11-25:
+  - No máximo 6, e **não sobem de nível**: `maxLevel = 1` nos 6 assets `stat_*`.
+  - Novo `RunSettings.maxStatSlots = 6` e `OfferRules.maxStatSlots`. Com 6 Stats possuídos, nenhum Stat
+    é elegível.
+  - Os fallbacks já existentes cuidam do resto:
+    - o nível múltiplo de 5 vira oferta comum;
+    - o baú não converte nem completa com Stat.
+  - Helper `CardRules.CountOwned(pool, owned, CardKind kind)`. `CountOwnedItems` passa a chamar esse
+    helper.
+  - Os valores por nível dos Stats ficam como estão, valendo o nível 1.
+- **Itens:** sem mudança. São no máximo 6; depois disso, só os que o jogador já tem, até o nível máximo.
 - **Alocação:** nenhuma além da lista `result`. Reaproveite os buffers estáticos, como hoje.
 
 - [ ] **Passo 1: escrever os testes que falham.** Em `CardRulesTests`:
@@ -171,6 +182,12 @@ chance de upgrade por carta, com no máximo 2 itens por oferta.
     - `LevelUp_can_give_three_upgrades`: em 1000 ofertas, existe pelo menos uma com 3 Upgrades.
     - `LevelUp_without_upgrades_falls_back_to_items_then_stats`: pool com 0 Upgrades, 1 Item e 5 Stats,
       nível 2. Toda oferta tem 3 cartas: 1 Item e 2 Stats.
+    - `No_stats_after_six_owned`: pool com 8 Stats (`maxLevel` 1), 6 deles possuídos, mais Upgrades.
+      - Nível 5 vira oferta comum, sem Stat.
+      - Baú nunca traz Stat.
+      - Com 5 possuídos, o nível 5 volta a trazer Stats.
+- [ ] **Passo 1b:** mudar `maxLevel` de 3 para 1 nos 6 assets `stat_*` em `Assets/Settings/Cards/`, e pôr
+  `maxStatSlots: 6` no `RunSettings.asset`.
 - [ ] **Passo 2:** rodar a suíte. Esperado: os testes novos falham (ou não compilam por causa da
   assinatura).
 - [ ] **Passo 3:** implementar em `CardRules`, `OfferRules.From`, `RunSettings` (com os valores no asset)
@@ -486,6 +503,74 @@ direita.
 - [ ] **Passo 4:** rodar o eval e a suíte. Esperado: eval `PASS`, a suíte na linha de base. Abrir o
   `Bear.controller` e o `Ranger.controller` no Animator e conferir os estados.
 - [ ] **Passo 5:** commit `feat(ranger): pet urso do Beastmaster`.
+
+### Task 9: Barra de atributos (`Atribute_Background`)
+
+**Arquivos:**
+- Modificar:
+  - `Assets/Scripts/UI/InventoryHudUI.cs`
+  - `Assets/Scripts/Player/HeroCards.cs`
+  - `Assets/Scenes/_TestScene.unity` (campo do componente no `Atribute_Background`)
+- Eval: `t9_attribute_hud.cs`
+
+**Contexto:**
+- O usuário criou o `Atribute_Background` com 6 filhos `Icon`, desligados, e copiou para ele o mesmo
+  componente `InventoryHudUI` do `Inventory_Background`. Hoje os dois mostrariam os itens.
+- O filho `Quantity` dos itens foi removido pelo usuário. O nível do item não aparece mais na barra.
+- Upgrades de habilidade **não** aparecem em barra nenhuma.
+
+**Interfaces:**
+- `HeroCards.OwnedStats` (`IReadOnlyList<CardDefinition>`, na ordem em que foram pegos), mantido como o
+  `OwnedItems`. Dispara o mesmo `GameEvents.OnItemsChanged` quando um Stat entra.
+- `InventoryHudUI` ganha `[SerializeField] CardKind kind = CardKind.Item;`.
+  - Com `Item`, mostra `OwnedItems`; com `Stat`, mostra `OwnedStats`.
+  - Remover a busca por `Quantity` e o texto de nível.
+- Na cena: o componente do `Atribute_Background` fica com `kind = Stat`; o do `Inventory_Background`
+  continua `Item`.
+
+**Passos:**
+- [ ] **Passo 1: escrever o eval que falha.** `t9_attribute_hud.cs`:
+  - Concede 1 Item e 2 Stats via `HeroCards.Grant`.
+  - Na barra de itens, só 1 slot ligado, com o ícone do Item.
+  - Na barra de atributos, 2 slots ligados, com os ícones dos Stats.
+  - Concede um Upgrade: nenhuma barra muda.
+  - Limpeza completa.
+- [ ] **Passo 2:** rodar o eval. Esperado: `FAIL`.
+- [ ] **Passo 3:** implementar e ligar `kind = Stat` na cena, com o protocolo de cena.
+- [ ] **Passo 4:** rodar o eval e a suíte. Esperado: eval `PASS`, a suíte na linha de base.
+- [ ] **Passo 5:** commit `feat(hud): barra de atributos (6 Stats)`.
+
+### Task 10: Remover o Tab, o painel Inventory e o painel Shop
+
+**Contexto:** o usuário pediu em 2026-11-25. O Tab (ação `Inventory` do Input System) abre a Bag via
+`BagController.ToggleBag`, e isso não serve mais. Os painéis `Inventory` e `Shop` da `_TestScene` também
+não. Fora deles mesmos, nenhum código usa `InventoryPanelController` ou `ShopUIController`; só há citações
+em comentários.
+
+**Arquivos:**
+- Modificar:
+  - `Assets/PlayerControls.inputactions`: remover a ação `Inventory` e o binding `<Keyboard>/tab`. Usar o
+    Editor para que o `PlayerControls.cs` gerado seja refeito.
+  - `Assets/Scripts/Player/BagController.cs`: remover a assinatura do Tab.
+  - `Assets/Scripts/Tests/PlayerInputTest.cs`: remover a linha do Inventory.
+  - `Assets/Scenes/_TestScene.unity`: apagar os GameObjects `Inventory` e `Shop`.
+- Apagar: `Assets/Scripts/UI/InventoryPanelController.cs` e `Assets/Scripts/UI/ShopUIController.cs`,
+  com os `.meta`. Ajustar os comentários que citam esses arquivos.
+- **Fica:** o `ShopHandler` (World) e o estado `GameState.Shop`, usados pelo Continue Game. A limpeza
+  deles é da etapa 6.
+
+**Passos:**
+- [ ] **Passo 1: eval `t10_cleanup.cs` (escrever primeiro e ver falhar).** Verifica:
+  - O `PlayerControls` não tem a ação `Inventory`.
+  - A cena aberta não tem `InventoryPanelController` nem `ShopUIController`, nem GameObjects chamados
+    `Inventory` ou `Shop` no Canvas.
+  - Nenhum componente da cena tem script faltando: varrer
+    `GameObjectUtility.GetMonoBehavioursWithMissingScriptCount`.
+- [ ] **Passo 2:** aplicar as remoções. Antes de apagar, conferir com `git grep` que nenhuma referência
+  serializada a esses scripts (pelo GUID do `.meta`) fica em outra cena ou prefab.
+- [ ] **Passo 3:** `unity recompile`, o eval e a suíte. Esperado: compila sem erro, eval `PASS`, a suíte
+  na linha de base.
+- [ ] **Passo 4:** commit `chore: remove Tab, painel Inventory e painel Shop`.
 
 ## Fim
 
