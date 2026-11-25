@@ -43,6 +43,13 @@ public class RangerArrow : MonoBehaviour
     // TODOS os monstros no caminho com dano cheio, sem perder força (GDD, gate final).
     private bool infinitePierceEnabled;
 
+    // Catálogo de cartas — projéteis (ProjectileCards). Os valores do lançamento ficam guardados para
+    // relançar cópias (estilhaços do Shattered Prism, salto do Ricochet Fate); cópia = "filho", que nunca
+    // gera outro filho.
+    private float launchKnockback, launchBleedChance, launchBleedPerSecond, launchBleedDuration, launchLifetime;
+    private bool isChild;
+    private EnemyController homingTarget;
+
     // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca disparava
     // (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
     private void Awake() => PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
@@ -53,8 +60,11 @@ public class RangerArrow : MonoBehaviour
     {
         direction = dir.normalized;
         damageReserve = reserve;
-        speed = arrowSpeed;
+        speed = arrowSpeed * ProjectileCards.SpeedFactor; // Windpiercer: +velocidade (e o alcance junto, mesmo tempo de vida)
         lifetime = arrowLifetime;
+        launchKnockback = arrowKnockbackForce; launchBleedChance = bleedChance; launchBleedPerSecond = bleedPerSecond;
+        launchBleedDuration = bleedDur; launchLifetime = arrowLifetime;
+        if (!isChild) transform.localScale *= ProjectileCards.SizeFactor; // Gravity Core
         knockbackForce = arrowKnockbackForce;
         distanceDamageBonusPercent = distanceBonusPercent;
         bleedChancePercent = bleedChance;
@@ -77,8 +87,22 @@ public class RangerArrow : MonoBehaviour
         // position direto (espaço de mundo), não Translate — Translate usa espaço LOCAL por
         // padrão, e agora que a flecha está rotacionada os eixos locais giraram junto,
         // fazendo "direction" (um vetor de mundo) apontar pro lado errado.
-        transform.position += (Vector3)(direction * speed * Time.deltaTime);
-        timer += Time.deltaTime;
+        Simulate(Time.deltaTime);
+    }
+
+    // Um passo de movimento (público para os testes rodarem fora do Play).
+    public void Simulate(float dt)
+    {
+        // Predator's Eye: vira na direção do inimigo mais perto.
+        var steered = ProjectileCards.Steer(transform.position, direction, ref homingTarget, dt);
+        if (steered != direction)
+        {
+            direction = steered;
+            float a = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0f, 0f, a);
+        }
+        transform.position += (Vector3)(direction * speed * dt);
+        timer += dt;
         if (timer < lifetime) return;
 
         // #29 "Flecha Bumerangue" — só volta se ainda tiver reserva sobrando (senão já
@@ -121,12 +145,40 @@ public class RangerArrow : MonoBehaviour
         HeroDamage.Direct(enemy, damageDealt, CardAbility.Primary, pierce: true); // catálogo de cartas: ponto único
         enemy.ApplyKnockback(direction, knockbackForce);
         RollBleed(enemy);
+        SpawnCardChildren(enemy, damageDealt);
 
         // A reserva real gasta é a fração NÃO bonificada (o bônus de distância é "dano
         // extra", não reserva extra) — senão a Enxame Perfurante ficaria redundante com
         // Tiro à Distância em rank alto, e a perfuração ficaria mais generosa à toa.
         damageReserve -= Mathf.Min(damageReserve, damageDealt / (1f + distanceDamageBonusPercent / 100f * distanceFraction));
         if (damageReserve <= 0f) Destroy(gameObject);
+    }
+
+    // Shattered Prism (2 estilhaços de lado) e Ricochet Fate (1 salto pro inimigo mais perto).
+    private void SpawnCardChildren(EnemyController hit, float damageDealt)
+    {
+        if (isChild || damageDealt <= 0f) return;
+        var t = RunSettings.Current;
+        if (ProjectileCards.SplitChance > 0f && Random.value < ProjectileCards.SplitChance)
+        {
+            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent, 0.7f);
+            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent, 0.7f);
+        }
+        if (ProjectileCards.Ricochet)
+        {
+            var next = ProjectileCards.RicochetTarget(transform.position, hit);
+            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent, 1f);
+        }
+    }
+
+    private void SpawnChild(Vector2 dir, float reserve, float scale)
+    {
+        var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
+        obj.transform.localScale = transform.localScale * scale;
+        var child = obj.GetComponent<RangerArrow>();
+        child.isChild = true;
+        child.Launch(dir, reserve, speed / ProjectileCards.SpeedFactor, launchLifetime, launchKnockback, 0f,
+            launchBleedChance, launchBleedPerSecond, launchBleedDuration);
     }
 
     private void RollBleed(EnemyController enemy)

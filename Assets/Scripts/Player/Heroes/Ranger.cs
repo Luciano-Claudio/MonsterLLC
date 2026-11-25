@@ -442,7 +442,7 @@ public class Ranger : HeroController
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
         float arrowBleedPerSecond = stats.damage * bleedDamageMultiplier * GetShiftDamageDealtMultiplier()
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage); // etapa 4: congela o Shift e as cartas de dano
-        float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area); // etapa 4
+        float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area) * (1f + CardRunState.NextPrimaryArea); // etapa 4 + Relentless Momentum
 
         int totalArrows = arrowCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.ProjectileCount)); // etapa 4
         Vector2[] offsets = ArrowFormation.GetOffsets(totalArrows, arrowLateralStep, arrowForwardStep);

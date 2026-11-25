@@ -47,6 +47,11 @@ public class RangerKnife : MonoBehaviour
     private readonly HashSet<EnemyController> enemiesInRange = new();
     private readonly List<EnemyController> groundedTickTargets = new();
 
+    // Catálogo de cartas — projéteis (ProjectileCards): mesmos efeitos da flecha, só na fase de voo.
+    private float launchGroundedDamage, launchSpeed, launchDistance;
+    private bool isChild;
+    private EnemyController homingTarget;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -63,8 +68,10 @@ public class RangerKnife : MonoBehaviour
         flightDamageReserve = flightDamage;
         groundedDamagePerTick = groundedDamage;
         bleedDamagePerSecond = bleedPerSecond;
-        flightSpeed = speed;
-        maxDistance = distance;
+        flightSpeed = speed * ProjectileCards.SpeedFactor;      // Windpiercer
+        maxDistance = distance * ProjectileCards.SpeedFactor;
+        launchGroundedDamage = groundedDamage; launchSpeed = speed; launchDistance = distance;
+        if (!isChild) transform.localScale *= ProjectileCards.SizeFactor; // Gravity Core
         flightKnockbackForce = flightKnockback;
         groundedDuration = groundDuration;
         groundedTickInterval = groundTickInterval;
@@ -77,6 +84,31 @@ public class RangerKnife : MonoBehaviour
 
     // Efeito Nocivo Bleeding — usado tanto no hit em voo quanto no tick no chão. Imune a
     // Bleeding não recebe (mesmo padrão do Fire Elemental com Fire, ver MageFireball).
+    private void SpawnCardChildren(EnemyController hit, float damageDealt)
+    {
+        if (isChild || damageDealt <= 0f) return;
+        var t = RunSettings.Current;
+        if (ProjectileCards.SplitChance > 0f && Random.value < ProjectileCards.SplitChance)
+        {
+            SpawnChild(ProjectileCards.Rotate(direction, 45f), damageDealt * t.shardDamagePercent);
+            SpawnChild(ProjectileCards.Rotate(direction, -45f), damageDealt * t.shardDamagePercent);
+        }
+        if (ProjectileCards.Ricochet)
+        {
+            var next = ProjectileCards.RicochetTarget(transform.position, hit);
+            if (next != null) SpawnChild(((Vector2)(next.transform.position - transform.position)).normalized, damageDealt * t.ricochetDamagePercent);
+        }
+    }
+
+    private void SpawnChild(Vector2 dir, float reserve)
+    {
+        var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
+        var child = obj.GetComponent<RangerKnife>();
+        child.isChild = true;
+        child.Launch(dir, reserve, launchGroundedDamage, bleedDamagePerSecond, launchSpeed, launchDistance, flightKnockbackForce,
+            groundedDuration, groundedTickInterval, groundedRadius, groundedKnockbackForce, bleedDuration);
+    }
+
     private void ApplyBleeding(EnemyController enemy)
     {
         var statusEffects = enemy.GetComponent<StatusEffectController>();
@@ -95,6 +127,8 @@ public class RangerKnife : MonoBehaviour
     {
         // position direto (espaço de mundo), não Translate — Translate usa espaço LOCAL por
         // padrão, e a faca está rotacionada, então os eixos locais giraram junto.
+        var steered = ProjectileCards.Steer(transform.position, direction, ref homingTarget, Time.deltaTime); // Predator's Eye
+        if (steered != direction) direction = steered;
         float step = flightSpeed * Time.deltaTime;
         transform.position += (Vector3)(direction * step);
         distanceTraveled += step;
@@ -113,6 +147,7 @@ public class RangerKnife : MonoBehaviour
             HeroDamage.Direct(enemy, damageDealt, CardAbility.Ultimate, pierce: true); // catálogo de cartas: ponto único
             enemy.ApplyKnockback(direction, flightKnockbackForce);
             ApplyBleeding(enemy);
+            SpawnCardChildren(enemy, damageDealt);
 
             flightDamageReserve -= damageDealt;
             if (flightDamageReserve <= 0f) BecomeGrounded();
