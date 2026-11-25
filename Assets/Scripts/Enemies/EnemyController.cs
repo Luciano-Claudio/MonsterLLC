@@ -421,6 +421,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         attackAnimationCooldown = new AttackCooldown(stats.attackAnimationCooldown);
         SetMoveDirection(Vector2.down); // direção padrão — sem isso, MoveX/MoveY ficam em (0,0) até o primeiro Move(), deixando o Blend Tree de Idle indefinido por alguns frames
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
+        if (statusEffectController != null) statusEffectController.UseHeroDotModifiers = true; // catálogo de cartas: DOT do herói neste inimigo recebe as cartas
         isFrontCutter = Random.value < frontCutterChance; // sorteado 1x por instância — fixo pela vida do monstro, não reavaliado a cada frame
 
         ai = GetComponent<IAstarAI>();
@@ -1486,6 +1487,11 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected virtual void Die()
     {
         isDead = true;
+
+        // Catálogo de cartas — morreu com DOT (Plague Herald) / por DOT (Death's Echo): IsTicking só é
+        // verdadeiro durante o TakeDamage de um tick, então aqui diz se o golpe final foi o DOT.
+        var dotStatus = statusEffectController != null ? statusEffectController : GetComponent<StatusEffectController>();
+        if (dotStatus != null && dotStatus.HasAnyDot) GameEvents.EnemyDiedWithDot(dotStatus, transform.position, dotStatus.IsTicking);
 
         var collider = GetComponent<Collider2D>();
         if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca

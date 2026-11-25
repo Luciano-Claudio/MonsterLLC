@@ -922,6 +922,9 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // por abate acima (HandleEnemyKilled): não passa pelo lockout pós-ultimate nem pelos
     // multiplicadores de abate (UltimateEnergyMultiplier/EnergyGainMultiplier são especificamente
     // sobre recompensa de abate) — é % FLAT do próprio maxEnergy, decidida por quem chama.
+    // Catálogo de cartas — energia da Ultimate vinda de cartas (Affliction Harvest, Spirit Link...).
+    public void AddUltimateEnergyPercent(float percent) => GainEnergyPercentOfMax(percent);
+
     protected void GainEnergyPercentOfMax(float percent)
     {
         if (percent <= 0f) return;

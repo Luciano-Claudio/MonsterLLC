@@ -42,6 +42,7 @@ public class SystemsBootstrap : MonoBehaviour
         gameObject.AddComponent<XpGemPool>(); // etapas 1+2 — gemas de XP no chão (pool sem física)
         gameObject.AddComponent<HeroCards>(); // etapas 1+2 — 3 cartas por nível (tela CardScreenUI)
         gameObject.AddComponent<CardRunStateReset>(); // catálogo de cartas — zera o estado das cartas a cada run
+        gameObject.AddComponent<DotCardEffects>(); // catálogo de cartas — pilhas e cartas de DOT
         var scaling = MonsterScalingSettings.Load(); // D9.6a — tabela por tier editável (XP por kill em runtime)
         if (scaling != null) scaling.ApplyToRuntime();
         controls = new PlayerControls();

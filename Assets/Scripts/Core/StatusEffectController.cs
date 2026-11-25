@@ -104,16 +104,40 @@ public class StatusEffectController : MonoBehaviour
     // Stun (Ultimate do Druid Feral) entra na mesma mecânica da paralisia da Oração do Cleric.
     public bool IsIncapacitated => IsEffectActive(StatusEffectType.WordOfPain) || IsEffectActive(StatusEffectType.Stun);
 
-    private class StatusEffectInstance
+    // Catálogo de cartas — cada aplicação é uma pilha (DotStackRules). Sem Blight Crucible o limite é 1,
+    // que é exatamente o comportamento antigo (reaplicar renova duração e dano).
+    private IDamageable target;
+    private readonly List<StatusStack> activeEffects = new List<StatusStack>();
+    private long applyOrder;
+
+    // Inimigos marcam isto (EnemyController.Awake): os DOTs neles recebem os bônus das cartas do herói
+    // (pilhas, duração, dano, crítico do tick). DOT no próprio herói não muda.
+    public bool UseHeroDotModifiers { get; set; }
+
+    // Verdadeiro só durante o TakeDamage de um tick — o EnemyController usa pra saber se morreu por DOT.
+    public bool IsTicking { get; private set; }
+
+    public int StackCount(StatusEffectType type)
     {
-        public StatusEffectType type;
-        public float remaining;
-        public float damagePerSecond;
-        public AttackCooldown tick;
+        int n = 0;
+        for (int i = 0; i < activeEffects.Count; i++) if (activeEffects[i].type == type) n++;
+        return n;
     }
 
-    private IDamageable target;
-    private readonly List<StatusEffectInstance> activeEffects = new List<StatusEffectInstance>();
+    // A pilha mais forte (maior dps) de cada tipo de DOT ativo — Plague Herald repassa estas.
+    public void CollectStrongestDots(List<StatusStack> into)
+    {
+        into.Clear();
+        for (int i = 0; i < activeEffects.Count; i++)
+        {
+            var s = activeEffects[i];
+            if (!DealsDamage(s.damagePerSecond)) continue;
+            int found = -1;
+            for (int j = 0; j < into.Count; j++) if (into[j].type == s.type) { found = j; break; }
+            if (found < 0) into.Add(s);
+            else if (s.damagePerSecond > into[found].damagePerSecond) into[found] = s;
+        }
+    }
     private string currentVisualState = "Empty"; // evita Play() repetido todo tick reiniciando o clipe do zero
 
     // Sprint 23 (Cleric, Shift/Reza) — "flash" visual de 1x só, não é um Efeito com duração
@@ -165,29 +189,21 @@ public class StatusEffectController : MonoBehaviour
     // Etapa 4 — dps do efeito ativo (0 se não estiver ativo). Leitura pra testes/UI.
     public float GetDamagePerSecond(StatusEffectType type)
     {
-        var existing = activeEffects.Find(e => e.type == type);
-        return existing != null ? existing.damagePerSecond : 0f;
+        float best = 0f;
+        for (int i = 0; i < activeEffects.Count; i++)
+            if (activeEffects[i].type == type && activeEffects[i].damagePerSecond > best) best = activeEffects[i].damagePerSecond;
+        return best;
     }
 
     public void ApplyStatusEffect(StatusEffectType type, float duration, float damagePerSecond)
     {
         if (IsImmuneTo(type)) return;
 
-        var existing = activeEffects.Find(e => e.type == type);
-        if (existing != null)
-        {
-            existing.remaining = duration;
-            existing.damagePerSecond = damagePerSecond;
-            return;
-        }
-
-        activeEffects.Add(new StatusEffectInstance
-        {
-            type = type,
-            remaining = duration,
-            damagePerSecond = damagePerSecond,
-            tick = new AttackCooldown(tickInterval)
-        });
+        bool heroDot = UseHeroDotModifiers && DealsDamage(damagePerSecond);
+        int maxStacks = heroDot ? DotModifiers.MaxStacks : 1;
+        float finalDuration = heroDot ? duration * DotModifiers.DurationMultiplier : duration;
+        float finalDps = heroDot ? damagePerSecond * DotModifiers.DamageMultiplier : damagePerSecond;
+        DotStackRules.Apply(activeEffects, type, finalDuration, duration, finalDps, maxStacks, ref applyOrder, tickInterval);
         UpdateVisual();
     }
 
@@ -207,6 +223,7 @@ public class StatusEffectController : MonoBehaviour
 
         for (int i = activeEffects.Count - 1; i >= 0; i--)
         {
+            if (i >= activeEffects.Count) continue; // a morte no tick anterior pode ter limpado a lista
             var effect = activeEffects[i];
             effect.remaining -= deltaTime;
             if (effect.remaining <= 0f)
@@ -218,7 +235,17 @@ public class StatusEffectController : MonoBehaviour
             effect.tick.Tick(deltaTime);
             // isDirectPlayerHit: false — DoT nunca aciona o Game Feel de hit direto
             // (HitFeelController), só o hit de verdade aciona.
-            if (effect.tick.TryConsume() && target != null && DealsDamage(effect.damagePerSecond)) target.TakeDamage(effect.damagePerSecond * tickInterval, isDirectPlayerHit: false);
+            if (effect.tick.TryConsume() && target != null && DealsDamage(effect.damagePerSecond))
+            {
+                float damage = effect.damagePerSecond * tickInterval;
+                bool crit = UseHeroDotModifiers && DotModifiers.CritChance > 0f && UnityEngine.Random.value < DotModifiers.CritChance;
+                if (crit) damage *= DotModifiers.CritMultiplier; // Cursed Diadem
+                var type = effect.type;
+                IsTicking = true;
+                target.TakeDamage(damage, isDirectPlayerHit: false);
+                IsTicking = false;
+                if (UseHeroDotModifiers) GameEvents.DotTicked(this, type, damage, crit);
+            }
         }
 
         // Enquanto o flash estiver tocando, ele manda no visual sozinho (FlashStatus já deu o

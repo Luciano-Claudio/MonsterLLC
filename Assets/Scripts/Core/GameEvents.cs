@@ -24,6 +24,12 @@ public static class GameEvents
     // OnEnemyKilled acima, nunca o substitui. directHits/dotTicks separados de propósito — ver
     // "Revisão do builder-check" no design (misturar os 2 enviesaria a análise de balanceamento).
     public static event Action<string, bool, int, int, float, int, Vector3> OnEnemyKilledDetailed;
+    // Catálogo de cartas — tick de DOT num inimigo (Affliction Heart/Harvest) e morte de inimigo que tinha
+    // DOT (Plague Herald, Death's Echo). killedByDot = o golpe final foi um tick.
+    public static event Action<StatusEffectController, StatusEffectType, float, bool> OnDotTick;
+    public static void DotTicked(StatusEffectController status, StatusEffectType type, float damage, bool crit) => OnDotTick?.Invoke(status, type, damage, crit);
+    public static event Action<StatusEffectController, Vector3, bool> OnEnemyDiedWithDot;
+    public static void EnemyDiedWithDot(StatusEffectController status, Vector3 position, bool killedByDot) => OnEnemyDiedWithDot?.Invoke(status, position, killedByDot);
     public static void EnemyKilledDetailed(string enemyName, bool isBoss, int directHits, int dotTicks, float maxHealth, int energyReward, Vector3 position) =>
         OnEnemyKilledDetailed?.Invoke(enemyName, isBoss, directHits, dotTicks, maxHealth, energyReward, position);
 
