@@ -211,6 +211,17 @@ public class Ranger : HeroController
     public const string SpecCrimsonArrow = "ranger_crimson_arrow";
     public const string SpecBeastmaster = "ranger_beastmaster";
 
+    // Pet urso (Beastmaster) — mesma estrutura do pet do Mage (Phoenix): o PetSummoner do prefab
+    // decide "tem pet / quantos"; o Ranger só toca a própria animação de invocar (SummonPet, com
+    // bloqueio de movimento via isAttacking) quando ele pedir, e decide os multiplicadores do pet.
+    [Header("Pet — Urso (Beastmaster)")]
+    [SerializeField] private PetSummoner petSummoner;
+    [SerializeField] private float petSizeMultiplier = 1f; // 🔢
+    [SerializeField] private float petActionSpeedMultiplier = 1f; // 🔢
+    [SerializeField] private float petDamageMultiplier = 1f; // 🔢
+    [SerializeField] private float petCooldownReductionMultiplier = 1f; // 🔢
+    [SerializeField] private float petChaseRadiusMultiplier = 1f; // 🔢
+
     // #29/#30 — gates da Esquerda, repassados pra RangerArrow decidir o comportamento no
     // hit/fim de vida (ver RangerArrow.Launch()).
     private bool boomerangArrowEnabled;
@@ -262,11 +273,24 @@ public class Ranger : HeroController
         RecomputePerkEffects();
     }
 
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        GameEvents.OnDayStart += RequestPetCheck;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        GameEvents.OnDayStart -= RequestPetCheck;
+    }
+
     protected override void Update()
     {
         if (!GameplayGate.IsActive) return;
 
         base.Update();
+        UpdatePetSummon();
 
         // !isAttackingForCamouflage aqui é essencial: a camuflagem CLÁSSICA tem seu próprio
         // teto de tempo (secondaryAbilityMaxDuration, maior que maxActionDuration) e sua
@@ -708,6 +732,39 @@ public class Ranger : HeroController
     {
         if (spec == null) return;
         arrowBleedChancePercent = spec.id == SpecCrimsonArrow ? 100f : 0f;
+        if (petSummoner != null) petSummoner.HasPet = spec.id == SpecBeastmaster;
+    }
+
+    // ===================== Pet urso (copiado do Mage) =====================
+    public void RequestPetCheck()
+    {
+        if (petSummoner != null) petSummoner.RequestCheck();
+    }
+
+    // Todo frame: se o PetSummoner pedir, toca 1 animação de invocar — só com o Ranger livre
+    // (nunca corta ataque/habilidade). AnimationSummonPetEndEvent libera isAttacking.
+    private void UpdatePetSummon()
+    {
+        if (petSummoner == null) return;
+        bool busy = PetSummonRules.HeroBusy(isAttacking, isUsingSecondaryAbility, isTrapped, HealthSystem.IsDead(stats.health));
+        if (!petSummoner.ShouldStartSummon(busy)) return;
+        isAttacking = true;
+        actionElapsed = 0f;
+        AnimatorTrigger("SummonPetTrigger");
+    }
+
+    // Animation Event, no meio do clipe summonpet — 1 urso por invocação.
+    public void AnimationSummonPetEvent()
+    {
+        if (petSummoner == null) return;
+        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier,
+            petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
+    }
+
+    // Animation Event, no fim do clipe summonpet.
+    public void AnimationSummonPetEndEvent()
+    {
+        isAttacking = false;
     }
 
     private void RecomputeEsquerda()
