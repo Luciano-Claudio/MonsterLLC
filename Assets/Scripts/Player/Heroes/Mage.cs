@@ -618,8 +618,20 @@ public class Mage : HeroController
     {
         if (petSummoner == null) return;
         bool isExtra = petSummoner.Pets.Count >= petSummoner.BasePetCount;
-        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier,
-            isExtra ? petDamageMultiplier * 0.5f : petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
+        petSummoner.SpawnOne(transform, PetSize, PetActionSpeed,
+            isExtra ? petDamageMultiplier * 0.5f : petDamageMultiplier, PetCooldown, petChaseRadiusMultiplier);
+    }
+
+    // Etapa 4 — cartas do pet (Phoenix Pact): +tamanho, +velocidade de ataque, −cooldown (piso de 0,2).
+    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize));
+    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed));
+    private float PetCooldown => petCooldownReductionMultiplier
+        * Mathf.Max(CardBonuses.CooldownFloor, 1f - HeroController.Cards.Sum(CardAbility.None, CardStat.PetCooldown));
+
+    protected override void OnCardsChanged()
+    {
+        if (petSummoner == null) return;
+        foreach (var pet in petSummoner.Pets) if (pet != null) pet.ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown);
     }
 
     // Animation Event, no fim do clipe de invocação.

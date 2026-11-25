@@ -124,7 +124,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             stats.health = Mathf.Min(newMax, stats.health * newMax / oldEffectiveMaxHealth);
         GameEvents.HealthChanged(stats.health, newMax);
         SetSecondaryCooldownMultiplier(1f); // heróis que não reaplicam o próprio multiplicador pegam o da carta
+        OnCardsChanged();
     }
+
+    // Etapa 4 — heróis com coisas já em campo que dependem de carta (ex.: pet do Mage) reaplicam aqui.
+    protected virtual void OnCardsChanged() { }
 
     public float EffectiveMaxHealth => stats.maxHealth * MaxHealthMultiplier * CentralHealthMultiplier * Cards.Get(CardAbility.None, CardStat.MaxHealth)
         * (1f + GetConditionalMaxHealthBonusPercent() / 100f);

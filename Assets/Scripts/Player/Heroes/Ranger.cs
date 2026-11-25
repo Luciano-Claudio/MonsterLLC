@@ -443,7 +443,8 @@ public class Ranger : HeroController
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage); // etapa 4: congela o Shift e as cartas de dano
         float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area); // etapa 4
 
-        Vector2[] offsets = ArrowFormation.GetOffsets(arrowCount, arrowLateralStep, arrowForwardStep);
+        int totalArrows = arrowCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.ProjectileCount)); // etapa 4
+        Vector2[] offsets = ArrowFormation.GetOffsets(totalArrows, arrowLateralStep, arrowForwardStep);
         foreach (var offset in offsets)
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
@@ -761,8 +762,21 @@ public class Ranger : HeroController
     public void AnimationSummonPetEvent()
     {
         if (petSummoner == null) return;
-        petSummoner.SpawnOne(transform, petSizeMultiplier, petActionSpeedMultiplier,
-            petDamageMultiplier, petCooldownReductionMultiplier, petChaseRadiusMultiplier);
+        petSummoner.SpawnOne(transform, PetSize, PetActionSpeed,
+            petDamageMultiplier, PetCooldown, petChaseRadiusMultiplier);
+    }
+
+    // Etapa 4 — cartas do urso (Beastmaster), as mesmas do pet do Mage: +tamanho, +velocidade de
+    // ataque, −cooldown (piso de 0,2). Reaplicadas no urso vivo quando uma carta entra.
+    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize));
+    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed));
+    private float PetCooldown => petCooldownReductionMultiplier
+        * Mathf.Max(CardBonuses.CooldownFloor, 1f - HeroController.Cards.Sum(CardAbility.None, CardStat.PetCooldown));
+
+    protected override void OnCardsChanged()
+    {
+        if (petSummoner == null) return;
+        foreach (var pet in petSummoner.Pets) if (pet != null) pet.ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown);
     }
 
     // Animation Event, no fim do clipe summonpet.

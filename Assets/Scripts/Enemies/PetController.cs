@@ -63,13 +63,20 @@ public class PetController : MonoBehaviour
     {
         owner = petOwner;
         teleportPoint = spawnPoint;
-        transform.localScale = Vector3.one * sizeMultiplier;
         damageMultiplier = damageMult;
         chaseRadius *= chaseRadiusMultiplier;
+        ApplyMultipliers(sizeMultiplier, actionSpeedMultiplier, cooldownReductionMultiplier);
+    }
+
+    // Etapa 4 — reaplicável a qualquer momento (cartas de pet pegas com o pet já em campo).
+    public void ApplyMultipliers(float sizeMultiplier, float actionSpeedMultiplier, float cooldownReductionMultiplier)
+    {
+        transform.localScale = Vector3.one * sizeMultiplier;
         if (hasActionSpeedMultiplierParam) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
         // Animação mais rápida sem reduzir o cooldown de verdade deixaria o pet "animando
         // rápido mas atacando no mesmo ritmo de sempre" — igual ao Attack do herói, os 2
-        // andam juntos por padrão, e a redução extra dos perks de cooldown se soma em cima.
+        // andam juntos por padrão, e a redução extra (perks/cartas) se soma em cima.
+        attackCooldown ??= new AttackCooldown(attackCooldownDuration);
         attackCooldown.DurationMultiplier = cooldownReductionMultiplier / actionSpeedMultiplier;
     }
 

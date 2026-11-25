@@ -548,11 +548,12 @@ public class Barbarian : HeroController
         bool isDoubledUse = ultimateEveryFifthUseDoubled && ultimateUseCount % 5 == 0;
         if (isDoubledUse) reserve *= 2f;
 
-        FireUltimateVolley(reserve, isDoubledUse ? ultimateProjectileCount * 2 : ultimateProjectileCount);
+        int bladeCount = ultimateProjectileCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Ultimate, CardStat.ProjectileCount)); // etapa 4
+        FireUltimateVolley(reserve, isDoubledUse ? bladeCount * 2 : bladeCount);
 
         // #27 "Fúria Repetida" — chance de uma 2ª rodada completa, automática, na mesma posição.
         if (ultimateRepeatVolleyChance > 0f && Random.value < ultimateRepeatVolleyChance / 100f)
-            FireUltimateVolley(reserve, ultimateProjectileCount);
+            FireUltimateVolley(reserve, bladeCount);
 
         // #25 "Pouso Sísmico" — dano em área no ponto de aterrissagem, independente dos projéteis.
         if (ultimateLandingAreaRadius > 0f && ultimateLandingAreaDamagePercent > 0f)
