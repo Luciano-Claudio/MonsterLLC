@@ -1221,22 +1221,13 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // primário e de cartas, sem crítico. Heróis com fórmula própria sobrescrevem.
     public virtual float EffectsBaseDamage => stats.damage * PrimaryDamageMultiplier * Cards.Get(CardAbility.Primary, CardStat.Damage) * CentralDamageMultiplier;
 
-    // Etapa 3 — golpe melee de um inimigo no herói: aplica o dano e devolve os espinhos (Thorn Mail)
-    // sobre o dano RECEBIDO (depois das reduções; nada se o herói estava imune/morto).
+    // Golpe melee de um inimigo no herói. Os espinhos antigos (Thorn Mail) saíram no catálogo de
+    // cartas; o Thornwake Armor reage a qualquer dano direto recebido (ver HeroStateCardEffects).
     public static void HitByMelee(EnemyController attacker, HeroController hero, float amount)
     {
         if (hero == null) return;
         hero.LastDamageTaken = 0f; // override que absorve tudo sem chamar a base (escudo do Paladin) = 0
         hero.TakeDamage(amount);
-        ApplyThorns(attacker, hero.LastDamageTaken);
-    }
-
-    // Etapa 3 — Thorn Mail: quem bateu (golpe melee) leva de volta dano × soma das cartas Thorns.
-    public static void ApplyThorns(EnemyController attacker, float damageDealt)
-    {
-        float thorns = Cards.Sum(CardAbility.None, CardStat.Thorns);
-        if (thorns <= 0f || attacker == null || attacker.IsDead || damageDealt <= 0f) return;
-        attacker.TakeDamage(damageDealt * thorns, false);
     }
 
     private void TriggerDamageFlash()

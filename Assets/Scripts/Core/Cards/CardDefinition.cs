@@ -5,7 +5,20 @@ using UnityEngine;
 // nível dela até maxLevel. Dano multiplica por nível (valuePerLevel^nível); o resto soma.
 // Só ACRESCENTAR no fim (valor serializado como número nos assets).
 public enum CardStat { Damage, Area, Cooldown, AnimSpeed, MoveSpeed, Magnet, MaxHealth, DamageTaken, Regen, XpGain, Thorns, BlastChance,
-    ProjectileCount, PetSize, PetAttackSpeed, PetCooldown } // etapa 4: quantidade de projéteis e pet
+    ProjectileCount, PetSize, PetAttackSpeed, PetCooldown, // etapa 4: quantidade de projéteis e pet
+    // Catálogo de cartas (docs/superpowers/specs/2026-11-25-catalogo-cartas-design.md) — SEMPRE no fim.
+    // Itens:
+    BossHealthPercentDamage, EchoFang, ExecuteBonus, Lifesteal, CritDamage, PetBond, CritSecondImpact, ShiftHeal,
+    DotStacks, DotDuration, DotSpread, DotTargetBonus, DotCrit, DotExplosion, ThornSpikes, HeroSize, HealEffectiveness,
+    CheatDeath, CrowdArmor, ProjectileHoming, ProjectileSplit, ProjectileSize, ProjectileSpeed, KillHeal, KillEnergy,
+    GoldGain, CritChance,
+    // Atributos (valor 1 = tem):
+    TitansTribute, TrophyHunter, EndlessHunger, GoldenMomentum, SurvivorsLegacy, DangerousBargain, RelentlessMomentum,
+    PredatorsFocus, CriticalFever, CrowdBreaker, BloodFrenzy, DeathsEcho, Overkill, FinalStand, ScarsOfBattle, Unbroken,
+    AdrenalineRush, ShieldBattery, WarriorsFeast, MovingFortress, RicochetFate, AfflictionHarvest, ElementalSupremacy,
+    RelentlessCasting, SpiritLink, FinalJudgment, CollectorsInstinct, MerchantsWhisper, GreedboundSoul, TreasureSense,
+    // Upgrade do Mage:
+    FlameDuration }
 public enum CardAbility { None, Primary, Shift, Ultimate }
 // Tipo da carta (muda fundo, rótulo e cor no Cards_Popup): Item = vendedor; Upgrade/Stat = baú;
 // subir de nível pode trazer os 3. Stat = os atributos (etapa 4).

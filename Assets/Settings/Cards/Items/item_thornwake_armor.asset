@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07f6f6a18f93b924e9c36772046a4b54, type: 3}
+  m_Name: item_thornwake_armor
+  m_EditorClassIdentifier: Core::CardDefinition
+  id: item_thornwake_armor
+  kind: 0
+  title: Thornwake Armor
+  description: When hit, shoot thorns that deal {0} of your max HP
+  icon: {fileID: 0}
+  ability: 0
+  stat: 30
+  valuePerLevel: 0.03
+  maxLevel: 5
+  baseValue: 0
+  healthPerLevel: 0.1
+  heroId: 
+  requiredTags: 16
