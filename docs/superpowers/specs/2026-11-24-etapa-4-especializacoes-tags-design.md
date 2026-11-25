@@ -260,7 +260,7 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
 - **Itens e atributos que dão dano ou vida:** continuam como estão.
   - Dano: Power Gauntlet ×1,1 por nível; Ancestral Strength ×1,25.
   - Vida: todo item dá +10% por nível; Vitality dá +25%.
-- **Níveis máximos:** upgrades específicos (cooldown, animação, área) e itens ficam no nível 5.
+- **Níveis máximos:** **todos os upgrades vão até o nível 10** (decidido pelo usuário em 2026-11-25). Itens continuam no nível 5. Cooldown e custo de energia têm piso de 0,2 (no máximo −80%).
 - **Ajuste:** os números só serão ajustados depois do teste no Play.
 - **Upgrades específicos que ficaram:**
   - Barbarian: área do primário (só Earthquake), cooldown e duração do Shift, área, custo de energia e velocidade de animação da Ultimate.
