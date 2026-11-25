@@ -91,6 +91,93 @@ public class RunSettings : ScriptableObject
     [Tooltip("Blast Charm: dano da explosão em % do dano do ataque primário do herói.")]
     public float blastDamagePercent = 100f; // 🔢
 
+    // Catálogo de cartas (docs/superpowers/specs/2026-11-25-catalogo-cartas-design.md) — valores
+    // secundários dos efeitos. Os valores por nível ficam nas próprias cartas.
+    [Header("Catálogo de cartas — dano e crítico")]
+    public float baseCritChancePercent = 5f; // 🔢 crítico base de todo ataque direto (decisão do usuário)
+    public float executeThreshold = 0.30f; // 🔢 Executioner's Mark
+    public float elementalSupremacyBonus = 0.25f; // 🔢
+    public float finalJudgmentBonus = 0.30f; // 🔢
+    public float trophyPerBoss = 0.05f; // 🔢
+    public float trophyCap = 0.50f; // 🔢
+    public float focusPerHit = 0.05f; // 🔢 Predator's Focus
+    public float focusCap = 0.50f; // 🔢
+    public int endlessKillsPerStep = 30; // 🔢 Endless Hunger
+    public float endlessPerStep = 0.01f; // 🔢
+    public float endlessCap = 0.25f; // 🔢
+    public float finalStandThreshold = 0.30f; // 🔢
+    public float finalStandDamage = 0.20f; // 🔢
+    public float finalStandReduction = 0.20f; // 🔢
+    public float feverPerStack = 0.02f; // 🔢 Critical Fever
+    public int feverMaxStacks = 10; // 🔢
+    public float feverDuration = 4f; // 🔢
+    public float bloodFrenzyThreshold = 0.40f; // 🔢
+    public float bloodFrenzyBonus = 0.25f; // 🔢 dano e velocidade
+    public float bloodFrenzyDuration = 4f; // 🔢
+    public int echoFangEvery = 4; // 🔢
+    public float critSecondImpactPercent = 0.50f; // 🔢 Shattered Fortune
+    public float overkillPercent = 0.50f; // 🔢
+    public float overkillRange = 3f; // 🔢
+    public int crowdBreakerTargets = 3; // 🔢
+    public float crowdBreakerBonus = 0.40f; // 🔢
+    public float relentlessMoveSeconds = 2f; // 🔢 Relentless Momentum
+    public float relentlessDamage = 0.50f; // 🔢
+    public float relentlessArea = 0.30f; // 🔢
+    public float relentlessCastingPerHit = 0.1f; // 🔢 segundos
+    public float relentlessCastingPerSecond = 0.5f; // 🔢 teto por segundo
+
+    [Header("Catálogo de cartas — DOT")]
+    public int dotExplosionEveryTicks = 8; // 🔢 Affliction Heart
+    public float dotExplosionRadius = 1.5f; // 🔢
+    public float plagueRadius = 2.5f; // 🔢 Plague Herald
+    public int plagueTargets = 2; // 🔢
+    public float deathsEchoPercent = 0.50f; // 🔢
+    public float deathsEchoRadius = 1.5f; // 🔢
+    public int afflictionHarvestEvery = 20; // 🔢 ticks
+    public float afflictionHarvestEnergyPercent = 2f; // 🔢 % da energia máxima
+
+    [Header("Catálogo de cartas — defesa, cura e movimento")]
+    public float wellspringCooldown = 10f; // 🔢
+    public float thornCooldown = 0.5f; // 🔢 Thornwake Armor
+    public int thornBaseCount = 2; // 🔢 + nível
+    public float thornScale = 0.5f; // 🔢 escala do projétil (Thunder Blade) usado como espinho
+    public float lastEmberCooldown = 300f; // 🔢 5 minutos
+    public float lastEmberInvulnerable = 2f; // 🔢
+    public float graveboundRadius = 2.5f; // 🔢
+    public int graveboundMaxEnemies = 10; // 🔢
+    public float killHealCapPerSecond = 0.05f; // 🔢 Reaper's Feast (fração da vida máxima)
+    public int titanKillsPerStep = 25; // 🔢 Titan's Tribute
+    public float titanPerStep = 0.01f; // 🔢
+    public float titanCap = 0.50f; // 🔢
+    public float survivorPerBoss = 0.05f; // 🔢 Survivor's Legacy
+    public float survivorCap = 0.50f; // 🔢
+    public float goldenMomentumBonus = 0.20f; // 🔢
+    public float goldenMomentumDuration = 2f; // 🔢
+    public float dangerousXpBonus = 0.30f; // 🔢 Dangerous Bargain
+    public float dangerousDamageTaken = 0.15f; // 🔢
+    public float scarPerStack = 0.03f; // 🔢 Scars of Battle
+    public int scarMaxStacks = 5; // 🔢
+    public float scarDuration = 4f; // 🔢
+    public int unbrokenKills = 15; // 🔢
+    public float unbrokenShield = 0.20f; // 🔢 fração da vida máxima
+    public float unbrokenDuration = 8f; // 🔢
+    public float adrenalineThreshold = 0.25f; // 🔢
+    public float adrenalineBonus = 0.30f; // 🔢
+    public float adrenalineDuration = 3f; // 🔢
+    public float adrenalineCooldown = 10f; // 🔢
+    public float warriorsHeal = 0.25f; // 🔢 Warrior's Feast
+    public float warriorsShield = 0.15f; // 🔢
+    public float warriorsDuration = 10f; // 🔢
+    public float movingFortressSeconds = 1.5f; // 🔢
+    public float movingFortressReduction = 0.15f; // 🔢
+    public float spiritLinkEnergyPercent = 5f; // 🔢 % da energia máxima
+
+    [Header("Catálogo de cartas — projéteis (Ranger)")]
+    public float homingBaseRadius = 3f; // 🔢 Predator's Eye (+1 por nível)
+    public float shardDamagePercent = 0.40f; // 🔢 Shattered Prism
+    public float ricochetRange = 4f; // 🔢 Ricochet Fate
+    public float ricochetDamagePercent = 0.60f; // 🔢
+
     [Header("Sistemas fora da run (etapa 3 religa baú/vendedor dando cartas)")]
     [Tooltip("Gold por kill/sobrevivência dentro da run. Não existe mais gold na run (etapas 1+2).")]
     public bool runGoldEnabled = false;
