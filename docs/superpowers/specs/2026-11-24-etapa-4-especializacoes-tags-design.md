@@ -160,8 +160,9 @@ O que já existe no código para isso:
   a oferta sai com menos cartas.
 - **"Em tudo" significa os ataques que dão dano:**
   - **Barbarian Bloodlust**, definido pelo usuário em 2026-11-25:
-    - **Onde aplica:** Bleeding no Primário e na Ultimate, com os números do "Sangramento Perfurante".
-      Na Ultimate o código é novo.
+    - **Onde aplica:** Bleeding no Primário e na Ultimate. O dps é 50% do dano do golpe e dura 3 s,
+      com os dois valores ajustáveis. O "Sangramento Perfurante" dava um dps fixo por rank, o que não
+      combina com a regra de o DOT seguir o ataque inicial. Na Ultimate o código é novo.
     - **O Shift não dá dano:** ele não é ataque e não aplica Bleeding sozinho. Os golpes do Primário
       buffados pelo Shift continuam aplicando Bleeding.
     - **O Shift aprimora o DOT:** um Bleeding aplicado durante o Shift usa o dano do golpe que o aplicou,
