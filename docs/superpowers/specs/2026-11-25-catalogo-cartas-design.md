@@ -186,9 +186,12 @@ as cartas criadas de uma vez, para colocar os ícones de uma só vez.
     - Predator's Focus: 1 pilha por ciclo.
     - Crowd Breaker: olha quantos inimigos o ciclo acertou.
     - Relentless Momentum: o bônus vale para o próximo ciclo inteiro.
-- **Carta nova do Mage: Lasting Flames** (`mage_primary_duration`). Upgrade de +10% de duração da chama por
-  nível, até o nível 10. Vem do usuário: faltava uma carta de duração. No máximo, a duração dobra: um ataque
-  de 12 quadros vira 24, ou seja, 2 ciclos de dano.
+- **Carta nova do Mage: Lasting Flames** (`mage_primary_duration`). Upgrade até o nível 10. Vem do usuário:
+  faltava uma carta de duração.
+  - **Níveis 1 a 9:** +10% de duração da chama por nível, até +90%.
+  - **Nível 10:** duração **infinita**. Enquanto o jogador segura o botão de ataque, o Mage solta fogo sem
+    parar, repetindo os ciclos de 12 quadros. Soltar o botão encerra a chama normalmente.
+  - A descrição da carta deixa isso claro no nível 10.
 
 ## Decisões do Claude depois da revisão do construtor (o usuário pode corrigir)
 
