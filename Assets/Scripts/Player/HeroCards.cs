@@ -24,6 +24,7 @@ public class HeroCards : MonoBehaviour
 
     private readonly Dictionary<string, int> owned = new();
     private readonly List<CardDefinition> ownedItems = new(); // ordem em que os itens foram pegos
+    private readonly List<CardDefinition> ownedStats = new(); // etapa 4 — ordem em que os atributos foram pegos
     private readonly Queue<PendingOffer> pending = new();
     private readonly List<CardDefinition> currentOffer = new();
     private readonly List<CardDefinition> probe = new();
@@ -39,6 +40,7 @@ public class HeroCards : MonoBehaviour
     public bool RerollAvailable => OfferOpen && !rerollUsed;
     public IReadOnlyDictionary<string, int> Owned => owned;
     public IReadOnlyList<CardDefinition> OwnedItems => ownedItems;
+    public IReadOnlyList<CardDefinition> OwnedStats => ownedStats;
 
     public event Action<IReadOnlyList<CardDefinition>> OfferReady;
     public event Action OfferClosed;
@@ -72,6 +74,7 @@ public class HeroCards : MonoBehaviour
     {
         owned.Clear();
         ownedItems.Clear();
+        ownedStats.Clear();
         pending.Clear();
         CloseOffer(resume: false);
         if (TimeManager.Instance != null) TimeManager.Instance.ResumeBy(this); // nenhuma pausa de cartas da run anterior
@@ -160,11 +163,12 @@ public class HeroCards : MonoBehaviour
         float oldMaxHealth = hero != null ? hero.EffectiveMaxHealth : 0f;
         owned[card.id] = Mathf.Min(card.maxLevel, CardRules.LevelOf(owned, card) + 1);
         if (card.kind == CardKind.Item && !ownedItems.Contains(card)) ownedItems.Add(card);
+        if (card.kind == CardKind.Stat && !ownedStats.Contains(card)) ownedStats.Add(card);
         HeroController.Cards.Recompute(Pool, owned);
         if (hero != null) hero.OnCardBonusesChanged(oldMaxHealth);
         Debug.Log($"[HeroCards] {card.title} -> nível {owned[card.id]}.");
         GameEvents.CardGranted(card.id, owned[card.id]);
-        if (card.kind == CardKind.Item) GameEvents.ItemsChanged();
+        if (card.kind == CardKind.Item || card.kind == CardKind.Stat) GameEvents.ItemsChanged();
     }
 
     private void CloseOffer(bool resume)
