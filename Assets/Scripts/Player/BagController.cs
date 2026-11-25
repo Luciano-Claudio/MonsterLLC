@@ -4,9 +4,6 @@ public class BagController : MonoBehaviour
 {
     public static BagController Instance { get; private set; }
     public Bag Bag { get; private set; }
-    public bool IsOpen { get; private set; }
-
-    private PlayerControls controls;
 
     // GDD Seção 37/8 — base fixa do herói, nunca muda. Mais Espaço de Bag/Stack Maior (World
     // Perks) somam/substituem por cima disso em ApplyWorldPerkBonuses(), nunca aqui.
@@ -17,8 +14,7 @@ public class BagController : MonoBehaviour
     {
         Instance = this;
         Bag = new Bag(maxSlots: BaseMaxSlots, stackSize: BaseStackSize);
-        controls = new PlayerControls();
-        controls.Gameplay.Inventory.performed += ctx => ToggleBag();
+        // Etapa 4: o Tab (abrir a Bag/painel Inventory) foi removido — o painel saiu da cena.
 
         ApplyWorldPerkBonuses();
     }
@@ -33,19 +29,6 @@ public class BagController : MonoBehaviour
         Bag.maxSlots = BaseMaxSlots + WorldPerkEffects.BagSlotBonus;
         Bag.stackSize = WorldPerkEffects.BagStackSize;
         GameEvents.BagChanged(Bag);
-    }
-
-    private void OnEnable() => controls.Enable();
-    private void OnDisable() => controls.Disable();
-
-    private void ToggleBag()
-    {
-        IsOpen = !IsOpen;
-        if (IsOpen) TimeManager.Instance.Pause();
-        else TimeManager.Instance.Resume();
-
-        GameEvents.BagToggled(IsOpen);
-        Debug.Log($"[BagController] Bag {(IsOpen ? "aberta" : "fechada")}.");
     }
 
     public long AddItem(string itemName, long amount)

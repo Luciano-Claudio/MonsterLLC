@@ -138,15 +138,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Inventory"",
-                    ""type"": ""Button"",
-                    ""id"": ""ec42054b-ec12-44e3-96d3-00bc5f57f2c7"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""SecondaryAbility"",
                     ""type"": ""Button"",
                     ""id"": ""1a2b3c4d-5e6f-4789-a1b2-c3d4e5f60789"",
@@ -267,17 +258,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""75fac983-186e-4cbb-9f8d-1d049620cb94"",
-                    ""path"": ""<Keyboard>/tab"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Inventory"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""3c4d5e6f-7081-4901-c3d4-e5f607890123"",
                     ""path"": ""<Keyboard>/leftShift"",
                     ""interactions"": """",
@@ -310,7 +290,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Gameplay_Attack = m_Gameplay.FindAction("Attack", throwIfNotFound: true);
         m_Gameplay_Ultimate = m_Gameplay.FindAction("Ultimate", throwIfNotFound: true);
         m_Gameplay_Interact = m_Gameplay.FindAction("Interact", throwIfNotFound: true);
-        m_Gameplay_Inventory = m_Gameplay.FindAction("Inventory", throwIfNotFound: true);
         m_Gameplay_SecondaryAbility = m_Gameplay.FindAction("SecondaryAbility", throwIfNotFound: true);
         m_Gameplay_Pause = m_Gameplay.FindAction("Pause", throwIfNotFound: true);
     }
@@ -398,7 +377,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Attack;
     private readonly InputAction m_Gameplay_Ultimate;
     private readonly InputAction m_Gameplay_Interact;
-    private readonly InputAction m_Gameplay_Inventory;
     private readonly InputAction m_Gameplay_SecondaryAbility;
     private readonly InputAction m_Gameplay_Pause;
     /// <summary>
@@ -432,10 +410,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/Interact".
         /// </summary>
         public InputAction @Interact => m_Wrapper.m_Gameplay_Interact;
-        /// <summary>
-        /// Provides access to the underlying input action "Gameplay/Inventory".
-        /// </summary>
-        public InputAction @Inventory => m_Wrapper.m_Gameplay_Inventory;
         /// <summary>
         /// Provides access to the underlying input action "Gameplay/SecondaryAbility".
         /// </summary>
@@ -485,9 +459,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
-            @Inventory.started += instance.OnInventory;
-            @Inventory.performed += instance.OnInventory;
-            @Inventory.canceled += instance.OnInventory;
             @SecondaryAbility.started += instance.OnSecondaryAbility;
             @SecondaryAbility.performed += instance.OnSecondaryAbility;
             @SecondaryAbility.canceled += instance.OnSecondaryAbility;
@@ -520,9 +491,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
-            @Inventory.started -= instance.OnInventory;
-            @Inventory.performed -= instance.OnInventory;
-            @Inventory.canceled -= instance.OnInventory;
             @SecondaryAbility.started -= instance.OnSecondaryAbility;
             @SecondaryAbility.performed -= instance.OnSecondaryAbility;
             @SecondaryAbility.canceled -= instance.OnSecondaryAbility;
@@ -604,13 +572,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInteract(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "Inventory" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnInventory(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "SecondaryAbility" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

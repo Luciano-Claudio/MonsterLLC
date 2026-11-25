@@ -16,7 +16,6 @@ public class PlayerInputTest : MonoBehaviour
         controls.Gameplay.Attack.performed += ctx => Debug.Log("Attack (LMB)");
         controls.Gameplay.Ultimate.performed += ctx => Debug.Log("Ultimate (RMB)");
         controls.Gameplay.Interact.performed += ctx => Debug.Log("Interact (E)");
-        controls.Gameplay.Inventory.performed += ctx => Debug.Log("Inventory (TAB)");
     }
 
     private void OnEnable() => controls.Enable();
