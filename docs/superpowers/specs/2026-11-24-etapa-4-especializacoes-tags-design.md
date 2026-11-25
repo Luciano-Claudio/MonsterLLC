@@ -249,3 +249,20 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
 - **Upgrades de habilidade:** não aparecem em barra nenhuma. O jogador só sente o efeito.
 - **Limpeza:** remover o Tab (ação `Inventory`, que abria a Bag) e os painéis `Inventory` e `Shop` da
   cena. O `ShopHandler` e o estado `Shop` ficam para a etapa 6.
+
+## Revisão do balanceamento (2026-11-25, decidido pelo usuário)
+
+- **Dano:** não existe dano exclusivo por habilidade.
+  - Uma carta de upgrade geral, **Brute Force**, aumenta o dano das 3 habilidades: ×1,3 por nível, até o nível 10 (×13,8).
+  - Saíram as 8 cartas de dano por habilidade, do Barbarian, do Ranger e do Mage.
+- **Vida:** carta de upgrade geral **Iron Constitution**, ×1,2 por nível, até o nível 10 (×6,2).
+  - Ela multiplica a soma da vida dos itens (+10% por nível de cada item) e do Vitality.
+- **Itens e atributos que dão dano ou vida:** continuam como estão.
+  - Dano: Power Gauntlet ×1,1 por nível; Ancestral Strength ×1,25.
+  - Vida: todo item dá +10% por nível; Vitality dá +25%.
+- **Níveis máximos:** upgrades específicos (cooldown, animação, área) e itens ficam no nível 5.
+- **Ajuste:** os números só serão ajustados depois do teste no Play.
+- **Upgrades específicos que ficaram:**
+  - Barbarian: área do primário (só Earthquake), cooldown e duração do Shift, área, custo de energia e velocidade de animação da Ultimate.
+  - Ranger: área do primário, cooldown e duração da camuflagem, área, custo de energia e velocidade de animação da Ultimate.
+  - Mage: área do primário, cooldown e velocidade do teleporte, área, custo de energia e velocidade de animação da Ultimate.
