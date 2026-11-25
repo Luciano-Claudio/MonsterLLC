@@ -337,10 +337,10 @@ TextureImporter:
       name: ChoosesUI_7
       rect:
         serializedVersion: 2
-        x: 95
-        y: 132
-        width: 66
-        height: 24
+        x: 96
+        y: 133
+        width: 64
+        height: 22
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -359,10 +359,10 @@ TextureImporter:
       name: ChoosesUI_8
       rect:
         serializedVersion: 2
-        x: 175
-        y: 132
-        width: 66
-        height: 24
+        x: 176
+        y: 133
+        width: 64
+        height: 22
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -619,6 +619,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: ChoosesUI_20
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 256
+        width: 80
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3535e229f8e6a6a4b939d48631e984f4
+      internalID: 1090785780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -646,6 +668,7 @@ TextureImporter:
       ChoosesUI_18: -5811537008032005584
       ChoosesUI_19: -1416899318
       ChoosesUI_2: 7760904638435619432
+      ChoosesUI_20: 1090785780
       ChoosesUI_3: -2363159090966708074
       ChoosesUI_4: -4873250494587993987
       ChoosesUI_5: -2581149346192939311

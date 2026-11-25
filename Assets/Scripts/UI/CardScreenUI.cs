@@ -1,3 +1,4 @@
+using TMPro;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,6 +12,9 @@ using UnityEngine.UI;
 // - `rerollButton`: troca as 3 cartas (1 vez por oferta);
 // - `kindStyles`: fundo, rótulo e cor de cada tipo (Item / Upgrade / Stat).
 // Quem abre/fecha/pausa é o HeroCards; esta tela só mostra e repassa cliques e teclas.
+// Confirmação (pedido do usuário, 2026-11-25 — clique de ataque caía na tela e escolhia sem querer):
+// clicar numa carta (ou 1/2/3) só abre o Panel_Confirm com a escolha no `confirmInfo`; a carta só é
+// aplicada no Yes (ou Enter). No fecha e volta pra escolha. Reroll e oferta nova fecham o painel.
 public class CardScreenUI : MonoBehaviour
 {
     [Serializable]
@@ -27,7 +31,18 @@ public class CardScreenUI : MonoBehaviour
     [SerializeField] private Button rerollButton;
     [SerializeField] private KindStyle[] kindStyles = new KindStyle[0];
 
+    [Header("Confirmação (Panel_Confirm)")]
+    [SerializeField] private GameObject confirmPanel;
+    [SerializeField] private TMP_Text confirmInfo;
+    [SerializeField] private Button confirmYes;
+    [SerializeField] private Button confirmNo;
+    [Tooltip("{0} = nome da carta (na cor do tipo), {1} = nível que ela vai ter.")]
+    [SerializeField] private string confirmFormat = "You picked: {0} (Lv {1})";
+
     private HeroCards owner;
+    private CardDefinition pendingCard;
+
+    public bool IsConfirming => confirmPanel != null && confirmPanel.activeSelf;
 
     public static CardScreenUI Find() => FindAnyObjectByType<CardScreenUI>(FindObjectsInactive.Include);
 
@@ -37,6 +52,9 @@ public class CardScreenUI : MonoBehaviour
     private void Awake()
     {
         if (root != null && root != gameObject && owner == null) root.SetActive(false);
+        if (confirmPanel != null) confirmPanel.SetActive(false);
+        if (confirmYes != null) { confirmYes.onClick.RemoveListener(ConfirmChoice); confirmYes.onClick.AddListener(ConfirmChoice); }
+        if (confirmNo != null) { confirmNo.onClick.RemoveListener(CancelChoice); confirmNo.onClick.AddListener(CancelChoice); }
     }
 
     public KindStyle StyleOf(CardKind kind)
@@ -48,6 +66,7 @@ public class CardScreenUI : MonoBehaviour
     public void Show(HeroCards cards)
     {
         owner = cards;
+        CloseConfirm();
         var offer = cards.CurrentOffer;
         for (int i = 0; i < slots.Length; i++)
         {
@@ -66,6 +85,7 @@ public class CardScreenUI : MonoBehaviour
 
     public void Hide()
     {
+        CloseConfirm();
         if (root != null) root.SetActive(false);
     }
 
@@ -75,6 +95,7 @@ public class CardScreenUI : MonoBehaviour
         if (!IsVisible || PauseMenuUI.IsOpen) return;
         var kb = Keyboard.current;
         if (kb == null) return;
+        if (IsConfirming && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) { ConfirmChoice(); return; }
         if (kb.digit1Key.wasPressedThisFrame || kb.numpad1Key.wasPressedThisFrame) PressSlot(0);
         else if (kb.digit2Key.wasPressedThisFrame || kb.numpad2Key.wasPressedThisFrame) PressSlot(1);
         else if (kb.digit3Key.wasPressedThisFrame || kb.numpad3Key.wasPressedThisFrame) PressSlot(2);
@@ -85,13 +106,39 @@ public class CardScreenUI : MonoBehaviour
         if (index >= 0 && index < slots.Length && slots[index] != null) slots[index].Click();
     }
 
+    // Clique na carta: sem painel de confirmação na cena, escolhe direto (comportamento antigo).
     private void OnSlotClicked(CardDefinition card)
     {
-        if (owner != null) owner.Choose(card);
+        if (card == null || owner == null) return;
+        if (confirmPanel == null) { owner.Choose(card); return; }
+        pendingCard = card;
+        if (confirmInfo != null)
+        {
+            var style = StyleOf(card.kind);
+            string name = style != null ? $"<color=#{ColorUtility.ToHtmlStringRGB(style.labelColor)}>{card.title}</color>" : card.title;
+            confirmInfo.text = string.Format(confirmFormat, name, owner.LevelOf(card) + 1);
+        }
+        confirmPanel.SetActive(true);
+    }
+
+    public void ConfirmChoice()
+    {
+        var card = pendingCard;
+        CloseConfirm();
+        if (card != null && owner != null) owner.Choose(card);
+    }
+
+    public void CancelChoice() => CloseConfirm();
+
+    private void CloseConfirm()
+    {
+        pendingCard = null;
+        if (confirmPanel != null) confirmPanel.SetActive(false);
     }
 
     private void OnRerollClicked()
     {
+        CloseConfirm();
         if (owner != null) owner.Reroll();
     }
 }
