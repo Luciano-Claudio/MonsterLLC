@@ -764,20 +764,23 @@ public class Ranger : HeroController
     {
         if (petSummoner == null) return;
         petSummoner.SpawnOne(transform, PetSize, PetActionSpeed,
-            petDamageMultiplier, PetCooldown, petChaseRadiusMultiplier);
+            PetDamage, PetCooldown, petChaseRadiusMultiplier);
     }
 
     // Etapa 4 — cartas do urso (Beastmaster), as mesmas do pet do Mage: +tamanho, +velocidade de
     // ataque, −cooldown (piso de 0,2). Reaplicadas no urso vivo quando uma carta entra.
-    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize));
-    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed));
+    // Catálogo de cartas — Primal Bond: +dano (valor da carta), +metade disso em velocidade e tamanho.
+    private static float PetBond => HeroController.Cards.Sum(CardAbility.None, CardStat.PetBond);
+    private float PetDamage => petDamageMultiplier * (1f + PetBond);
+    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize)) * (1f + PetBond * 0.5f);
+    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed)) * (1f + PetBond * 0.5f);
     private float PetCooldown => petCooldownReductionMultiplier
         * Mathf.Max(CardBonuses.CooldownFloor, 1f - HeroController.Cards.Sum(CardAbility.None, CardStat.PetCooldown));
 
     protected override void OnCardsChanged()
     {
         if (petSummoner == null) return;
-        foreach (var pet in petSummoner.Pets) if (pet != null) pet.ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown);
+        foreach (var pet in petSummoner.Pets) if (pet != null) pet.ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown, PetDamage);
     }
 
     // Animation Event, no fim do clipe summonpet.

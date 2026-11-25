@@ -69,8 +69,9 @@ public class PetController : MonoBehaviour
     }
 
     // Etapa 4 — reaplicável a qualquer momento (cartas de pet pegas com o pet já em campo).
-    public void ApplyMultipliers(float sizeMultiplier, float actionSpeedMultiplier, float cooldownReductionMultiplier)
+    public void ApplyMultipliers(float sizeMultiplier, float actionSpeedMultiplier, float cooldownReductionMultiplier, float damageMult = -1f)
     {
+        if (damageMult >= 0f) damageMultiplier = damageMult; // catálogo de cartas — Primal Bond
         transform.localScale = Vector3.one * sizeMultiplier;
         if (hasActionSpeedMultiplierParam) animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
         // Animação mais rápida sem reduzir o cooldown de verdade deixaria o pet "animando

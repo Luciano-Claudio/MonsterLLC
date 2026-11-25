@@ -641,19 +641,24 @@ public class Mage : HeroController
         if (petSummoner == null) return;
         bool isExtra = petSummoner.Pets.Count >= petSummoner.BasePetCount;
         petSummoner.SpawnOne(transform, PetSize, PetActionSpeed,
-            isExtra ? petDamageMultiplier * 0.5f : petDamageMultiplier, PetCooldown, petChaseRadiusMultiplier);
+            isExtra ? PetDamage * 0.5f : PetDamage, PetCooldown, petChaseRadiusMultiplier);
     }
 
     // Etapa 4 — cartas do pet (Phoenix Pact): +tamanho, +velocidade de ataque, −cooldown (piso de 0,2).
-    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize));
-    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed));
+    // Catálogo de cartas — Primal Bond: +dano (valor da carta), +metade disso em velocidade e tamanho.
+    private static float PetBond => HeroController.Cards.Sum(CardAbility.None, CardStat.PetBond);
+    private float PetDamage => petDamageMultiplier * (1f + PetBond);
+    private float PetSize => petSizeMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetSize)) * (1f + PetBond * 0.5f);
+    private float PetActionSpeed => petActionSpeedMultiplier * (1f + HeroController.Cards.Sum(CardAbility.None, CardStat.PetAttackSpeed)) * (1f + PetBond * 0.5f);
     private float PetCooldown => petCooldownReductionMultiplier
         * Mathf.Max(CardBonuses.CooldownFloor, 1f - HeroController.Cards.Sum(CardAbility.None, CardStat.PetCooldown));
 
     protected override void OnCardsChanged()
     {
         if (petSummoner == null) return;
-        foreach (var pet in petSummoner.Pets) if (pet != null) pet.ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown);
+        var pets = petSummoner.Pets;
+        for (int i = 0; i < pets.Count; i++)
+            if (pets[i] != null) pets[i].ApplyMultipliers(PetSize, PetActionSpeed, PetCooldown, i >= petSummoner.BasePetCount ? PetDamage * 0.5f : PetDamage);
     }
 
     // Animation Event, no fim do clipe de invocação.
