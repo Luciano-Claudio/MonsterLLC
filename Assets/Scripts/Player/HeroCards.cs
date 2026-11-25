@@ -30,14 +30,21 @@ public class HeroCards : MonoBehaviour
     private readonly List<CardDefinition> probe = new();
     private readonly System.Random rng = new();
     private PendingOffer current;
-    private bool rerollUsed;
+    private int rerollsLeft; // catálogo de cartas: 1 por oferta, +1 no baú (Treasure Sense) e no vendedor (Merchant's Whisper)
     private CardCatalog catalog;
 
     public bool OfferOpen { get; private set; }
     public int PendingOffers => pending.Count;
     public IReadOnlyList<CardDefinition> CurrentOffer => currentOffer;
     public OfferSource CurrentSource => current.source;
-    public bool RerollAvailable => OfferOpen && !rerollUsed;
+    public bool RerollAvailable => OfferOpen && rerollsLeft > 0;
+
+    private void ResetRerolls()
+    {
+        var cards = HeroController.Cards;
+        rerollsLeft = 1 + Mathf.RoundToInt(current.source == OfferSource.Chest ? cards.Sum(CardAbility.None, CardStat.TreasureSense)
+            : current.source == OfferSource.Vendor ? cards.Sum(CardAbility.None, CardStat.MerchantsWhisper) : 0f);
+    }
     public IReadOnlyDictionary<string, int> Owned => owned;
     public IReadOnlyList<CardDefinition> OwnedItems => ownedItems;
     public IReadOnlyList<CardDefinition> OwnedStats => ownedStats;
@@ -118,7 +125,7 @@ public class HeroCards : MonoBehaviour
             RollCurrent();
             if (currentOffer.Count == 0) continue; // nada possível (tudo no máximo / 6 itens): pula sem pausar
 
-            rerollUsed = false;
+            ResetRerolls();
             var screen = CardScreenUI.Find();
             if (screen == null)
             {
@@ -138,8 +145,8 @@ public class HeroCards : MonoBehaviour
 
     public bool Reroll()
     {
-        if (!OfferOpen || rerollUsed) return false;
-        rerollUsed = true;
+        if (!OfferOpen || rerollsLeft <= 0) return false;
+        rerollsLeft--;
         RollCurrent();
         var screen = CardScreenUI.Find();
         if (screen != null) screen.Show(this);

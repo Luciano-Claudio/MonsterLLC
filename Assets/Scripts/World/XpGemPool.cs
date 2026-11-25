@@ -31,7 +31,10 @@ public class XpGemPool : MonoBehaviour
     public int ActiveCount => active.Count;
 
     // Raio do ímã: base do RunSettings × perks de coleta × carta de ímã.
-    public float MagnetRadius => Settings.gemMagnetRadius * HeroController.PickupRadiusMultiplier * HeroController.Cards.Get(CardAbility.None, CardStat.Magnet);
+    public float MagnetRadius => HeroController.Cards.Sum(CardAbility.None, CardStat.CollectorsInstinct) > 0f
+        ? CollectorsInstinctRadius // catálogo de cartas — Collector's Instinct: toda gema vem
+        : Settings.gemMagnetRadius * HeroController.PickupRadiusMultiplier * HeroController.Cards.Get(CardAbility.None, CardStat.Magnet);
+    private const float CollectorsInstinctRadius = 100000f;
 
     public long ActiveXpSum
     {

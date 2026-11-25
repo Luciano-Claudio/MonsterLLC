@@ -61,6 +61,7 @@ public class WorldChestSpawnManager : MonoBehaviour
         GameEvents.OnHeroSpawned += HandleHeroSpawned;
         GameEvents.OnDayStart += HandleRunStart;
         GameEvents.OnClearAllEnemies += HandleClearAllEnemies;
+        GameEvents.OnCardGranted += HandleCardGranted;
     }
 
     private void OnDisable()
@@ -68,6 +69,7 @@ public class WorldChestSpawnManager : MonoBehaviour
         GameEvents.OnHeroSpawned -= HandleHeroSpawned;
         GameEvents.OnDayStart -= HandleRunStart;
         GameEvents.OnClearAllEnemies -= HandleClearAllEnemies;
+        GameEvents.OnCardGranted -= HandleCardGranted;
     }
 
     private void HandleHeroSpawned(Transform hero) => player = hero;
@@ -100,6 +102,33 @@ public class WorldChestSpawnManager : MonoBehaviour
     {
         if (!GameplayGate.IsActive || HeroController.IsDying) return;
         Tick();
+    }
+
+    // Catálogo de cartas — Treasure Sense / Merchant's Whisper: +1 aparição na agenda da run, num horário
+    // sorteado entre agora (respeitando o silêncio inicial) e o fim da run.
+    private void HandleCardGranted(string cardId, int levelAfter)
+    {
+        if (levelAfter != 1) return;
+        var catalog = CardCatalog.Load();
+        var card = catalog != null ? catalog.cards.Find(c => c != null && c.id == cardId) : null;
+        if (card == null) return;
+        if (card.stat == CardStat.TreasureSense) AddExtraChest();
+        else if (card.stat == CardStat.MerchantsWhisper) AddExtraVendor();
+    }
+
+    public void AddExtraChest() => chestTimes = WithExtraTime(chestTimes);
+    public void AddExtraVendor() => vendorTimes = WithExtraTime(vendorTimes);
+
+    private static float[] WithExtraTime(float[] times)
+    {
+        var s = RunSettings.Current;
+        float now = DayTimer.Instance != null ? DayTimer.Instance.RunElapsed : 0f;
+        float from = Mathf.Max(now + 5f, s.rewardQuietSeconds);
+        float to = Mathf.Max(from, s.runSeconds - 30f);
+        float time = Random.Range(from, to);
+        var list = new List<float>(times) { time };
+        list.Sort();
+        return list.ToArray();
     }
 
     private void Tick()
