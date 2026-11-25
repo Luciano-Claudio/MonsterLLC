@@ -57,39 +57,43 @@ Regras definidas na conversa:
 
 Tabela de referência, para as etapas seguintes. Nesta etapa só as 6 primeiras linhas são implementadas.
 
-| Herói | Especialização | Tags |
-|---|---|---|
-| Barbarian | Sangramento | DOT, Tank, Tamanho |
-| Barbarian | Terremoto | Tank, Tamanho, Terremoto |
-| Ranger | Olhos de Águia | DOT, Projétil |
-| Ranger | Beast Master | Pet, Projétil |
-| Mage | Ignite | DOT |
-| Mage | Summoner | Pet |
-| Druid | Florest | Cura (sem DOT: o DOT só vem da Ultimate) |
-| Druid | Feral | Tank, Tamanho |
-| Rogue | Bleeding | DOT |
-| Rogue | Bomberman | Projétil |
-| Cleric | Pain | DOT, Cura, Projétil |
-| Cleric | Healer | Cura, Projétil |
-| Paladin | Bubble | Tank, Escudo |
-| Paladin | Judgment | Tank |
-| Gunslinger | Tiro Certeiro | Hitscan |
-| Gunslinger | Infernal Shot | Hitscan, DOT |
-| Assassin | Sanguinary | DOT |
-| Assassin | Mortal | (nenhuma; o avanço até o alvo não é projétil) |
-| BloodMage | Sanguinary | DOT, Cura |
-| BloodMage | Summoner | Pet, Cura |
+Nomes oficiais (em inglês, definidos pelo usuário em 2026-11-25). Nesta etapa só as 6 primeiras linhas são implementadas.
+
+| Herói | Especialização | Nome antigo na conversa | Tags |
+|---|---|---|---|
+| Barbarian | **Bloodlust** | Sangramento | DOT, Tank, Tamanho |
+| Barbarian | **Earthquake** | Terremoto | Tank, Tamanho, Terremoto |
+| Ranger | **Crimson Arrow** | Olhos de Águia | DOT, Projétil |
+| Ranger | **Beastmaster** | Beast Master | Pet, Projétil |
+| Mage | **Immolation** | Ignite | DOT |
+| Mage | **Phoenix Pact** | Summoner | Pet |
+| Druid | **Verdant Grace** | Florest | Cura (sem DOT: o DOT só vem da Ultimate) |
+| Druid | **Primal Fury** | Feral | Tank, Tamanho |
+| Rogue | **Bloodletter** | Bleeding | DOT |
+| Rogue | **Bombardier** | Bomberman | Projétil |
+| Cleric | **Penance** | Pain | DOT, Cura, Projétil |
+| Cleric | **Benediction** | Healer | Cura, Projétil |
+| Paladin | **Divine Aegis** | Bubble | Tank, Escudo |
+| Paladin | **Judgment** | Judgment | Tank |
+| Gunslinger | **Deadeye** | Tiro Certeiro | Hitscan |
+| Gunslinger | **Hellfire** | Infernal Shot | Hitscan, DOT |
+| Assassin | **Bloodhunt** | Sanguinary | DOT |
+| Assassin | **Deathstrike** | Mortal | (nenhuma; o avanço até o alvo não é projétil) |
+| Blood Mage | **Blood Rite** | Sanguinary | DOT, Cura |
+| Blood Mage | **Soulbinder** | Summoner | Pet, Cura |
+
+A tag "Terremoto" se chama **Earthquake** no código e nos assets.
 
 ## As 6 especializações (comportamento, como o usuário definiu)
 
 | Especialização | DOT | Pet | Outras mudanças |
 |---|---|---|---|
-| Barbarian Sangramento | Bleeding em **todos** os ataques (Primário, Shift, Ultimate) | — | **Sem** Ground Crack |
-| Barbarian Terremoto | Nenhum | — | Fica com o Ground Crack, como hoje |
-| Ranger Olhos de Águia | Bleeding em tudo: todas as flechas e a Ultimate | — | — |
-| Ranger Beast Master | Bleeding **só na Ultimate**; flechas do primário sem Bleeding | **Pet novo** (animal) | — |
-| Mage Ignite | Fire em **tudo** | **Sem** a Fênix | — |
-| Mage Summoner | Fire **só na Ultimate**; primário sem Fire | Fênix | — |
+| Barbarian Bloodlust | Bleeding em **todos** os ataques (Primário, Shift, Ultimate) | — | **Sem** Ground Crack |
+| Barbarian Earthquake | Nenhum | — | Fica com o Ground Crack, como hoje |
+| Ranger Crimson Arrow | Bleeding em tudo: todas as flechas e a Ultimate | — | — |
+| Ranger Beastmaster | Bleeding **só na Ultimate**; flechas do primário sem Bleeding | **Pet novo** (animal) | — |
+| Mage Immolation | Fire em **tudo** | **Sem** a Fênix | — |
+| Mage Phoenix Pact | Fire **só na Ultimate**; primário sem Fire | Fênix | — |
 
 O que já existe no código para isso:
 - **Barbarian:**
@@ -101,7 +105,21 @@ O que já existe no código para isso:
 - **Mage:**
   - A bola de fogo do primário e a da Ultimate aplicam o status Fire (`fireStatusDamageMultiplier`, `fireballFireStatusDuration`).
   - A Fênix depende do `PetSummoner` (`HasPet`).
-- **Pet do Ranger:** é novo. Mesmo comportamento dos pets do Mage e do BloodMage: não morre e persegue o inimigo mais próximo do herói. Deve copiar a estrutura do `PetSummoner` e do pet do Mage, conforme a regra do projeto de procurar o precedente antes de criar. O animal (urso, águia ou lobo) ainda não foi decidido; o usuário já tem os sprites.
+- **Pet do Ranger:** é novo. Mesmo comportamento dos pets do Mage e do BloodMage: não morre e persegue o inimigo mais próximo do herói. Deve copiar a estrutura do `PetSummoner` e do pet do Mage, conforme a regra do projeto de procurar o precedente antes de criar. **O animal é um urso.**
+  - **Sprites já fatiados:** em `Assets/Sprites/Heros/Ranger/Passiva/`:
+    - `Minifantasy_BearIdle` (76 sprites);
+    - `BearWalk` (24);
+    - `BearAttack` (20);
+    - `BearDie` (24);
+    - `Summon` (16): o urso surgindo;
+    - `Ranger_Summon` (12): o Ranger chamando o pet, como o `summonpet_*` do Mage.
+  - **Ainda não existem:** clipes, Animator Controller e prefab do urso, nem os clipes `summonpet_*` do Ranger.
+  - **O construtor gera tudo isso copiando a estrutura da Fênix:**
+    - `Assets/Prefabs/Heros/Mage/Phoenix.prefab`;
+    - `Assets/Animation/Heros/Mage/Passiva/Phoenix/` (`Phoenix.controller`);
+    - `Assets/Animation/Heros/Mage/Passiva/summonpet_*.anim`.
+  - Os clipes gerados não podem ter linhas em branco no YAML.
+  - Os clipes precisam ser conferidos no Animator antes de dizer que estão prontos.
 
 ## Abordagens consideradas
 
@@ -159,11 +177,43 @@ O que já existe no código para isso:
    up desses dois vira quase só item. A proposta do Claude é criar nesta etapa um conjunto igual ao do
    Barbarian (dano, área, cooldown e velocidade de animação de cada habilidade) para o Ranger e para o
    Mage. A outra opção é o usuário desenhar esses upgrades antes.
-2. **Pet do Ranger.** O usuário vai escolher o animal e montar o pet na Unity, do mesmo jeito dos pets que
-   já existem. Ainda falta saber:
-   - se o Ranger terá uma animação de invocar, como o Mage, ou se o pet simplesmente aparece.
-3. **Tela de especialização.** O usuário vai criar na Unity os botões das especializações que aparecem no
-   começo do jogo. O código liga nesse layout.
+2. ~~Pet do Ranger~~: **resolvido em 2026-11-25.** É um urso, e o Ranger tem animação de invocar
+   (`Ranger_Summon`). Detalhes na seção das 6 especializações.
+3. ~~Tela de especialização~~: **criada pelo usuário em 2026-11-25** (ver "Tela de escolha" abaixo).
+
+## Tela de escolha (layout do usuário, `_TestScene`)
+
+O objeto `Specialization_Choose` fica no Canvas e começa desligado:
+
+```
+Specialization_Choose
+  Background_Header
+    Text          "Choose Specialization"   (fixo)
+    Hero_Name     ← nome do herói
+  Button (x=-260)  e  Button (x=260)        (um por especialização)
+    Background_Icon / Icon   ← ícone da especialização
+    Background_Name / Name   ← nome da especialização
+    Description              ← descrição da especialização
+  Background_Footer
+    Text          "Choose one specialization to begin"   (fixo)
+```
+
+- O código preenche `Hero_Name`, `Icon`, `Name` e `Description` a partir dos assets de especialização.
+- Por ordem, o Button da esquerda é a 1ª especialização do herói e o da direita é a 2ª.
+- Proposta do Claude: aceitar as teclas 1 e 2, como as cartas aceitam 1, 2 e 3.
+
+Textos em inglês para a tela. Proposta do Claude, editável no asset:
+
+| Especialização | Description |
+|---|---|
+| Bloodlust | All your attacks apply Bleeding. |
+| Earthquake | Your primary attack splits the ground, damaging enemies over time. |
+| Crimson Arrow | Every arrow and your Ultimate apply Bleeding. |
+| Beastmaster | A loyal bear fights by your side. Only your Ultimate applies Bleeding. |
+| Immolation | All your attacks set enemies on fire. |
+| Phoenix Pact | A phoenix fights by your side. Only your Ultimate burns. |
+
+Os ícones são escolhidos pelo usuário no `Icons.png`. Até lá, os assets ficam sem ícone.
 
 O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-itens-atributos.md`.
 
