@@ -282,3 +282,8 @@ O catálogo futuro de 30 itens e 30 atributos está em `2026-11-24-catalogo-iten
   - Multishot (Ranger): +1 flecha.
   - Thunder Storm (Barbarian): +1 Thunder Blade.
   - Cartas de pet do Phoenix Pact e do Beastmaster: +15% de tamanho, +10% de velocidade de ataque, −10% de cooldown.
+- **Upgrades prioritários:** no sorteio de Upgrade do level up (os 60%), os upgrades do ataque primário,
+  o Brute Force e o Iron Constitution pesam mais.
+  - Peso 2,5 até o nível 5, caindo em linha reta até 1,5 no nível 20, e 1,5 depois disso. Os outros upgrades pesam 1.
+  - Ajustável no `RunSettings`: `priorityUpgradeWeightEarly`, `priorityUpgradeWeightLate`, `priorityFadeStartLevel` e
+    `priorityFadeEndLevel`. Os números são decisão do Claude a partir de "um pouco mais, principalmente no começo".

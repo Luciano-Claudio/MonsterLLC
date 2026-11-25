@@ -17,6 +17,12 @@ public struct OfferRules
     // Pedido do usuário (2026-11-25): cartas sempre presentes no 1º level up, e peso dos itens já possuídos.
     public IReadOnlyList<CardDefinition> firstLevelUpCards;
     public float ownedItemWeight;
+    // Pedido do usuário (2026-11-25): upgrades prioritários (primário, dano e vida gerais) pesam mais,
+    // mais ainda no começo — cai em linha reta de Early (até FadeStart) a Late (a partir de FadeEnd).
+    public float priorityUpgradeWeightEarly;
+    public float priorityUpgradeWeightLate;
+    public int priorityFadeStartLevel;
+    public int priorityFadeEndLevel;
 
     public static OfferRules From(RunSettings s) => new OfferRules
     {
@@ -28,6 +34,10 @@ public struct OfferRules
         maxStatSlots = s != null ? s.maxStatSlots : 6,
         firstLevelUpCards = s != null ? s.firstLevelUpCards : null,
         ownedItemWeight = s != null ? s.ownedItemWeight : 3f,
+        priorityUpgradeWeightEarly = s != null ? s.priorityUpgradeWeightEarly : 2.5f,
+        priorityUpgradeWeightLate = s != null ? s.priorityUpgradeWeightLate : 1.5f,
+        priorityFadeStartLevel = s != null ? s.priorityFadeStartLevel : 5,
+        priorityFadeEndLevel = s != null ? s.priorityFadeEndLevel : 20,
     };
 }
 
@@ -122,7 +132,7 @@ public static class CardRules
         {
             bool itemRoom = items < rules.maxItemsPerOffer && itemEligible.Count > 0;
             bool wantUpgrade = rng.NextDouble() < rules.levelUpUpgradeChance01;
-            if ((wantUpgrade || !itemRoom) && eligible.Count > 0) result.Add(TakeOne(pool, eligible, rng));
+            if ((wantUpgrade || !itemRoom) && eligible.Count > 0) result.Add(TakeUpgrade(pool, eligible, PriorityUpgradeWeight(heroLevel, rules), rng));
             else if (itemRoom) { result.Add(TakeItem(pool, itemEligible, owned, rules.ownedItemWeight, rng)); items++; }
             else if (statEligible.Count > 0) result.Add(TakeOne(pool, statEligible, rng));
             else return;
@@ -135,6 +145,41 @@ public static class CardRules
         for (int i = 0; i < from.Count; i++)
             if (pool[from[i]] == card) { from[i] = from[from.Count - 1]; from.RemoveAt(from.Count - 1); return true; }
         return false;
+    }
+
+    // Upgrade prioritário: do ataque primário, ou o dano/vida gerais (habilidade None).
+    public static bool IsPriorityUpgrade(CardDefinition c)
+        => c != null && c.kind == CardKind.Upgrade
+           && (c.ability == CardAbility.Primary
+               || (c.ability == CardAbility.None && (c.stat == CardStat.Damage || c.stat == CardStat.MaxHealth)));
+
+    // Peso dos prioritários no nível do herói: Early até FadeStart, Late a partir de FadeEnd, reta no meio.
+    public static float PriorityUpgradeWeight(int heroLevel, OfferRules rules)
+    {
+        if (rules.priorityUpgradeWeightEarly <= 0f && rules.priorityUpgradeWeightLate <= 0f) return 1f;
+        if (heroLevel <= rules.priorityFadeStartLevel || rules.priorityFadeEndLevel <= rules.priorityFadeStartLevel)
+            return heroLevel <= rules.priorityFadeStartLevel ? rules.priorityUpgradeWeightEarly : rules.priorityUpgradeWeightLate;
+        if (heroLevel >= rules.priorityFadeEndLevel) return rules.priorityUpgradeWeightLate;
+        float t = (heroLevel - rules.priorityFadeStartLevel) / (float)(rules.priorityFadeEndLevel - rules.priorityFadeStartLevel);
+        return rules.priorityUpgradeWeightEarly + (rules.priorityUpgradeWeightLate - rules.priorityUpgradeWeightEarly) * t;
+    }
+
+    private static CardDefinition TakeUpgrade(IReadOnlyList<CardDefinition> pool, List<int> from, float priorityWeight, System.Random rng)
+    {
+        if (priorityWeight <= 1f) return TakeOne(pool, from, rng);
+        double total = 0;
+        for (int i = 0; i < from.Count; i++) total += IsPriorityUpgrade(pool[from[i]]) ? priorityWeight : 1f;
+        double roll = rng.NextDouble() * total;
+        int pick = from.Count - 1;
+        for (int i = 0; i < from.Count; i++)
+        {
+            roll -= IsPriorityUpgrade(pool[from[i]]) ? priorityWeight : 1f;
+            if (roll < 0) { pick = i; break; }
+        }
+        var card = pool[from[pick]];
+        from[pick] = from[from.Count - 1];
+        from.RemoveAt(from.Count - 1);
+        return card;
     }
 
     // Item com peso: os que o herói já tem pesam `ownedWeight` (os novos pesam 1). Peso <= 1 = sorteio igual.

@@ -529,4 +529,65 @@ public class CardRulesTests
         }
         Assert.That(lvlHits / (float)vendorTotal, Is.InRange(0.21f, 0.29f));
     }
+
+    // ===== Pedido do usuário (2026-11-25): no sorteio de Upgrade, primário + dano + vida pesam mais,
+    // mais ainda no começo =====
+
+    private OfferRules PriorityRules()
+    {
+        var r = Rules;
+        r.levelUpUpgradeChance01 = 1f; // só upgrades
+        r.priorityUpgradeWeightEarly = 2.5f; r.priorityUpgradeWeightLate = 1.5f;
+        r.priorityFadeStartLevel = 5; r.priorityFadeEndLevel = 20;
+        return r;
+    }
+
+    [Test]
+    public void Priority_weight_fades_from_early_to_late()
+    {
+        var r = PriorityRules();
+        Assert.AreEqual(2.5f, CardRules.PriorityUpgradeWeight(3, r), 1e-4f);
+        Assert.AreEqual(2.5f, CardRules.PriorityUpgradeWeight(5, r), 1e-4f);
+        Assert.AreEqual(2.0f, CardRules.PriorityUpgradeWeight(12, r), 0.05f);
+        Assert.AreEqual(1.5f, CardRules.PriorityUpgradeWeight(20, r), 1e-4f);
+        Assert.AreEqual(1.5f, CardRules.PriorityUpgradeWeight(45, r), 1e-4f);
+    }
+
+    [Test]
+    public void Primary_damage_and_health_upgrades_are_more_likely_early()
+    {
+        var pool = new List<CardDefinition>();
+        var primary = Kind("prim_area", CardKind.Upgrade); primary.ability = CardAbility.Primary; primary.stat = CardStat.Area;
+        pool.Add(primary);
+        for (int i = 0; i < 9; i++) { var u = Kind("shift" + i, CardKind.Upgrade); u.ability = CardAbility.Shift; u.stat = CardStat.Cooldown; pool.Add(u); }
+        var rules = PriorityRules();
+        var rng = new System.Random(91);
+        var result = new List<CardDefinition>();
+        int early = 0, late = 0, n = 6000;
+        for (int k = 0; k < n; k++)
+        {
+            CardRules.RollOffer(OfferSource.LevelUp, 3, pool, new Dictionary<string, int>(), "", SpecTag.None, 1, rng, rules, result);
+            if (result[0] == primary) early++;
+            CardRules.RollOffer(OfferSource.LevelUp, 31, pool, new Dictionary<string, int>(), "", SpecTag.None, 1, rng, rules, result);
+            if (result[0] == primary) late++;
+        }
+        // cedo: 2,5 / 11,5 ≈ 21,7%; tarde: 1,5 / 10,5 ≈ 14,3%; sem peso seria 10%
+        Assert.That(early / (float)n, Is.InRange(0.19f, 0.245f));
+        Assert.That(late / (float)n, Is.InRange(0.12f, 0.165f));
+    }
+
+    [Test]
+    public void General_damage_and_health_count_as_priority_but_other_general_do_not()
+    {
+        var dmg = Kind("d", CardKind.Upgrade); dmg.stat = CardStat.Damage;
+        var hp = Kind("h", CardKind.Upgrade); hp.stat = CardStat.MaxHealth;
+        var mag = Kind("m", CardKind.Upgrade); mag.stat = CardStat.Magnet;
+        var prim = Kind("p", CardKind.Upgrade); prim.ability = CardAbility.Primary; prim.stat = CardStat.ProjectileCount;
+        var ult = Kind("u", CardKind.Upgrade); ult.ability = CardAbility.Ultimate; ult.stat = CardStat.Area;
+        Assert.IsTrue(CardRules.IsPriorityUpgrade(dmg));
+        Assert.IsTrue(CardRules.IsPriorityUpgrade(hp));
+        Assert.IsTrue(CardRules.IsPriorityUpgrade(prim));
+        Assert.IsFalse(CardRules.IsPriorityUpgrade(mag));
+        Assert.IsFalse(CardRules.IsPriorityUpgrade(ult));
+    }
 }

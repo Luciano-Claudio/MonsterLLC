@@ -64,6 +64,12 @@ public class RunSettings : ScriptableObject
     public List<CardDefinition> firstLevelUpCards = new();
     [Tooltip("Peso dos itens que o herói JÁ TEM no sorteio de item (level up e vendedor). 1 = mesmo peso dos novos.")]
     public float ownedItemWeight = 3f; // 🔢
+    [Tooltip("Peso dos upgrades prioritários (primário, dano geral, vida geral) no sorteio de Upgrade do level up, até priorityFadeStartLevel.")]
+    public float priorityUpgradeWeightEarly = 2.5f; // 🔢
+    [Tooltip("Peso dos upgrades prioritários a partir de priorityFadeEndLevel (entre os dois níveis, cai em linha reta).")]
+    public float priorityUpgradeWeightLate = 1.5f; // 🔢
+    public int priorityFadeStartLevel = 5; // 🔢
+    public int priorityFadeEndLevel = 20; // 🔢
 
     [Header("Baú e vendedor no mundo (etapa 3)")]
     [Tooltip("Aparições de baú por run (sorteado entre mín e máx, espalhado em faixas iguais).")]
