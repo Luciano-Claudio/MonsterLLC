@@ -251,6 +251,7 @@ public class Mage : HeroController
 
     protected override void PrimaryAttack()
     {
+        ApplyAbilityAnimSpeed(CardAbility.Primary); // etapa 4 — volta pro valor base (Shift/Ultimate podem ter acelerado)
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
@@ -379,6 +380,7 @@ public class Mage : HeroController
 
     protected override void UseUltimate()
     {
+        ApplyAbilityAnimSpeed(CardAbility.Ultimate); // etapa 4 — carta "Quick Cast"
         isAttacking = true;
         actionElapsed = 0f;
         ultimateFired = false;
@@ -401,7 +403,8 @@ public class Mage : HeroController
         float impactDamage = stats.damage * ultimateDamageMultiplier * HeroController.CentralDamageMultiplier * ultimateCritMultiplier
             * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage);
         float trailDamagePerTick = stats.damage * ultimateTrailDamageMultiplier * HeroController.CentralDamageMultiplier;
-        float fireStatusDamagePerSecond = stats.damage * fireStatusDamageMultiplier * HeroController.CentralDamageMultiplier;
+        float fireStatusDamagePerSecond = stats.damage * fireStatusDamageMultiplier * HeroController.CentralDamageMultiplier
+            * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage); // etapa 4 — DOT segue o ataque inicial
         // Explosão e área no chão escalam junto com o tamanho da bola de fogo — valor FINAL
         // (já multiplicado) calculado aqui, não dentro do MageFireball (ver comentário lá
         // sobre circleCollider.radius precisar compensar a escala do GameObject).
@@ -491,6 +494,7 @@ public class Mage : HeroController
     // Bloqueia tudo (isAttacking, mesma regra do Ranger) — não cancelável, roda até o fim.
     protected override void UseSecondaryAbility()
     {
+        ApplyAbilityAnimSpeed(CardAbility.Shift); // etapa 4 — carta "Swift Blink"
         isAttacking = true;
         actionElapsed = 0f;
         // Congela a pose em TeleportAimX/Y — parâmetros PRÓPRIOS do teleporte, separados do

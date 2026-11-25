@@ -403,6 +403,7 @@ public class Ranger : HeroController
 
     protected override void PrimaryAttack()
     {
+        ApplyAbilityAnimSpeed(CardAbility.Primary); // etapa 4 — volta pro valor base (a Ultimate pode ter acelerado)
         if (isAttacking) return;
         isAttacking = true;
         actionElapsed = 0f;
@@ -438,7 +439,8 @@ public class Ranger : HeroController
         float reservePerArrow = stats.damage * attackDamageMultiplier * (1f + primaryDamagePercent / 100f)
             * (1f + stealthBonus) * guaranteedCritMultiplier * HeroController.CentralDamageMultiplier * GetShiftDamageDealtMultiplier()
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage);
-        float arrowBleedPerSecond = stats.damage * bleedDamageMultiplier * GetShiftDamageDealtMultiplier(); // etapa 4: congela o Shift
+        float arrowBleedPerSecond = stats.damage * bleedDamageMultiplier * GetShiftDamageDealtMultiplier()
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage); // etapa 4: congela o Shift e as cartas de dano
         float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area); // etapa 4
 
         Vector2[] offsets = ArrowFormation.GetOffsets(arrowCount, arrowLateralStep, arrowForwardStep);
@@ -471,6 +473,7 @@ public class Ranger : HeroController
 
     protected override void UseUltimate()
     {
+        ApplyAbilityAnimSpeed(CardAbility.Ultimate); // etapa 4 — carta "Quick Draw"
         isAttacking = true;
         actionElapsed = 0f;
         for (int i = 0; i < knifeThrown.Length; i++) knifeThrown[i] = false;
@@ -510,7 +513,8 @@ public class Ranger : HeroController
         // desconectado do personagem — sempre metade do dano em voo, piso 1 (mesma solução
         // do Ground Crack do Barbarian). #6-8 multiplicam ESSE valor por cima.
         float groundedDamage = Mathf.Max(1f, flightDamage * 0.5f) * groundDamageBonusMultiplier;
-        float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier * shiftMultiplier;
+        float bleedDamagePerSecond = stats.damage * bleedDamageMultiplier * shiftMultiplier
+            * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Damage); // etapa 4 — DOT segue o ataque inicial
 
         if (chuvaDeLaminasEnabled)
         {
