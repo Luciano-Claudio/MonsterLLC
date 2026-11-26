@@ -84,6 +84,12 @@ public static class GameEvents
     public static event Action<long> OnGoldChanged;
     public static void GoldChanged(long gold) => OnGoldChanged?.Invoke(gold);
 
+    // Gold permanente (PermanentGold) — total salvo, e cada moeda coletada no chão.
+    public static event Action<long> OnPermanentGoldChanged;
+    public static void PermanentGoldChanged(long gold) => OnPermanentGoldChanged?.Invoke(gold);
+    public static event Action<int> OnGoldCoinCollected;
+    public static void GoldCoinCollected(int gold) => OnGoldCoinCollected?.Invoke(gold);
+
     // anchor == null significa "esconder o prompt".
     public static event Action<Transform> OnInteractPromptChanged;
     public static void InteractPromptChanged(Transform anchor) => OnInteractPromptChanged?.Invoke(anchor);

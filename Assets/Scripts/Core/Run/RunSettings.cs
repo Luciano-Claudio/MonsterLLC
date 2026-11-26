@@ -34,8 +34,16 @@ public class RunSettings : ScriptableObject
     public float miniBossMaxDelay = 45f; // 🔢
 
     [Header("Gemas de XP (etapa 2)")]
-    [Tooltip("Sprite da gema no chão.")]
+    [Tooltip("Prefab da gema no chão (animação em loop). Sem prefab, usa o gemSprite parado.")]
+    public GameObject gemPrefab;
+    [Tooltip("Reserva: sprite da gema quando não há prefab.")]
     public Sprite gemSprite;
+    [Header("Gold permanente")]
+    [Tooltip("Prefab da moeda de gold no chão (animação em loop).")]
+    public GameObject goldCoinPrefab;
+    [Tooltip("Chance de cada monstro (bosses também) soltar 1 moeda.")]
+    [Range(0f, 1f)] public float goldDropChance = 0.10f; // 🔢
+    public int goldPerCoin = 1; // 🔢
     public float gemScale = 0.5f; // 🔢
     [Tooltip("Limite de gemas no chão (desempenho). Passou disso, uma gema existente absorve o XP da nova.")]
     public int maxGems = 400; // 🔢

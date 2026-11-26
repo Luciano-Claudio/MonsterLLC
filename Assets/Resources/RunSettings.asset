@@ -52,7 +52,11 @@ MonoBehaviour:
   tierRampSeconds: 90
   miniBossMinDelay: 15
   miniBossMaxDelay: 45
+  gemPrefab: {fileID: 7778687796795988047, guid: b7b0ccb3febd3b147aefe4803f2fe4e3, type: 3}
   gemSprite: {fileID: -5395870018298921715, guid: b5f46c4586bf5c64db39279782ee6e14, type: 3}
+  goldCoinPrefab: {fileID: 5841871755401082378, guid: af4c6c584d0758c479f69091802ba672, type: 3}
+  goldDropChance: 0.1
+  goldPerCoin: 1
   gemScale: 0.5
   maxGems: 400
   gemMagnetRadius: 2.5

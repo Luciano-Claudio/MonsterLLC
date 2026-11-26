@@ -15,8 +15,8 @@ MonoBehaviour:
   id: stat_golden_momentum
   kind: 2
   title: Golden Momentum
-  description: Picking up an XP gem gives +20% movement speed for 2s. Each gem refreshes
-    the timer
+  description: Picking up any loot (XP gem or gold coin) gives +20% movement speed
+    for 2s. Each pickup refreshes the timer
   icon: {fileID: -1582093495, guid: 01e96f344bca4894284602780e3a8cf8, type: 3}
   ability: 0
   stat: 46

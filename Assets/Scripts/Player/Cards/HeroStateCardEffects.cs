@@ -20,6 +20,7 @@ public class HeroStateCardEffects : MonoBehaviour
         HeroController.OnHeroDirectDamaged += HandleDirectDamaged;
         HeroController.OnShiftUsed += HandleShiftUsed;
         GameEvents.OnXpCollected += HandleXpCollected;
+        GameEvents.OnGoldCoinCollected += HandleGoldCoinCollected;
     }
 
     private void OnDisable()
@@ -27,6 +28,7 @@ public class HeroStateCardEffects : MonoBehaviour
         HeroController.OnHeroDirectDamaged -= HandleDirectDamaged;
         HeroController.OnShiftUsed -= HandleShiftUsed;
         GameEvents.OnXpCollected -= HandleXpCollected;
+        GameEvents.OnGoldCoinCollected -= HandleGoldCoinCollected;
     }
 
     private void Update()
@@ -143,6 +145,9 @@ public class HeroStateCardEffects : MonoBehaviour
         if (S(CardStat.SpiritLink) > 0f) hero.AddUltimateEnergyPercent(t.spiritLinkEnergyPercent);
     }
 
+    private static void HandleGoldCoinCollected(int gold) => HandleXpCollected(gold);
+
+    // Golden Momentum: qualquer loot coletado (gema de XP ou moeda de gold).
     private static void HandleXpCollected(int xp)
     {
         if (S(CardStat.GoldenMomentum) > 0f) CardRunState.SpeedBuffRemaining = RunSettings.Current.goldenMomentumDuration;

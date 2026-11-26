@@ -1621,6 +1621,9 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         Vector2 origin = transform.position;
         for (int i = 0; i < count; i++)
             pool.Spawn(count == 1 ? origin : origin + Random.insideUnitCircle * 0.5f, 1);
+        // Gold permanente: cada monstro (bosses também) tem goldDropChance de soltar 1 moeda.
+        if (PermanentGold.RollsDrop(settings.goldDropChance, Random.value))
+            pool.SpawnGold(origin + Random.insideUnitCircle * 0.3f, settings.goldPerCoin);
     }
 
     private void DropLoot()

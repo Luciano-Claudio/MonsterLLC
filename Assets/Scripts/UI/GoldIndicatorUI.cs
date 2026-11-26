@@ -12,10 +12,11 @@ public class GoldIndicatorUI : MonoBehaviour
     // chegava a este listener (nunca inscrito ainda).
     private void OnEnable()
     {
-        GameEvents.OnGoldChanged += UpdateLabel;
-        UpdateLabel(MainMenuUI.CurrentRun?.gold ?? 0);
+        // Gold permanente (2026-11-26) — o mesmo indicador no jogo e no menu.
+        GameEvents.OnPermanentGoldChanged += UpdateLabel;
+        UpdateLabel(PermanentGold.Amount);
     }
 
-    private void OnDisable() => GameEvents.OnGoldChanged -= UpdateLabel;
+    private void OnDisable() => GameEvents.OnPermanentGoldChanged -= UpdateLabel;
     private void UpdateLabel(long gold) => label.text = LargeNumberFormatter.Format(gold);
 }

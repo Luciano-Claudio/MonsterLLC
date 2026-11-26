@@ -7,6 +7,9 @@ using UnityEngine;
 // Sem física de propósito (D9.3: centenas de colliders derrubam o FPS): este pool atualiza todas as
 // gemas num único Update, por distância. Limite de objetos (RunSettings.maxGems): passou dele, uma
 // gema que já existe absorve o XP da nova — nada de XP se perde e nada de objeto novo nasce.
+// Gold permanente (2026-11-26): o mesmo pool cuida das moedas de gold (SpawnGold) — mesmo ímã, mesma
+// coleta; a moeda vai para PermanentGold. Gema e moeda são prefabs com animação em loop
+// (RunSettings.gemPrefab / goldCoinPrefab), instanciados 1x e reaproveitados.
 public class XpGemPool : MonoBehaviour
 {
     public static XpGemPool Instance { get; private set; }
@@ -15,6 +18,7 @@ public class XpGemPool : MonoBehaviour
 
     private readonly List<Gem> active = new();
     private readonly Stack<Gem> free = new();
+    private readonly Stack<Gem> freeGold = new();
     private RunSettings settings;
     private int sortingLayerId;
     private bool renderInfoLoaded;
@@ -24,7 +28,8 @@ public class XpGemPool : MonoBehaviour
         public GameObject go;
         public Transform transform;
         public SpriteRenderer renderer;
-        public int xp;
+        public int xp;      // XP da gema, ou gold da moeda
+        public bool gold;   // moeda de gold permanente
         public bool attracted;
     }
 
@@ -41,7 +46,7 @@ public class XpGemPool : MonoBehaviour
         get
         {
             long sum = 0;
-            for (int i = 0; i < active.Count; i++) sum += active[i].xp;
+            for (int i = 0; i < active.Count; i++) if (!active[i].gold) sum += active[i].xp;
             return sum;
         }
     }
@@ -67,13 +72,15 @@ public class XpGemPool : MonoBehaviour
         if (xp <= 0) return;
         if (active.Count >= Mathf.Max(1, Settings.maxGems))
         {
-            var target = active[0];
+            Gem target = null;
             float farthestSqr = -1f;
             for (int i = 0; i < active.Count; i++)
             {
+                if (active[i].gold) continue; // moeda nunca absorve XP
                 float sqr = ((Vector2)active[i].transform.position - heroPosition).sqrMagnitude;
                 if (sqr > farthestSqr) { farthestSqr = sqr; target = active[i]; }
             }
+            if (target == null) { SpawnItem(position, xp, false); return; }
             target.xp += xp;
             target.attracted = false;
             target.transform.position = position;
@@ -81,13 +88,36 @@ public class XpGemPool : MonoBehaviour
             return;
         }
 
-        var gem = free.Count > 0 ? free.Pop() : Create();
-        gem.xp = xp;
+        SpawnItem(position, xp, false);
+    }
+
+    // Moeda de gold permanente no chão (fora do limite de gemas: é rara).
+    public void SpawnGold(Vector2 position, int gold)
+    {
+        if (gold <= 0) return;
+        SpawnItem(position, gold, true);
+    }
+
+    private void SpawnItem(Vector2 position, int value, bool gold)
+    {
+        var stack = gold ? freeGold : free;
+        var gem = stack.Count > 0 ? stack.Pop() : Create(gold);
+        gem.xp = value;
         gem.attracted = false;
         gem.transform.position = position;
         gem.transform.localScale = Vector3.one * Settings.gemScale;
         gem.go.SetActive(true);
         active.Add(gem);
+    }
+
+    public int GoldCoinCount
+    {
+        get
+        {
+            int n = 0;
+            for (int i = 0; i < active.Count; i++) if (active[i].gold) n++;
+            return n;
+        }
     }
 
     // XP das gemas ativas a até `radius` de `position` (verificação/telemetria).
@@ -96,7 +126,7 @@ public class XpGemPool : MonoBehaviour
         int sum = 0;
         float r2 = radius * radius;
         for (int i = 0; i < active.Count; i++)
-            if (((Vector2)active[i].transform.position - position).sqrMagnitude <= r2) sum += active[i].xp;
+            if (!active[i].gold && ((Vector2)active[i].transform.position - position).sqrMagnitude <= r2) sum += active[i].xp;
         return sum;
     }
 
@@ -105,8 +135,16 @@ public class XpGemPool : MonoBehaviour
         for (int i = active.Count - 1; i >= 0; i--) Release(i);
     }
 
-    private Gem Create()
+    private Gem Create(bool gold)
     {
+        var prefab = gold ? Settings.goldCoinPrefab : Settings.gemPrefab;
+        if (prefab != null)
+        {
+            var instance = Instantiate(prefab, transform, false);
+            instance.name = gold ? "GoldCoin" : "XpGem";
+            return new Gem { go = instance, transform = instance.transform, renderer = instance.GetComponentInChildren<SpriteRenderer>(), gold = gold };
+        }
+
         if (!renderInfoLoaded)
         {
             renderInfoLoaded = true;
@@ -118,9 +156,9 @@ public class XpGemPool : MonoBehaviour
         var go = new GameObject("XpGem");
         go.transform.SetParent(transform, false);
         var renderer = go.AddComponent<SpriteRenderer>();
-        renderer.sprite = Settings.gemSprite;
+        renderer.sprite = Settings.gemSprite; // reserva: sem prefab configurado
         renderer.sortingLayerID = sortingLayerId;
-        return new Gem { go = go, transform = go.transform, renderer = renderer };
+        return new Gem { go = go, transform = go.transform, renderer = renderer, gold = gold };
     }
 
     private void Release(int index)
@@ -130,7 +168,7 @@ public class XpGemPool : MonoBehaviour
         active[index] = active[last];
         active.RemoveAt(last);
         gem.go.SetActive(false);
-        free.Push(gem);
+        (gem.gold ? freeGold : free).Push(gem);
     }
 
     private void Update()
@@ -153,9 +191,11 @@ public class XpGemPool : MonoBehaviour
             float sqr = toHero.sqrMagnitude;
             if (sqr <= collectSqr)
             {
-                int xp = gem.xp;
+                int value = gem.xp;
+                bool gold = gem.gold;
                 Release(i);
-                GameEvents.XpCollected(xp);
+                if (gold) { PermanentGold.Add(value); GameEvents.GoldCoinCollected(value); }
+                else GameEvents.XpCollected(value);
                 continue;
             }
             if (!gem.attracted && sqr > magnetSqr) continue;
