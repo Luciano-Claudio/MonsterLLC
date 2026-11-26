@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_wellspring_chalice
   kind: 0
   title: Wellspring Chalice
-  description: Using Shift heals {0} of max HP (10s cooldown)
+  description: 'Using Shift heals {0} of your max HP (once every 10s)
+
+    +{1} max
+    HP'
   icon: {fileID: 0}
   ability: 0
   stat: 23

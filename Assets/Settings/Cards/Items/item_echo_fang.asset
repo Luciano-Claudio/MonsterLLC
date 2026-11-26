@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_echo_fang
   kind: 0
   title: Echo Fang
-  description: Every 4th primary hit echoes {0} of its damage
+  description: 'Every 4th primary attack hit repeats {0} of its damage on the same
+    enemy
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 17

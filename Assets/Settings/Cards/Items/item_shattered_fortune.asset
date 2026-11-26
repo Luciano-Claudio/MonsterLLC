@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_shattered_fortune
   kind: 0
   title: Shattered Fortune
-  description: Critical hits have {0} chance to strike again for 50%
+  description: 'Critical hits have {0} chance to strike the enemy again for 50% of
+    the critical damage
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 22

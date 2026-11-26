@@ -15,8 +15,11 @@ MonoBehaviour:
   id: item_affliction_heart
   kind: 0
   title: Affliction Heart
-  description: Every 8 DoT ticks, an explosion deals {0} of your primary damage
-  icon: {fileID: 0}
+  description: 'Every 8 damage-over-time ticks (Bleed, Burn), an explosion around
+    the enemy deals {0} of your primary attack damage
+
+    +{1} max HP'
+  icon: {fileID: 860383070, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
   ability: 0
   stat: 29
   valuePerLevel: 0.3

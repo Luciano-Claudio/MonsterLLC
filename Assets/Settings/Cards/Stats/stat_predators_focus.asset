@@ -15,8 +15,8 @@ MonoBehaviour:
   id: stat_predators_focus
   kind: 2
   title: Predator's Focus
-  description: Consecutive primary hits on the same enemy deal +5% damage (up to
-    +50%)
+  description: Each consecutive primary attack hit on the same enemy deals +5% more
+    damage to it (up to +50%). Switching targets resets it
   icon: {fileID: 0}
   ability: 0
   stat: 50

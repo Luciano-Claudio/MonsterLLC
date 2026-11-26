@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_shattered_prism
   kind: 0
   title: Shattered Prism
-  description: Hits have {0} chance to split into 2 shards
+  description: 'Arrow and knife hits have {0} chance to split into 2 side shards,
+    each with 40% of the damage
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 36

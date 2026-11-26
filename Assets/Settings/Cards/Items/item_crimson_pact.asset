@@ -15,7 +15,9 @@ MonoBehaviour:
   id: item_crimson_pact
   kind: 0
   title: Crimson Pact
-  description: Heal {0} of the direct damage you deal
+  description: 'Heal for {0} of all direct damage you deal
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 19

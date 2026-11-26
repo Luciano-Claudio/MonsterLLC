@@ -15,7 +15,8 @@ MonoBehaviour:
   id: stat_deaths_echo
   kind: 2
   title: Death's Echo
-  description: Enemies killed by DoT explode for 50% of your primary damage
+  description: Enemies killed by a damage-over-time effect (Bleed, Burn) explode,
+    dealing 50% of your primary attack damage around them
   icon: {fileID: 0}
   ability: 0
   stat: 54

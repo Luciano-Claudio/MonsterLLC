@@ -15,7 +15,9 @@ MonoBehaviour:
   id: item_menders_seal
   kind: 0
   title: Mender's Seal
-  description: +{0} healing and shields received
+  description: '+{0} healing and shields you receive
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 32

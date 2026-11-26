@@ -15,7 +15,8 @@ MonoBehaviour:
   id: stat_overkill
   kind: 2
   title: Overkill
-  description: 50% of excess damage from a kill hits the nearest enemy
+  description: When a direct hit kills an enemy, 50% of the leftover damage hits
+    the nearest enemy
   icon: {fileID: 0}
   ability: 0
   stat: 55

@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_sovereigns_bane
   kind: 0
   title: Sovereign's Bane
-  description: Primary hits deal +{0} of the target's max HP
+  description: 'Primary attack hits deal bonus damage equal to {0} of the enemy''s
+    max HP (great against bosses)
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 16

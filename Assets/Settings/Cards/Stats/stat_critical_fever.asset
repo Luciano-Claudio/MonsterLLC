@@ -15,7 +15,8 @@ MonoBehaviour:
   id: stat_critical_fever
   kind: 2
   title: Critical Fever
-  description: Critical hits give +2% damage and speed for 4s (stacks 10x)
+  description: Each critical hit gives +2% damage and +2% movement speed for 4s.
+    Stacks up to 10 times
   icon: {fileID: 0}
   ability: 0
   stat: 51

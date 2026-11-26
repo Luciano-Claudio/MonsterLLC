@@ -15,8 +15,11 @@ MonoBehaviour:
   id: item_blight_crucible
   kind: 0
   title: Blight Crucible
-  description: 'Damage over time stacks (2 stacks, 3 from level 2). From level 3:
-    +10% DoT damage per level'
+  description: 'Your damage-over-time effects (Bleed, Burn) stack on the same enemy:
+    up to 2 stacks, 3 from level 2. From level 3: +10% damage-over-time damage per
+    level
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 24

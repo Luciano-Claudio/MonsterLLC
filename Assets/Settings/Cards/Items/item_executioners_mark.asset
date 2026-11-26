@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_executioners_mark
   kind: 0
   title: Executioner's Mark
-  description: +{0} damage to enemies below 30% HP
+  description: 'Direct attacks deal +{0} damage to enemies below 30% HP
+
+    +{1}
+    max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 18

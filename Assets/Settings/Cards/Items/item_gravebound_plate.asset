@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_gravebound_plate
   kind: 0
   title: Gravebound Plate
-  description: +{0} damage reduction per nearby enemy (up to 10)
+  description: '+{0} damage reduction for each enemy close to you (up to 10 enemies)
+
+    +{1}
+    max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 34

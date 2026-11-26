@@ -15,7 +15,10 @@ MonoBehaviour:
   id: item_cursed_diadem
   kind: 0
   title: Cursed Diadem
-  description: DoT ticks have {0} chance to critically hit
+  description: 'Your damage-over-time ticks (Bleed, Burn) gain {0} chance to critically
+    hit
+
+    +{1} max HP'
   icon: {fileID: 0}
   ability: 0
   stat: 28
