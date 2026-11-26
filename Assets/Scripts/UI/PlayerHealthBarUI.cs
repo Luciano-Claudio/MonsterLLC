@@ -55,6 +55,6 @@ public class PlayerHealthBarUI : MonoBehaviour
         debugComputedHeadX = headBar.anchoredPosition.x;
         if (debugOverridePosition) headBar.anchoredPosition = new Vector2(debugOverrideHeadX, headBar.anchoredPosition.y);
 
-        valueLabel.text = $"{LargeNumberFormatter.Format(current)}/{LargeNumberFormatter.Format(max)}";
+        valueLabel.text = $"{LargeNumberFormatter.FormatHealth(current)}/{LargeNumberFormatter.Format(max)}";
     }
 }

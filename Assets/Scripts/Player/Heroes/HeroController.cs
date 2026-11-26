@@ -796,6 +796,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
             wasIceActive = iceActive;
         }
 
+        // Morreu NESTE tick (DOT): para aqui. Sem isso, o resto do Update ainda processava o ataque
+        // segurado (attackHeld -> AttackTrigger) logo depois do DieTrigger, e a transição AnyState
+        // tirava o herói da animação de morte (bug real, Ranger com Bleed, 2026-11-26).
+        if (isDead) return;
+
         // Terminou sozinho (sem ter atingido o teto de aceleração) -- reseta pro próximo
         // hit começar do zero, não escalado. Escala pelo próprio multiplicador: acelerado
         // 2x, a janela "reagindo" também encolhe pela metade, pra bater com o que a
@@ -1015,6 +1020,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // mesmo consumo de cooldown, sem duplicar a lógica.
     public bool TryPrimaryAttack()
     {
+        if (isDead) return false; // morto nunca começa ação (o trigger tiraria da animação de morte)
         // TryConsume() virou IsReady (só checa, não arma mais o timer na hora do clique) —
         // o timer real só começa em Update(), quando isAttackResolving volta a false de
         // verdade (ver comentário no campo e AttackCooldown.Start()).
@@ -1029,6 +1035,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     public void TryUseUltimate()
     {
+        if (isDead) return;
         // Sprint 21 (Druid) — só o Alce tem Ultimate com duração até hoje, então só ele
         // sobrescreve IsUltimateActive/CancelUltimate (default false/no-op, sem efeito nos
         // outros heróis). Checa ANTES do gate de energia: a energia já está zerada desde a
@@ -1052,6 +1059,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
     public void TryUseSecondaryAbility()
     {
+        if (isDead) return;
         // Mesma trava que PrimaryAttack()/UseUltimate() já tinham e a Habilidade Secundária
         // não tinha — sem isso, apertar Shift em cima do fim de outra ação (Attack, Ultimate,
         // SummonPet) ainda inicia a habilidade, só que UpdateAimDirection() logo abaixo
@@ -1265,6 +1273,11 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // "!= null" explícito, nunca "?." (mesma regra do EnemyController).
     protected void AnimatorTrigger(string trigger)
     {
+        // Herói morto só aceita o DieTrigger: qualquer outro (Update dos heróis depois da morte — fim
+        // de camuflagem/coruja/pulso, pet, escudo automático, ataque segurado) tiraria o herói da
+        // animação de morte pelas transições AnyState (bug real, Ranger com Bleed, 2026-11-26).
+        // Seguro: herói morto nunca revive, é recriado do zero no respawn.
+        if (isDead && trigger != "DieTrigger") return;
         if (animator != null) animator.SetTrigger(trigger);
     }
 
