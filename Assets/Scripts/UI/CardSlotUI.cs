@@ -46,6 +46,7 @@ public class CardSlotUI : MonoBehaviour
     // o valor base entra junto (Blast Charm: 5% + 5% = 10%).
     private static string ValueText(CardDefinition d, int currentLevel)
     {
+        if (d.stat == CardStat.FlameDuration) return $"{d.valuePerLevel:0}"; // Lasting Flames: +1 animação
         if (d.stat == CardStat.ProjectileCount) return $"{d.valuePerLevel + (currentLevel == 0 ? d.baseValue : 0f):0}"; // etapa 4
         float percent = d.Multiplicative ? (d.valuePerLevel - 1f) * 100f
             : (d.valuePerLevel + (currentLevel == 0 ? d.baseValue : 0f)) * 100f;

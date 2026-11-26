@@ -14,12 +14,15 @@ public class Mage : HeroController
     [SerializeField] private float attackHitboxSizeMultiplier = 1f; // 🔢 upgradable — até 2x (ver OnValidate)
 
     // Ataque com duração (ver PrimaryAttack e os eventos AnimationFire*Event).
-    [SerializeField] private float primaryExtraDuration = 0f; // 🔢 segundos extras de fogo além da 1ª volta (0 = ataque base, 1 volta)
-    [SerializeField] private float fireTickInterval = 0.25f; // 🔢 tick do dano do fogo, POR MONSTRO (PerTargetTickTracker)
+    [SerializeField] private float primaryExtraDuration = 0f; // 🔢 segundos extras de fogo (perks antigos) — vira animações inteiras (arredonda pra cima)
     // Tempo de fogo aceso, somado só nos frames com o jogo ATIVO (Update sai cedo na pausa). Antes
     // era Time.time - início: a pausa é só uma flag (GameplayGate, timeScale continua 1), então o
     // tempo pausado contava como duração (revisão final do D9.1). -1 = ainda não acendeu.
     private float fireElapsed = -1f;
+    // Ciclos da chama (regra do usuário, ver PrimaryDuration): animações que já passaram do quadro 10, e
+    // se a próxima volta do attack_continuous abre um ciclo novo (a última checagem não encerrou).
+    private int flameChecks;
+    private bool flameAwaitingLoop;
     private System.Func<float> rollFireTickDamage; // cache do delegate (criado 1x, sem alocar por ataque)
     private System.Func<float> fireStatusDpsGetter; // etapa 4 — cache, mesmo critério
 
@@ -223,7 +226,8 @@ public class Mage : HeroController
         if (isAttacking && !isTeleporting)
         {
             actionElapsed += Time.deltaTime;
-            if (!float.IsPositiveInfinity(CardFlameExtraSeconds) && actionElapsed >= maxActionDuration + primaryExtraDuration + CardFlameExtraSeconds)
+            int extraCycles = FlameExtraCycles;
+            if (extraCycles != PrimaryDuration.Infinite && actionElapsed >= maxActionDuration + extraCycles * FlameCycleSeconds)
             {
                 Debug.LogWarning("[Mage] Animation Event de fim de ação nunca chegou — forçando fim (verifique o Animator Controller).");
                 isAttacking = false;
@@ -243,8 +247,8 @@ public class Mage : HeroController
     // duração não acabou, bool AttackDurationOver) -> Attack_End, cada um com o gêmeo "_Walk"
     // (ver HeroController.walkableAttackStates). Segurar o botão só dispara o PRÓXIMO ataque
     // (igual aos outros heróis), nunca mexe na duração. O fogo (MageAttackHitbox) só existe
-    // dentro do attack_continuous: acende no frame 1 e apaga no frame 7 da volta em que a
-    // duração acabou (ver os 2 Animation Events abaixo).
+    // dentro do attack_continuous: acende no quadro 1 e vai pro fire_end no quadro 10 da última
+    // animação (ver os 2 Animation Events abaixo e PrimaryDuration).
     // Mirar durante o ataque vira o corpo (AimX/AimY -> BlendTree troca a direção no mesmo
     // frame, todas as direções têm o mesmo nº de frames) e gira o fogo (pivot, ver Update()).
     protected override bool CanAimDuringPrimaryAttack => true;
@@ -260,33 +264,56 @@ public class Mage : HeroController
         AnimatorTrigger("AttackTrigger");
     }
 
-    // Animation Event, frame 1 do attack_continuous (parado ou walk) — acende o fogo. Dispara de
-    // novo a cada volta (e pode repetir na troca parado <-> walk), mas StartFire é idempotente.
+    // Animation Event, quadro 1 do attack_continuous (parado ou walk). 1ª vez no ataque: acende o fogo
+    // (fire_start) e abre o 1º ciclo. Nas voltas seguintes (depois de uma checagem que não encerrou):
+    // fecha o ciclo anterior e abre o próximo. Repetições na troca parado <-> walk são ignoradas.
     public void AnimationFireStartEvent()
     {
-        if (!isAttacking || attackHitbox == null || attackHitbox.IsFireActive) return;
+        if (!isAttacking || attackHitbox == null) return;
+        if (attackHitbox.IsFireActive)
+        {
+            if (!flameAwaitingLoop) return;
+            flameAwaitingLoop = false;
+            HeroDamage.FlameCycle(continues: true); // catálogo de cartas: cada animação = 1 ataque primário
+            BeginFlameCycle(first: false);
+            return;
+        }
         if (fireElapsed >= 0f) return; // já acendeu (e apagou) neste ataque — não reacende
         fireElapsed = 0f;
-        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário (as voltas seguintes abrem no FlameCycle)
+        flameChecks = 0;
+        flameAwaitingLoop = false;
+        HeroDamage.BeginPrimaryAttack(); // catálogo de cartas: novo ataque primário
         rollFireTickDamage ??= RollFireTickDamage;
         fireStatusDpsGetter ??= PrimaryFireStatusDps;
         attackHitbox.transform.localScale = Vector3.one * attackHitboxSizeMultiplier * HeroController.Cards.Get(CardAbility.Primary, CardStat.Area)
             * (1f + CardRunState.NextPrimaryArea); // catálogo de cartas: Relentless Momentum
-        attackHitbox.TickHitWeight = FlameTickWeight;
-        attackHitbox.StartFire(rollFireTickDamage, fireTickInterval, ActionSpeedMultiplier,
+        attackHitbox.TickHitWeight = 1f / PrimaryDuration.PiecesPerCycle;
+        attackHitbox.StartFire(rollFireTickDamage, ActionSpeedMultiplier,
             immolation ? fireStatusDpsGetter : null, fireballFireStatusDuration);
+        BeginFlameCycle(first: true);
         ApplyPrimaryCastPerks();
     }
 
-    // Animation Event, frame 7 do attack_continuous — se a duração acabou, apaga o fogo e manda
-    // o corpo terminar esta volta e ir pro Attack_End. Senão, mais uma volta (fogo segue aceso).
+    // Parte de dano desta animação (fire_continuous) dividida em 3 pedaços — ver PrimaryDuration.
+    private void BeginFlameCycle(bool first)
+    {
+        float frame = FlameCycleSeconds / PrimaryDuration.CycleFrames;
+        bool last = PrimaryDuration.IsLastCycle(flameChecks, FlameExtraCycles);
+        attackHitbox.BeginCycle(PrimaryDuration.DamageStartFrame(first) * frame, PrimaryDuration.DamageFrames(first, last) * frame);
+    }
+
+    // Animation Event, início do quadro 10 do attack_continuous — se a duração acabou, o fogo vai pro
+    // fire_end (quadros 10-12, sem dano) e o corpo termina esta animação e vai pro Attack_End. Senão,
+    // mais uma animação inteira (o ciclo novo abre no quadro 1 da próxima volta).
     public void AnimationFireDurationCheckEvent()
     {
         if (fireElapsed < 0f || attackHitbox == null || !attackHitbox.IsFireActive) return;
-        bool ends = PrimaryDuration.ShouldEnd(fireElapsed, primaryExtraDuration + CardFlameExtraSeconds, IsAttackHeld);
-        HeroDamage.FlameCycle(continues: !ends); // catálogo de cartas: cada volta = 1 ataque primário
-        if (!ends) return;
-        attackHitbox.EndFire();
+        flameChecks++;
+        bool ends = PrimaryDuration.ShouldEnd(flameChecks, FlameExtraCycles, IsAttackHeld);
+        if (!ends) { flameAwaitingLoop = true; return; }
+        HeroDamage.FlameCycle(continues: false); // catálogo de cartas: fecha o último ciclo
+        // Garantia: o fogo nunca passa do corpo — some no máximo quando os 3 quadros do corpo acabam.
+        attackHitbox.EndFire(PrimaryDuration.FireEndFrames * FlameCycleSeconds / PrimaryDuration.CycleFrames);
         if (animator != null) animator.SetBool("AttackDurationOver", true);
     }
 
@@ -298,13 +325,11 @@ public class Mage : HeroController
         attackHitbox.EndFire();
     }
 
-    // Dano de 1 tick do fogo (crit rolado por tick) — dano do Mage vira dano por segundo
-    // (decisão do usuário: dano × intervalo, mesmo critério do pulse do Rogue).
-    // Catálogo de cartas (regra do usuário): cada CICLO da animação (attack_continuous, 12 quadros) dá o
-    // dano cheio do Mage, dividido entre os ticks do ciclo. O crítico é sorteado no HeroDamage.Direct.
+    // Dano de 1 tick do fogo — regra do usuário: cada animação (ciclo) dá o dano do Mage naquele momento,
+    // dividido em 3 ticks (1 por pedaço). O crítico é sorteado no HeroDamage.Direct.
     private float RollFireTickDamage()
         => stats.damage * attackDamageMultiplier * HeroController.CentralDamageMultiplier
-            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) * FlameTickWeight;
+            * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage) / PrimaryDuration.PiecesPerCycle;
 
     // Duração real de 1 ciclo da chama (clipe attack_continuous ÷ velocidade de ação). 1 s se não achar o clipe.
     private float flameClipSeconds = -1f;
@@ -325,15 +350,15 @@ public class Mage : HeroController
         }
     }
 
-    private float FlameTickWeight => fireTickInterval / Mathf.Max(0.01f, FlameCycleSeconds);
-
-    // Catálogo de cartas — Lasting Flames: +10% do ciclo por nível; nível 10 = infinita enquanto segura.
-    private float CardFlameExtraSeconds
+    // Animações extras: Lasting Flames (+1 por nível; nível 10 = infinito) + perks antigos em segundos.
+    private int FlameExtraCycles
     {
         get
         {
-            int level = Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.FlameDuration) / PrimaryDuration.ExtraPerLevel);
-            return PrimaryDuration.ExtraSeconds(level, FlameCycleSeconds);
+            int level = Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.FlameDuration));
+            int cycles = PrimaryDuration.ExtraCycles(level);
+            if (cycles == PrimaryDuration.Infinite) return cycles;
+            return cycles + Mathf.CeilToInt(primaryExtraDuration / Mathf.Max(0.01f, FlameCycleSeconds) - 0.001f);
         }
     }
 

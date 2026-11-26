@@ -9,8 +9,8 @@ using UnityEngine;
 // Fire_Start (frames 0-3) -> Fire_Continuous (4-8, loop) -> Fire_End (9-15) -> Idle.
 // O Mage acende (StartFire) no frame 1 do attack_continuous do corpo e apaga (EndFire) no
 // frame 7 da volta em que a duração acabou. O dano só existe enquanto o fogo está no
-// Fire_Continuous, por tick POR MONSTRO (PerTargetTickTracker): quem entra leva dano na hora
-// e de novo a cada tickInterval enquanto continuar dentro.
+// Fire_Continuous. Regra do usuário (2026-11-25): cada animação do Mage = 1 ciclo = o dano do Mage,
+// dividido em 3 pedaços da parte de dano; 1 tick por pedaço por monstro (na hora em que entra).
 public class MageAttackHitbox : MonoBehaviour
 {
     private static readonly int FireContinuousHash = Animator.StringToHash("Fire_Continuous");
@@ -19,14 +19,19 @@ public class MageAttackHitbox : MonoBehaviour
     private Animator animator;
 
     private bool fireActive; // entre StartFire() e EndFire() (fim da duração ou ação cortada)
-    private System.Func<float> rollTickDamage; // dano de 1 tick (crit rolado por tick) — fornecido pelo Mage
-    private readonly PerTargetTickTracker tickTracker = new PerTargetTickTracker(0.25f);
+    private System.Func<float> rollTickDamage; // dano de 1 tick (1/3 do dano do ciclo) — fornecido pelo Mage
     private readonly List<EnemyController> targets = new();
+    // Ciclo atual (1 animação do Mage): relógio da parte de dano (0 = fire_continuous começou nesta
+    // animação), duração dessa parte, e o último pedaço (0-2) em que cada monstro levou tick.
+    private float cycleClock;
+    private float cycleWindow = 1f;
+    private readonly Dictionary<EnemyController, int> piecesHit = new();
+    // Depois do EndFire: tempo até forçar o Idle (o fogo nunca fica rodando depois do corpo).
+    private float forceIdleIn = -1f;
+    private static readonly int IdleHash = Animator.StringToHash("Idle");
     // 128 (não 16) — monstro tem 2 Collider2D; 16 saturava com só 8 monstros aglomerados
     // (bug real, 2026-10-26).
     private static readonly Collider2D[] OverlapBuffer = new Collider2D[128];
-    private float nextPruneTime;
-    private const float PruneInterval = 1f;
 
     public bool IsFireActive => fireActive;
 
@@ -48,27 +53,53 @@ public class MageAttackHitbox : MonoBehaviour
     private float tickHitWeight = 1f;
     public float TickHitWeight { get => tickHitWeight; set => tickHitWeight = value; }
 
-    public void StartFire(System.Func<float> tickDamage, float tickInterval, float actionSpeedMultiplier,
+    public void StartFire(System.Func<float> tickDamage, float actionSpeedMultiplier,
         System.Func<float> fireStatusDps = null, float fireStatusDuration = 0f)
     {
         if (fireActive) return;
         fireActive = true;
+        forceIdleIn = -1f;
         rollTickDamage = tickDamage;
         this.fireStatusDps = fireStatusDps;
         this.fireStatusDuration = fireStatusDuration;
-        tickTracker.SetInterval(tickInterval);
+        piecesHit.Clear();
         if (animator == null) return;
         animator.SetFloat("ActionSpeedMultiplier", actionSpeedMultiplier);
         animator.ResetTrigger("FireEndTrigger");
         animator.SetTrigger("FireStartTrigger");
     }
 
+    // Novo ciclo (1 animação do Mage): a parte de dano começa daqui a startDelay (fire_start na 1ª
+    // animação) e dura window — dividida em 3 pedaços (PrimaryDuration.Piece).
+    public void BeginCycle(float startDelay, float window)
+    {
+        cycleClock = -startDelay;
+        cycleWindow = window;
+        piecesHit.Clear();
+    }
+
+    // 1 tick no pedaço atual, se este monstro ainda não levou o tick deste pedaço neste ciclo.
+    public bool TryTick(EnemyController enemy)
+    {
+        if (enemy == null || enemy.IsDead) return false;
+        int piece = PrimaryDuration.Piece(cycleClock, cycleWindow);
+        if (piecesHit.TryGetValue(enemy, out int last) && last >= piece) return false;
+        piecesHit[enemy] = piece;
+        ApplyTickTo(enemy);
+        return true;
+    }
+
+    public void AdvanceCycleClock(float dt) => cycleClock += dt;
+
     // Fim normal (duração acabou): toca o Fire_End. O dano para no mesmo instante — só o
-    // Fire_Continuous causa dano.
-    public void EndFire()
+    // Fire_Continuous causa dano. forceIdleAfter > 0: some à força depois desse tempo (garantia de
+    // que o fogo termina junto com o corpo, nunca depois).
+    public void EndFire(float forceIdleAfter = -1f)
     {
         if (!fireActive) return;
         fireActive = false;
+        piecesHit.Clear();
+        forceIdleIn = forceIdleAfter;
         if (animator == null) return;
         animator.ResetTrigger("FireStartTrigger");
         animator.SetTrigger("FireEndTrigger");
@@ -76,26 +107,20 @@ public class MageAttackHitbox : MonoBehaviour
 
     private void Update()
     {
-        if (!fireActive || hitbox == null || !GameplayGate.IsActive) return;
+        if (!GameplayGate.IsActive) return;
+        if (forceIdleIn > 0f && (forceIdleIn -= Time.deltaTime) <= 0f)
+        {
+            forceIdleIn = -1f;
+            if (animator != null && animator.HasState(0, IdleHash)) animator.Play(IdleHash, 0, 0f);
+        }
+        if (!fireActive || hitbox == null) return;
+        cycleClock += Time.deltaTime;
         if (animator != null && animator.GetCurrentAnimatorStateInfo(0).shortNameHash != FireContinuousHash) return;
 
         int count = hitbox.Overlap(ContactFilter2D.noFilter, OverlapBuffer);
         // Dedup obrigatório — todo monstro tem 2 Collider2D (ver EnemyController.CollectDistinct()).
         EnemyController.CollectDistinct(OverlapBuffer, count, targets);
-
-        float now = Time.time;
-        foreach (var enemy in targets)
-        {
-            if (enemy == null || enemy.IsDead) continue;
-            if (!tickTracker.TryHit(enemy.GetInstanceID(), now)) continue;
-            ApplyTickTo(enemy);
-        }
-
-        if (now >= nextPruneTime)
-        {
-            nextPruneTime = now + PruneInterval;
-            tickTracker.Prune(now);
-        }
+        foreach (var enemy in targets) TryTick(enemy);
     }
 
     // 1 tick da chama num inimigo (extraído do Update pra ser testável fora do Play).

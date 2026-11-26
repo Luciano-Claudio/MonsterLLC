@@ -15,11 +15,11 @@ MonoBehaviour:
   id: mage_primary_duration
   kind: 1
   title: Lasting Flames
-  description: '+{0} flame duration. Level 10: endless while held'
+  description: '+{0} flame cycle. Level 10: endless while held'
   icon: {fileID: 0}
   ability: 1
   stat: 73
-  valuePerLevel: 0.1
+  valuePerLevel: 1
   maxLevel: 10
   baseValue: 0
   healthPerLevel: 0
