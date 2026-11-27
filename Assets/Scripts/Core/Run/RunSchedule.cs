@@ -75,6 +75,18 @@ public class RunSchedule
     public int SlotTier(int slot) => slot >= 0 && slot < bossTiers.Length ? bossTiers[slot] : 0;
     public int SlotCount => bossTiers.Length;
 
+    // Qual noite é no segundo t (0 = dia): 1ª noite no 1º ciclo, 2ª no 2º... forceNight (o minuto final do
+    // boss é sempre noite): conta como a noite do ciclo em que está.
+    public static int NightNumber(float t, float daySeconds, float nightSeconds, bool forceNight = false)
+    {
+        float cycle = daySeconds + nightSeconds;
+        if (cycle <= 0f || t < 0f) return 0;
+        bool night = forceNight || Mathf.Repeat(t, cycle) >= daySeconds;
+        return night ? Mathf.FloorToInt(t / cycle) + 1 : 0;
+    }
+
+    public int NightNumberAt(float t) => NightNumber(t, daySeconds, nightSeconds, hasFinalBoss && t >= FinalBossSecond);
+
     public bool IsNight(float t)
     {
         if (hasFinalBoss && t >= FinalBossSecond) return true;
