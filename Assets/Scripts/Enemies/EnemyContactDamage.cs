@@ -8,6 +8,9 @@ public class EnemyContactDamage : MonoBehaviour
 {
     private float damage;
     private AttackCooldown cooldown;
+    private EnemyController owner;
+
+    private void Awake() => owner = GetComponentInParent<EnemyController>();
 
     public void Initialize(float contactDamage, float cooldownDuration)
     {
@@ -32,6 +35,8 @@ public class EnemyContactDamage : MonoBehaviour
         if (cooldown == null) return;
         if (!GameplayGate.IsActive) return;
         if (!other.CompareTag("Player")) return;
+        // Morto (tocando a animação de morte) não ataca mais — nem por contato (bug real, 2026-11-27).
+        if (owner != null && owner.IsDead) return;
         if (!cooldown.TryConsume()) return;
 
         var hero = other.GetComponent<HeroController>();
