@@ -21,6 +21,8 @@ public class HeroStateCardEffects : MonoBehaviour
         HeroController.OnShiftUsed += HandleShiftUsed;
         GameEvents.OnXpCollected += HandleXpCollected;
         GameEvents.OnGoldCoinCollected += HandleGoldCoinCollected;
+        GameEvents.OnStatItemCollected += HandleLootCollected;
+        GameEvents.OnRerollDiceCollected += HandleLootCollected;
     }
 
     private void OnDisable()
@@ -29,6 +31,8 @@ public class HeroStateCardEffects : MonoBehaviour
         HeroController.OnShiftUsed -= HandleShiftUsed;
         GameEvents.OnXpCollected -= HandleXpCollected;
         GameEvents.OnGoldCoinCollected -= HandleGoldCoinCollected;
+        GameEvents.OnStatItemCollected -= HandleLootCollected;
+        GameEvents.OnRerollDiceCollected -= HandleLootCollected;
     }
 
     private void Update()
@@ -146,6 +150,7 @@ public class HeroStateCardEffects : MonoBehaviour
     }
 
     private static void HandleGoldCoinCollected(int gold) => HandleXpCollected(gold);
+    private static void HandleLootCollected() => HandleXpCollected(1);
 
     // Golden Momentum: qualquer loot coletado (gema de XP ou moeda de gold).
     private static void HandleXpCollected(int xp)

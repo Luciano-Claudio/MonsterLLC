@@ -57,6 +57,7 @@ public class HeroCards : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnHeroLeveledUp += HandleLeveledUp;
+        GameEvents.OnStatItemCollected += HandleStatItem;
         GameEvents.OnDayStart += HandleRunStart;
         GameEvents.OnRunEnded += HandleRunEnded;
     }
@@ -64,6 +65,7 @@ public class HeroCards : MonoBehaviour
     private void OnDisable()
     {
         GameEvents.OnHeroLeveledUp -= HandleLeveledUp;
+        GameEvents.OnStatItemCollected -= HandleStatItem;
         GameEvents.OnDayStart -= HandleRunStart;
         GameEvents.OnRunEnded -= HandleRunEnded;
     }
@@ -97,6 +99,9 @@ public class HeroCards : MonoBehaviour
     }
 
     private void HandleLeveledUp(int level) => Enqueue(new PendingOffer { source = OfferSource.LevelUp, level = level });
+
+    // Loja permanente — Stat Item (cai de boss): entra na fila como qualquer oferta.
+    private void HandleStatItem() => EnqueueOffer(OfferSource.StatItem);
 
     // Baú/mímico/vendedor (etapa 3): as cartas são sorteadas quando a oferta abrir.
     public void EnqueueOffer(OfferSource source) => Enqueue(new PendingOffer { source = source, level = HeroLevelNow });

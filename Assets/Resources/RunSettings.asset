@@ -57,6 +57,13 @@ MonoBehaviour:
   goldCoinPrefab: {fileID: 5841871755401082378, guid: af4c6c584d0758c479f69091802ba672, type: 3}
   goldDropChance: 0.1
   goldPerCoin: 1
+  goldBagPrefab: {fileID: 2910042018728821841, guid: 2a1c44747c3b9e2479688d919ca34c0b, type: 3}
+  goldBagValue: 25
+  statItemPrefab: {fileID: 3076435347775683233, guid: f05962469b5ddd1419322e8fafc84ffb, type: 3}
+  statItemBaseChance: 0.1
+  rerollDicePrefab: {fileID: 6529580717294033604, guid: 489da9f1c9635a5409d715ea719e9842, type: 3}
+  diceChanceCommon: 0.01
+  diceChanceBoss: 0.05
   gemScale: 0.5
   maxGems: 400
   gemMagnetRadius: 2.5
@@ -66,6 +73,8 @@ MonoBehaviour:
   maxItemSlots: 6
   statEveryLevels: 5
   chestStatChancePercent: 15
+  statItemItemsChancePercent: 40
+  statItemUpgradesChancePercent: 40
   levelUpUpgradeChancePercent: 60
   maxItemsPerOffer: 2
   maxStatSlots: 6

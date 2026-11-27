@@ -1637,6 +1637,14 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         // Gold permanente: cada monstro (bosses também) tem goldDropChance de soltar 1 moeda.
         if (PermanentGold.RollsDrop(settings.goldDropChance, Random.value))
             pool.SpawnGold(origin + Random.insideUnitCircle * 0.3f, settings.goldPerCoin);
+        // Loja permanente: Gold Bag (boss e mini boss, sempre), Stat Item (só boss) e Reroll_Dice (todos).
+        bool bossOrMini = isBoss || IsMiniBoss;
+        int luck = PermanentBonuses.LuckLevel;
+        if (bossOrMini) pool.SpawnLoot(origin + Random.insideUnitCircle * 0.4f, LootKind.GoldBag, settings.goldBagValue);
+        if (isBoss && Random.value < LootDropRules.StatItemChance(luck, settings.statItemBaseChance))
+            pool.SpawnLoot(origin + Random.insideUnitCircle * 0.4f, LootKind.StatItem, 1);
+        if (Random.value < LootDropRules.DiceChance(bossOrMini, luck, settings.diceChanceCommon, settings.diceChanceBoss))
+            pool.SpawnLoot(origin + Random.insideUnitCircle * 0.4f, LootKind.RerollDice, 1);
     }
 
     private void DropLoot()

@@ -7,9 +7,9 @@ using UnityEngine;
 // Sem física de propósito (D9.3: centenas de colliders derrubam o FPS): este pool atualiza todas as
 // gemas num único Update, por distância. Limite de objetos (RunSettings.maxGems): passou dele, uma
 // gema que já existe absorve o XP da nova — nada de XP se perde e nada de objeto novo nasce.
-// Gold permanente (2026-11-26): o mesmo pool cuida das moedas de gold (SpawnGold) — mesmo ímã, mesma
-// coleta; a moeda vai para PermanentGold. Gema e moeda são prefabs com animação em loop
-// (RunSettings.gemPrefab / goldCoinPrefab), instanciados 1x e reaproveitados.
+// Gold permanente (2026-11-26) e loja permanente (2026-11-27): o mesmo pool cuida de todo loot do chão
+// (LootKind) — moeda, Gold Bag, Stat Item e Reroll_Dice: mesmo ímã, mesma coleta. Cada tipo é um prefab
+// com animação em loop (RunSettings), instanciado 1x e reaproveitado. Só a gema de XP entra no limite.
 public class XpGemPool : MonoBehaviour
 {
     public static XpGemPool Instance { get; private set; }
@@ -17,8 +17,7 @@ public class XpGemPool : MonoBehaviour
     private const float CollectDistance = 0.3f;
 
     private readonly List<Gem> active = new();
-    private readonly Stack<Gem> free = new();
-    private readonly Stack<Gem> freeGold = new();
+    private readonly Dictionary<LootKind, Stack<Gem>> free = new();
     private RunSettings settings;
     private int sortingLayerId;
     private bool renderInfoLoaded;
@@ -28,8 +27,8 @@ public class XpGemPool : MonoBehaviour
         public GameObject go;
         public Transform transform;
         public SpriteRenderer renderer;
-        public int xp;      // XP da gema, ou gold da moeda
-        public bool gold;   // moeda de gold permanente
+        public int xp;      // XP da gema, gold da moeda/bolsa (1 nos outros)
+        public LootKind kind;
         public bool attracted;
     }
 
@@ -37,7 +36,7 @@ public class XpGemPool : MonoBehaviour
 
     // Raio do ímã: base do RunSettings × perks de coleta × carta de ímã.
     public float MagnetRadius => HeroController.Cards.Sum(CardAbility.None, CardStat.CollectorsInstinct) > 0f
-        ? CollectorsInstinctRadius // catálogo de cartas — Collector's Instinct: toda gema vem
+        ? CollectorsInstinctRadius // catálogo de cartas — Collector's Instinct: todo loot vem
         : Settings.gemMagnetRadius * HeroController.PickupRadiusMultiplier * HeroController.Cards.Get(CardAbility.None, CardStat.Magnet);
     private const float CollectorsInstinctRadius = 100000f;
 
@@ -46,7 +45,7 @@ public class XpGemPool : MonoBehaviour
         get
         {
             long sum = 0;
-            for (int i = 0; i < active.Count; i++) if (!active[i].gold) sum += active[i].xp;
+            for (int i = 0; i < active.Count; i++) if (active[i].kind == LootKind.Xp) sum += active[i].xp;
             return sum;
         }
     }
@@ -76,11 +75,11 @@ public class XpGemPool : MonoBehaviour
             float farthestSqr = -1f;
             for (int i = 0; i < active.Count; i++)
             {
-                if (active[i].gold) continue; // moeda nunca absorve XP
+                if (active[i].kind != LootKind.Xp) continue; // outro loot nunca absorve XP
                 float sqr = ((Vector2)active[i].transform.position - heroPosition).sqrMagnitude;
                 if (sqr > farthestSqr) { farthestSqr = sqr; target = active[i]; }
             }
-            if (target == null) { SpawnItem(position, xp, false); return; }
+            if (target == null) { SpawnItem(position, xp, LootKind.Xp); return; }
             target.xp += xp;
             target.attracted = false;
             target.transform.position = position;
@@ -88,20 +87,23 @@ public class XpGemPool : MonoBehaviour
             return;
         }
 
-        SpawnItem(position, xp, false);
+        SpawnItem(position, xp, LootKind.Xp);
     }
 
     // Moeda de gold permanente no chão (fora do limite de gemas: é rara).
-    public void SpawnGold(Vector2 position, int gold)
+    public void SpawnGold(Vector2 position, int gold) => SpawnLoot(position, LootKind.Gold, gold);
+
+    // Qualquer loot do chão. XP passa pelo limite (Spawn); os outros são raros e sempre nascem.
+    public void SpawnLoot(Vector2 position, LootKind kind, int value)
     {
-        if (gold <= 0) return;
-        SpawnItem(position, gold, true);
+        if (value <= 0) return;
+        if (kind == LootKind.Xp) { Spawn(position, value); return; }
+        SpawnItem(position, value, kind);
     }
 
-    private void SpawnItem(Vector2 position, int value, bool gold)
+    private void SpawnItem(Vector2 position, int value, LootKind kind)
     {
-        var stack = gold ? freeGold : free;
-        var gem = stack.Count > 0 ? stack.Pop() : Create(gold);
+        var gem = free.TryGetValue(kind, out var stack) && stack.Count > 0 ? stack.Pop() : Create(kind);
         gem.xp = value;
         gem.attracted = false;
         gem.transform.position = position;
@@ -110,15 +112,14 @@ public class XpGemPool : MonoBehaviour
         active.Add(gem);
     }
 
-    public int GoldCoinCount
+    public int CountOf(LootKind kind)
     {
-        get
-        {
-            int n = 0;
-            for (int i = 0; i < active.Count; i++) if (active[i].gold) n++;
-            return n;
-        }
+        int n = 0;
+        for (int i = 0; i < active.Count; i++) if (active[i].kind == kind) n++;
+        return n;
     }
+
+    public int GoldCoinCount => CountOf(LootKind.Gold);
 
     // XP das gemas ativas a até `radius` de `position` (verificação/telemetria).
     public int XpNear(Vector2 position, float radius)
@@ -126,7 +127,7 @@ public class XpGemPool : MonoBehaviour
         int sum = 0;
         float r2 = radius * radius;
         for (int i = 0; i < active.Count; i++)
-            if (!active[i].gold && ((Vector2)active[i].transform.position - position).sqrMagnitude <= r2) sum += active[i].xp;
+            if (active[i].kind == LootKind.Xp && ((Vector2)active[i].transform.position - position).sqrMagnitude <= r2) sum += active[i].xp;
         return sum;
     }
 
@@ -135,14 +136,23 @@ public class XpGemPool : MonoBehaviour
         for (int i = active.Count - 1; i >= 0; i--) Release(i);
     }
 
-    private Gem Create(bool gold)
+    private GameObject PrefabFor(LootKind kind) => kind switch
     {
-        var prefab = gold ? Settings.goldCoinPrefab : Settings.gemPrefab;
+        LootKind.Gold => Settings.goldCoinPrefab,
+        LootKind.GoldBag => Settings.goldBagPrefab,
+        LootKind.StatItem => Settings.statItemPrefab,
+        LootKind.RerollDice => Settings.rerollDicePrefab,
+        _ => Settings.gemPrefab,
+    };
+
+    private Gem Create(LootKind kind)
+    {
+        var prefab = PrefabFor(kind);
         if (prefab != null)
         {
             var instance = Instantiate(prefab, transform, false);
-            instance.name = gold ? "GoldCoin" : "XpGem";
-            return new Gem { go = instance, transform = instance.transform, renderer = instance.GetComponentInChildren<SpriteRenderer>(), gold = gold };
+            instance.name = kind == LootKind.Xp ? "XpGem" : kind == LootKind.Gold ? "GoldCoin" : kind.ToString();
+            return new Gem { go = instance, transform = instance.transform, renderer = instance.GetComponentInChildren<SpriteRenderer>(), kind = kind };
         }
 
         if (!renderInfoLoaded)
@@ -153,12 +163,12 @@ public class XpGemPool : MonoBehaviour
             sortingLayerId = lootRenderer != null ? lootRenderer.sortingLayerID : 0;
         }
 
-        var go = new GameObject("XpGem");
+        var go = new GameObject(kind.ToString());
         go.transform.SetParent(transform, false);
         var renderer = go.AddComponent<SpriteRenderer>();
         renderer.sprite = Settings.gemSprite; // reserva: sem prefab configurado
         renderer.sortingLayerID = sortingLayerId;
-        return new Gem { go = go, transform = go.transform, renderer = renderer, gold = gold };
+        return new Gem { go = go, transform = go.transform, renderer = renderer, kind = kind };
     }
 
     private void Release(int index)
@@ -168,7 +178,23 @@ public class XpGemPool : MonoBehaviour
         active[index] = active[last];
         active.RemoveAt(last);
         gem.go.SetActive(false);
-        (gem.gold ? freeGold : free).Push(gem);
+        if (!free.TryGetValue(gem.kind, out var stack)) free[gem.kind] = stack = new Stack<Gem>();
+        stack.Push(gem);
+    }
+
+    private static void Collect(LootKind kind, int value)
+    {
+        switch (kind)
+        {
+            case LootKind.Xp: GameEvents.XpCollected(value); break;
+            case LootKind.Gold:
+            case LootKind.GoldBag:
+                PermanentGold.Add(PermanentBonuses.ScaleGold(value)); // + Greed/Maldição
+                GameEvents.GoldCoinCollected(value);
+                break;
+            case LootKind.StatItem: GameEvents.StatItemCollected(); break;
+            case LootKind.RerollDice: GameEvents.RerollDiceCollected(); break;
+        }
     }
 
     private void Update()
@@ -191,11 +217,10 @@ public class XpGemPool : MonoBehaviour
             float sqr = toHero.sqrMagnitude;
             if (sqr <= collectSqr)
             {
+                var kind = gem.kind;
                 int value = gem.xp;
-                bool gold = gem.gold;
                 Release(i);
-                if (gold) { PermanentGold.Add(PermanentBonuses.ScaleGold(value)); GameEvents.GoldCoinCollected(value); } // + Greed/Maldição
-                else GameEvents.XpCollected(value);
+                Collect(kind, value);
                 continue;
             }
             if (!gem.attracted && sqr > magnetSqr) continue;

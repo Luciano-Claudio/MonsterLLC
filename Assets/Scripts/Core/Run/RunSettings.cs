@@ -44,6 +44,17 @@ public class RunSettings : ScriptableObject
     [Tooltip("Chance de cada monstro (bosses também) soltar 1 moeda.")]
     [Range(0f, 1f)] public float goldDropChance = 0.10f; // 🔢
     public int goldPerCoin = 1; // 🔢
+    [Header("Loot de boss e dado de reroll (loja permanente)")]
+    [Tooltip("Gold Bag: cai sempre de boss e de mini boss.")]
+    public GameObject goldBagPrefab;
+    public int goldBagValue = 25; // 🔢
+    [Tooltip("Stat Item: só de boss; 10% + 10% por nível de Luck. Coletado, abre a tela de cartas.")]
+    public GameObject statItemPrefab;
+    [Range(0f, 1f)] public float statItemBaseChance = 0.10f; // 🔢
+    [Tooltip("Reroll_Dice: +1 reroll. Chance em monstro comum e em mini boss/boss; Luck soma 25% da base por nível.")]
+    public GameObject rerollDicePrefab;
+    [Range(0f, 1f)] public float diceChanceCommon = 0.01f; // 🔢
+    [Range(0f, 1f)] public float diceChanceBoss = 0.05f; // 🔢
     public float gemScale = 0.5f; // 🔢
     [Tooltip("Limite de gemas no chão (desempenho). Passou disso, uma gema existente absorve o XP da nova.")]
     public int maxGems = 400; // 🔢
