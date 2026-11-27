@@ -15,6 +15,7 @@ MonoBehaviour:
   heroes:
   - heroKey: Barbarian
     heroImage: {fileID: -1165153892451515678, guid: 1a4a891bba58cbf44bae5f74cc611160, type: 3}
+    confirmIcon: {fileID: 0}
     upgrades:
     - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
     - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
@@ -34,6 +35,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}
   - heroKey: Ranger
     heroImage: {fileID: 4143291611576972232, guid: b42c7abe0d39c9948aca9c822fc9c8ec, type: 3}
+    confirmIcon: {fileID: 0}
     upgrades:
     - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
     - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
@@ -53,6 +55,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}
   - heroKey: Mage
     heroImage: {fileID: -6802936167326294342, guid: 4d6c9809a51193248824fea7d14ae295, type: 3}
+    confirmIcon: {fileID: 0}
     upgrades:
     - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
     - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
@@ -70,3 +73,31 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 874e03261b8a57e49843d2a70d3b89c5, type: 2}
     - {fileID: 11400000, guid: e5df8870f6cf2dd4ba0f986448a0ef4f, type: 2}
     - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}
+  - heroKey: Druid
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: Rogue
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: Cleric
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: Paladin
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: Gunslinger
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: Assassin
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []
+  - heroKey: BloodMage
+    heroImage: {fileID: 0}
+    confirmIcon: {fileID: 0}
+    upgrades: []

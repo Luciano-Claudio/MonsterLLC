@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Lista das melhorias de cada herói (Resources/PermanentUpgradeCatalog). Só Barbarian, Ranger e Mage
-// na alpha; herói sem entrada não tem loja.
+// Lista das melhorias de cada herói (Resources/PermanentUpgradeCatalog). Os 10 heróis têm entrada (para o
+// ícone do Select_Confirm); só Barbarian, Ranger e Mage têm melhorias na alpha — sem melhorias, sem loja.
 [CreateAssetMenu(menuName = "MonsterLLC/Permanent Upgrade Catalog", fileName = "PermanentUpgradeCatalog")]
 public class PermanentUpgradeCatalog : ScriptableObject
 {
@@ -10,8 +10,10 @@ public class PermanentUpgradeCatalog : ScriptableObject
     public class HeroUpgrades
     {
         public string heroKey;
-        [Tooltip("Imagem do herói no Stats_Painel e no Select_Confirm (1º quadro do idle).")]
+        [Tooltip("Imagem do herói no Stats_Painel (Hero_Image) — 1º quadro do idle.")]
         public Sprite heroImage;
+        [Tooltip("Ícone do herói no Select_Confirm (Icon_Hero). Vazio = usa o heroImage.")]
+        public Sprite confirmIcon;
         public List<PermanentUpgradeDefinition> upgrades = new();
     }
 

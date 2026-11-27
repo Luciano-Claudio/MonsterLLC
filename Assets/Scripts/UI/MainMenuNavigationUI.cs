@@ -164,7 +164,8 @@ public class MainMenuNavigationUI : MonoBehaviour
         var catalog = PermanentUpgradeCatalog.Load();
         var entry = catalog != null ? catalog.Find(heroKey) : null;
         var icon = selectConfirm.transform.Find("Icon_Hero")?.GetComponent<Image>();
-        if (icon != null && entry != null && entry.heroImage != null) icon.sprite = entry.heroImage;
+        var iconSprite = entry == null ? null : entry.confirmIcon != null ? entry.confirmIcon : entry.heroImage;
+        if (icon != null && iconSprite != null) icon.sprite = iconSprite;
         var label = selectConfirm.transform.Find("Hero_Name")?.GetComponent<TMPro.TMP_Text>();
         if (label != null) label.text = heroKey;
         if (upgradeButton != null) upgradeButton.interactable = entry != null && entry.upgrades.Count > 0; // só os heróis da alpha têm loja
