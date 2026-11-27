@@ -131,7 +131,7 @@ public class HeroStateCardEffects : MonoBehaviour
                 float angle = Mathf.PI * 0.5f + i * Mathf.PI * 2f / count;
                 var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 var obj = HeroProjectilePool.Spawn(t.thornProjectilePrefab, hero.transform.position, HeroController.HerosContainer); // fila de projéteis
-                obj.transform.localScale = Vector3.one * t.thornScale;
+                obj.transform.localScale *= t.thornScale; // escala do prefab (a fila volta pra ela) x ajuste do RunSettings
                 var p = obj.GetComponent<HeroProjectile>();
                 if (p == null) continue;
                 p.SetCountsAsHeroHit(false);
