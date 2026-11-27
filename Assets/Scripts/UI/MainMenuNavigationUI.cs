@@ -12,7 +12,9 @@ using UnityEngine.UI;
 // mesma coisa que o Esc faria na tela em que estão, de propósito (botão visível = mesmo atalho).
 public class MainMenuNavigationUI : MonoBehaviour
 {
-    private enum MenuState { Main, Credits, Settings, HeroSelect, MapSelect }
+    // Loja permanente (2026-11-27): clicar num herói abre o Select_Confirm (Play / Upgrade); Upgrade abre o
+    // Stats_Painel. Esc: Select_Confirm -> fecha; Stats_Painel -> lista de heróis.
+    private enum MenuState { Main, Credits, Settings, HeroSelect, HeroConfirm, Stats, MapSelect }
 
     [Tooltip("Vida base/ataque base/história por herói, pro popup de hover do Hero Select (GDD Deadline 8.1, Seção 6).")]
     [SerializeField] private HeroDisplayTableSO heroDisplayTable;
@@ -25,6 +27,10 @@ public class MainMenuNavigationUI : MonoBehaviour
     private GameObject settingsPanel;
     private GameObject herosPanel;
     private GameObject mapPanel;
+    private GameObject selectConfirm;
+    private GameObject statsPanel;
+    private PermanentShopUI shop;
+    private Button upgradeButton;
 
     private MenuState state = MenuState.Main;
     private string selectedHero;
@@ -37,6 +43,16 @@ public class MainMenuNavigationUI : MonoBehaviour
         settingsPanel = transform.Find("Settings").gameObject;
         herosPanel = transform.Find("Heros_Painel").gameObject;
         mapPanel = transform.Find("Map_Painel").gameObject;
+        selectConfirm = herosPanel.transform.Find("Select_Confirm")?.gameObject;
+        statsPanel = herosPanel.transform.Find("Stats_Painel")?.gameObject;
+        if (statsPanel != null) shop = statsPanel.GetComponent<PermanentShopUI>() ?? statsPanel.AddComponent<PermanentShopUI>();
+        if (selectConfirm != null)
+        {
+            upgradeButton = selectConfirm.transform.Find("Upgrade")?.GetComponent<Button>();
+            upgradeButton?.onClick.AddListener(OpenStats);
+            selectConfirm.transform.Find("Play_Game")?.GetComponent<Button>()?.onClick.AddListener(OpenMapSelect);
+        }
+        statsPanel?.transform.Find("Background/Back_To_Hero_Painel")?.GetComponent<Button>()?.onClick.AddListener(GoBack);
 
         // Etapas 1+2 (spec 5.1): a run é de uma vez só — sem Continue. O botão fica escondido
         // (o usuário remove da cena quando quiser).
@@ -135,13 +151,49 @@ public class MainMenuNavigationUI : MonoBehaviour
         state = MenuState.HeroSelect;
         selectedHero = null;
         ShowOnly(herosPanel);
+        if (selectConfirm != null) selectConfirm.SetActive(false);
+        if (statsPanel != null) statsPanel.SetActive(false);
     }
 
+    // Card do herói -> Select_Confirm (Play / Upgrade). Sem Select_Confirm na cena: direto pro mapa (como antes).
     private void OnHeroChosen(string heroKey)
     {
         selectedHero = heroKey;
+        if (selectConfirm == null) { OpenMapSelect(); return; }
+        state = MenuState.HeroConfirm;
+        var catalog = PermanentUpgradeCatalog.Load();
+        var entry = catalog != null ? catalog.Find(heroKey) : null;
+        var icon = selectConfirm.transform.Find("Icon_Hero")?.GetComponent<Image>();
+        if (icon != null && entry != null && entry.heroImage != null) icon.sprite = entry.heroImage;
+        var label = selectConfirm.transform.Find("Hero_Name")?.GetComponent<TMPro.TMP_Text>();
+        if (label != null) label.text = heroKey;
+        if (upgradeButton != null) upgradeButton.interactable = entry != null && entry.upgrades.Count > 0; // só os heróis da alpha têm loja
+        if (statsPanel != null) statsPanel.SetActive(false);
+        selectConfirm.SetActive(true);
+    }
+
+    private void OpenMapSelect()
+    {
+        if (selectConfirm != null) selectConfirm.SetActive(false);
         state = MenuState.MapSelect;
         ShowOnly(mapPanel);
+    }
+
+    private void OpenStats()
+    {
+        if (statsPanel == null || shop == null || string.IsNullOrEmpty(selectedHero)) return;
+        if (selectConfirm != null) selectConfirm.SetActive(false);
+        state = MenuState.Stats;
+        statsPanel.SetActive(true);
+        shop.Open(selectedHero);
+    }
+
+    private void CloseHeroOverlays()
+    {
+        if (selectConfirm != null) selectConfirm.SetActive(false);
+        if (statsPanel != null) statsPanel.SetActive(false);
+        state = MenuState.HeroSelect;
+        selectedHero = null;
     }
 
     private void OnWorldChosen()
@@ -158,6 +210,10 @@ public class MainMenuNavigationUI : MonoBehaviour
             case MenuState.Settings:
             case MenuState.HeroSelect:
                 ShowMainMenu();
+                break;
+            case MenuState.HeroConfirm:
+            case MenuState.Stats:
+                CloseHeroOverlays(); // fica na lista de heróis
                 break;
             case MenuState.MapSelect:
                 OpenHeroSelect(); // já reseta selectedHero e reabre o Heros_Painel
