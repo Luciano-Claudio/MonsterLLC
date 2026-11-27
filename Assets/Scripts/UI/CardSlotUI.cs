@@ -22,21 +22,25 @@ public class CardSlotUI : MonoBehaviour
 
     private CardDefinition card;
     private Action<CardDefinition> onClick;
+    // Fundo do tipo da carta atual. O Animator do card (Write Defaults ligado; o clipe Disabled anima o
+    // sprite) escreve de volta o sprite da carta anterior depois de um reroll (bug real, 2026-11-27: item com
+    // fundo de upgrade e vice-versa). Depois que o Animator roda, o card repõe o fundo certo.
+    private Sprite boundBackground;
+
+    private void LateUpdate()
+    {
+        if (background == null || boundBackground == null || background.sprite == boundBackground) return;
+        if (button != null && !button.IsInteractable()) return; // Disabled: o verso da carta é de propósito
+        background.sprite = boundBackground;
+    }
 
     public void Bind(CardDefinition definition, int currentLevel, CardScreenUI.KindStyle style, Action<CardDefinition> clicked)
     {
         card = definition;
         onClick = clicked;
         gameObject.SetActive(true);
-        if (background != null && style != null && style.background != null)
-        {
-            background.sprite = style.background;
-            // O Animator do card (Write Defaults ligado; o clipe Disabled anima o sprite) guarda o sprite de
-            // quando foi ativado e escreve ele de volta. No reroll a tela já está aberta, então sem isto o card
-            // ficava com o fundo da carta anterior (bug real: item com fundo de upgrade, 2026-11-27).
-            var animator = background.GetComponent<Animator>();
-            if (animator != null && animator.isActiveAndEnabled) { animator.Rebind(); animator.Update(0f); }
-        }
+        boundBackground = style != null ? style.background : null;
+        if (background != null && boundBackground != null) background.sprite = boundBackground;
         if (kindLabel != null && style != null) { kindLabel.text = style.label; kindLabel.color = style.labelColor; }
         if (icon != null) { icon.sprite = definition.icon; icon.enabled = definition.icon != null; }
         if (nameText != null) nameText.text = definition.title;
