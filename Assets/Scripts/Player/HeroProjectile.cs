@@ -13,7 +13,7 @@ using UnityEngine;
 // nenhum perk escrevendo ainda, isso é conteúdo da próxima fase). Cada capacidade é um Set*()
 // separado, opt-in, nunca exigido por Launch() — zero risco pro caminho existente (Launch()
 // em si não mudou 1 caractere).
-public class HeroProjectile : MonoBehaviour
+public class HeroProjectile : MonoBehaviour, IPooledProjectile
 {
     // Opcional — 8 estados soltos (N/NE/E/SE/S/SW/W/NW), sem Blend Tree e sem parâmetro
     // nenhum: a direção não muda depois do disparo, então Launch() só dá Play() direto pelo
@@ -97,9 +97,29 @@ public class HeroProjectile : MonoBehaviour
         fragmentDamageDecayPercent = damageDecayPercent;
     }
 
+    private GameObject prefabGroundCrackTrailPrefab; // valor do prefab (o campo é serializado e SetGroundCrackTrail troca)
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        prefabGroundCrackTrailPrefab = groundCrackTrailPrefab;
+    }
+
+    // Fila de projéteis (HeroProjectilePool): volta tudo ao que um Instantiate novo teria.
+    public void ResetForReuse()
+    {
+        direction = Vector2.zero; damageReserve = 0f; speed = 0f; maxDistance = 0f; knockbackForce = 0f; distanceTraveled = 0f;
+        owner = null;
+        explosionRadius = 0f; explosionDamagePercent = 0f;
+        healPercentPerHit = 0f;
+        countsAsHeroHit = true;
+        bleedDamagePerSecond = 0f; bleedDuration = 0f;
+        groundCrackTrailPrefab = prefabGroundCrackTrailPrefab;
+        groundCrackTrailChance = 0f; groundCrackTrailDamagePerSecond = 0f;
+        groundCrackTrailTickInterval = 0.5f; groundCrackTrailDuration = 3f; groundCrackTrailElapsed = 0f;
+        fragmentOnHit = false; fragmentDepthRemaining = 0; fragmentDamageDecayPercent = 50f;
+        lifetimeElapsed = 0f;
+        isDestroying = false;
     }
 
     // Rede de segurança — bug real reportado pelo usuário: projétil nascido via fragmentação
@@ -137,7 +157,7 @@ public class HeroProjectile : MonoBehaviour
         {
             Debug.LogWarning($"[{GetType().Name}] Excedeu {MaxLifetimeSeconds}s sem se autodestruir (distanceTraveled={distanceTraveled}, maxDistance={maxDistance}) — forçando destruição.");
             isDestroying = true;
-            Destroy(gameObject);
+            HeroProjectilePool.Release(gameObject);
             return;
         }
 
@@ -150,7 +170,7 @@ public class HeroProjectile : MonoBehaviour
         if (distanceTraveled >= maxDistance)
         {
             isDestroying = true;
-            Destroy(gameObject);
+            HeroProjectilePool.Release(gameObject);
         }
     }
 
@@ -211,14 +231,14 @@ public class HeroProjectile : MonoBehaviour
         {
             isDestroying = true;
             SpawnFragments();
-            Destroy(gameObject);
+            HeroProjectilePool.Release(gameObject);
             return;
         }
 
         if (damageReserve <= 0f)
         {
             isDestroying = true;
-            Destroy(gameObject);
+            HeroProjectilePool.Release(gameObject);
         }
     }
 
@@ -255,7 +275,8 @@ public class HeroProjectile : MonoBehaviour
 
     private void SpawnFragment(Vector2 dir, float reserve)
     {
-        var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
+        var obj = HeroProjectilePool.SpawnLike(gameObject, transform.position, transform.parent);
+        obj.transform.localScale = transform.localScale; // mesma escala do pai (o clone antigo copiava)
         var projectile = obj.GetComponent<HeroProjectile>();
         projectile.Launch(dir, reserve, speed, maxDistance - distanceTraveled, knockbackForce);
         projectile.SetOwner(owner);

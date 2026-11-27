@@ -5,7 +5,8 @@ using TMPro;
 // Overlay), e a cada frame converte a posição de mundo (que só existe em memória, o objeto
 // em si nunca sai do Canvas) pra posição de tela via Camera.WorldToScreenPoint — é a forma
 // mais comum e testada de fazer isso, sem depender de Canvas World Space (que já causou
-// dor de cabeça). Sem pooling — mesmo padrão de todo projétil do projeto.
+// dor de cabeça). Reaproveitado pela fila do FloatingCombatTextSpawner (Owner): no fim volta pra fila
+// desligado, em vez de ser destruído.
 public class FloatingCombatText : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI label;
@@ -21,6 +22,11 @@ public class FloatingCombatText : MonoBehaviour
     private Vector3 velocity;
     private float elapsed;
     private Color baseColor;
+    private Color defaultColor; // cor do prefab, guardada no 1º uso (o fade e as cores de bloqueio/cura mexem no label)
+    private bool hasDefaultColor;
+
+    // Fila que criou este texto. Sem dono (instanciado à parte), é destruído no fim como antes.
+    public FloatingCombatTextSpawner Owner { get; set; }
 
     // overrideColor == null usa a cor já configurada no TextMeshProUGUI (dano normal). Passar
     // uma cor (ex.: dano bloqueado pelo shield do Paladin, cura) sobrescreve só essa instância.
@@ -38,10 +44,13 @@ public class FloatingCombatText : MonoBehaviour
 
         if (label != null)
         {
+            if (!hasDefaultColor) { defaultColor = label.color; hasDefaultColor = true; }
             label.text = (isHeal ? "+" : "") + LargeNumberFormatter.Format(amount);
-            baseColor = overrideColor ?? label.color;
+            baseColor = overrideColor ?? defaultColor;
+            label.color = baseColor;
         }
 
+        elapsed = 0f;
         rectTransform.localScale = Vector3.one;
         UpdateScreenPosition();
     }
@@ -73,7 +82,14 @@ public class FloatingCombatText : MonoBehaviour
             label.color = c;
         }
 
-        if (elapsed >= lifetime) Destroy(gameObject);
+        if (elapsed >= lifetime) Finish();
+    }
+
+    // Fim da animação: volta pra fila desligado (ou é destruído, se não veio de uma fila).
+    private void Finish()
+    {
+        if (Owner != null) Owner.Release(this);
+        else Destroy(gameObject);
     }
 
     // Rede de segurança pra sumir IMEDIATAMENTE na virada do dia (não esperar o ~1s de
@@ -86,7 +102,7 @@ public class FloatingCombatText : MonoBehaviour
         var texts = Object.FindObjectsByType<FloatingCombatText>(FindObjectsSortMode.None);
         foreach (var text in texts)
         {
-            if (text != null) Destroy(text.gameObject);
+            if (text != null) text.Finish();
         }
     }
 

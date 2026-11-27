@@ -494,7 +494,7 @@ public class Mage : HeroController
     private void SpawnUltimateFireball(Vector2 direction, float impactDamage, float trailDamagePerTick, float fireStatusDamagePerSecond,
         float explosionRadius, float groundedRadius, bool trackForTrail)
     {
-        var obj = Instantiate(fireballPrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+        var obj = HeroProjectilePool.Spawn(fireballPrefab, transform.position, HeroController.HerosContainer); // fila de projéteis
         obj.transform.localScale = Vector3.one * ultimateSizeMultiplier;
         var fireball = obj.GetComponent<MageFireball>();
         if (fireball == null) return;
@@ -610,7 +610,7 @@ public class Mage : HeroController
         // Atravessa obstáculos, mas nunca pousa dentro de um (regra do usuário, 2026-11-27 — TeleportUtility).
         // O projétil não checa colisão durante o voo (ver MageTeleportProjectile), só reporta onde parou.
         float distance = TeleportUtility.ResolveDistance(transform.position, RawAimDirection, RawAimDistance, secondaryAbilityMaxRange, transform);
-        var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+        var obj = HeroProjectilePool.Spawn(teleportProjectilePrefab, transform.position, HeroController.HerosContainer); // fila de projéteis
         var projectile = obj.GetComponent<MageTeleportProjectile>();
         if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived, teleportProjectileSpeed);
         else OnTeleportProjectileArrived(transform.position); // prefab sem o script — mesma rede de segurança
@@ -795,10 +795,10 @@ public class Mage : HeroController
         if (getSlot() != null) return;
         if (fireballPrefab == null) return;
 
-        var obj = Instantiate(fireballPrefab, position, Quaternion.identity, HeroController.HerosContainer);
+        var obj = HeroProjectilePool.Spawn(fireballPrefab, position, HeroController.HerosContainer); // fila de projéteis
         obj.transform.localScale = Vector3.one * scale;
         var patch = obj.GetComponent<MageFireball>();
-        if (patch == null) { Destroy(obj); return; }
+        if (patch == null) { HeroProjectilePool.Release(obj); return; }
 
         patch.LaunchGroundedOnly(damagePerSecond, damagePerSecond, fireballGroundedDuration, fireballGroundedTickInterval, fireballGroundedRadius * scale, fireballFireStatusDuration);
 

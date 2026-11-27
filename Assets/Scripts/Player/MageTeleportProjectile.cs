@@ -8,13 +8,19 @@ using UnityEngine;
 // decide QUANDO e ONDE o Mage reaparece.
 // speed NÃO é serializado aqui de propósito — é valor de upgrade, decidido pelo Mage
 // (controlador) e recebido em Launch(). Upgrades futuros só editam o Mage.cs.
-public class MageTeleportProjectile : MonoBehaviour
+public class MageTeleportProjectile : MonoBehaviour, IPooledProjectile
 {
     private Vector2 direction;
     private float speed;
     private float maxDistance;
     private float distanceTraveled;
     private Action<Vector3> onArrived;
+
+    // Fila de projéteis (HeroProjectilePool): volta tudo ao que um Instantiate novo teria.
+    public void ResetForReuse()
+    {
+        direction = Vector2.zero; speed = 0f; maxDistance = 0f; distanceTraveled = 0f; onArrived = null;
+    }
 
     public void Launch(Vector2 dir, float distance, Action<Vector3> arrivedCallback, float travelSpeed)
     {
@@ -41,8 +47,10 @@ public class MageTeleportProjectile : MonoBehaviour
 
         if (distanceTraveled >= maxDistance)
         {
-            onArrived?.Invoke(transform.position);
-            Destroy(gameObject);
+            var arrived = onArrived;
+            onArrived = null; // nunca chama 2x
+            HeroProjectilePool.Release(gameObject);
+            arrived?.Invoke(transform.position);
         }
     }
 }

@@ -450,7 +450,7 @@ public class Ranger : HeroController
         foreach (var offset in offsets)
         {
             Vector3 spawnPos = transform.position + (Vector3)(forward * offset.x + lateral * offset.y);
-            var arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.identity, HeroController.HerosContainer);
+            var arrowObj = HeroProjectilePool.Spawn(arrowPrefab, spawnPos, HeroController.HerosContainer); // fila de projéteis
             if (arrowScale != 1f) arrowObj.transform.localScale *= arrowScale;
             // #28 "Flechas Sangrentas" é "mesmo efeito da Ultimate" (GDD) — reaproveita a
             // magnitude/duração do bleed das facas (bleedDamageMultiplier/knifeBleedDuration),
@@ -535,7 +535,7 @@ public class Ranger : HeroController
 
     private void LaunchKnife(Vector2 dir, float flightDamage, float groundedDamage, float bleedDamagePerSecond)
     {
-        var knifeObj = Instantiate(knifePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+        var knifeObj = HeroProjectilePool.Spawn(knifePrefab, transform.position, HeroController.HerosContainer); // fila de projéteis
         float knifeScale = HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area) * HeroController.CardAttackSizeFactor; // etapa 4 + Colossus
         if (knifeScale != 1f) knifeObj.transform.localScale *= knifeScale;
         knifeObj.GetComponent<RangerKnife>().Launch(dir, flightDamage, groundedDamage, bleedDamagePerSecond,

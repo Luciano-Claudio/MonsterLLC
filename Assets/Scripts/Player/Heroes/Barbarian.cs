@@ -574,7 +574,7 @@ public class Barbarian : HeroController
     {
         foreach (Vector2 dir in GetUltimateDirections(count))
         {
-            var obj = Instantiate(ultimateProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
+            var obj = HeroProjectilePool.Spawn(ultimateProjectilePrefab, transform.position, HeroController.HerosContainer); // fila de projéteis
             // Mesmo multiplicador do próprio corpo — Barbarian maior upgrada joga projéteis maiores junto.
             obj.transform.localScale = Vector3.one * sizeMultiplier * HeroController.Cards.Get(CardAbility.Ultimate, CardStat.Area) * HeroController.CardAttackSizeFactor; // etapas 1+2 — carta de tamanho das lâminas (Thunder Blades)
             var projectile = obj.GetComponent<HeroProjectile>();

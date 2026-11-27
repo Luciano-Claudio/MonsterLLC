@@ -127,7 +127,7 @@ public class HeroStateCardEffects : MonoBehaviour
             {
                 float angle = i * Mathf.PI * 2f / count;
                 var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                var obj = Instantiate(t.thornProjectilePrefab, hero.transform.position, Quaternion.identity, HeroController.HerosContainer);
+                var obj = HeroProjectilePool.Spawn(t.thornProjectilePrefab, hero.transform.position, HeroController.HerosContainer); // fila de projéteis
                 obj.transform.localScale = Vector3.one * t.thornScale;
                 var p = obj.GetComponent<HeroProjectile>();
                 if (p == null) continue;

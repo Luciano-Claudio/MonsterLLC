@@ -3,7 +3,7 @@ using UnityEngine;
 // speed/lifetime/knockbackForce NÃO são serializados aqui de propósito — são valores de
 // upgrade, decididos pelo Ranger (controlador) e recebidos em Launch(). Upgrades futuros só
 // editam o Ranger.cs, nunca este prefab.
-public class RangerArrow : MonoBehaviour
+public class RangerArrow : MonoBehaviour, IPooledProjectile
 {
     // 1 sprite só, rotacionado de verdade em vez de trocar de pose (Animator/Blend Tree
     // removido) — a flecha voa em direção livre (RawAimDirection, não travada nas 8
@@ -54,6 +54,18 @@ public class RangerArrow : MonoBehaviour
     // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca disparava
     // (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
     private void Awake() => PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
+
+    // Fila de projéteis (HeroProjectilePool): volta tudo ao que um Instantiate novo teria.
+    public void ResetForReuse()
+    {
+        direction = Vector2.zero; damageReserve = 0f; speed = 0f; lifetime = 0f; knockbackForce = 0f; timer = 0f;
+        distanceDamageBonusPercent = 0f;
+        bleedChancePercent = 0f; bleedDamagePerSecond = 0f; bleedDuration = 0f;
+        boomerangEnabled = false; hasBoomeranged = false;
+        infinitePierceEnabled = false;
+        launchKnockback = 0f; launchBleedChance = 0f; launchBleedPerSecond = 0f; launchBleedDuration = 0f; launchLifetime = 0f;
+        isChild = false; ignoreTarget = null; homingTarget = null;
+    }
 
     public void Launch(Vector2 dir, float reserve, float arrowSpeed, float arrowLifetime, float arrowKnockbackForce,
         float distanceBonusPercent = 0f, float bleedChance = 0f, float bleedPerSecond = 0f, float bleedDur = 0f,
@@ -118,7 +130,7 @@ public class RangerArrow : MonoBehaviour
             return;
         }
 
-        Destroy(gameObject);
+        HeroProjectilePool.Release(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -152,7 +164,7 @@ public class RangerArrow : MonoBehaviour
         // extra", não reserva extra) — senão a Enxame Perfurante ficaria redundante com
         // Tiro à Distância em rank alto, e a perfuração ficaria mais generosa à toa.
         damageReserve -= Mathf.Min(damageReserve, damageDealt / (1f + distanceDamageBonusPercent / 100f * distanceFraction));
-        if (damageReserve <= 0f) Destroy(gameObject);
+        if (damageReserve <= 0f) HeroProjectilePool.Release(gameObject);
     }
 
     // Shattered Prism (2 estilhaços de lado) e Ricochet Fate (1 salto pro inimigo mais perto).
@@ -174,7 +186,7 @@ public class RangerArrow : MonoBehaviour
 
     private void SpawnChild(Vector2 dir, float reserve, float scale, EnemyController source)
     {
-        var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
+        var obj = HeroProjectilePool.SpawnLike(gameObject, transform.position, transform.parent);
         obj.transform.localScale = transform.localScale * scale;
         var child = obj.GetComponent<RangerArrow>();
         child.isChild = true;

@@ -11,7 +11,7 @@ using UnityEngine;
 // Nenhum valor de voo/área/bleed é serializado aqui de propósito — todos são upgrade,
 // decididos pelo Ranger (controlador) e recebidos em Launch(). groundedStateName continua
 // aqui porque é wiring (nome do estado no Animator), não balanceamento.
-public class RangerKnife : MonoBehaviour
+public class RangerKnife : MonoBehaviour, IPooledProjectile
 {
     private enum Phase { Flying, Grounded }
     private Phase phase = Phase.Flying;
@@ -57,9 +57,26 @@ public class RangerKnife : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         circleCollider = GetComponent<CircleCollider2D>();
+        if (circleCollider != null) flightRadius = circleCollider.radius;
         // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca
         // disparava (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
         PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
+    }
+
+    private float flightRadius; // raio do collider no prefab (BecomeGrounded troca pelo raio da área no chão)
+
+    // Fila de projéteis (HeroProjectilePool): volta tudo ao que um Instantiate novo teria.
+    public void ResetForReuse()
+    {
+        phase = Phase.Flying;
+        flightSpeed = 0f; maxDistance = 0f; flightKnockbackForce = 0f;
+        groundedDuration = 0f; groundedTickInterval = 0f; groundedRadius = 0f; groundedKnockbackForce = 0f; bleedDuration = 0f;
+        direction = Vector2.zero; flightDamageReserve = 0f; groundedDamagePerTick = 0f; bleedDamagePerSecond = 0f;
+        distanceTraveled = 0f; groundedElapsed = 0f; groundedTick = null;
+        enemiesInRange.Clear(); groundedTickTargets.Clear();
+        launchGroundedDamage = 0f; launchSpeed = 0f; launchDistance = 0f;
+        isChild = false; ignoreTarget = null; homingTarget = null;
+        if (circleCollider != null) circleCollider.radius = flightRadius;
     }
 
     public void Launch(Vector2 dir, float flightDamage, float groundedDamage, float bleedPerSecond,
@@ -104,7 +121,8 @@ public class RangerKnife : MonoBehaviour
     // percent: a mesma fração do voo vale para o dano no chão e o sangramento da cópia.
     private void SpawnChild(Vector2 dir, float reserve, float percent, EnemyController source)
     {
-        var obj = Instantiate(gameObject, transform.position, Quaternion.identity, transform.parent);
+        var obj = HeroProjectilePool.SpawnLike(gameObject, transform.position, transform.parent);
+        obj.transform.localScale = transform.localScale; // mesma escala do pai (o clone antigo copiava)
         var child = obj.GetComponent<RangerKnife>();
         child.isChild = true;
         child.ignoreTarget = source;
@@ -196,7 +214,7 @@ public class RangerKnife : MonoBehaviour
         groundedElapsed += Time.deltaTime;
         if (groundedElapsed >= groundedDuration)
         {
-            Destroy(gameObject);
+            HeroProjectilePool.Release(gameObject);
             return;
         }
 

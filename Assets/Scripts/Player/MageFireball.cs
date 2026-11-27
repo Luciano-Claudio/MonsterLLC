@@ -10,7 +10,7 @@ using UnityEngine;
 // Nenhum valor de voo/área/status é serializado aqui de propósito — todos são upgrade,
 // decididos pelo Mage (controlador) e recebidos em Launch(). Upgrades futuros só editam o
 // Mage.cs, nunca este prefab.
-public class MageFireball : MonoBehaviour
+public class MageFireball : MonoBehaviour, IPooledProjectile
 {
     private enum Phase { Flying, Exploding, Grounded, Disappearing }
     private Phase phase = Phase.Flying;
@@ -18,7 +18,7 @@ public class MageFireball : MonoBehaviour
     // Mage (Rastro Flamejante/Chama Residual/Rastro Ardente, perks) — true enquanto esta
     // instância ainda está voando (só faz sentido consultar de fora pra decidir onde deixar
     // uma trilha de fogo no meio do caminho, ver Mage.TrySpawnGroundFirePatch).
-    public bool IsFlying => phase == Phase.Flying;
+    public bool IsFlying => phase == Phase.Flying && gameObject.activeInHierarchy; // guardada na fila nunca conta como voando
 
     // Mesmos perks acima — chamado no instante exato em que o objeto é destruído de verdade
     // (AnimationDisappearEndEvent), pra quem instanciou soltar a própria referência (ex.:
@@ -61,9 +61,25 @@ public class MageFireball : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         circleCollider = GetComponent<CircleCollider2D>();
+        if (circleCollider != null) flightRadius = circleCollider.radius;
         // Ver PhysicsUtility — sem Rigidbody2D, o trigger deste projétil às vezes nunca
         // disparava (tunelamento, bug crítico reportado pelo usuário, 2026-10-25).
         PhysicsUtility.EnsureKinematicRigidbody2D(gameObject);
+    }
+
+    private float flightRadius; // raio do collider no prefab (explosão e chão trocam o raio)
+
+    // Fila de projéteis (HeroProjectilePool): volta tudo ao que um Instantiate novo teria.
+    public void ResetForReuse()
+    {
+        phase = Phase.Flying;
+        OnDisappeared = null;
+        flightSpeed = 0f; maxTravelDistance = 0f; explosionRadius = 0f;
+        groundedDuration = 0f; groundedTickInterval = 0f; groundedRadius = 0f; fireStatusDuration = 0f;
+        direction = Vector2.zero; impactDamage = 0f; groundedDamagePerSecond = 0f; groundedDamagePerTick = 0f; fireStatusDamagePerSecond = 0f;
+        distanceTraveled = 0f; explosionHitFired = false; groundedElapsed = 0f; groundedTick = null;
+        enemiesInRange.Clear(); explosionTargets.Clear(); groundedTickTargets.Clear();
+        if (circleCollider != null) circleCollider.radius = flightRadius;
     }
 
     // damagePerSecond/fireDamagePerSecond são TAXAS (GDD: "0,5x o dano do Mage por segundo"
@@ -275,7 +291,7 @@ public class MageFireball : MonoBehaviour
     public void AnimationDisappearEndEvent()
     {
         OnDisappeared?.Invoke();
-        Destroy(gameObject);
+        HeroProjectilePool.Release(gameObject);
     }
 
     // Único player do jogo — nunca via física, só pela tag (mesmo critério do EnemyProjectile/
