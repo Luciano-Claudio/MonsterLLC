@@ -590,4 +590,79 @@ public class CardRulesTests
         Assert.IsFalse(CardRules.IsPriorityUpgrade(mag));
         Assert.IsFalse(CardRules.IsPriorityUpgrade(ult));
     }
+
+    // Loja permanente — Stat Item (cai de boss): 3 itens (40%), 3 upgrades (40%) ou 3 atributos (20%).
+    private List<CardDefinition> MixedPool(int items, int upgrades, int stats)
+    {
+        var pool = new List<CardDefinition>();
+        void Add(string prefix, int n, CardKind kind)
+        {
+            for (int i = 0; i < n; i++) { var c = Card(prefix + i, CardAbility.None, CardStat.MoveSpeed, 0.1f); c.kind = kind; pool.Add(c); }
+        }
+        Add("it", items, CardKind.Item); Add("up", upgrades, CardKind.Upgrade); Add("st", stats, CardKind.Stat);
+        return pool;
+    }
+
+    private static OfferRules StatItemRules()
+    {
+        var r = Rules;
+        r.statItemItemsChance01 = 0.4f;
+        r.statItemUpgradesChance01 = 0.4f;
+        return r;
+    }
+
+    [Test]
+    public void StatItem_offer_is_three_cards_of_one_kind_40_40_20()
+    {
+        var pool = MixedPool(6, 6, 6);
+        var rng = new System.Random(7);
+        var result = new List<CardDefinition>();
+        var counts = new Dictionary<CardKind, int> { { CardKind.Item, 0 }, { CardKind.Upgrade, 0 }, { CardKind.Stat, 0 } };
+        const int runs = 10000;
+        for (int n = 0; n < runs; n++)
+        {
+            CardRules.RollOffer(OfferSource.StatItem, 3, pool, new Dictionary<string, int>(), "Barbarian", SpecTag.None, 3, rng, StatItemRules(), result);
+            Assert.AreEqual(3, result.Count);
+            Assert.IsTrue(result.TrueForAll(c => c.kind == result[0].kind), "as 3 cartas são do mesmo tipo");
+            counts[result[0].kind]++;
+        }
+        Assert.AreEqual(0.40, counts[CardKind.Item] / (double)runs, 0.03);
+        Assert.AreEqual(0.40, counts[CardKind.Upgrade] / (double)runs, 0.03);
+        Assert.AreEqual(0.20, counts[CardKind.Stat] / (double)runs, 0.03);
+    }
+
+    [Test]
+    public void StatItem_offer_fills_with_other_kinds_when_short()
+    {
+        var pool = MixedPool(0, 0, 1); // só 1 atributo possível
+        var rng = new System.Random(3);
+        var result = new List<CardDefinition>();
+        for (int n = 0; n < 50; n++)
+        {
+            CardRules.RollOffer(OfferSource.StatItem, 3, pool, new Dictionary<string, int>(), "Barbarian", SpecTag.None, 3, rng, StatItemRules(), result);
+            Assert.AreEqual(1, result.Count);
+        }
+        pool = MixedPool(1, 5, 0);
+        for (int n = 0; n < 200; n++)
+        {
+            CardRules.RollOffer(OfferSource.StatItem, 3, pool, new Dictionary<string, int>(), "Barbarian", SpecTag.None, 3, rng, StatItemRules(), result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(3, new HashSet<CardDefinition>(result).Count);
+        }
+    }
+
+    [Test]
+    public void StatItem_offer_respects_full_item_slots()
+    {
+        var pool = MixedPool(8, 0, 0);
+        var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["it" + i] = 1; // 6 itens: só os já possuídos podem subir
+        var rng = new System.Random(5);
+        var result = new List<CardDefinition>();
+        for (int n = 0; n < 100; n++)
+        {
+            CardRules.RollOffer(OfferSource.StatItem, 3, pool, owned, "Barbarian", SpecTag.None, 3, rng, StatItemRules(), result);
+            Assert.IsFalse(result.Exists(c => c.id == "it6" || c.id == "it7"));
+        }
+    }
 }

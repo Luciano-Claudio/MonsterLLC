@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 
 // Etapa 3 (docs/superpowers/specs/2026-11-24-etapa-3-bau-vendedor-itens-design.md, 5.1) — de onde vem a oferta.
-public enum OfferSource { LevelUp, Chest, Vendor }
+// StatItem (loja permanente, 2026-11-27): o item que cai de boss — 3 itens, 3 upgrades ou 3 atributos.
+public enum OfferSource { LevelUp, Chest, Vendor, StatItem }
 
 // Números da oferta (RunSettings): espaços de item, Stat a cada N níveis, chance de Stat no baú.
 public struct OfferRules
@@ -17,6 +18,9 @@ public struct OfferRules
     // Pedido do usuário (2026-11-25): cartas sempre presentes no 1º level up, e peso dos itens já possuídos.
     public IReadOnlyList<CardDefinition> firstLevelUpCards;
     public float ownedItemWeight;
+    // Loja permanente — Stat Item: chance de vir 3 itens e de vir 3 upgrades (o resto, 3 atributos).
+    public float statItemItemsChance01;
+    public float statItemUpgradesChance01;
     // Pedido do usuário (2026-11-25): upgrades prioritários (primário, dano e vida gerais) pesam mais,
     // mais ainda no começo — cai em linha reta de Early (até FadeStart) a Late (a partir de FadeEnd).
     public float priorityUpgradeWeightEarly;
@@ -29,6 +33,8 @@ public struct OfferRules
         maxItemSlots = s != null ? s.maxItemSlots : 6,
         statEveryLevels = s != null ? s.statEveryLevels : 5,
         chestStatChance01 = s != null ? s.chestStatChancePercent / 100f : 0.15f,
+        statItemItemsChance01 = s != null ? s.statItemItemsChancePercent / 100f : 0.4f,
+        statItemUpgradesChance01 = s != null ? s.statItemUpgradesChancePercent / 100f : 0.4f,
         levelUpUpgradeChance01 = s != null ? s.levelUpUpgradeChancePercent / 100f : 0.6f,
         maxItemsPerOffer = s != null ? s.maxItemsPerOffer : 2,
         maxStatSlots = s != null ? s.maxStatSlots : 6,
@@ -96,6 +102,10 @@ public static class CardRules
                 while (result.Count < count && eligible.Count > 0) result.Add(TakeItem(pool, eligible, owned, rules.ownedItemWeight, rng));
                 return;
 
+            case OfferSource.StatItem:
+                RollStatItem(pool, owned, heroId, heroTags, caps, count, rng, rules, result);
+                return;
+
             case OfferSource.Chest:
                 Collect(pool, owned, heroId, heroTags, KindBit(CardKind.Upgrade), caps, eligible);
                 TakeRandom(pool, eligible, count, rng, result);
@@ -108,6 +118,27 @@ public static class CardRules
                 // Upgrades acabaram (todos no máximo): completa com Stats — o baú nunca sai vazio à toa.
                 while (result.Count < count && statEligible.Count > 0) result.Add(TakeOne(pool, statEligible, rng));
                 return;
+        }
+    }
+
+    // Stat Item: sorteia o tipo (itens / upgrades / atributos) e tira as 3 cartas dele; se o tipo não
+    // tiver cartas possíveis suficientes, completa com os outros 2 tipos (nunca repete carta).
+    private static void RollStatItem(IReadOnlyList<CardDefinition> pool, IReadOnlyDictionary<string, int> owned,
+        string heroId, SpecTag heroTags, Caps caps, int count, System.Random rng, OfferRules rules, List<CardDefinition> result)
+    {
+        double roll = rng.NextDouble();
+        CardKind kind = roll < rules.statItemItemsChance01 ? CardKind.Item
+            : roll < rules.statItemItemsChance01 + rules.statItemUpgradesChance01 ? CardKind.Upgrade : CardKind.Stat;
+        Collect(pool, owned, heroId, heroTags, KindBit(kind), caps, eligible);
+        if (kind == CardKind.Item)
+            while (result.Count < count && eligible.Count > 0) result.Add(TakeItem(pool, eligible, owned, rules.ownedItemWeight, rng));
+        else TakeRandom(pool, eligible, count, rng, result);
+        if (result.Count >= count) return;
+        foreach (var other in new[] { CardKind.Item, CardKind.Upgrade, CardKind.Stat })
+        {
+            if (other == kind) continue;
+            Collect(pool, owned, heroId, heroTags, KindBit(other), caps, statEligible);
+            while (result.Count < count && statEligible.Count > 0) result.Add(TakeOne(pool, statEligible, rng));
         }
     }
 

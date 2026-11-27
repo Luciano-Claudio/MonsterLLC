@@ -60,6 +60,9 @@ public class RunSettings : ScriptableObject
     public int statEveryLevels = 5; // 🔢
     [Tooltip("Chance (%) de cada carta do baú virar um Stat.")]
     public float chestStatChancePercent = 15f; // 🔢
+    [Tooltip("Stat Item (cai de boss): chance de vir 3 itens e de vir 3 upgrades, em %. O resto vem 3 atributos.")]
+    public float statItemItemsChancePercent = 40f; // 🔢
+    public float statItemUpgradesChancePercent = 40f; // 🔢
 
     [Header("Cartas: oferta de level up e atributos (etapa 4)")]
     [Tooltip("Chance (%) de cada carta do level up comum ser Upgrade (senão, Item).")]
