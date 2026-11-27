@@ -18,6 +18,7 @@ public static class CardRunState
     public static int DotTicks;           // Affliction Heart / Affliction Harvest
     public static int PrimaryHits;        // Echo Fang
     public static float LastEmberTime = float.NegativeInfinity; // Last Ember (tempo da run em que disparou)
+    public static bool RevivalUsed; // loja permanente — Ressurreição (1 por run)
     public static float MovingSeconds;    // Relentless Momentum / Moving Fortress
     public static int ScarStacks;         // Scars of Battle
     public static float ScarRemaining;
@@ -45,6 +46,7 @@ public static class CardRunState
         FocusTarget = null; FocusStacks = 0;
         DotTicks = 0; PrimaryHits = 0;
         LastEmberTime = float.NegativeInfinity;
+        RevivalUsed = false;
         MovingSeconds = 0f;
         ScarStacks = 0; ScarRemaining = 0f;
         BloodFrenzyRemaining = 0f; SpeedBuffRemaining = 0f;

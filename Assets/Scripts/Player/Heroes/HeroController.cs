@@ -188,6 +188,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     }
 
     // Catálogo de cartas — tamanho do herói: Colossus Heart (+% por nível) × Titan's Tribute.
+    private const float RevivalHealthPercent = 0.5f; // 🔢 loja permanente — vida ao ressuscitar
     public static float CardSizeFactor => (1f + Cards.Sum(CardAbility.None, CardStat.HeroSize)) * TitanTributeFactor * PermanentBonuses.SizeFactor; // + loja permanente (Size, só no Barbarian)
     // Colossus Heart nos ataques que NÃO são filhos do herói (projéteis, Ground Crack, explosões). Os filhos
     // (chama do Mage, golpe do Barbarian) já crescem com o transform do herói — não multiplicar de novo.
@@ -1187,6 +1188,15 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         {
             CardRunState.LastEmberTime = CardRunState.RunSeconds;
             stats.health = EffectiveMaxHealth * Mathf.Min(1f, ember);
+            CardRunState.EmberInvulnerableRemaining = RunSettings.Current.lastEmberInvulnerable;
+        }
+
+        // Loja permanente — Ressurreição: 1x por run, depois do Last Ember (só se ele não salvou): volta
+        // com 50% da vida e a mesma invulnerabilidade curta. O herói nunca entra no estado de morto.
+        if (PermanentBonuses.HasRevival && !CardRunState.RevivalUsed && HealthSystem.IsDead(stats.health))
+        {
+            CardRunState.RevivalUsed = true;
+            stats.health = EffectiveMaxHealth * RevivalHealthPercent;
             CardRunState.EmberInvulnerableRemaining = RunSettings.Current.lastEmberInvulnerable;
         }
 
