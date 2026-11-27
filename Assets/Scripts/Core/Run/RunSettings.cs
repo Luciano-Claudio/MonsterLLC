@@ -38,6 +38,9 @@ public class RunSettings : ScriptableObject
     public GameObject gemPrefab;
     [Tooltip("Reserva: sprite da gema quando não há prefab.")]
     public Sprite gemSprite;
+    [Header("Barra de vida de boss")]
+    [Tooltip("Barra acima da cabeça de todo boss (sprites Health_Boss_Bar). Mini boss usa a barra normal do prefab dele.")]
+    public GameObject bossHealthBarPrefab;
     [Header("Gold permanente")]
     [Tooltip("Prefab da moeda de gold no chão (animação em loop).")]
     public GameObject goldCoinPrefab;

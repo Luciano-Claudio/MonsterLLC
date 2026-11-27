@@ -583,6 +583,16 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
     protected virtual void Start()
     {
         TryFindPlayer();
+        AttachBossHealthBar();
+    }
+
+    // Todo boss ganha a barra de vida de boss ao nascer (RunSettings.bossHealthBarPrefab), em vez de editar
+    // cada prefab. Mini boss e monstro comum usam a barra normal que já vem no prefab deles.
+    private void AttachBossHealthBar()
+    {
+        if (!isBoss || GetComponentInChildren<MonsterHealthBarUI>(true) != null) return;
+        var prefab = RunSettings.Current != null ? RunSettings.Current.bossHealthBarPrefab : null;
+        if (prefab != null) Instantiate(prefab, transform, false);
     }
 
     // Busca "lazy" — antes o Player já existia na cena quando todo monstro rodava Start(), uma
