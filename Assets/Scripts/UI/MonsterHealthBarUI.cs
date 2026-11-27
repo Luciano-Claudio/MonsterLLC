@@ -15,9 +15,8 @@ public class MonsterHealthBarUI : MonoBehaviour
     [Header("Posicionamento")]
     [Tooltip("Offset acima do pivô do monstro onde a barra fica (world space).")]
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.2f, 0f);
-    [Tooltip("Barra de boss: a altura sai do topo do sprite do monstro (+ margem), em vez do worldOffset fixo — bosses têm tamanhos muito diferentes.")]
-    [SerializeField] private bool offsetAboveSprite = false;
-    [SerializeField] private float spriteTopMargin = 0.3f;
+    [Tooltip("Barra de boss: usa a posição em que a barra foi colocada no prefab do boss (ajustada à mão, por boss), em vez do worldOffset fixo.")]
+    [SerializeField] private bool usePlacedPosition = false;
 
     [Header("Conteúdo visível dentro do canvas das sprites")]
     [Tooltip("Fração (0-1) de onde começa o conteúdo opaco do Health_Bar dentro do próprio RectTransform. Ex.: canvas 64, conteúdo 40 centralizado = 12/64 = 0.1875.")]
@@ -36,11 +35,7 @@ public class MonsterHealthBarUI : MonoBehaviour
         // EnemyController sozinho, sem precisar arrastar manualmente em cada um dos prefabs.
         if (enemy == null) enemy = GetComponentInParent<EnemyController>();
         follow = enemy != null ? enemy.transform : transform.parent;
-        if (offsetAboveSprite && follow != null)
-        {
-            var sprite = follow.GetComponent<SpriteRenderer>();
-            if (sprite != null && sprite.sprite != null) worldOffset.y = sprite.bounds.max.y - follow.position.y + spriteTopMargin;
-        }
+        if (usePlacedPosition && follow != null) worldOffset = transform.position - follow.position;
     }
 
     private void OnEnable()
