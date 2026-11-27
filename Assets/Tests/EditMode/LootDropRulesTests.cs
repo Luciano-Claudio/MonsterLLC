@@ -26,4 +26,15 @@ public class LootDropRulesTests
         Assert.AreEqual(0.10f, LootDropRules.StatItemChance(-3), 1e-5f);
         Assert.AreEqual(0.01f, LootDropRules.DiceChance(false, -3), 1e-6f);
     }
+
+    // Luck também dá +10% por nível de chance de 1 baú extra e de 1 vendedor extra na run.
+    [Test]
+    public void Extra_chest_or_vendor_chance_is_10_percent_per_luck()
+    {
+        Assert.AreEqual(0f, LootDropRules.ExtraRewardChance(0), 1e-6f);
+        Assert.AreEqual(0.40f, LootDropRules.ExtraRewardChance(4), 1e-6f);
+        Assert.IsTrue(LootDropRules.RollsExtraReward(4, 0.39));
+        Assert.IsFalse(LootDropRules.RollsExtraReward(4, 0.40));
+        Assert.IsFalse(LootDropRules.RollsExtraReward(0, 0.0));
+    }
 }

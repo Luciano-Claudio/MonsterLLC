@@ -96,6 +96,10 @@ public class WorldChestSpawnManager : MonoBehaviour
             ? RewardSchedule.Build(s.vendorMinCount, s.vendorMaxCount, s.runSeconds, s.rewardQuietSeconds, rng)
             : new float[0];
         nextVendor = 0;
+        // Loja permanente — Luck: chance de 1 baú extra e de 1 vendedor extra (cada um rolado à parte).
+        int luck = PermanentBonuses.LuckLevel;
+        if (s.chestsEnabled && LootDropRules.RollsExtraReward(luck, rng.NextDouble())) AddExtraChest();
+        if (s.vendorEnabled && s.vendorPrefab != null && LootDropRules.RollsExtraReward(luck, rng.NextDouble())) AddExtraVendor();
     }
 
     private void Update()
