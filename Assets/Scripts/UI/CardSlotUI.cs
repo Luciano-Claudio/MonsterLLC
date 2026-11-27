@@ -28,7 +28,15 @@ public class CardSlotUI : MonoBehaviour
         card = definition;
         onClick = clicked;
         gameObject.SetActive(true);
-        if (background != null && style != null && style.background != null) background.sprite = style.background;
+        if (background != null && style != null && style.background != null)
+        {
+            background.sprite = style.background;
+            // O Animator do card (Write Defaults ligado; o clipe Disabled anima o sprite) guarda o sprite de
+            // quando foi ativado e escreve ele de volta. No reroll a tela já está aberta, então sem isto o card
+            // ficava com o fundo da carta anterior (bug real: item com fundo de upgrade, 2026-11-27).
+            var animator = background.GetComponent<Animator>();
+            if (animator != null && animator.isActiveAndEnabled) { animator.Rebind(); animator.Update(0f); }
+        }
         if (kindLabel != null && style != null) { kindLabel.text = style.label; kindLabel.color = style.labelColor; }
         if (icon != null) { icon.sprite = definition.icon; icon.enabled = definition.icon != null; }
         if (nameText != null) nameText.text = definition.title;
