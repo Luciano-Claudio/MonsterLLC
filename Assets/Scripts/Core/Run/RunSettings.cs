@@ -87,6 +87,8 @@ public class RunSettings : ScriptableObject
     public int maxStatSlots = 6; // 🔢
     [Tooltip("Cartas que SEMPRE aparecem no 1º level up (pedido do usuário: dano e vida gerais).")]
     public List<CardDefinition> firstLevelUpCards = new();
+    [Tooltip("TESTE: cartas que entram em TODA oferta (level up, baú, vendedor, Stat Item), mesmo sem a especialização. Esvaziar depois do teste.")]
+    public List<CardDefinition> testAlwaysOfferCards = new();
     [Tooltip("Peso dos itens que o herói JÁ TEM no sorteio de item (level up e vendedor). 1 = mesmo peso dos novos.")]
     public float ownedItemWeight = 3f; // 🔢
     [Tooltip("Peso dos upgrades prioritários (primário, dano geral, vida geral) no sorteio de Upgrade do level up, até priorityFadeStartLevel.")]
@@ -164,7 +166,8 @@ public class RunSettings : ScriptableObject
     [Header("Catálogo de cartas — defesa, cura e movimento")]
     public float wellspringCooldown = 10f; // 🔢
     public float thornCooldown = 0.5f; // 🔢 Thornwake Armor
-    public int thornBaseCount = 2; // 🔢 + nível
+    public int thornBaseCount = 2; // 🔢 espinhos = base + porNível x nível (2 + 2n = 4/6/8/10/12)
+    public int thornCountPerLevel = 2; // 🔢
     public float thornScale = 0.5f; // 🔢 escala do projétil (Thunder Blade) usado como espinho
     public float thornDamagePerLevel = 0.03f; // 🔢 igual ao valor por nível da carta (usado pra contar o nível)
     public float thornSpeed = 10f; // 🔢

@@ -17,6 +17,8 @@ public struct OfferRules
     public int maxStatSlots;
     // Pedido do usuário (2026-11-25): cartas sempre presentes no 1º level up, e peso dos itens já possuídos.
     public IReadOnlyList<CardDefinition> firstLevelUpCards;
+    // TESTE (RunSettings.testAlwaysOfferCards): sempre na oferta, ignorando a especialização.
+    public IReadOnlyList<CardDefinition> testAlwaysOfferCards;
     public float ownedItemWeight;
     // Loja permanente — Stat Item: chance de vir 3 itens e de vir 3 upgrades (o resto, 3 atributos).
     public float statItemItemsChance01;
@@ -39,6 +41,7 @@ public struct OfferRules
         maxItemsPerOffer = s != null ? s.maxItemsPerOffer : 2,
         maxStatSlots = s != null ? s.maxStatSlots : 6,
         firstLevelUpCards = s != null ? s.firstLevelUpCards : null,
+        testAlwaysOfferCards = s != null ? s.testAlwaysOfferCards : null,
         ownedItemWeight = s != null ? s.ownedItemWeight : 3f,
         priorityUpgradeWeightEarly = s != null ? s.priorityUpgradeWeightEarly : 2.5f,
         priorityUpgradeWeightLate = s != null ? s.priorityUpgradeWeightLate : 1.5f,
@@ -78,6 +81,35 @@ public static class CardRules
     // Em toda fonte: carta com requiredTags que a especialização não tem fica de fora; com
     // maxItemSlots itens já possuídos, item novo não entra; com maxStatSlots Stats, Stat nenhum entra.
     public static void RollOffer(OfferSource source, int heroLevel, IReadOnlyList<CardDefinition> pool,
+        IReadOnlyDictionary<string, int> owned, string heroId, SpecTag heroTags, int count, System.Random rng, OfferRules rules,
+        List<CardDefinition> result)
+    {
+        RollOfferCore(source, heroLevel, pool, owned, heroId, heroTags, count, rng, rules, result);
+        ApplyTestAlwaysOffer(pool, owned, heroId, count, rules, result);
+    }
+
+    // TESTE: as cartas de testAlwaysOfferCards entram na frente (ignora especialização e o tipo da oferta;
+    // respeita herói, nível máximo e os 6 espaços de item). A oferta continua com `count` cartas.
+    private static void ApplyTestAlwaysOffer(IReadOnlyList<CardDefinition> pool, IReadOnlyDictionary<string, int> owned,
+        string heroId, int count, OfferRules rules, List<CardDefinition> result)
+    {
+        var forced = rules.testAlwaysOfferCards;
+        if (forced == null || forced.Count == 0 || count <= 0) return;
+        bool itemsFull = CountOwned(pool, owned, CardKind.Item) >= rules.maxItemSlots;
+        for (int i = forced.Count - 1; i >= 0; i--)
+        {
+            var card = forced[i];
+            if (card == null || result.Contains(card)) continue;
+            if (!string.IsNullOrEmpty(card.heroId) && card.heroId != heroId) continue;
+            int level = LevelOf(owned, card);
+            if (level >= card.maxLevel) continue;
+            if (itemsFull && card.kind == CardKind.Item && level == 0) continue;
+            result.Insert(0, card);
+            if (result.Count > count) result.RemoveAt(result.Count - 1);
+        }
+    }
+
+    private static void RollOfferCore(OfferSource source, int heroLevel, IReadOnlyList<CardDefinition> pool,
         IReadOnlyDictionary<string, int> owned, string heroId, SpecTag heroTags, int count, System.Random rng, OfferRules rules,
         List<CardDefinition> result)
     {

@@ -15,14 +15,14 @@ MonoBehaviour:
   id: item_thornwake_armor
   kind: 0
   title: Thornwake Armor
-  description: 'When an enemy hits you, shoot thorns in a circle (2 + item level),
-    each dealing {0} of your max HP
+  description: 'When an enemy hits you, shoot thorns in a circle (4 at level 1, +2
+    per level), each dealing {0} of your max HP
 
     +{1} max HP'
   icon: {fileID: 1478549881, guid: af68189c4ba8721488d56e071db5c551, type: 3}
   ability: 0
   stat: 30
-  valuePerLevel: 0.03
+  valuePerLevel: 0.02
   maxLevel: 5
   baseValue: 0
   healthPerLevel: 0.1

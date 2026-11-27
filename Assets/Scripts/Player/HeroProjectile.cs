@@ -20,6 +20,10 @@ public class HeroProjectile : MonoBehaviour, IPooledProjectile
     // nome do estado uma vez, sem passar pelo grafo de transições.
     private Animator animator;
 
+    // Espinho do Thornwake Armor (pedido do usuário, 2026-11-27): sprite desenhado apontando pro Norte, girado
+    // pelo código na direção do voo. Desligado (Thunder Blade) = sem rotação, a animação de 8 direções cuida.
+    [SerializeField] private bool rotateToDirection;
+
     private Vector2 direction;
     private float damageReserve;
     private float speed;
@@ -146,6 +150,7 @@ public class HeroProjectile : MonoBehaviour, IPooledProjectile
         lifetimeElapsed = 0f;
         isDestroying = false;
         if (animator != null) animator.Play(DirectionUtility.GetDirectionName(direction));
+        if (rotateToDirection) transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f);
     }
 
     private void Update()
@@ -162,7 +167,7 @@ public class HeroProjectile : MonoBehaviour, IPooledProjectile
         }
 
         float step = speed * Time.deltaTime;
-        transform.Translate(direction * step);
+        transform.Translate(direction * step, Space.World); // mundo: o espinho gira (rotateToDirection), a direção não
         distanceTraveled += step;
 
         TickGroundCrackTrail(Time.deltaTime);

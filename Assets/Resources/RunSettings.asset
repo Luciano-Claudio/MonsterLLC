@@ -82,6 +82,8 @@ MonoBehaviour:
   firstLevelUpCards:
   - {fileID: 11400000, guid: 424ff637c12c7884d806604ceb400fad, type: 2}
   - {fileID: 11400000, guid: 9421e792a44adeb41a01695d17329378, type: 2}
+  testAlwaysOfferCards:
+  - {fileID: 11400000, guid: 4791cc9a473635e4eb03d8659de4c8c8, type: 2}
   ownedItemWeight: 3
   priorityUpgradeWeightEarly: 2.5
   priorityUpgradeWeightLate: 1.5
@@ -138,11 +140,12 @@ MonoBehaviour:
   wellspringCooldown: 10
   thornCooldown: 0.5
   thornBaseCount: 2
-  thornScale: 0.5
-  thornDamagePerLevel: 0.03
+  thornCountPerLevel: 2
+  thornScale: 1
+  thornDamagePerLevel: 0.02
   thornSpeed: 10
   thornRange: 4
-  thornProjectilePrefab: {fileID: 9098775540901598556, guid: b22bb17ca12956a4f84e1020734f3f80, type: 3}
+  thornProjectilePrefab: {fileID: 8633941550650146028, guid: ae3b542678b1e0847a55cea623445441, type: 3}
   lastEmberCooldown: 300
   lastEmberInvulnerable: 2
   graveboundRadius: 2.5

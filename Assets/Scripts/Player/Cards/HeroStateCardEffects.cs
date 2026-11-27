@@ -121,11 +121,14 @@ public class HeroStateCardEffects : MonoBehaviour
         {
             CardRunState.ThornCooldown = t.thornCooldown;
             int level = Mathf.Max(1, Mathf.RoundToInt(thorns / Mathf.Max(0.0001f, t.thornDamagePerLevel)));
-            int count = t.thornBaseCount + level;
+            // Pedido do usuário (2026-11-27): 4/6/8/10/12 espinhos (níveis 1-5), espaçados por igual a partir do
+            // Norte — 4 = N/W/S/E, 8 = as 8 direções; 6/10/12 dividem o círculo por igual. Dano = 2%/4%/.../10%
+            // da vida máxima (valor da carta por nível).
+            int count = t.thornBaseCount + t.thornCountPerLevel * level;
             float damage = max * thorns;
             for (int i = 0; i < count; i++)
             {
-                float angle = i * Mathf.PI * 2f / count;
+                float angle = Mathf.PI * 0.5f + i * Mathf.PI * 2f / count;
                 var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 var obj = HeroProjectilePool.Spawn(t.thornProjectilePrefab, hero.transform.position, HeroController.HerosContainer); // fila de projéteis
                 obj.transform.localScale = Vector3.one * t.thornScale;
