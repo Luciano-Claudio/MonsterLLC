@@ -87,6 +87,9 @@ public static class GameEvents
     // Gold permanente (PermanentGold) — total salvo, e cada moeda coletada no chão.
     public static event Action<long> OnPermanentGoldChanged;
     public static void PermanentGoldChanged(long gold) => OnPermanentGoldChanged?.Invoke(gold);
+    // Loja permanente — níveis de um herói mudaram (compra, venda, Toggle).
+    public static event Action<string> OnPermanentUpgradesChanged;
+    public static void PermanentUpgradesChanged(string hero) => OnPermanentUpgradesChanged?.Invoke(hero);
     public static event Action<int> OnGoldCoinCollected;
     public static void GoldCoinCollected(int gold) => OnGoldCoinCollected?.Invoke(gold);
 

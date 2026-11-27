@@ -1,16 +1,34 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 // Gold permanente (2026-11-26) — moeda rara de qualquer monstro (RunSettings.goldDropChance), gasta
-// fora da run (loja por herói, próxima etapa). Arquivo PRÓPRIO (profile.json): o save da run
+// fora da run (loja por herói, PermanentShop). Arquivo PRÓPRIO (profile.json): o save da run
 // (save.json, SaveManager) é apagado quando o herói morre, o gold não pode ir junto.
 // Salva a cada moeda — arquivo minúsculo, e um fechamento inesperado não perde o gold da run.
+// Loja permanente (2026-11-27): o mesmo arquivo guarda os níveis comprados de cada herói.
 public static class PermanentGold
 {
+    [System.Serializable]
+    public class UpgradeLevel
+    {
+        public string id;
+        public int level;
+        public bool disabled;
+    }
+
+    [System.Serializable]
+    public class HeroUpgradeLevels
+    {
+        public string heroKey;
+        public List<UpgradeLevel> upgrades = new();
+    }
+
     [System.Serializable]
     private class Profile
     {
         public long gold;
+        public List<HeroUpgradeLevels> heroes = new();
     }
 
     private static string overridePath;
@@ -32,8 +50,11 @@ public static class PermanentGold
             catch (System.Exception e)
             {
                 Debug.LogWarning($"[PermanentGold] Não consegui ler {FilePath}: {e.Message}");
+                profile = null;
             }
-            return profile ??= new Profile();
+            profile ??= new Profile();
+            profile.heroes ??= new List<HeroUpgradeLevels>();
+            return profile;
         }
     }
 
@@ -45,8 +66,43 @@ public static class PermanentGold
         GameEvents.PermanentGoldChanged(Current.gold);
     }
 
+    public static bool TrySpend(long amount)
+    {
+        if (amount < 0 || Current.gold < amount) return false;
+        Current.gold -= amount;
+        Save();
+        GameEvents.PermanentGoldChanged(Current.gold);
+        return true;
+    }
+
     // Sorteio da moeda: roll em [0,1) abaixo da chance.
     public static bool RollsDrop(float chance, float roll) => roll < chance;
+
+    // ---- níveis da loja (PermanentShop) ----
+    public static UpgradeLevel FindLevel(string hero, string id)
+    {
+        if (string.IsNullOrEmpty(hero) || string.IsNullOrEmpty(id)) return null;
+        foreach (var h in Current.heroes)
+            if (h != null && h.heroKey == hero && h.upgrades != null)
+                foreach (var u in h.upgrades)
+                    if (u != null && u.id == id) return u;
+        return null;
+    }
+
+    public static UpgradeLevel GetOrAddLevel(string hero, string id)
+    {
+        var found = FindLevel(hero, id);
+        if (found != null) return found;
+        HeroUpgradeLevels entry = null;
+        foreach (var h in Current.heroes) if (h != null && h.heroKey == hero) { entry = h; break; }
+        if (entry == null) { entry = new HeroUpgradeLevels { heroKey = hero }; Current.heroes.Add(entry); }
+        entry.upgrades ??= new List<UpgradeLevel>();
+        var level = new UpgradeLevel { id = id };
+        entry.upgrades.Add(level);
+        return level;
+    }
+
+    public static void SaveProfile() => Save();
 
     private static void Save()
     {
