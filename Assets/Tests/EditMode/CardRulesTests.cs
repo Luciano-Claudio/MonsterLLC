@@ -665,4 +665,34 @@ public class CardRulesTests
             Assert.IsFalse(result.Exists(c => c.id == "it6" || c.id == "it7"));
         }
     }
+
+    // Reroll: nada da oferta anterior; com poucas cartas, completa com as anteriores; respeita os 6 itens.
+    [Test]
+    public void Reroll_excludes_the_previous_offer_and_fills_when_short()
+    {
+        var pool = MixedPool(4, 0, 0);
+        var rng = new System.Random(9);
+        var result = new List<CardDefinition>();
+        var previous = new List<CardDefinition> { pool[0], pool[1], pool[2] };
+        CardRules.RollOfferExcluding(OfferSource.Vendor, 3, pool, new Dictionary<string, int>(), "Barbarian", SpecTag.None, 3, rng, Rules, previous, result);
+        Assert.AreEqual(3, result.Count);
+        Assert.AreEqual(pool[3], result[0], "a carta nova vem primeiro");
+        Assert.AreEqual(3, new HashSet<CardDefinition>(result).Count);
+    }
+
+    [Test]
+    public void Reroll_keeps_the_item_slot_cap()
+    {
+        var pool = MixedPool(9, 0, 0);
+        var owned = new Dictionary<string, int>();
+        for (int i = 0; i < 6; i++) owned["it" + i] = 1;
+        var rng = new System.Random(4);
+        var result = new List<CardDefinition>();
+        var previous = new List<CardDefinition> { pool[0], pool[1], pool[2] };
+        for (int n = 0; n < 50; n++)
+        {
+            CardRules.RollOfferExcluding(OfferSource.Vendor, 3, pool, owned, "Barbarian", SpecTag.None, 3, rng, Rules, previous, result);
+            Assert.IsFalse(result.Exists(c => c.id == "it6" || c.id == "it7" || c.id == "it8"), "7º item não entra");
+        }
+    }
 }

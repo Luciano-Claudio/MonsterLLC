@@ -265,6 +265,25 @@ public static class CardRules
     public static int LevelOf(IReadOnlyDictionary<string, int> owned, CardDefinition card)
         => card != null && owned != null && card.id != null && owned.TryGetValue(card.id, out int l) ? l : 0;
 
+    // Reroll (pedido do usuário, 2026-11-27): cartas da oferta anterior ficam de fora do sorteio.
+    private static ICollection<CardDefinition> excluded;
+
+    // Igual ao RollOffer, mas sem nenhuma carta de `exclude` (reroll). Se sobrarem menos cartas que `count`,
+    // completa com as excluídas — o reroll nunca deixa a tela com menos cartas.
+    public static void RollOfferExcluding(OfferSource source, int heroLevel, IReadOnlyList<CardDefinition> pool,
+        IReadOnlyDictionary<string, int> owned, string heroId, SpecTag heroTags, int count, System.Random rng, OfferRules rules,
+        ICollection<CardDefinition> exclude, List<CardDefinition> result)
+    {
+        excluded = exclude;
+        try { RollOffer(source, heroLevel, pool, owned, heroId, heroTags, count, rng, rules, result); }
+        finally { excluded = null; }
+        if (result.Count >= count || exclude == null || exclude.Count == 0) return;
+        var fill = new List<CardDefinition>();
+        RollOffer(source, heroLevel, pool, owned, heroId, heroTags, count, rng, rules, fill);
+        foreach (var c in fill)
+            if (result.Count < count && !result.Contains(c)) result.Add(c);
+    }
+
     private static void Collect(IReadOnlyList<CardDefinition> pool, IReadOnlyDictionary<string, int> owned, string heroId,
         SpecTag heroTags, int kindMask, Caps caps, List<int> into)
     {
@@ -274,6 +293,7 @@ public static class CardRules
         {
             var card = pool[i];
             if (card == null) continue;
+            if (excluded != null && excluded.Contains(card)) continue; // reroll: nada da oferta anterior
             if ((kindMask & KindBit(card.kind)) == 0) continue;
             if (!string.IsNullOrEmpty(card.heroId) && card.heroId != heroId) continue;
             if (card.requiredTags != SpecTag.None && (card.requiredTags & heroTags) == 0) continue; // etapa 4

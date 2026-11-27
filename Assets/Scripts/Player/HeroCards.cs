@@ -28,6 +28,7 @@ public class HeroCards : MonoBehaviour
     private readonly Queue<PendingOffer> pending = new();
     private readonly List<CardDefinition> currentOffer = new();
     private readonly List<CardDefinition> probe = new();
+    private readonly List<CardDefinition> previousOffer = new();
     private readonly System.Random rng = new();
     private PendingOffer current;
     // Loja permanente (2026-11-27): rerolls são um ESTOQUE da run (PermanentBonuses.StartRerolls no começo,
@@ -172,7 +173,10 @@ public class HeroCards : MonoBehaviour
     {
         if (!OfferOpen || !RerollRules.Spend(ref rerollStock, ref freeReroll)) return false;
         GameEvents.RerollsChanged(rerollStock);
-        RollCurrent();
+        // Pedido do usuário: o reroll troca as 3 cartas por outras (até as garantidas do 1º level up).
+        previousOffer.Clear();
+        previousOffer.AddRange(currentOffer);
+        CardRules.RollOfferExcluding(current.source, current.level, Pool, owned, HeroId, RunSpecialization.Tags, CardsPerOffer, rng, Rules, previousOffer, currentOffer);
         var screen = CardScreenUI.Find();
         if (screen != null) screen.Show(this);
         OfferReady?.Invoke(currentOffer);
