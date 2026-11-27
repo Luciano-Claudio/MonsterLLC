@@ -590,12 +590,10 @@ public class Mage : HeroController
         }
 
         // Direita #30 "Teleporte Instantâneo" — pula a viagem do projétil inteira, vai direto
-        // pro ponto de chegada (ainda assim respeitando TeleportUtility.ClampDistance, pra
-        // nunca atravessar parede/água).
+        // pro ponto de chegada (mesma regra do teleporte normal: TeleportUtility.ResolveDistance).
         if (instantTeleportEnabled)
         {
-            float instantDistance = Mathf.Min(RawAimDistance, secondaryAbilityMaxRange);
-            instantDistance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, instantDistance, transform);
+            float instantDistance = TeleportUtility.ResolveDistance(transform.position, RawAimDirection, RawAimDistance, secondaryAbilityMaxRange, transform);
             OnTeleportProjectileArrived(transform.position + (Vector3)(RawAimDirection.normalized * instantDistance));
             return;
         }
@@ -609,10 +607,9 @@ public class Mage : HeroController
             return;
         }
 
-        float distance = Mathf.Min(RawAimDistance, secondaryAbilityMaxRange);
-        // Nunca pousa dentro de água/parede/prop (Collider2D sólido) — o projétil não checa
-        // colisão nenhuma durante o voo (ver MageTeleportProjectile), só reporta onde parou.
-        distance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, distance, transform);
+        // Atravessa obstáculos, mas nunca pousa dentro de um (regra do usuário, 2026-11-27 — TeleportUtility).
+        // O projétil não checa colisão durante o voo (ver MageTeleportProjectile), só reporta onde parou.
+        float distance = TeleportUtility.ResolveDistance(transform.position, RawAimDirection, RawAimDistance, secondaryAbilityMaxRange, transform);
         var obj = Instantiate(teleportProjectilePrefab, transform.position, Quaternion.identity, HeroController.HerosContainer);
         var projectile = obj.GetComponent<MageTeleportProjectile>();
         if (projectile != null) projectile.Launch(RawAimDirection, distance, OnTeleportProjectileArrived, teleportProjectileSpeed);

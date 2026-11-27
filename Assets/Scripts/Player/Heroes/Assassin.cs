@@ -402,10 +402,8 @@ public class Assassin : HeroController
     // teto (teleportMaxRange), não sempre o máximo — decisão do usuário.
     public void AnimationTeleportDisappearEvent()
     {
-        float distance = Mathf.Min(RawAimDistance, teleportMaxRange);
-        // Nunca pousa dentro de água/parede/prop (Collider2D sólido) — teleporte seta a
-        // posição direto, sem passar pela física normal que já evitaria isso andando.
-        distance = TeleportUtility.ClampDistance(transform.position, RawAimDirection, distance, transform);
+        // Atravessa obstáculos, mas nunca pousa dentro de um (regra do usuário, 2026-11-27 — TeleportUtility).
+        float distance = TeleportUtility.ResolveDistance(transform.position, RawAimDirection, RawAimDistance, teleportMaxRange, transform);
         transform.position += (Vector3)(RawAimDirection * distance);
     }
 

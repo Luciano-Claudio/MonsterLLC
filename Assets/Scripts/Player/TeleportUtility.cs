@@ -1,17 +1,12 @@
 using UnityEngine;
 
-// Mira livre de teleporte/dash (Assassin/Mage, Shift) pode apontar pra uma distância que
-// atravessa parede, água ou qualquer outro Collider2D sólido — esses deslocamentos setam a
-// posição direto (ou uma distância fixa pro projétil de teleporte), sem passar pela física
-// normal do Rigidbody2D que já impede isso durante a caminhada comum. ClampDistance() faz um
-// Raycast2D na direção pretendida e encurta a distância se achar algo sólido no caminho, pra
-// nunca pousar dentro de água/parede/prop.
+// Mira livre de teleporte (Assassin/Mage, Shift). Esses deslocamentos setam a posição direto (ou uma
+// distância fixa pro projétil de teleporte), sem a física normal do Rigidbody2D. Desde 2026-11-27 o
+// teleporte atravessa obstáculos (ex.: um lago), mas nunca pousa dentro de um (ResolveDistance).
 public static class TeleportUtility
 {
-    private static readonly RaycastHit2D[] Buffer = new RaycastHit2D[8];
-    // useTriggers=false — só Collider2D SÓLIDO bloqueia (água, parede, prop...). A layer "Enemy"
-    // sai já no filtro do Raycast (não só no loop): com a horda densa, os 8 primeiros hits
-    // poderiam ser todos monstros e esconder a parede logo atrás deles.
+    // Só Collider2D SÓLIDO conta (água, parede, prop...). A layer "Enemy" sai já no filtro (não só no
+    // loop): com a horda densa, os primeiros resultados poderiam ser todos monstros.
     private static ContactFilter2D solidFilter;
     private static bool solidFilterReady;
 
@@ -30,24 +25,30 @@ public static class TeleportUtility
         }
     }
 
-    private const float SafetyMargin = 0.2f; // 🔢 ajustável — pousa um pouco antes do collider sólido, nunca na borda/dentro dele
+    private static readonly Collider2D[] Overlaps = new Collider2D[16];
+    private const float HeroRadius = 0.3f; // 🔢 tamanho do corpo do herói na checagem do ponto de pouso
 
-    public static float ClampDistance(Vector2 origin, Vector2 direction, float distance, Transform caster)
+    // Regra do usuário (2026-11-27, ver TeleportRules): atravessa obstáculos, mas nunca pousa dentro de um.
+    // Mirou dentro de um obstáculo: outro lado se o alcance der, senão a borda de cá.
+    public static float ResolveDistance(Vector2 origin, Vector2 direction, float aimDistance, float maxRange, Transform caster)
     {
-        if (distance <= 0f) return 0f;
-
-        int count = Physics2D.Raycast(origin, direction, SolidFilter, Buffer, distance);
+        Vector2 dir = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
         int enemyLayer = LayerMask.NameToLayer("Enemy");
-        float closestHit = float.MaxValue;
+        return TeleportRules.ResolveDistance(aimDistance, maxRange, t => IsFree(origin + dir * t, caster, enemyLayer));
+    }
+
+    // Livre = nenhum collider SÓLIDO de cenário no círculo do corpo do herói (monstro, trigger e o próprio
+    // herói não contam — TeleportBlockRule).
+    public static bool IsFree(Vector2 point, Transform caster, int enemyLayer)
+    {
+        int count = Physics2D.OverlapCircle(point, HeroRadius, SolidFilter, Overlaps);
         for (int i = 0; i < count; i++)
         {
-            var collider = Buffer[i].collider;
-            // Monstro e o próprio herói não bloqueiam (ver TeleportBlockRule).
-            if (!TeleportBlockRule.Blocks(collider.gameObject.layer, collider.isTrigger, collider.transform == caster, enemyLayer)) continue;
-            if (Buffer[i].distance < closestHit) closestHit = Buffer[i].distance;
+            var collider = Overlaps[i];
+            if (collider == null) continue;
+            bool isCaster = caster != null && (collider.transform == caster || collider.transform.IsChildOf(caster));
+            if (TeleportBlockRule.Blocks(collider.gameObject.layer, collider.isTrigger, isCaster, enemyLayer)) return false;
         }
-
-        if (closestHit >= distance) return distance; // nada sólido no caminho
-        return Mathf.Max(0f, closestHit - SafetyMargin);
+        return true;
     }
 }
