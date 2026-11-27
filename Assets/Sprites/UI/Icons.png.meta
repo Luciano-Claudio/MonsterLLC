@@ -4382,10 +4382,10 @@ TextureImporter:
       name: Icons_174
       rect:
         serializedVersion: 2
-        x: 125
+        x: 128
         y: 560
-        width: 12
-        height: 7
+        width: 8
+        height: 8
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -4475,7 +4475,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -4497,7 +4497,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -4506,6 +4506,116 @@ TextureImporter:
       bones: []
       spriteID: 797aa316106a3b14b8d92fd5324b0f4e
       internalID: 649921334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_179
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 592
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d28f45b4132f2b40aacb45796c03a4a
+      internalID: 1902933074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_180
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 560
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b5b1380fbf7020458183d5d3aabd96f
+      internalID: -1972211960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_181
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 440
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2eb48352b3d773f4a9364ec1072e2ddb
+      internalID: -1930931301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_182
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 384
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9badda2ea36dfcc40988e674c0023578
+      internalID: 1449528043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Icons_183
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 320
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 756b875137684dd46a8d2256dbde1cb8
+      internalID: 184502843
       vertices: []
       indices: 
       edges: []
@@ -4615,7 +4725,12 @@ TextureImporter:
       Icons_176: -1700840925
       Icons_177: -397297262
       Icons_178: 649921334
+      Icons_179: 1902933074
       Icons_18: -619947192
+      Icons_180: -1972211960
+      Icons_181: -1930931301
+      Icons_182: 1449528043
+      Icons_183: 184502843
       Icons_19: 1355713344
       Icons_2: -832277753
       Icons_20: 791347309
