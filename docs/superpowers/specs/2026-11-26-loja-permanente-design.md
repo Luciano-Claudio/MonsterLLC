@@ -75,7 +75,7 @@ sequência do grupo.
 | Life_Regen_Button | Regeneration | 3 | +0,1% da vida máxima por segundo | A |
 | Move_Speed_Button | Move Speed | 3 | +5% de velocidade de movimento | A |
 | Size_Button (Barbarian) | Size | 3 | +5% de tamanho | A |
-| Multishot_Button (Ranger; hoje `+Arrow_Button`, renomeado na implementação) | Multishot | 5 | +1 flecha no primário | A |
+| Multishoot_Button (Ranger, nome do usuário na cena) | Multishot | 5 | +1 flecha no primário | A |
 | Area_Button (Mage) | Flame Area | 3 | +10% de área do primário | A |
 | Cooldown_Button | Cooldown | 3 | −5% de recarga do Primário e do Shift (até −15%) | B |
 | Ultimate_Generation_Button | Ultimate Charge | 3 | +10% de energia da Ultimate ganha | B |
@@ -83,7 +83,8 @@ sequência do grupo.
 | Magnet_Button | Magnet | 3 | +20% de raio do ímã | B |
 | Xp_Button | Growth | 5 | +5% de XP | B |
 | Gold_Button | Greed | 5 | +10% de gold | B |
-| Luck_Button | Luck | 4 | +10% de chance do Stat Item (10% → 50%) | B |
+| Luck_Button | Luck | 4 | Stat Item +10% (10% → 50%); Reroll_Dice +25% da chance base (dobra no 4); +10% de chance de 1 baú extra e de 1 vendedor extra na run | B |
+| Reroll_Button | Reroll | 5 | +1 reroll no começo da run (1 → 6) | B |
 | Curse_Button | Curse | 5 | ver abaixo | Maldição |
 | Revival_Button | Revival | 1 | 1 morte evitada por run | Ressurreição |
 
@@ -120,6 +121,21 @@ fracionária entre coletas. Exemplo: com +10%, a cada 10 moedas de 1 gold sai 1 
     filtro por especialização). Se o tipo sorteado não tiver 3 cartas possíveis, completa com os
     outros tipos.
 
+## Rerolls: recurso da run (mudança do usuário, 2026-11-27)
+
+- O reroll deixa de ser "1 por tela". Vira um **estoque da run**: começa com **1** (+1 por nível da
+  melhoria Reroll, até 6) e serve em **qualquer** tela de cartas (level up, baú, vendedor, Stat Item).
+  O que não for usado continua no estoque até o fim da run.
+- **Reroll_Dice** (loot novo, prefab animado como os outros, sprite `Reroll_Dice.png`): +1 reroll no
+  estoque. Chance: **1%** em monstro comum, **5%** em mini boss e boss. Luck soma +25% da chance base
+  por nível (Luck 4 = 2% e 10%). Coletado como as gemas.
+- **Treasure Sense** (só no baú) e **Merchant's Whisper** (só no vendedor): o **1º reroll** daquela
+  tela é grátis, não gasta o estoque. Continuam dando +1 aparição de baú/vendedor na run. As
+  descrições das 2 cartas mudam para dizer isso.
+- **Contador:** o `reroll_quantity` que o usuário criou no `Cards_Popup` mostra o estoque atual (e
+  "grátis" não aparece no número: o botão de reroll fica clicável mesmo com estoque 0 quando o 1º
+  reroll da tela é grátis).
+
 ## Save
 
 O `profile.json` (hoje só com o gold) passa a guardar, por herói, o nível de cada melhoria e quais
@@ -148,23 +164,13 @@ estão desligadas no Toggle. Um save antigo, só com o gold, carrega com tudo no
 
 1. Cooldown afeta o **Primário e o Shift** (2026-11-26).
 
-## Perguntas para o usuário (2026-11-27, antes do plano)
-
-1. **Nomes nos botões:** o texto `Name_Permanent_Stat` de cada botão passa a mostrar o nome em jogo
-   da tabela (ex.: "Armor" no Defense_Button, "Growth" no Xp_Button, "Greed" no Gold_Button)? Ou os
-   botões ficam com os textos que você escreveu?
-2. **Maldição + Move Speed:** com tudo no máximo, o herói fica com +115% de velocidade (+100% da
-   Maldição e +15% do Move Speed). Está certo assim?
-3. **Vender tudo sem confirmação:** como devolve 100%, um clique sem querer não perde nada, só
-   desfaz as compras. Vende direto, ou abre um "Tem certeza?" antes (como o Panel_Confirm das
-   cartas)?
-4. **Esc no Select_Confirm:** com o Select_Confirm aberto, o Esc fecha ele e volta à lista de heróis?
-5. **Sprite do pip apagado:** o pip comprado usa o sprite "ligado" do Toggle Active. O Toggle tem
-   só `Background` e `Label`, sem `Checkmark`. Qual sprite é o pip apagado: o que já está nos pips
-   hoje?
-6. **Stat Item com 1 reroll:** a tela de cartas do Stat Item tem 1 reroll, como o level up?
-7. **Stat Item e Gold Bag fora do ímã:** a Gold Bag (25 gold) e o Stat Item ficam no chão até o
-   herói pegar (como as gemas), ou vão sozinhos até o herói ao cair, para ninguém perder o item do
-   boss?
-8. **Preço no Value:** o texto mostra só o número (ex.: "300"), com a imagem de moeda que já está
-   ao lado?
+2. Os botões mostram os **nomes novos** da tabela (o código escreve o nome).
+3. Velocidade +115% no máximo (Maldição + Move Speed) **está certa**.
+4. Refund All Upgrades **vende direto**, sem confirmação.
+5. Esc com o Select_Confirm aberto **fecha ele** e fica na lista de heróis; Esc no Stats_Painel volta
+   à lista de heróis.
+6. Pip apagado = o sprite que já está nos pips; comprado = o sprite "ligado" do Toggle Active.
+7. Rerolls viram recurso da run (seção própria acima), com o Reroll_Dice e a melhoria Reroll.
+8. Gold Bag e Stat Item ficam no chão como as gemas (ímã normal).
+9. O Value mostra **só o número**.
+10. Luck também aumenta um pouco a chance de baú e vendedor (valor é decisão minha, na tabela).
