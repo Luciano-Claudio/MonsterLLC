@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9490538a56e19f40a8503e2ca01f8ba, type: 3}
+  m_Name: perm_luck
+  m_EditorClassIdentifier: Core::PermanentUpgradeDefinition
+  id: perm_luck
+  buttonName: Luck_Button
+  title: Luck
+  description: 'Per level: +10% chance for bosses to drop a Stat Item (10% up to
+    50%), more Reroll Dice, and +10% chance of 1 extra chest and 1 extra merchant
+    each run.'
+  icon: {fileID: -1212467543, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
+  stat: 11
+  maxLevel: 4
+  valuePerLevel: 0.1
+  prices: 64000000c8000000f4010000e8030000

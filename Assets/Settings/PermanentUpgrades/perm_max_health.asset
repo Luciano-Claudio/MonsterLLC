@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9490538a56e19f40a8503e2ca01f8ba, type: 3}
+  m_Name: perm_max_health
+  m_EditorClassIdentifier: Core::PermanentUpgradeDefinition
+  id: perm_max_health
+  buttonName: Life_Button
+  title: Max Health
+  description: Increases your max HP by 10% per level (up to +30%).
+  icon: {fileID: 1486662832, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
+  stat: 1
+  maxLevel: 3
+  valuePerLevel: 0.1
+  prices: 32000000640000002c010000

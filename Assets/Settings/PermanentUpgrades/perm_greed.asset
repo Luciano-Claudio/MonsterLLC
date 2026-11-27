@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9490538a56e19f40a8503e2ca01f8ba, type: 3}
+  m_Name: perm_greed
+  m_EditorClassIdentifier: Core::PermanentUpgradeDefinition
+  id: perm_greed
+  buttonName: Gold_Button
+  title: Greed
+  description: You gain 10% more gold per level (up to +50%).
+  icon: {fileID: -661117576, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
+  stat: 10
+  maxLevel: 5
+  valuePerLevel: 0.1
+  prices: 64000000c8000000f4010000e8030000d0070000

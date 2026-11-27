@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9490538a56e19f40a8503e2ca01f8ba, type: 3}
+  m_Name: perm_move_speed
+  m_EditorClassIdentifier: Core::PermanentUpgradeDefinition
+  id: perm_move_speed
+  buttonName: Move_Speed_Button
+  title: Move Speed
+  description: Increases your movement speed by 5% per level (up to +15%).
+  icon: {fileID: 649146829, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
+  stat: 4
+  maxLevel: 3
+  valuePerLevel: 0.05
+  prices: 32000000640000002c010000

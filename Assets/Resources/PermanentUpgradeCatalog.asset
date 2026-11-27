@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38995fadccc3ddd4e9e4fb53b12ac3d1, type: 3}
+  m_Name: PermanentUpgradeCatalog
+  m_EditorClassIdentifier: Core::PermanentUpgradeCatalog
+  heroes:
+  - heroKey: Barbarian
+    upgrades:
+    - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
+    - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
+    - {fileID: 11400000, guid: e07d853d9e2fb67468c1e8b3593d657c, type: 2}
+    - {fileID: 11400000, guid: 99975ae3e7c75254d9495b90ecdb88af, type: 2}
+    - {fileID: 11400000, guid: 0566a0cab3117414ca4d4cb299c2a351, type: 2}
+    - {fileID: 11400000, guid: a6eff31b914409d4ebf70c21c7c4bcc0, type: 2}
+    - {fileID: 11400000, guid: f1fe79a4d511a2a49af5a2c7915f9cf7, type: 2}
+    - {fileID: 11400000, guid: 1fe723c4d4fcf5d4486f84fe42572f8f, type: 2}
+    - {fileID: 11400000, guid: dcb5ca3abc217f94ebb79af25504ca8c, type: 2}
+    - {fileID: 11400000, guid: 242414e4eb38db24fa864addbfa51389, type: 2}
+    - {fileID: 11400000, guid: f680537cda2174445a8cce725440cb1d, type: 2}
+    - {fileID: 11400000, guid: acf9dfa0c526586419a6c4000ee105ea, type: 2}
+    - {fileID: 11400000, guid: 0f4834ccc9a2c3947a10795ebdeac5a8, type: 2}
+    - {fileID: 11400000, guid: 874e03261b8a57e49843d2a70d3b89c5, type: 2}
+    - {fileID: 11400000, guid: e5df8870f6cf2dd4ba0f986448a0ef4f, type: 2}
+    - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}
+  - heroKey: Ranger
+    upgrades:
+    - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
+    - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
+    - {fileID: 11400000, guid: e07d853d9e2fb67468c1e8b3593d657c, type: 2}
+    - {fileID: 11400000, guid: 99975ae3e7c75254d9495b90ecdb88af, type: 2}
+    - {fileID: 11400000, guid: 0566a0cab3117414ca4d4cb299c2a351, type: 2}
+    - {fileID: 11400000, guid: 8977cff634228684680c313938965bf9, type: 2}
+    - {fileID: 11400000, guid: f1fe79a4d511a2a49af5a2c7915f9cf7, type: 2}
+    - {fileID: 11400000, guid: 1fe723c4d4fcf5d4486f84fe42572f8f, type: 2}
+    - {fileID: 11400000, guid: dcb5ca3abc217f94ebb79af25504ca8c, type: 2}
+    - {fileID: 11400000, guid: 242414e4eb38db24fa864addbfa51389, type: 2}
+    - {fileID: 11400000, guid: f680537cda2174445a8cce725440cb1d, type: 2}
+    - {fileID: 11400000, guid: acf9dfa0c526586419a6c4000ee105ea, type: 2}
+    - {fileID: 11400000, guid: 0f4834ccc9a2c3947a10795ebdeac5a8, type: 2}
+    - {fileID: 11400000, guid: 874e03261b8a57e49843d2a70d3b89c5, type: 2}
+    - {fileID: 11400000, guid: e5df8870f6cf2dd4ba0f986448a0ef4f, type: 2}
+    - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}
+  - heroKey: Mage
+    upgrades:
+    - {fileID: 11400000, guid: 812586d5c00cd8142971d81bc3e13c48, type: 2}
+    - {fileID: 11400000, guid: 12b13ac7a05546747bfcfe228c4ac474, type: 2}
+    - {fileID: 11400000, guid: e07d853d9e2fb67468c1e8b3593d657c, type: 2}
+    - {fileID: 11400000, guid: 99975ae3e7c75254d9495b90ecdb88af, type: 2}
+    - {fileID: 11400000, guid: 0566a0cab3117414ca4d4cb299c2a351, type: 2}
+    - {fileID: 11400000, guid: daeef4fa75ae7bf45ad4a75cc6f1c04d, type: 2}
+    - {fileID: 11400000, guid: f1fe79a4d511a2a49af5a2c7915f9cf7, type: 2}
+    - {fileID: 11400000, guid: 1fe723c4d4fcf5d4486f84fe42572f8f, type: 2}
+    - {fileID: 11400000, guid: dcb5ca3abc217f94ebb79af25504ca8c, type: 2}
+    - {fileID: 11400000, guid: 242414e4eb38db24fa864addbfa51389, type: 2}
+    - {fileID: 11400000, guid: f680537cda2174445a8cce725440cb1d, type: 2}
+    - {fileID: 11400000, guid: acf9dfa0c526586419a6c4000ee105ea, type: 2}
+    - {fileID: 11400000, guid: 0f4834ccc9a2c3947a10795ebdeac5a8, type: 2}
+    - {fileID: 11400000, guid: 874e03261b8a57e49843d2a70d3b89c5, type: 2}
+    - {fileID: 11400000, guid: e5df8870f6cf2dd4ba0f986448a0ef4f, type: 2}
+    - {fileID: 11400000, guid: b1b57868bc110164a801f09d7b4d70a5, type: 2}

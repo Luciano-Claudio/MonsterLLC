@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9490538a56e19f40a8503e2ca01f8ba, type: 3}
+  m_Name: perm_curse
+  m_EditorClassIdentifier: Core::PermanentUpgradeDefinition
+  id: perm_curse
+  buttonName: Curse_Button
+  title: Curse
+  description: 'Per level: +20% more monsters, XP, gold, max HP and movement speed
+    for you. Monsters get +10% HP, speed and damage.'
+  icon: {fileID: -1524175240, guid: af62a2aa6f928d0428bf2a5443fdc8a1, type: 3}
+  stat: 12
+  maxLevel: 5
+  valuePerLevel: 0.2
+  prices: f4010000e8030000d00700008813000010270000
