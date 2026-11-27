@@ -194,7 +194,7 @@ public class XpGemPool : MonoBehaviour
                 int value = gem.xp;
                 bool gold = gem.gold;
                 Release(i);
-                if (gold) { PermanentGold.Add(value); GameEvents.GoldCoinCollected(value); }
+                if (gold) { PermanentGold.Add(PermanentBonuses.ScaleGold(value)); GameEvents.GoldCoinCollected(value); } // + Greed/Maldição
                 else GameEvents.XpCollected(value);
                 continue;
             }

@@ -111,6 +111,8 @@ public class GameplayBootstrap : MonoBehaviour
         // resetados.
         HeroController.IsPlayerUntargetable = false;
         HeroController.IsDying = false;
+        // Loja permanente: os bônus do herói valem desde o nascimento (vida máxima já sai certa).
+        PermanentBonuses.Build(heroName);
 
         HeroEntry entry = System.Array.Find(availableHeroes, h => h.name == heroName);
         if (entry == null || entry.prefab == null)

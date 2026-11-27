@@ -444,7 +444,8 @@ public class Ranger : HeroController
             * HeroController.Cards.Get(CardAbility.Primary, CardStat.Damage); // etapa 4: congela o Shift e as cartas de dano
         float arrowScale = HeroController.Cards.Get(CardAbility.Primary, CardStat.Area) * HeroController.CardAttackSizeFactor * (1f + CardRunState.NextPrimaryArea); // etapa 4 + Colossus + Relentless Momentum
 
-        int totalArrows = arrowCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.ProjectileCount)); // etapa 4
+        int totalArrows = arrowCount + Mathf.RoundToInt(HeroController.Cards.Sum(CardAbility.Primary, CardStat.ProjectileCount)) // etapa 4
+            + PermanentBonuses.ExtraArrows; // loja permanente (Multishot)
         Vector2[] offsets = ArrowFormation.GetOffsets(totalArrows, arrowLateralStep, arrowForwardStep);
         foreach (var offset in offsets)
         {

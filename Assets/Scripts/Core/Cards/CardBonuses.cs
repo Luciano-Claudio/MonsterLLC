@@ -42,16 +42,31 @@ public class CardBonuses
     }
 
     // Etapa 3: o bônus geral (habilidade None — itens e Stats "de tudo") MULTIPLICA o da habilidade.
+    // Loja permanente: os bônus comprados (PermanentBonuses) entram aqui, no mesmo ponto das cartas.
     public float Get(CardAbility ability, CardStat stat)
     {
         int a = (int)ability, n = (int)CardAbility.None;
         bool withGeneral = ability != CardAbility.None;
-        if (stat == CardStat.Damage) return damageMultiplier[a] * (withGeneral ? damageMultiplier[n] : 1f);
+        if (stat == CardStat.Damage) return damageMultiplier[a] * (withGeneral ? damageMultiplier[n] : 1f) * PermanentBonuses.DamageFactor;
         float sum = Sum(ability, stat);
         float general = withGeneral ? Sum(CardAbility.None, stat) : 0f;
-        if (stat == CardStat.Cooldown) return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general));
-        if (stat == CardStat.MaxHealth && ability == CardAbility.None) return (1f + sum) * healthMultiplier;
-        return (1f + sum) * (1f + general);
+        if (stat == CardStat.Cooldown)
+        {
+            // Primário e Shift: Cooldown; Ultimate (energia necessária): Ultimate Cost.
+            float permanent = ability == CardAbility.Ultimate ? PermanentBonuses.UltimateCostFactor
+                : ability == CardAbility.Primary || ability == CardAbility.Shift ? PermanentBonuses.CooldownFactor : 1f;
+            return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general) * permanent);
+        }
+        if (stat == CardStat.MaxHealth && ability == CardAbility.None) return (1f + sum) * healthMultiplier * PermanentBonuses.MaxHealthFactor;
+        float value = (1f + sum) * (1f + general);
+        if (ability == CardAbility.None)
+        {
+            if (stat == CardStat.Magnet) value *= PermanentBonuses.MagnetFactor;
+            else if (stat == CardStat.MoveSpeed) value *= PermanentBonuses.MoveSpeedFactor;
+            else if (stat == CardStat.XpGain) value *= PermanentBonuses.XpFactor;
+        }
+        else if (ability == CardAbility.Primary && stat == CardStat.Area) value *= PermanentBonuses.FlameAreaFactor; // só ≠1 no Mage
+        return value;
     }
 
     // Só a parte da própria habilidade, sem o geral — para multiplicadores que se aplicam POR CIMA de

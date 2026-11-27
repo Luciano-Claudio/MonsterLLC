@@ -188,7 +188,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     }
 
     // Catálogo de cartas — tamanho do herói: Colossus Heart (+% por nível) × Titan's Tribute.
-    public static float CardSizeFactor => (1f + Cards.Sum(CardAbility.None, CardStat.HeroSize)) * TitanTributeFactor;
+    public static float CardSizeFactor => (1f + Cards.Sum(CardAbility.None, CardStat.HeroSize)) * TitanTributeFactor * PermanentBonuses.SizeFactor; // + loja permanente (Size, só no Barbarian)
     // Colossus Heart nos ataques que NÃO são filhos do herói (projéteis, Ground Crack, explosões). Os filhos
     // (chama do Mage, golpe do Barbarian) já crescem com o transform do herói — não multiplicar de novo.
     public static float CardAttackSizeFactor => 1f + Cards.Sum(CardAbility.None, CardStat.HeroSize);
@@ -995,7 +995,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     {
         get
         {
-            float f = 1f + Cards.Sum(CardAbility.None, CardStat.KillEnergy);
+            float f = (1f + Cards.Sum(CardAbility.None, CardStat.KillEnergy)) * PermanentBonuses.UltimateChargeFactor; // + loja (Ultimate Charge)
             if (Cards.Sum(CardAbility.None, CardStat.SurvivorsLegacy) > 0f)
             {
                 var t = RunSettings.Current;
@@ -1141,7 +1141,8 @@ public abstract class HeroController : MonoBehaviour, IDamageable
         // (ex.: Fúria Protetora do Barbarian, só durante o Shift) se acumula com a de Mundo,
         // nunca substitui — por isso os 2 "if" separados, não um só somado antes do clamp.
         // Etapa 3: Iron Plate/Iron Will (cartas DamageTaken) somam com a de Mundo, com teto (RunSettings).
-        float reduction = DamageReductionPercent / 100f + Cards.Sum(CardAbility.None, CardStat.DamageTaken) + CardRunState.ExtraReduction;
+        float reduction = DamageReductionPercent / 100f + Cards.Sum(CardAbility.None, CardStat.DamageTaken) + CardRunState.ExtraReduction
+            + PermanentBonuses.ArmorAdd; // loja permanente (Armor)
         if (reduction > 0f) amount *= 1f - Mathf.Min(Mathf.Clamp01(reduction), RunSettings.Current.damageReductionCapPercent / 100f);
         float conditionalReduction = GetConditionalDamageReductionPercent();
         if (conditionalReduction > 0f) amount *= 1f - Mathf.Clamp01(conditionalReduction / 100f);
@@ -1311,7 +1312,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     private float hpRegenTextElapsed;
 
     // Etapa 3: Troll Heart (carta Regen, fração da vida por segundo) soma na % de regeneração.
-    private float RegenPercentPerSecond => HpRegenPercentPerSecond + Cards.Sum(CardAbility.None, CardStat.Regen) * 100f;
+    private float RegenPercentPerSecond => HpRegenPercentPerSecond + (Cards.Sum(CardAbility.None, CardStat.Regen) + PermanentBonuses.RegenPercentPerSecond) * 100f; // + loja (Regeneration)
 
     private void UpdateHpRegen()
     {
