@@ -229,7 +229,7 @@ public class WorldPopulationManager : MonoBehaviour
 
         // D9.4 — meta pela curva da horda (dia da run + tempo real do dia) e fluxo contínuo,
         // no lugar do "1 a cada respawnInterval" e das rajadas da crise.
-        CurrentTarget = spawnSettings.horde.TargetAlive(RunSeconds, IsNight);
+        CurrentTarget = spawnSettings.horde.TargetAlive(RunSeconds, IsNight, PermanentBonuses.HordeFactor); // + Maldição
         if (aliveEnemies.Count >= CurrentTarget)
         {
             spawnAccumulator = 0f;

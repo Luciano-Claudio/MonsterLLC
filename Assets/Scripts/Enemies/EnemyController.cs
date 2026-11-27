@@ -405,6 +405,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     protected virtual void Awake()
     {
+        ApplyCurse();
         animator = GetComponent<Animator>(); // pode não existir em prefabs placeholder — sempre checar com "!= null", nunca "?." (ver AnimatorTrigger/SetMoving/SetInCombat/SetMoveDirection)
         hasMoveParam = HasParameter("MoveX");
         hasDiagonalMoveParam = HasParameter("DiagonalMoveX");
@@ -1393,6 +1394,18 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         runBaseMoveSpeed = RunSpeedMultiplier > 0f ? stats.moveSpeed / RunSpeedMultiplier : stats.moveSpeed;
         runBaseAttackDamage = stats.attackDamage;
         stats.attackDamage = runBaseAttackDamage * RunDamageMultiplier;
+    }
+
+    // Loja permanente — Maldição: todo inimigo nasce com +10% de vida, velocidade e dano por nível. Entra
+    // no Awake, antes de qualquer SetRunMultipliers guardar a base (dia/noite/enrage multiplicam por cima).
+    private void ApplyCurse()
+    {
+        float f = PermanentBonuses.EnemyFactor;
+        if (Mathf.Approximately(f, 1f)) return;
+        stats.maxHealth *= f;
+        stats.health *= f;
+        stats.moveSpeed *= f;
+        stats.attackDamage *= f;
     }
 
     public void SetRunMultipliers(float speed, float damage)

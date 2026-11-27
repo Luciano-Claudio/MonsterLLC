@@ -32,10 +32,12 @@ public class HordeCurveSettings
         return new AnimationCurve(keys);
     }
 
-    public int TargetAlive(float runSeconds, bool isNight)
+    // extraMultiplier: Maldição da loja permanente (+20% por nível) — sempre abaixo do hardCap.
+    public int TargetAlive(float runSeconds, bool isNight, float extraMultiplier = 1f)
     {
         float target = dayTargetBySecond != null ? dayTargetBySecond.Evaluate(runSeconds) : 0f;
         if (isNight) target *= nightMultiplier;
+        target *= Mathf.Max(0f, extraMultiplier);
         return Mathf.Min(hardCap, Mathf.RoundToInt(target));
     }
 }

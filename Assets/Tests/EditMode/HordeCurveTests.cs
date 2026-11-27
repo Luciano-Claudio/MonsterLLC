@@ -10,6 +10,9 @@ public class HordeCurveTests
     [Test] public void Minute_three_is_150() => Assert.AreEqual(150, new HordeCurveSettings().TargetAlive(180f, false));
     [Test] public void Day_stays_near_150_later() => Assert.AreEqual(150, new HordeCurveSettings().TargetAlive(900f, false));
     [Test] public void Night_doubles() => Assert.AreEqual(100, new HordeCurveSettings().TargetAlive(60f, true));
+    // Loja permanente — Maldição: +20% de horda por nível (×2 no 5), sempre abaixo do limite de 300.
+    [Test] public void Curse_multiplies_the_target() => Assert.AreEqual(100, new HordeCurveSettings().TargetAlive(60f, false, 2f));
+    [Test] public void Curse_respects_the_cap() => Assert.AreEqual(300, new HordeCurveSettings().TargetAlive(180f, false, 3f));
     [Test] public void Night_at_minute_three_hits_cap() => Assert.AreEqual(300, new HordeCurveSettings().TargetAlive(180f, true));
     [Test]
     public void Night_never_exceeds_cap()
