@@ -27,6 +27,9 @@ public class CardScreenUI : MonoBehaviour
     }
 
     [SerializeField] private GameObject root;
+    // Loja permanente — o contador "Reroll_Quantity" (criado pelo usuário no Cards_Popup), achado pelo nome.
+    private TMP_Text rerollQuantity;
+    private bool rerollQuantitySearched;
     [SerializeField] private CardSlotUI[] slots = new CardSlotUI[3];
     [SerializeField] private Button rerollButton;
     [SerializeField] private KindStyle[] kindStyles = new KindStyle[0];
@@ -80,6 +83,7 @@ public class CardScreenUI : MonoBehaviour
             rerollButton.onClick.AddListener(OnRerollClicked);
             rerollButton.interactable = cards.RerollAvailable;
         }
+        UpdateRerollQuantity(cards.RerollStock);
         (root != null ? root : gameObject).SetActive(true);
     }
 
@@ -134,6 +138,25 @@ public class CardScreenUI : MonoBehaviour
     {
         pendingCard = null;
         if (confirmPanel != null) confirmPanel.SetActive(false);
+    }
+
+    private TMP_Text RerollQuantity
+    {
+        get
+        {
+            if (rerollQuantitySearched) return rerollQuantity;
+            rerollQuantitySearched = true;
+            var top = root != null ? root.transform : transform;
+            foreach (var t in top.GetComponentsInChildren<TMP_Text>(true))
+                if (t.name == "Reroll_Quantity") { rerollQuantity = t; break; }
+            return rerollQuantity;
+        }
+    }
+
+    private void UpdateRerollQuantity(int stock)
+    {
+        var label = RerollQuantity;
+        if (label != null) label.text = stock.ToString();
     }
 
     private void OnRerollClicked()

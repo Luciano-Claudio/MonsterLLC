@@ -93,6 +93,8 @@ public static class GameEvents
     // Loja permanente — Stat Item (abre a tela de cartas) e Reroll_Dice (+1 reroll) coletados.
     public static event Action OnStatItemCollected;
     public static void StatItemCollected() => OnStatItemCollected?.Invoke();
+    public static event Action<int> OnRerollsChanged; // estoque de rerolls da run
+    public static void RerollsChanged(int stock) => OnRerollsChanged?.Invoke(stock);
     public static event Action OnRerollDiceCollected;
     public static void RerollDiceCollected() => OnRerollDiceCollected?.Invoke();
     public static event Action<int> OnGoldCoinCollected;

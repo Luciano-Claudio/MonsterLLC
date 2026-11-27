@@ -30,20 +30,35 @@ public class HeroCards : MonoBehaviour
     private readonly List<CardDefinition> probe = new();
     private readonly System.Random rng = new();
     private PendingOffer current;
-    private int rerollsLeft; // catálogo de cartas: 1 por oferta, +1 no baú (Treasure Sense) e no vendedor (Merchant's Whisper)
+    // Loja permanente (2026-11-27): rerolls são um ESTOQUE da run (PermanentBonuses.StartRerolls no começo,
+    // +1 por Reroll_Dice); o 1º reroll do baú (Treasure Sense) ou do vendedor (Merchant's Whisper) é grátis.
+    private int rerollStock = 1;
+    private bool freeReroll;
     private CardCatalog catalog;
 
     public bool OfferOpen { get; private set; }
     public int PendingOffers => pending.Count;
     public IReadOnlyList<CardDefinition> CurrentOffer => currentOffer;
     public OfferSource CurrentSource => current.source;
-    public bool RerollAvailable => OfferOpen && rerollsLeft > 0;
+    public bool RerollAvailable => OfferOpen && RerollRules.CanReroll(rerollStock, freeReroll);
+    public int RerollStock => rerollStock;
+    public bool FreeRerollAvailable => OfferOpen && freeReroll;
 
+    public void AddRerolls(int amount)
+    {
+        if (amount <= 0) return;
+        rerollStock += amount;
+        GameEvents.RerollsChanged(rerollStock);
+    }
+
+    private void HandleRerollDice() => AddRerolls(1);
+
+    // Nova tela de cartas: só decide se o 1º reroll dela é grátis (o estoque é da run).
     private void ResetRerolls()
     {
         var cards = HeroController.Cards;
-        rerollsLeft = 1 + Mathf.RoundToInt(current.source == OfferSource.Chest ? cards.Sum(CardAbility.None, CardStat.TreasureSense)
-            : current.source == OfferSource.Vendor ? cards.Sum(CardAbility.None, CardStat.MerchantsWhisper) : 0f);
+        freeReroll = RerollRules.FreeFor(current.source, cards.Sum(CardAbility.None, CardStat.TreasureSense) > 0f,
+            cards.Sum(CardAbility.None, CardStat.MerchantsWhisper) > 0f);
     }
     public IReadOnlyDictionary<string, int> Owned => owned;
     public IReadOnlyList<CardDefinition> OwnedItems => ownedItems;
@@ -58,6 +73,7 @@ public class HeroCards : MonoBehaviour
     {
         GameEvents.OnHeroLeveledUp += HandleLeveledUp;
         GameEvents.OnStatItemCollected += HandleStatItem;
+        GameEvents.OnRerollDiceCollected += HandleRerollDice;
         GameEvents.OnDayStart += HandleRunStart;
         GameEvents.OnRunEnded += HandleRunEnded;
     }
@@ -66,6 +82,7 @@ public class HeroCards : MonoBehaviour
     {
         GameEvents.OnHeroLeveledUp -= HandleLeveledUp;
         GameEvents.OnStatItemCollected -= HandleStatItem;
+        GameEvents.OnRerollDiceCollected -= HandleRerollDice;
         GameEvents.OnDayStart -= HandleRunStart;
         GameEvents.OnRunEnded -= HandleRunEnded;
     }
@@ -88,6 +105,9 @@ public class HeroCards : MonoBehaviour
         CloseOffer(resume: false);
         if (TimeManager.Instance != null) TimeManager.Instance.ResumeBy(this); // nenhuma pausa de cartas da run anterior
         HeroController.Cards.Reset();
+        rerollStock = PermanentBonuses.StartRerolls; // 1 + melhoria Reroll
+        freeReroll = false;
+        GameEvents.RerollsChanged(rerollStock);
         GameEvents.ItemsChanged();
     }
 
@@ -150,8 +170,8 @@ public class HeroCards : MonoBehaviour
 
     public bool Reroll()
     {
-        if (!OfferOpen || rerollsLeft <= 0) return false;
-        rerollsLeft--;
+        if (!OfferOpen || !RerollRules.Spend(ref rerollStock, ref freeReroll)) return false;
+        GameEvents.RerollsChanged(rerollStock);
         RollCurrent();
         var screen = CardScreenUI.Find();
         if (screen != null) screen.Show(this);
