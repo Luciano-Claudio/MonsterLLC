@@ -1408,6 +1408,17 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         stats.attackDamage *= f;
     }
 
+    // Quem troca vida/dano DEPOIS do Awake (mímico pela tabela do dia, possessão) chama isto antes do
+    // RebaseRunStats: reaplica a Maldição só na vida e no dano (a velocidade já foi no Awake).
+    protected void ApplyCurseToHealthAndDamage()
+    {
+        float f = PermanentBonuses.EnemyFactor;
+        if (Mathf.Approximately(f, 1f)) return;
+        stats.maxHealth *= f;
+        stats.health *= f;
+        stats.attackDamage *= f;
+    }
+
     public void SetRunMultipliers(float speed, float damage)
     {
         if (runBaseMoveSpeed < 0f) { runBaseMoveSpeed = stats.moveSpeed; runBaseAttackDamage = stats.attackDamage; }

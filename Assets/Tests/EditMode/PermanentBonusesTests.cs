@@ -45,13 +45,14 @@ public class PermanentBonusesTests
     }
 
     [Test]
-    public void Curse_multiplies_hero_health_speed_xp_and_gold()
+    // Regra confirmada pelo usuário: velocidade no máximo = +115% (+15% do Move Speed + 100% da Maldição) — SOMA.
+    public void Curse_adds_to_hero_health_speed_xp_and_gold()
     {
         Build((PermanentStat.MaxHealth, 3), (PermanentStat.MoveSpeed, 3), (PermanentStat.Xp, 5), (PermanentStat.Gold, 5), (PermanentStat.Curse, 5));
-        Assert.AreEqual(1.3f * 2f, PermanentBonuses.MaxHealthFactor, 1e-4f);
-        Assert.AreEqual(1.15f * 2f, PermanentBonuses.MoveSpeedFactor, 1e-4f);
-        Assert.AreEqual(1.25f * 2f, PermanentBonuses.XpFactor, 1e-4f);
-        Assert.AreEqual(1.5f * 2f, PermanentBonuses.GoldFactor, 1e-4f);
+        Assert.AreEqual(1f + 0.30f + 1f, PermanentBonuses.MaxHealthFactor, 1e-4f);
+        Assert.AreEqual(1f + 0.15f + 1f, PermanentBonuses.MoveSpeedFactor, 1e-4f);
+        Assert.AreEqual(1f + 0.25f + 1f, PermanentBonuses.XpFactor, 1e-4f);
+        Assert.AreEqual(1f + 0.50f + 1f, PermanentBonuses.GoldFactor, 1e-4f);
         Assert.AreEqual(5, PermanentBonuses.CurseLevel);
     }
 

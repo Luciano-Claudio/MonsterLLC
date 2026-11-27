@@ -42,6 +42,7 @@ public class ChestMimicController : SlimeEnemyController
         stats.health = entry.health;
         stats.maxHealth = entry.health;
         stats.attackDamage = entry.attackDamage;
+        ApplyCurseToHealthAndDamage(); // loja permanente — Maldição sobre a tabela do dia
         RebaseRunStats(); // etapas 1+2 — base nova pros multiplicadores da run
     }
 

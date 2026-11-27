@@ -319,7 +319,16 @@ public abstract class HeroController : MonoBehaviour, IDamageable
     // Exposição controlada dos 2 AttackCooldown privados pra perks bespoke de cooldown (Esquerda
     // #21-22/Direita #13-16/#23/#26/#29 do Barbarian) — nenhum herói precisa saber que existe um
     // AttackCooldown por baixo, só que pode ajustar/reduzir/zerar o próprio cooldown.
-    protected void SetPrimaryCooldownMultiplier(float multiplier) => attackCooldown.DurationMultiplier = multiplier;
+    // Loja permanente — Cooldown (Primário e Shift) por cima dos perks; vale desde o nascimento (InitCooldowns).
+    protected void SetPrimaryCooldownMultiplier(float multiplier) => attackCooldown.DurationMultiplier = multiplier * PermanentBonuses.CooldownFactor;
+
+    private void InitCooldowns()
+    {
+        attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
+        secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
+        SetPrimaryCooldownMultiplier(1f);
+        SetSecondaryCooldownMultiplier(1f);
+    }
     protected void SetSecondaryCooldownMultiplier(float multiplier)
     {
         if (secondaryAbilityCooldown == null) return;
@@ -579,8 +588,7 @@ public abstract class HeroController : MonoBehaviour, IDamageable
 
         crowdPush = gameObject.AddComponent<HeroCrowdPush>(); // D9.4 — o herói empurra a horda
 
-        attackCooldown = new AttackCooldown(1f / stats.attackSpeed);
-        secondaryAbilityCooldown = new AttackCooldown(secondaryAbilityCooldownDuration);
+        InitCooldowns();
         statusEffectController = GetComponent<StatusEffectController>(); // pode não existir em prefabs placeholder
         controls = new PlayerControls();
         controls.Gameplay.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();

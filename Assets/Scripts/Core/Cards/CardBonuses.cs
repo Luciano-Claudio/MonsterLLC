@@ -52,9 +52,10 @@ public class CardBonuses
         float general = withGeneral ? Sum(CardAbility.None, stat) : 0f;
         if (stat == CardStat.Cooldown)
         {
-            // Primário e Shift: Cooldown; Ultimate (energia necessária): Ultimate Cost.
+            // Shift: Cooldown; Ultimate (energia necessária): Ultimate Cost. O Cooldown do Primário entra
+            // direto no HeroController.SetPrimaryCooldownMultiplier (ninguém lê Get(Primary, Cooldown)).
             float permanent = ability == CardAbility.Ultimate ? PermanentBonuses.UltimateCostFactor
-                : ability == CardAbility.Primary || ability == CardAbility.Shift ? PermanentBonuses.CooldownFactor : 1f;
+                : ability == CardAbility.Shift ? PermanentBonuses.CooldownFactor : 1f;
             return Mathf.Max(CooldownFloor, (1f - sum) * (1f - general) * permanent);
         }
         if (stat == CardStat.MaxHealth && ability == CardAbility.None) return (1f + sum) * healthMultiplier * PermanentBonuses.MaxHealthFactor;

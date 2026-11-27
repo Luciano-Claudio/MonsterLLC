@@ -53,6 +53,7 @@ public class PossessableMeleeEnemyController : MeleeEnemyController
         stats.maxHealth = possessedMaxHealth;
         stats.health = possessedMaxHealth;
         stats.attackDamage = possessedAttackDamage;
+        ApplyCurseToHealthAndDamage(); // loja permanente — Maldição sobre os stats da possessão
         RebaseRunStats(); // etapas 1+2 — o buff noturno/enrage segue valendo em cima do dano possuído
         if (animator != null) animator.SetBool("IsPossessed", true);
 

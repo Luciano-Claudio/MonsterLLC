@@ -49,7 +49,10 @@ public static class PermanentGold
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[PermanentGold] Não consegui ler {FilePath}: {e.Message}");
+                // Revisão final: o arquivo estragado vira profile.json.corrupt ANTES de qualquer gravação
+                // nova, senão a próxima moeda apagaria todo o gold e as melhorias de vez.
+                Debug.LogWarning($"[PermanentGold] Não consegui ler {FilePath}: {e.Message}. Cópia em {FilePath}.corrupt");
+                try { File.Copy(FilePath, FilePath + ".corrupt", true); } catch (System.Exception) { }
                 profile = null;
             }
             profile ??= new Profile();
@@ -106,7 +109,14 @@ public static class PermanentGold
 
     private static void Save()
     {
-        try { File.WriteAllText(FilePath, JsonUtility.ToJson(Current, true)); }
+        // Gravação atômica: escreve no .tmp e só então troca pelo arquivo real (queda no meio não estraga).
+        try
+        {
+            string tmp = FilePath + ".tmp";
+            File.WriteAllText(tmp, JsonUtility.ToJson(Current, true));
+            if (File.Exists(FilePath)) File.Replace(tmp, FilePath, null);
+            else File.Move(tmp, FilePath);
+        }
         catch (System.Exception e) { Debug.LogWarning($"[PermanentGold] Não consegui salvar {FilePath}: {e.Message}"); }
     }
 

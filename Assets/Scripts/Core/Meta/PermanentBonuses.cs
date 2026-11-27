@@ -58,19 +58,21 @@ public static class PermanentBonuses
         float Down(PermanentStat s) => Mathf.Max(0f, 1f - V(s) * L(s));
 
         CurseLevel = L(PermanentStat.Curse);
-        float curse = 1f + V(PermanentStat.Curse) * CurseLevel;
+        // Maldição SOMA com as melhorias do herói (usuário: velocidade no máximo = +15% + 100% = +115%).
+        float curseAdd = V(PermanentStat.Curse) * CurseLevel;
+        float curse = 1f + curseAdd;
 
         DamageFactor = Up(PermanentStat.Damage);
-        MaxHealthFactor = Up(PermanentStat.MaxHealth) * curse;
+        MaxHealthFactor = Up(PermanentStat.MaxHealth) + curseAdd;
         ArmorAdd = V(PermanentStat.Armor) * L(PermanentStat.Armor);
         RegenPercentPerSecond = V(PermanentStat.Regen) * L(PermanentStat.Regen);
-        MoveSpeedFactor = Up(PermanentStat.MoveSpeed) * curse;
+        MoveSpeedFactor = Up(PermanentStat.MoveSpeed) + curseAdd;
         CooldownFactor = Down(PermanentStat.Cooldown);
         UltimateChargeFactor = Up(PermanentStat.UltimateCharge);
         UltimateCostFactor = Down(PermanentStat.UltimateCost);
         MagnetFactor = Up(PermanentStat.Magnet);
-        XpFactor = Up(PermanentStat.Xp) * curse;
-        GoldFactor = Up(PermanentStat.Gold) * curse;
+        XpFactor = Up(PermanentStat.Xp) + curseAdd;
+        GoldFactor = Up(PermanentStat.Gold) + curseAdd;
         SizeFactor = Up(PermanentStat.Size);
         FlameAreaFactor = Up(PermanentStat.FlameArea);
         HordeFactor = curse;

@@ -121,6 +121,22 @@ public class PermanentShopTests
         Assert.AreEqual(0, PermanentShop.Level("Ranger", a.id));
     }
 
+    // Revisão final: um profile corrompido não pode ser apagado pela próxima gravação — vira profile.json.corrupt.
+    [Test]
+    public void Corrupt_profile_is_backed_up_before_being_replaced()
+    {
+        File.WriteAllText(path, "{lixo");
+        if (File.Exists(path + ".corrupt")) File.Delete(path + ".corrupt");
+        PermanentGold.UseFileForTests(path);
+        PermanentGold.Add(3);
+        Assert.IsTrue(File.Exists(path + ".corrupt"), "cópia do arquivo corrompido");
+        Assert.AreEqual("{lixo", File.ReadAllText(path + ".corrupt"));
+        PermanentGold.UseFileForTests(path);
+        Assert.AreEqual(3, PermanentGold.Amount);
+        Assert.IsFalse(File.Exists(path + ".tmp"), "gravação atômica não deixa .tmp");
+        File.Delete(path + ".corrupt");
+    }
+
     [Test]
     public void Total_spent_sums_the_bought_levels()
     {
