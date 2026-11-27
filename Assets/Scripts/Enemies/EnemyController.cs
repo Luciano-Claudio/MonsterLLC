@@ -1361,7 +1361,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     public void ApplyKnockback(Vector2 direction, float force)
     {
-        if (isBoss) return;
+        if (isBoss || isDead) return; // o golpe que mata aplica o knockback depois do dano
         knockbackVelocity = direction.normalized * force;
     }
 
@@ -1373,7 +1373,7 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
 
     public void ApplyCrowdPush(Vector2 direction, float force)
     {
-        if (isBoss) return;
+        if (isBoss || isDead) return;
         crowdPushVelocity = direction.normalized * force;
     }
 
@@ -1531,6 +1531,12 @@ public abstract class EnemyController : MonoBehaviour, IDamageable
         if (collider != null) collider.enabled = false; // para de bloquear/colidir enquanto o clipe de morte toca
 
         SetMoving(false); // trava o AIPath (ai.isStopped) — Update() nem chama mais Move()/MoveInDirection depois disso
+        // Morto não se move mais (bug real, 2026-11-27: o corpo "arrastava" durante a animação de morte):
+        // o isStopped só freia aos poucos, e o knockback do golpe final e o empurrão da horda continuavam.
+        if (ai != null) ai.simulateMovement = false;
+        if (rvo != null) rvo.enabled = false; // os vizinhos param de desviar (e de empurrar) o corpo
+        knockbackVelocity = Vector2.zero;
+        crowdPushVelocity = Vector2.zero;
 
         // Corrida clássica de Trigger do Animator: qualquer trigger ainda não consumido pelo
         // Animator no instante em que o DieTrigger é setado pode "vencer" a corrida e fazer a
